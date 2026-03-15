@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { getAllUsers, getAllClasses, deleteUser, getProgress } from "../firebase";
+import { getAllUsers, getAllClasses, deleteUser, getProgress } from "./firebase";
 import { ADDITION_TOPIC_ID } from "./additionTables";
 
 export default function DevHome({ user, onLogout }) {

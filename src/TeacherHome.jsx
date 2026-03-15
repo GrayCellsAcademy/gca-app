@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import {
   getTeacherClasses, createClass, getStudentsForClass,
   assignTopicToClass, unassignTopicFromClass, getProgress, getPublishedTopics
-} from "../firebase";
+} from "./firebase";
 import { ADDITION_TOPIC_ID, TIER_COLORS } from "./additionTables";
 
 const KNOWN_TOPICS = [{

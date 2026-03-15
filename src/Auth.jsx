@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { registerUser, loginUser, DEV_CODE } from "../firebase";
+import { registerUser, loginUser, DEV_CODE } from "./firebase";
 
 export default function Auth({ onAuth }) {
   const [mode, setMode] = useState("login"); // login | signup

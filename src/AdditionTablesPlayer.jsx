@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { buildTierQuestions, TIER_COLORS, speak, ADDITION_TOPIC_ID } from "./additionTables";
-import { saveProgress, getProgress } from "../firebase";
+import { saveProgress, getProgress } from "./firebase";
 
 const QUESTION_TIME = 15;
 

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { getClass, getProgress, leaveClass, joinClass } from "../firebase";
+import { getClass, getProgress, leaveClass, joinClass } from "./firebase";
 import { ADDITION_TOPIC_ID, TIER_COLORS } from "./additionTables";
 import AdditionTablesPlayer from "./AdditionTablesPlayer";
 
