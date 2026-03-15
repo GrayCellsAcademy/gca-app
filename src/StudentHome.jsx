@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { getTeacherClasses, getClass, getProgress, leaveClass } from "../firebase";
+import { getClass, getProgress, leaveClass, joinClass } from "../firebase";
 import { ADDITION_TOPIC_ID, TIER_COLORS } from "./additionTables";
 import AdditionTablesPlayer from "./AdditionTablesPlayer";
 
@@ -118,7 +118,6 @@ export default function StudentHome({ user, onLogout }) {
     if (!joinClassName.trim()||!joinPass.trim()) { setJoinErr("Please fill in both fields."); return; }
     try {
       setJoinErr("");
-      const { joinClass } = await import("../firebase");
       await joinClass(user.id, joinClassName.trim(), joinPass.trim());
       window.location.reload();
     } catch(e) { setJoinErr(e.message||"Class not found or wrong password."); }
