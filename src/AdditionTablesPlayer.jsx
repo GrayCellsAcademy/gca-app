@@ -99,7 +99,7 @@ function AdditionVisual() {
   );
 }
 
-function LessonScreen({ onComplete }) {
+function LessonScreen({ onComplete, isReview }) {
   const voiceText = "Welcome to Addition Tables! Let's start with what addition means. Addition is when you combine two groups of things to find out how many you have in total. For example, if you have 3 blue dots and you add 2 more dots, you now have 5 dots altogether. That is what 3 plus 2 equals 5 means. Now here is why this matters. Being able to add single digit numbers instantly — without counting on your fingers — is one of the most important skills in all of math. It is the foundation for multiplication, fractions, algebra, and everything else. Students who have these facts memorized think faster and make fewer mistakes. In this course you will master every single digit addition fact, from 1 plus 1 all the way to 9 plus 9. Let's get started!";
 
   useEffect(()=>{
@@ -163,7 +163,7 @@ function LessonScreen({ onComplete }) {
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginTop:24,flexWrap:"wrap",gap:12}}>
           <SpeakBtn text={voiceText} color="var(--blue)"/>
           <button className="btn btn-primary btn-lg" onClick={onComplete}>
-            Start with 1s →
+            {isReview ? "← Back to Practice" : "Start with 1s →"}
           </button>
         </div>
       </div>
@@ -249,7 +249,7 @@ function TierIntroScreen({ tierNum, masteredTiers, onStart }) {
 }
 
 // ─── Question Screen ──────────────────────────────────────────────
-function QuestionScreen({ tierNum, questions, onComplete, onHome }) {
+function QuestionScreen({ tierNum, questions, onComplete, onHome, onReviewLesson }) {
   const [qs, setQs] = useState(questions);
   const [idx, setIdx] = useState(0);
   const [input, setInput] = useState("");
@@ -337,24 +337,27 @@ function QuestionScreen({ tierNum, questions, onComplete, onHome }) {
   if (!q) return null;
 
   return (
-    <div style={{maxWidth:520,margin:"0 auto",animation:"fadeUp 0.3s ease"}}>
+    <div style={{maxWidth:560,margin:"0 auto",animation:"fadeUp 0.3s ease"}}>
       {showFlash && <CorrectFlash/>}
 
       {/* Header */}
-      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16,gap:8,flexWrap:"wrap"}}>
         <div style={{
           background:`${color}22`,border:`1px solid ${color}44`,
-          borderRadius:99,padding:"5px 14px",
-          fontSize:13,fontWeight:700,color
+          borderRadius:99,padding:"6px 16px",
+          fontSize:15,fontWeight:700,color
         }}>
           Adding {tierNum}s
         </div>
-        <button className="btn btn-ghost btn-sm" onClick={onHome}>← Home</button>
+        <div style={{display:"flex",gap:8,alignItems:"center"}}>
+          <button className="btn btn-ghost btn-sm" style={{fontSize:14}} onClick={()=>{ clearInterval(timerRef.current); onReviewLesson(); }}>📖 Review Lesson</button>
+          <button className="btn btn-ghost btn-sm" style={{fontSize:14}} onClick={onHome}>← Home</button>
+        </div>
       </div>
 
       {/* Progress */}
       <div style={{marginBottom:20}}>
-        <div style={{display:"flex",justifyContent:"space-between",fontSize:12,
+        <div style={{display:"flex",justifyContent:"space-between",fontSize:14,
           color:"var(--text3)",marginBottom:6}}>
           <span>{done} cleared</span>
           <span>{remaining} remaining</span>
@@ -376,12 +379,12 @@ function QuestionScreen({ tierNum, questions, onComplete, onHome }) {
 
         {/* Streak dots */}
         {!wrong && (
-          <div style={{display:"flex",gap:6,justifyContent:"center",marginBottom:16}}>
+          <div style={{display:"flex",gap:8,justifyContent:"center",marginBottom:16}}>
             {Array.from({length:q.streakNeeded}).map((_,i)=>(
               <div key={i} style={{
-                width:10,height:10,borderRadius:"50%",
+                width:13,height:13,borderRadius:"50%",
                 background:i<q.streak?color:"var(--surface2)",
-                border:`1.5px solid ${i<q.streak?color:"var(--border2)"}`,
+                border:`2px solid ${i<q.streak?color:"var(--border2)"}`,
                 transition:"all 0.2s"
               }}/>
             ))}
@@ -389,21 +392,20 @@ function QuestionScreen({ tierNum, questions, onComplete, onHome }) {
         )}
 
         {wrong ? (
-          // Wrong answer panel
           <div style={{animation:"popIn 0.25s ease"}}>
-            <div style={{fontSize:15,fontWeight:700,color:"#fca5a5",marginBottom:10}}>
+            <div style={{fontSize:18,fontWeight:700,color:"#fca5a5",marginBottom:10}}>
               {wrong.timedOut ? "⏰ Time's up!" : "Not quite!"}
             </div>
             <div style={{
-              fontFamily:"var(--mono)",fontSize:48,fontWeight:700,
-              color:"var(--text)",marginBottom:6
+              fontFamily:"var(--mono)",fontSize:"clamp(48px,10vw,72px)",fontWeight:700,
+              color:"var(--text)",marginBottom:8
             }}>
               {wrong.a} + {wrong.b} = <span style={{color:"var(--green)"}}>{wrong.correct}</span>
             </div>
-            <p style={{color:"var(--text2)",fontSize:14,marginBottom:20}}>
+            <p style={{color:"var(--text2)",fontSize:17,marginBottom:20}}>
               The correct answer is <strong style={{color:"var(--text)"}}>{wrong.correct}</strong>
             </p>
-            <button className="btn btn-success" style={{width:"100%",fontSize:16,padding:"14px"}}
+            <button className="btn btn-success" style={{width:"100%",fontSize:18,padding:"16px"}}
               onMouseDown={e=>{e.preventDefault();dismissWrong();}}
               onTouchEnd={e=>{e.preventDefault();dismissWrong();}}>
               Got it — keep going! →
@@ -413,7 +415,7 @@ function QuestionScreen({ tierNum, questions, onComplete, onHome }) {
           <>
             <div style={{
               fontFamily:"var(--mono)",
-              fontSize:"clamp(48px,10vw,72px)",
+              fontSize:"clamp(54px,11vw,80px)",
               fontWeight:700,
               color:"var(--text)",
               marginBottom:4,
@@ -423,7 +425,7 @@ function QuestionScreen({ tierNum, questions, onComplete, onHome }) {
               {q.a} + {q.b} = ?
             </div>
             {!q.isCurrent && (
-              <div style={{fontSize:12,color:"var(--text3)",marginBottom:12}}>
+              <div style={{fontSize:14,color:"var(--text3)",marginBottom:12}}>
                 Review question
               </div>
             )}
@@ -436,17 +438,17 @@ function QuestionScreen({ tierNum, questions, onComplete, onHome }) {
               inputMode="numeric"
               style={{
                 textAlign:"center",
-                fontSize:"clamp(28px,6vw,42px)",
+                fontSize:"clamp(32px,7vw,48px)",
                 fontFamily:"var(--mono)",
                 fontWeight:700,
-                padding:"14px",
-                marginBottom:12,
+                padding:"16px",
+                marginBottom:14,
                 marginTop:8,
                 borderColor: "var(--border2)",
               }}
             />
             <button className="btn btn-primary"
-              style={{width:"100%",fontSize:17,padding:"14px"}}
+              style={{width:"100%",fontSize:20,padding:"16px"}}
               onMouseDown={e=>{e.preventDefault();handleSubmit();}}
               onTouchEnd={e=>{e.preventDefault();handleSubmit();}}>
               Submit ✓
@@ -561,9 +563,15 @@ export default function AdditionTablesPlayer({ user, onHome }) {
   );
 
   if (screen === "lesson") return (
-    <LessonScreen onComplete={async ()=>{
+    <LessonScreen isReview={false} onComplete={async ()=>{
       await saveCurrentProgress(1, []);
       setScreen("tier-intro");
+    }}/>
+  );
+
+  if (screen === "lesson-review") return (
+    <LessonScreen isReview={true} onComplete={()=>{
+      setScreen("questions");
     }}/>
   );
 
@@ -581,6 +589,7 @@ export default function AdditionTablesPlayer({ user, onHome }) {
       questions={questions}
       onComplete={handleTierComplete}
       onHome={onHome}
+      onReviewLesson={()=>setScreen("lesson-review")}
     />
   );
 
