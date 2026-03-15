@@ -63,15 +63,22 @@ export function speak(text, onEnd) {
   if (!window.speechSynthesis) return;
   window.speechSynthesis.cancel();
   const utter = new SpeechSynthesisUtterance(text);
-  utter.rate = 0.92; utter.pitch = 1.1; utter.volume = 1.0;
+  utter.rate = 1.05;   // slightly faster = more energetic
+  utter.pitch = 1.3;   // higher pitch = younger, more excited
+  utter.volume = 1.0;
+  // Prefer natural-sounding US female voices
   const preferred = [
-    "Google US English Female","Samantha",
-    "Microsoft Zira - English (United States)",
+    "Google US English Female",
+    "Samantha",
     "Microsoft Aria Online (Natural) - English (United States)",
-    "Google US English","Karen","Moira",
+    "Microsoft Jenny Online (Natural) - English (United States)",
+    "Microsoft Zira - English (United States)",
+    "Google US English",
+    "Karen",
   ];
   const trySpeak = (voices) => {
     const picked = preferred.reduce((f,n)=>f||voices.find(v=>v.name===n),null)
+      || voices.find(v=>v.lang==="en-US" && v.name.toLowerCase().includes("female"))
       || voices.find(v=>v.lang==="en-US")
       || voices.find(v=>v.lang.startsWith("en"))
       || voices[0];

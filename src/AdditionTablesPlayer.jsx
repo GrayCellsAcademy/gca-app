@@ -51,11 +51,59 @@ function CorrectFlash() {
 }
 
 // ─── Lesson Screen ────────────────────────────────────────────────
+function AdditionVisual() {
+  // Shows 3 dots + 2 dots = 5 dots
+  const dot = (color) => (
+    <div style={{
+      width:28, height:28, borderRadius:"50%",
+      background:color, boxShadow:`0 0 10px ${color}88`,
+      display:"inline-block", margin:3,
+    }}/>
+  );
+  return (
+    <div style={{
+      background:"var(--bg2)", borderRadius:"var(--radius)",
+      padding:"24px 20px", textAlign:"center", marginBottom:16
+    }}>
+      <div style={{fontSize:13, color:"var(--text3)", marginBottom:12, fontWeight:600, textTransform:"uppercase", letterSpacing:"0.06em"}}>
+        3 + 2 = 5
+      </div>
+      <div style={{display:"flex", alignItems:"center", justifyContent:"center", gap:12, flexWrap:"wrap"}}>
+        {/* 3 dots */}
+        <div style={{display:"flex", alignItems:"center", gap:2}}>
+          {[0,1,2].map(i=>(
+            <div key={i} style={{width:28,height:28,borderRadius:"50%",background:"var(--blue)",boxShadow:"0 0 10px rgba(59,130,246,0.6)",margin:3}}/>
+          ))}
+        </div>
+        <div style={{fontSize:28, fontWeight:900, color:"var(--text2)"}}>+</div>
+        {/* 2 dots */}
+        <div style={{display:"flex", alignItems:"center", gap:2}}>
+          {[0,1].map(i=>(
+            <div key={i} style={{width:28,height:28,borderRadius:"50%",background:"var(--cyan)",boxShadow:"0 0 10px rgba(6,182,212,0.6)",margin:3}}/>
+          ))}
+        </div>
+        <div style={{fontSize:28, fontWeight:900, color:"var(--text2)"}}>=</div>
+        {/* 5 dots */}
+        <div style={{display:"flex", alignItems:"center", gap:2}}>
+          {[0,1,2,3,4].map(i=>(
+            <div key={i} style={{width:28,height:28,borderRadius:"50%",background:"var(--green)",boxShadow:"0 0 10px rgba(16,185,129,0.6)",margin:3}}/>
+          ))}
+        </div>
+      </div>
+      <div style={{marginTop:14, display:"flex", justifyContent:"center", gap:24, fontSize:13, color:"var(--text3)"}}>
+        <span><span style={{color:"var(--blue)", fontWeight:700}}>3</span> blue dots</span>
+        <span><span style={{color:"var(--cyan)", fontWeight:700}}>2</span> cyan dots</span>
+        <span><span style={{color:"var(--green)", fontWeight:700}}>5</span> total</span>
+      </div>
+    </div>
+  );
+}
+
 function LessonScreen({ onComplete }) {
+  const voiceText = "Welcome to Addition Tables! Let's start with what addition means. Addition is when you combine two groups of things to find out how many you have in total. For example, if you have 3 blue dots and you add 2 more dots, you now have 5 dots altogether. That is what 3 plus 2 equals 5 means. Now here is why this matters. Being able to add single digit numbers instantly — without counting on your fingers — is one of the most important skills in all of math. It is the foundation for multiplication, fractions, algebra, and everything else. Students who have these facts memorized think faster and make fewer mistakes. In this course you will master every single digit addition fact, from 1 plus 1 all the way to 9 plus 9. Let's get started!";
+
   useEffect(()=>{
-    const t = setTimeout(()=>speak(
-      "Welcome to Addition Tables! Addition means combining two numbers to find their total. For example, 3 plus 4 equals 7. Being able to add single digit numbers quickly and mentally — without using your fingers — is one of the most important math skills you can build. It is the foundation for everything that comes next: multiplication, fractions, algebra, and beyond. In this course, you will master every single digit addition fact until they become automatic. Let's get started!"
-    ), 600);
+    const t = setTimeout(()=>speak(voiceText), 600);
     return ()=>{ clearTimeout(t); window.speechSynthesis?.cancel(); };
   },[]);
 
@@ -77,22 +125,24 @@ function LessonScreen({ onComplete }) {
             background:"var(--bg2)",borderRadius:"var(--radius)",padding:"18px 20px",
             borderLeft:"3px solid var(--blue)"
           }}>
-            <p style={{fontSize:16,lineHeight:1.75,color:"var(--text)"}}>
-              <strong style={{color:"var(--blue)"}}>Addition</strong> means combining two numbers to find their total.
-              When you write <strong style={{fontFamily:"var(--mono)",color:"var(--cyan)"}}>3 + 4 = 7</strong>,
-              you are saying that 3 and 4 together make 7.
+            <p style={{fontSize:16,lineHeight:1.75,color:"var(--text)",marginBottom:8}}>
+              <strong style={{color:"var(--blue)"}}>Addition</strong> means combining two groups to find their total. When you see{" "}
+              <strong style={{fontFamily:"var(--mono)",color:"var(--cyan)",fontSize:18}}>3 + 2 = 5</strong>,
+              it means 3 things and 2 more things make 5 things altogether.
             </p>
           </div>
+
+          <AdditionVisual/>
 
           <div style={{
             background:"var(--bg2)",borderRadius:"var(--radius)",padding:"18px 20px",
             borderLeft:"3px solid var(--amber)"
           }}>
-            <p style={{fontSize:15,lineHeight:1.75,color:"var(--text)",marginBottom:10}}>
+            <p style={{fontSize:15,lineHeight:1.75,color:"var(--text)",marginBottom:8}}>
               <strong style={{color:"var(--amber)"}}>Why does speed matter?</strong>
             </p>
             <p style={{fontSize:15,lineHeight:1.75,color:"var(--text2)"}}>
-              Being able to add single-digit numbers <em>instantly</em> — without counting on your fingers or pausing to think — frees your brain to focus on harder problems. Every advanced math topic builds on this foundation. Students who have these facts memorized learn new concepts faster and make fewer errors.
+              Being able to add single-digit numbers <em>instantly</em> — without counting on your fingers — frees your brain for harder problems. It is the foundation for multiplication, fractions, and algebra. Students who have these facts memorized learn faster and make fewer mistakes.
             </p>
           </div>
 
@@ -100,19 +150,18 @@ function LessonScreen({ onComplete }) {
             background:"rgba(16,185,129,0.08)",borderRadius:"var(--radius)",padding:"18px 20px",
             border:"1px solid rgba(16,185,129,0.2)"
           }}>
-            <p style={{fontSize:15,lineHeight:1.75,color:"var(--text)",marginBottom:8}}>
+            <p style={{fontSize:15,lineHeight:1.75,color:"var(--text)",marginBottom:6}}>
               <strong style={{color:"var(--green)"}}>Your goal:</strong>
             </p>
             <p style={{fontSize:15,lineHeight:1.75,color:"var(--text2)"}}>
-              Master every addition fact from <strong style={{color:"var(--text)"}}>1+1</strong> through <strong style={{color:"var(--text)"}}>9+9</strong>.
-              You'll work one number at a time, answering questions until they feel automatic.
-              You have <strong style={{color:"var(--amber)"}}>15 seconds</strong> per question — fast but fair.
+              Master every addition fact from <strong style={{color:"var(--text)"}}>1+1</strong> through <strong style={{color:"var(--text)"}}>9+9</strong> — one number at a time.
+              You have <strong style={{color:"var(--amber)"}}>15 seconds</strong> per question.
             </p>
           </div>
         </div>
 
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginTop:24,flexWrap:"wrap",gap:12}}>
-          <SpeakBtn text="Welcome to Addition Tables! Addition means combining two numbers to find their total. Being able to add single digit numbers quickly and mentally is one of the most important math skills you can build. It is the foundation for everything that comes next. In this course, you will master every single digit addition fact until they become automatic." color="var(--blue)"/>
+          <SpeakBtn text={voiceText} color="var(--blue)"/>
           <button className="btn btn-primary btn-lg" onClick={onComplete}>
             Start with 1s →
           </button>
