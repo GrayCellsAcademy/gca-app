@@ -341,17 +341,25 @@ function QuestionScreen({ tierNum, questions, onComplete, onHome, onReviewLesson
       {showFlash && <CorrectFlash/>}
 
       {/* Header */}
-      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16,gap:8,flexWrap:"wrap"}}>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16,gap:8}}>
         <div style={{
           background:`${color}22`,border:`1px solid ${color}44`,
           borderRadius:99,padding:"6px 16px",
-          fontSize:15,fontWeight:700,color
+          fontSize:15,fontWeight:700,color,flexShrink:0
         }}>
           Adding {tierNum}s
         </div>
-        <div style={{display:"flex",gap:8,alignItems:"center"}}>
-          <button className="btn btn-ghost btn-sm" style={{fontSize:14}} onClick={()=>{ clearInterval(timerRef.current); onReviewLesson(); }}>📖 Review Lesson</button>
-          <button className="btn btn-ghost btn-sm" style={{fontSize:14}} onClick={onHome}>← Home</button>
+        <div style={{display:"flex",gap:8,alignItems:"center",flexShrink:0}}>
+          <button className="btn btn-ghost btn-sm"
+            style={{fontSize:14,whiteSpace:"nowrap"}}
+            onClick={()=>{ clearInterval(timerRef.current); onReviewLesson(); }}>
+            📖 Review Lesson
+          </button>
+          <button className="btn btn-ghost btn-sm"
+            style={{fontSize:14,whiteSpace:"nowrap"}}
+            onClick={onHome}>
+            ← Home
+          </button>
         </div>
       </div>
 
