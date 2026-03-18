@@ -100,7 +100,7 @@ function AdditionVisual() {
 }
 
 function LessonScreen({ onComplete, isReview }) {
-  const voiceText = "Welcome to Addition Tables! Let's start with what addition means. Addition is when you combine two groups of things to find out how many you have in total. For example, if you have 3 blue dots and you add 2 more dots, you now have 5 dots altogether. That is what 3 plus 2 equals 5 means. Now here is why this matters. Being able to add single digit numbers instantly — without counting on your fingers — is one of the most important skills in all of math. It is the foundation for multiplication, fractions, algebra, and everything else. Students who have these facts memorized think faster and make fewer mistakes. In this course you will master every single digit addition fact, from 1 plus 1 all the way to 9 plus 9. Let's get started!";
+  const voiceText = "Welcome to Addition Tables! Here is what you are about to do. You are going to memorize every single digit addition fact — from 1 plus 1 all the way to 9 plus 9. That is 81 facts total, and by the end of this course, you will know all of them instantly. Now, why is that worth your time? Think about a problem like this: find two numbers that add up to 14 and multiply to 48. To solve that quickly in your head, you need to know your addition facts cold — no counting, no hesitating. The same is true for long division, fractions, and mental math in everyday life. Every time you have to stop and count on your fingers, it slows you down and uses up brain power you need for the harder part of the problem. Students who have these facts memorized think faster, make fewer errors, and find advanced math much less stressful. So let's build that foundation right now. You will work one number at a time, starting with adding 1s. Each question gives you 15 seconds. Let's go!";
 
   useEffect(()=>{
     const t = setTimeout(()=>speak(voiceText), 600);
@@ -114,50 +114,77 @@ function LessonScreen({ onComplete, isReview }) {
           <div style={{fontSize:40}}>➕</div>
           <div>
             <h2 style={{fontSize:24,fontWeight:800,letterSpacing:"-0.3px",marginBottom:4}}>
-              What is Addition?
+              Addition Tables
             </h2>
             <p style={{color:"var(--text2)",fontSize:14}}>Read this before you start</p>
           </div>
         </div>
 
         <div style={{display:"flex",flexDirection:"column",gap:16}}>
+
+          {/* 1. What you're about to do */}
           <div style={{
             background:"var(--bg2)",borderRadius:"var(--radius)",padding:"18px 20px",
             borderLeft:"3px solid var(--blue)"
           }}>
-            <p style={{fontSize:16,lineHeight:1.75,color:"var(--text)",marginBottom:8}}>
-              <strong style={{color:"var(--blue)"}}>Addition</strong> means combining two groups to find their total. When you see{" "}
-              <strong style={{fontFamily:"var(--mono)",color:"var(--cyan)",fontSize:18}}>3 + 2 = 5</strong>,
-              it means 3 things and 2 more things make 5 things altogether.
+            <p style={{fontSize:15,fontWeight:700,color:"var(--blue)",marginBottom:8}}>
+              🎯 What you're about to do
+            </p>
+            <p style={{fontSize:16,lineHeight:1.75,color:"var(--text)"}}>
+              You are going to <strong>memorize every single-digit addition fact</strong> — from{" "}
+              <strong style={{fontFamily:"var(--mono)",color:"var(--cyan)"}}>1+1</strong> all the way to{" "}
+              <strong style={{fontFamily:"var(--mono)",color:"var(--cyan)"}}>9+9</strong>.
+              That is 81 facts total. By the end, you will know all of them <em>instantly</em>.
             </p>
           </div>
 
-          <AdditionVisual/>
-
+          {/* 2. Why it's worth their time */}
           <div style={{
             background:"var(--bg2)",borderRadius:"var(--radius)",padding:"18px 20px",
             borderLeft:"3px solid var(--amber)"
           }}>
-            <p style={{fontSize:15,lineHeight:1.75,color:"var(--text)",marginBottom:8}}>
-              <strong style={{color:"var(--amber)"}}>Why does speed matter?</strong>
+            <p style={{fontSize:15,fontWeight:700,color:"var(--amber)",marginBottom:8}}>
+              ⚡ Why this is worth your time
+            </p>
+            <p style={{fontSize:15,lineHeight:1.75,color:"var(--text2)",marginBottom:10}}>
+              Think about a problem like: <em>find two numbers that add up to 14 and multiply to 48.</em> To solve that quickly, you need addition facts memorized — no counting, no hesitating.
             </p>
             <p style={{fontSize:15,lineHeight:1.75,color:"var(--text2)"}}>
-              Being able to add single-digit numbers <em>instantly</em> — without counting on your fingers — frees your brain for harder problems. It is the foundation for multiplication, fractions, and algebra. Students who have these facts memorized learn faster and make fewer mistakes.
+              Every time you stop to count on your fingers, it slows you down and uses up brain power you need for the harder part of the problem. Students who have these facts memorized <strong style={{color:"var(--text)"}}>think faster, make fewer errors, and find algebra much less stressful.</strong>
             </p>
           </div>
 
+          {/* 3. What addition means */}
+          <div style={{
+            background:"var(--bg2)",borderRadius:"var(--radius)",padding:"18px 20px",
+            borderLeft:"3px solid var(--cyan)"
+          }}>
+            <p style={{fontSize:15,fontWeight:700,color:"var(--cyan)",marginBottom:8}}>
+              📖 What addition means
+            </p>
+            <p style={{fontSize:15,lineHeight:1.75,color:"var(--text)",marginBottom:12}}>
+              Addition means combining two groups to find their total. When you see{" "}
+              <strong style={{fontFamily:"var(--mono)",color:"var(--cyan)",fontSize:17}}>3 + 2 = 5</strong>,
+              it means 3 things and 2 more things make 5 things altogether.
+            </p>
+            <AdditionVisual/>
+          </div>
+
+          {/* 4. Goal */}
           <div style={{
             background:"rgba(16,185,129,0.08)",borderRadius:"var(--radius)",padding:"18px 20px",
             border:"1px solid rgba(16,185,129,0.2)"
           }}>
-            <p style={{fontSize:15,lineHeight:1.75,color:"var(--text)",marginBottom:6}}>
-              <strong style={{color:"var(--green)"}}>Your goal:</strong>
+            <p style={{fontSize:15,fontWeight:700,color:"var(--green)",marginBottom:8}}>
+              ✅ Your goal
             </p>
             <p style={{fontSize:15,lineHeight:1.75,color:"var(--text2)"}}>
-              Master every addition fact from <strong style={{color:"var(--text)"}}>1+1</strong> through <strong style={{color:"var(--text)"}}>9+9</strong> — one number at a time.
+              Work through all 9 tiers — one number at a time — until every fact feels automatic.
               You have <strong style={{color:"var(--amber)"}}>15 seconds</strong> per question.
+              Wrong answers stay in the rotation until you get them right.
             </p>
           </div>
+
         </div>
 
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginTop:24,flexWrap:"wrap",gap:12}}>
