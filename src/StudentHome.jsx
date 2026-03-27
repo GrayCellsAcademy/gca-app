@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { getClass, getProgress, leaveClass, joinClass } from "./firebase";
-import { getTopic, getPublishedTopics } from "./topics/registry";
-import TopicRouter from "./topics/TopicRouter";
+import { getTopic, getPublishedTopics } from "./registry";
+import TopicRouter from "./TopicRouter";
 
 // ─── Topic Roadmap Card ───────────────────────────────────────────
 function TopicRoadmapCard({ topic, progress, isUnlocked, position, onClick }) {

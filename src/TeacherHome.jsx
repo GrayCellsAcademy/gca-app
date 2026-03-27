@@ -3,8 +3,7 @@ import {
   getTeacherClasses, createClass, getStudentsForClass,
   assignTopicToClass, unassignTopicFromClass, reorderTopics, getProgress
 } from "./firebase";
-import { getPublishedTopics, getTopic } from "./topics/registry";
-import { TIER_COLORS } from "./topics/players/additionTables";
+import { getPublishedTopics, getTopic } from "./registry";
 
 // ─── Drag-to-reorder topic list ───────────────────────────────────
 function DraggableTopicList({ topics, onReorder, onRemove }) {
