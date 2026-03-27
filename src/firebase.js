@@ -131,14 +131,27 @@ export async function leaveClass(uid, classId) {
 }
 
 export async function assignTopicToClass(classId, topicId) {
+  // Add to end of ordered list if not already present
+  const cls = await getClass(classId);
+  const current = cls?.assignedTopics || [];
+  if (current.includes(topicId)) return;
   await updateDoc(doc(db, "classes", classId), {
-    assignedTopics: arrayUnion(topicId),
+    assignedTopics: [...current, topicId],
   });
 }
 
 export async function unassignTopicFromClass(classId, topicId) {
+  const cls = await getClass(classId);
+  const current = cls?.assignedTopics || [];
   await updateDoc(doc(db, "classes", classId), {
-    assignedTopics: arrayRemove(topicId),
+    assignedTopics: current.filter(id => id !== topicId),
+  });
+}
+
+// Save the full ordered topic list (used after drag-to-reorder)
+export async function reorderTopics(classId, orderedTopicIds) {
+  await updateDoc(doc(db, "classes", classId), {
+    assignedTopics: orderedTopicIds,
   });
 }
 

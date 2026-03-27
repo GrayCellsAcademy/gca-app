@@ -1,25 +1,14 @@
 import { useState, useEffect } from "react";
 import { getClass, getProgress, leaveClass, joinClass } from "./firebase";
-import { ADDITION_TOPIC_ID, TIER_COLORS } from "./additionTables";
-import AdditionTablesPlayer from "./AdditionTablesPlayer";
+import { getTopic, getPublishedTopics } from "./topics/registry";
+import TopicRouter from "./topics/TopicRouter";
 
-const TOPIC_REGISTRY = {
-  [ADDITION_TOPIC_ID]: {
-    id: ADDITION_TOPIC_ID,
-    title: "Addition Tables",
-    subject: "math",
-    description: "Master single-digit addition mentally and quickly.",
-    icon: "➕",
-    totalTiers: 9,
-  },
-};
-
-function TopicRoadmapCard({ topic, progress, isUnlocked, onClick }) {
-  const mastered = progress?.masteredTiers?.length || 0;
-  const total = topic.totalTiers;
-  const pct = Math.round((mastered / total) * 100);
-  const completed = progress?.completed;
-  const notStarted = mastered === 0 && !progress;
+// ─── Topic Roadmap Card ───────────────────────────────────────────
+function TopicRoadmapCard({ topic, progress, isUnlocked, position, onClick }) {
+  const completed = progress?.completed === true;
+  const started = progress?.started === true;
+  const pct = progress?.percentComplete || 0;
+  const notStarted = !started;
 
   let statusLabel, statusColor, statusBg;
   if (completed) {
@@ -29,8 +18,7 @@ function TopicRoadmapCard({ topic, progress, isUnlocked, onClick }) {
   } else if (notStarted) {
     statusLabel = "Not started"; statusColor = "var(--text2)"; statusBg = "rgba(255,255,255,0.08)";
   } else {
-    statusLabel = "Tier " + (mastered + 1) + " of " + total;
-    statusColor = "var(--blue)"; statusBg = "rgba(59,130,246,0.15)";
+    statusLabel = `${pct}% complete`; statusColor = "var(--blue)"; statusBg = "rgba(59,130,246,0.15)";
   }
 
   return (
@@ -38,7 +26,7 @@ function TopicRoadmapCard({ topic, progress, isUnlocked, onClick }) {
       onClick={isUnlocked ? onClick : undefined}
       style={{
         background: isUnlocked ? "var(--surface)" : "var(--bg2)",
-        border: "1px solid " + (completed ? "rgba(16,185,129,0.3)" : isUnlocked ? "var(--border2)" : "var(--border)"),
+        border: `1px solid ${completed ? "rgba(16,185,129,0.3)" : isUnlocked ? "var(--border2)" : "var(--border)"}`,
         borderRadius: "var(--radius-lg)",
         padding: "20px 24px",
         cursor: isUnlocked ? "pointer" : "default",
@@ -48,13 +36,25 @@ function TopicRoadmapCard({ topic, progress, isUnlocked, onClick }) {
         alignItems: "center",
         gap: 16,
       }}
+      onMouseEnter={e => isUnlocked && (e.currentTarget.style.borderColor = "var(--blue)")}
+      onMouseLeave={e => isUnlocked && (e.currentTarget.style.borderColor = completed ? "rgba(16,185,129,0.3)" : "var(--border2)")}
     >
+      {/* Position number */}
       <div style={{
-        width: 52, height: 52, borderRadius: 14, flexShrink: 0,
+        width: 32, height: 32, borderRadius: "50%", flexShrink: 0,
+        background: completed ? "var(--green)" : isUnlocked ? "var(--blue)" : "var(--surface2)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        fontSize: 14, fontWeight: 700, color: "#fff",
+      }}>{completed ? "✓" : position}</div>
+
+      {/* Icon */}
+      <div style={{
+        width: 48, height: 48, borderRadius: 12, flexShrink: 0,
         background: completed ? "rgba(16,185,129,0.2)" : isUnlocked ? "rgba(59,130,246,0.15)" : "rgba(255,255,255,0.05)",
-        display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24,
+        display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22,
       }}>{topic.icon}</div>
 
+      {/* Info */}
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6, flexWrap: "wrap" }}>
           <span style={{ fontSize: 16, fontWeight: 800 }}>{topic.title}</span>
@@ -62,17 +62,17 @@ function TopicRoadmapCard({ topic, progress, isUnlocked, onClick }) {
             {statusLabel}
           </span>
         </div>
-        <p style={{ color: "var(--text2)", fontSize: 13, marginBottom: isUnlocked ? 10 : 0 }}>
+        <p style={{ color: "var(--text2)", fontSize: 13, marginBottom: isUnlocked && started ? 10 : 0 }}>
           {topic.description}
         </p>
-        {isUnlocked && (
+        {isUnlocked && started && (
           <>
             <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "var(--text3)", marginBottom: 5 }}>
-              <span>{mastered}/{total} tiers</span><span>{pct}%</span>
+              <span>Progress</span><span>{pct}%</span>
             </div>
             <div className="progress-track" style={{ height: 5 }}>
               <div className="progress-fill" style={{
-                width: pct + "%",
+                width: `${pct}%`,
                 background: completed ? "var(--green)" : "linear-gradient(90deg,var(--blue),var(--cyan))"
               }} />
             </div>
@@ -82,7 +82,7 @@ function TopicRoadmapCard({ topic, progress, isUnlocked, onClick }) {
 
       {isUnlocked && (
         <div style={{ flexShrink: 0 }}>
-          <button className={"btn btn-sm " + (completed ? "btn-ghost" : "btn-primary")}>
+          <button className={`btn btn-sm ${completed ? "btn-ghost" : "btn-primary"}`}>
             {completed ? "Review" : notStarted ? "Start →" : "Continue →"}
           </button>
         </div>
@@ -91,6 +91,7 @@ function TopicRoadmapCard({ topic, progress, isUnlocked, onClick }) {
   );
 }
 
+// ─── Class View ───────────────────────────────────────────────────
 function ClassView({ cls, userId, onBack, onPlayTopic }) {
   const [progress, setProgress] = useState({});
   const [loading, setLoading] = useState(true);
@@ -108,8 +109,12 @@ function ClassView({ cls, userId, onBack, onPlayTopic }) {
     load();
   }, [cls, userId]);
 
-  const assignedTopics = (cls.assignedTopics || []).map(tid => TOPIC_REGISTRY[tid]).filter(Boolean);
+  // Topics in the teacher-defined order, filtered to known topics
+  const assignedTopics = (cls.assignedTopics || [])
+    .map(tid => getTopic(tid))
+    .filter(Boolean);
 
+  // Topic unlocks sequentially — must complete previous to unlock next
   const isTopicUnlocked = (idx) => {
     if (idx === 0) return true;
     const prevTopic = assignedTopics[idx - 1];
@@ -132,7 +137,7 @@ function ClassView({ cls, userId, onBack, onPlayTopic }) {
           <div style={{ fontSize: 40, marginBottom: 12 }}>📭</div>
           <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 8 }}>No topics assigned yet</h3>
           <p style={{ color: "var(--text2)", fontSize: 14 }}>
-            Your teacher has not assigned any topics to this class yet. Check back soon!
+            Your teacher hasn't assigned any topics to this class yet. Check back soon!
           </p>
         </div>
       ) : (
@@ -143,6 +148,7 @@ function ClassView({ cls, userId, onBack, onPlayTopic }) {
               topic={topic}
               progress={progress[topic.id]}
               isUnlocked={isTopicUnlocked(idx)}
+              position={idx + 1}
               onClick={() => onPlayTopic(topic.id)}
             />
           ))}
@@ -152,12 +158,13 @@ function ClassView({ cls, userId, onBack, onPlayTopic }) {
   );
 }
 
+// ─── Main Student Home ────────────────────────────────────────────
 export default function StudentHome({ user, onLogout }) {
   const [classes, setClasses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedClass, setSelectedClass] = useState(null);
-  const [playingTopic, setPlayingTopic] = useState(null);
-  const [screen, setScreen] = useState("home");
+  const [playingTopicId, setPlayingTopicId] = useState(null);
+  const [screen, setScreen] = useState("home"); // home | class | playing
   const [joinClassName, setJoinClassName] = useState("");
   const [joinPass, setJoinPass] = useState("");
   const [joinErr, setJoinErr] = useState("");
@@ -191,7 +198,8 @@ export default function StudentHome({ user, onLogout }) {
     await loadClasses();
   };
 
-  if (screen === "playing" && playingTopic) {
+  // ── Playing a topic ──────────────────────────────────────────
+  if (screen === "playing" && playingTopicId) {
     return (
       <div style={{ minHeight: "100vh", background: "var(--bg)", padding: "clamp(16px,3vw,32px)" }} className="dot-bg">
         <div style={{ maxWidth: 900, margin: "0 auto" }}>
@@ -200,11 +208,24 @@ export default function StudentHome({ user, onLogout }) {
               <div style={{ width: 36, height: 36, borderRadius: 10, background: "linear-gradient(135deg,var(--blue),var(--cyan))", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>🎓</div>
               <span style={{ fontWeight: 800, fontSize: 18 }}>GCA</span>
             </div>
-            <button className="btn btn-ghost btn-sm" onClick={() => { window.speechSynthesis?.cancel(); setScreen("class"); setPlayingTopic(null); loadClasses(); }}>
-              ← Back to Class
-            </button>
+            <button className="btn btn-ghost btn-sm" onClick={() => {
+              window.speechSynthesis?.cancel();
+              setScreen("class");
+              setPlayingTopicId(null);
+              loadClasses();
+            }}>← Back to Class</button>
           </div>
-          <AdditionTablesPlayer user={user} onHome={() => { window.speechSynthesis?.cancel(); setScreen("class"); setPlayingTopic(null); loadClasses(); }} />
+          {/* TopicRouter picks the right player automatically */}
+          <TopicRouter
+            topicId={playingTopicId}
+            user={user}
+            onHome={() => {
+              window.speechSynthesis?.cancel();
+              setScreen("class");
+              setPlayingTopicId(null);
+              loadClasses();
+            }}
+          />
         </div>
       </div>
     );
@@ -214,6 +235,7 @@ export default function StudentHome({ user, onLogout }) {
     <div style={{ minHeight: "100vh", background: "var(--bg)", padding: "clamp(16px,3vw,32px)" }} className="dot-bg">
       <div style={{ maxWidth: 900, margin: "0 auto" }}>
 
+        {/* Top bar */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 32, flexWrap: "wrap", gap: 12 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <div style={{ width: 40, height: 40, borderRadius: 12, background: "linear-gradient(135deg,var(--blue),var(--cyan))", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>🎓</div>
@@ -231,12 +253,13 @@ export default function StudentHome({ user, onLogout }) {
           </div>
         </div>
 
+        {/* Class view */}
         {screen === "class" && selectedClass ? (
           <ClassView
             cls={selectedClass}
             userId={user.id}
             onBack={() => { setScreen("home"); setSelectedClass(null); }}
-            onPlayTopic={(topicId) => { setPlayingTopic(topicId); setScreen("playing"); }}
+            onPlayTopic={(topicId) => { setPlayingTopicId(topicId); setScreen("playing"); }}
           />
         ) : (
           <>
@@ -256,6 +279,7 @@ export default function StudentHome({ user, onLogout }) {
             ) : (
               <div style={{ display: "grid", gridTemplateColumns: "1fr 300px", gap: 24, alignItems: "start" }}>
 
+                {/* Classes list */}
                 <div>
                   <h2 style={{ fontSize: 14, fontWeight: 700, color: "var(--text2)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 16 }}>
                     My Classes
@@ -272,6 +296,8 @@ export default function StudentHome({ user, onLogout }) {
                         <div key={cls.id}
                           onClick={() => { setSelectedClass(cls); setScreen("class"); }}
                           style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-lg)", padding: "18px 22px", cursor: "pointer", transition: "all 0.2s", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}
+                          onMouseEnter={e => e.currentTarget.style.borderColor = "var(--blue)"}
+                          onMouseLeave={e => e.currentTarget.style.borderColor = "var(--border)"}
                         >
                           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
                             <div style={{ width: 44, height: 44, borderRadius: 12, flexShrink: 0, background: "rgba(59,130,246,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}>🏫</div>
@@ -296,6 +322,7 @@ export default function StudentHome({ user, onLogout }) {
                   )}
                 </div>
 
+                {/* Sidebar — join class */}
                 <div className="card" style={{ padding: "18px 20px" }}>
                   <h3 style={{ fontSize: 14, fontWeight: 700, color: "var(--text2)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 14 }}>
                     Join a Class

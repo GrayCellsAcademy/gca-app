@@ -532,23 +532,27 @@ function CelebrationScreen({ tierNum, isLast, onContinue }) {
 }
 
 // ─── Main Player ──────────────────────────────────────────────────
-export default function AdditionTablesPlayer({ user, onHome }) {
-  const [screen, setScreen] = useState("loading"); // loading|lesson|tier-intro|questions|celebration|done
+// Now receives `topic` prop from TopicRouter (in addition to user and onHome)
+export default function AdditionTablesPlayer({ user, topic, onHome }) {
+  const [screen, setScreen] = useState("loading");
   const [currentTier, setCurrentTier] = useState(1);
   const [masteredTiers, setMasteredTiers] = useState([]);
   const [questions, setQuestions] = useState([]);
-  const [saving, setSaving] = useState(false);
 
-  // Load progress
+  const topicId = topic?.id || ADDITION_TOPIC_ID;
+  const TOTAL_TIERS = 9;
+
+  // Load progress using universal schema
   useEffect(()=>{
     const load = async () => {
-      const prog = await getProgress(user.id, ADDITION_TOPIC_ID);
+      const prog = await getProgress(user.id, topicId);
       if (prog) {
-        const mastered = prog.masteredTiers || [];
-        const tier = prog.currentTier || 1;
+        // Progress stored in prog.data (universal schema)
+        const data = prog.data || {};
+        const mastered = data.masteredTiers || [];
+        const tier = data.currentTier || 1;
         setMasteredTiers(mastered);
         setCurrentTier(tier);
-        // Skip lesson if already started
         setScreen(mastered.length === 0 && tier === 1 ? "lesson" : "tier-intro");
       } else {
         setScreen("lesson");
@@ -557,14 +561,20 @@ export default function AdditionTablesPlayer({ user, onHome }) {
     load();
   },[]);
 
+  // Save using universal schema — stores topic-specific data inside `data`
   const saveCurrentProgress = async (tier, mastered) => {
-    setSaving(true);
-    await saveProgress(user.id, ADDITION_TOPIC_ID, {
-      currentTier: tier,
-      masteredTiers: mastered,
-      completed: mastered.length === 9,
+    const completed = mastered.length === TOTAL_TIERS;
+    const percentComplete = Math.round((mastered.length / TOTAL_TIERS) * 100);
+    await saveProgress(user.id, topicId, {
+      started: true,
+      completed,
+      percentComplete,
+      data: {
+        currentTier: tier,
+        masteredTiers: mastered,
+      },
+      updatedAt: Date.now(),
     });
-    setSaving(false);
   };
 
   const startTier = (tier, mastered) => {
@@ -576,16 +586,13 @@ export default function AdditionTablesPlayer({ user, onHome }) {
   const handleTierComplete = async () => {
     const newMastered = [...masteredTiers, currentTier];
     setMasteredTiers(newMastered);
-    const isLast = currentTier === 9;
+    const isLast = currentTier === TOTAL_TIERS;
     await saveCurrentProgress(isLast ? currentTier : currentTier+1, newMastered);
     setScreen("celebration");
   };
 
   const handleCelebrationContinue = () => {
-    if (currentTier === 9) {
-      onHome();
-      return;
-    }
+    if (currentTier === TOTAL_TIERS) { onHome(); return; }
     const nextTier = currentTier + 1;
     setCurrentTier(nextTier);
     setScreen("tier-intro");
@@ -605,9 +612,7 @@ export default function AdditionTablesPlayer({ user, onHome }) {
   );
 
   if (screen === "lesson-review") return (
-    <LessonScreen isReview={true} onComplete={()=>{
-      setScreen("questions");
-    }}/>
+    <LessonScreen isReview={true} onComplete={()=>{ setScreen("questions"); }}/>
   );
 
   if (screen === "tier-intro") return (
@@ -631,7 +636,7 @@ export default function AdditionTablesPlayer({ user, onHome }) {
   if (screen === "celebration") return (
     <CelebrationScreen
       tierNum={currentTier}
-      isLast={currentTier === 9}
+      isLast={currentTier === TOTAL_TIERS}
       onContinue={handleCelebrationContinue}
     />
   );
