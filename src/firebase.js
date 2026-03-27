@@ -36,7 +36,7 @@ export const auth = getAuth(app);
 export const db = getFirestore(app);
 
 // ─── Auth ────────────────────────────────────────────────────────
-export const DEV_CODE = "GCA_DEV_2025"; // Secret developer signup code
+export const DEV_CODE = "GCA_DEV_2025";
 
 export async function registerUser(email, password, name, role) {
   const cred = await createUserWithEmailAndPassword(auth, email, password);
@@ -54,13 +54,9 @@ export async function loginUser(email, password) {
   return cred.user;
 }
 
-export async function logoutUser() {
-  await signOut(auth);
-}
+export async function logoutUser() { await signOut(auth); }
 
-export function onAuthChange(cb) {
-  return onAuthStateChanged(auth, cb);
-}
+export function onAuthChange(cb) { return onAuthStateChanged(auth, cb); }
 
 // ─── Users ───────────────────────────────────────────────────────
 export async function getUser(uid) {
@@ -82,12 +78,18 @@ export async function deleteUser(uid) {
 }
 
 // ─── Classes ─────────────────────────────────────────────────────
+// assignedTopics is an array of assignment objects:
+// { topicId, categoryId, dueDate (ISO string or null), addedAt }
+// categories is an array of category objects:
+// { id, name, weight (0-100) }
+
 export async function createClass(name, password, teacherId) {
   const classId = "cls_" + Date.now().toString(36);
   await setDoc(doc(db, "classes", classId), {
     id: classId, name, password, teacherId,
     studentIds: [],
-    assignedTopics: [],
+    assignedTopics: [],  // array of assignment objects
+    categories: [],      // array of category objects
     createdAt: Date.now(),
   });
   await updateDoc(doc(db, "users", teacherId), {
@@ -130,29 +132,54 @@ export async function leaveClass(uid, classId) {
   await updateDoc(doc(db, "users", uid), { classIds: arrayRemove(classId) });
 }
 
-export async function assignTopicToClass(classId, topicId) {
-  // Add to end of ordered list if not already present
+// ─── Categories ──────────────────────────────────────────────────
+export async function saveCategories(classId, categories) {
+  await updateDoc(doc(db, "classes", classId), { categories });
+}
+
+// ─── Assignments (topics assigned to a class) ─────────────────────
+// Normalize: handle both old string format and new object format
+export function normalizeAssignments(assignedTopics) {
+  return (assignedTopics || []).map(a =>
+    typeof a === "string"
+      ? { topicId: a, categoryId: null, dueDate: null, addedAt: 0 }
+      : a
+  );
+}
+
+export async function assignTopicToClass(classId, topicId, categoryId = null, dueDate = null) {
   const cls = await getClass(classId);
-  const current = cls?.assignedTopics || [];
-  if (current.includes(topicId)) return;
+  const current = normalizeAssignments(cls?.assignedTopics);
+  if (current.find(a => a.topicId === topicId)) return;
+  const assignment = { topicId, categoryId, dueDate, addedAt: Date.now() };
   await updateDoc(doc(db, "classes", classId), {
-    assignedTopics: [...current, topicId],
+    assignedTopics: [...current, assignment],
   });
 }
 
 export async function unassignTopicFromClass(classId, topicId) {
   const cls = await getClass(classId);
-  const current = cls?.assignedTopics || [];
+  const current = normalizeAssignments(cls?.assignedTopics);
   await updateDoc(doc(db, "classes", classId), {
-    assignedTopics: current.filter(id => id !== topicId),
+    assignedTopics: current.filter(a => a.topicId !== topicId),
   });
 }
 
-// Save the full ordered topic list (used after drag-to-reorder)
+export async function updateAssignment(classId, topicId, updates) {
+  const cls = await getClass(classId);
+  const current = normalizeAssignments(cls?.assignedTopics);
+  const updated = current.map(a =>
+    a.topicId === topicId ? { ...a, ...updates } : a
+  );
+  await updateDoc(doc(db, "classes", classId), { assignedTopics: updated });
+}
+
 export async function reorderTopics(classId, orderedTopicIds) {
-  await updateDoc(doc(db, "classes", classId), {
-    assignedTopics: orderedTopicIds,
-  });
+  const cls = await getClass(classId);
+  const current = normalizeAssignments(cls?.assignedTopics);
+  const map = Object.fromEntries(current.map(a => [a.topicId, a]));
+  const reordered = orderedTopicIds.map(id => map[id]).filter(Boolean);
+  await updateDoc(doc(db, "classes", classId), { assignedTopics: reordered });
 }
 
 export async function getStudentsForClass(classId) {
@@ -160,27 +187,6 @@ export async function getStudentsForClass(classId) {
   if (!cls || !cls.studentIds?.length) return [];
   const students = await Promise.all(cls.studentIds.map(id => getUser(id)));
   return students.filter(Boolean);
-}
-
-// ─── Topics ──────────────────────────────────────────────────────
-export async function getPublishedTopics() {
-  const q = query(collection(db, "topics"), where("status", "==", "published"));
-  const snap = await getDocs(q);
-  return snap.docs.map(d => d.data());
-}
-
-export async function getAllTopics() {
-  const snap = await getDocs(collection(db, "topics"));
-  return snap.docs.map(d => d.data());
-}
-
-export async function getTopic(topicId) {
-  const snap = await getDoc(doc(db, "topics", topicId));
-  return snap.exists() ? snap.data() : null;
-}
-
-export async function saveTopic(topic) {
-  await setDoc(doc(db, "topics", topic.id), topic);
 }
 
 // ─── Progress ────────────────────────────────────────────────────
@@ -197,9 +203,63 @@ export async function saveProgress(uid, topicId, data) {
   }, { merge: true });
 }
 
-export async function getAllProgressForClass(studentIds, topicId) {
-  const results = await Promise.all(
-    studentIds.map(uid => getProgress(uid, topicId))
-  );
-  return results.filter(Boolean);
+// Load all progress for a list of students across all assigned topics
+export async function getClassProgress(studentIds, topicIds) {
+  const results = {};
+  for (const uid of studentIds) {
+    results[uid] = {};
+    for (const topicId of topicIds) {
+      const p = await getProgress(uid, topicId);
+      results[uid][topicId] = p;
+    }
+  }
+  return results;
+}
+
+// ─── Grade calculation ────────────────────────────────────────────
+// Returns weighted grade (0-100) for a student given assignments and progress
+export function calculateGrade(assignments, categories, progressMap) {
+  if (!categories.length) return null;
+
+  // Group assignments by category
+  const byCategory = {};
+  for (const cat of categories) {
+    byCategory[cat.id] = { category: cat, assignments: [] };
+  }
+
+  for (const a of assignments) {
+    const catId = a.categoryId;
+    if (catId && byCategory[catId]) {
+      const prog = progressMap[a.topicId];
+      const score = prog?.percentComplete ?? 0; // missing = 0
+      byCategory[catId].assignments.push(score);
+    }
+  }
+
+  // Weighted average across categories
+  let totalWeight = 0;
+  let weightedSum = 0;
+
+  for (const cat of categories) {
+    const group = byCategory[cat.id];
+    if (!group || group.assignments.length === 0) {
+      // Category has no assignments — skip from weight calculation
+      continue;
+    }
+    const catAvg = group.assignments.reduce((s, v) => s + v, 0) / group.assignments.length;
+    weightedSum += catAvg * cat.weight;
+    totalWeight += cat.weight;
+  }
+
+  if (totalWeight === 0) return null;
+  return Math.round(weightedSum / totalWeight);
+}
+
+export function gradeToLetter(grade) {
+  if (grade === null) return "—";
+  if (grade >= 90) return "A";
+  if (grade >= 80) return "B";
+  if (grade >= 70) return "C";
+  if (grade >= 60) return "D";
+  return "F";
 }

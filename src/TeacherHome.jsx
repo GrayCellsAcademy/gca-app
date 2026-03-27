@@ -1,142 +1,228 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import {
   getTeacherClasses, createClass, getStudentsForClass,
-  assignTopicToClass, unassignTopicFromClass, reorderTopics, getProgress
+  assignTopicToClass, unassignTopicFromClass, reorderTopics,
+  updateAssignment, saveCategories, getClassProgress,
+  normalizeAssignments, calculateGrade, gradeToLetter,
 } from "./firebase";
 import { getPublishedTopics, getTopic } from "./registry";
 
-// ─── Drag-to-reorder topic list ───────────────────────────────────
-function DraggableTopicList({ topics, onReorder, onRemove }) {
-  const [dragging, setDragging] = useState(null);
-  const [dragOver, setDragOver] = useState(null);
+// ─── Helpers ──────────────────────────────────────────────────────
+function uid4() { return Math.random().toString(36).slice(2, 6); }
 
-  const handleDragStart = (idx) => setDragging(idx);
-  const handleDragOver = (e, idx) => { e.preventDefault(); setDragOver(idx); };
-  const handleDrop = (idx) => {
-    if (dragging === null || dragging === idx) { setDragging(null); setDragOver(null); return; }
-    const reordered = [...topics];
-    const [moved] = reordered.splice(dragging, 1);
-    reordered.splice(idx, 0, moved);
-    onReorder(reordered.map(t => t.id));
-    setDragging(null); setDragOver(null);
+function weightTotal(categories) {
+  return categories.reduce((s, c) => s + (Number(c.weight) || 0), 0);
+}
+
+// ─── Category Manager ─────────────────────────────────────────────
+function CategoryManager({ categories, onChange }) {
+  const [cats, setCats] = useState(categories);
+  const [newName, setNewName] = useState("");
+  const [newWeight, setNewWeight] = useState("");
+
+  const sync = (updated) => { setCats(updated); onChange(updated); };
+
+  const addCat = () => {
+    if (!newName.trim() || !newWeight) return;
+    sync([...cats, { id: uid4(), name: newName.trim(), weight: Number(newWeight) }]);
+    setNewName(""); setNewWeight("");
   };
-  const handleDragEnd = () => { setDragging(null); setDragOver(null); };
 
-  if (topics.length === 0) return (
-    <div style={{ textAlign: "center", padding: "20px 0", color: "var(--text3)", fontSize: 13 }}>
-      No topics assigned. Use the buttons below to add topics.
-    </div>
-  );
+  const removeCat = (id) => sync(cats.filter(c => c.id !== id));
+
+  const updateWeight = (id, w) =>
+    sync(cats.map(c => c.id === id ? { ...c, weight: Number(w) || 0 } : c));
+
+  const total = weightTotal(cats);
+  const totalOk = total === 100;
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 14 }}>
-      {topics.map((topic, idx) => (
-        <div key={topic.id}
-          draggable
-          onDragStart={() => handleDragStart(idx)}
-          onDragOver={e => handleDragOver(e, idx)}
-          onDrop={() => handleDrop(idx)}
-          onDragEnd={handleDragEnd}
-          style={{
-            display: "flex", alignItems: "center", gap: 12,
-            background: dragOver === idx ? "var(--surface2)" : "var(--bg2)",
-            border: `1px solid ${dragOver === idx ? "var(--blue)" : "var(--border)"}`,
-            borderRadius: "var(--radius)", padding: "10px 14px",
-            cursor: "grab", transition: "all 0.15s",
-            opacity: dragging === idx ? 0.4 : 1,
-          }}>
-          {/* Drag handle */}
-          <div style={{ color: "var(--text3)", fontSize: 16, cursor: "grab", userSelect: "none" }}>⠿</div>
-          {/* Position */}
-          <div style={{ width: 24, height: 24, borderRadius: "50%", background: "var(--blue)", color: "#fff", fontSize: 12, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{idx + 1}</div>
-          {/* Icon + title */}
-          <span style={{ fontSize: 18 }}>{topic.icon}</span>
-          <div style={{ flex: 1 }}>
-            <div style={{ fontWeight: 700, fontSize: 14 }}>{topic.title}</div>
-            <div style={{ fontSize: 11, color: "var(--text3)" }}>{topic.subject} · {topic.type}</div>
-          </div>
-          {/* Remove */}
-          <button
-            onClick={() => onRemove(topic.id)}
-            style={{ background: "rgba(239,68,68,0.1)", color: "var(--red)", border: "1px solid rgba(239,68,68,0.3)", borderRadius: "var(--radius-sm)", padding: "4px 10px", fontSize: 12, cursor: "pointer", fontFamily: "var(--font)", fontWeight: 600 }}>
-            Remove
-          </button>
+    <div>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+        <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text2)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+          Grade Categories
         </div>
-      ))}
+        <div style={{ fontSize: 13, fontWeight: 700, color: totalOk ? "var(--green)" : "var(--red)" }}>
+          Total: {total}% {totalOk ? "✓" : "(must equal 100%)"}
+        </div>
+      </div>
+
+      {cats.length === 0 && (
+        <p style={{ fontSize: 13, color: "var(--text3)", marginBottom: 12 }}>
+          No categories yet. Add one below to enable the gradebook.
+        </p>
+      )}
+
+      <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 14 }}>
+        {cats.map(cat => (
+          <div key={cat.id} style={{ display: "flex", alignItems: "center", gap: 10, background: "var(--bg2)", borderRadius: "var(--radius-sm)", padding: "8px 12px" }}>
+            <div style={{ flex: 1, fontWeight: 600, fontSize: 14 }}>{cat.name}</div>
+            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <input
+                type="number" min={0} max={100} value={cat.weight}
+                onChange={e => updateWeight(cat.id, e.target.value)}
+                style={{ width: 64, padding: "5px 8px", fontSize: 13, textAlign: "center" }}
+              />
+              <span style={{ fontSize: 13, color: "var(--text3)" }}>%</span>
+            </div>
+            <button onClick={() => removeCat(cat.id)}
+              style={{ background: "none", border: "none", color: "var(--red)", cursor: "pointer", fontSize: 16, padding: "0 4px" }}>×</button>
+          </div>
+        ))}
+      </div>
+
+      {/* Add category */}
+      <div style={{ display: "flex", gap: 8 }}>
+        <input value={newName} onChange={e => setNewName(e.target.value)}
+          placeholder="Category name (e.g. Drills)"
+          style={{ flex: 1, fontSize: 13, padding: "8px 12px" }} />
+        <input value={newWeight} onChange={e => setNewWeight(e.target.value)}
+          type="number" min={0} max={100} placeholder="Weight %"
+          style={{ width: 90, fontSize: 13, padding: "8px 12px", textAlign: "center" }} />
+        <button className="btn btn-primary btn-sm" onClick={addCat}>+ Add</button>
+      </div>
     </div>
   );
 }
 
-// ─── Student progress table ───────────────────────────────────────
-function StudentProgressTable({ students, assignedTopics }) {
-  const [progressData, setProgressData] = useState({});
+// ─── Assignment Row (in topic list) ──────────────────────────────
+function AssignmentRow({ assignment, categories, onUpdate, onRemove }) {
+  const topic = getTopic(assignment.topicId);
+  if (!topic) return null;
+
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 10, background: "var(--bg2)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "10px 14px" }}>
+      <div style={{ color: "var(--text3)", fontSize: 16, userSelect: "none" }}>⠿</div>
+      <span style={{ fontSize: 18 }}>{topic.icon}</span>
+      <div style={{ flex: 1 }}>
+        <div style={{ fontWeight: 700, fontSize: 14 }}>{topic.title}</div>
+      </div>
+
+      {/* Category selector */}
+      <select
+        value={assignment.categoryId || ""}
+        onChange={e => onUpdate({ categoryId: e.target.value || null })}
+        style={{ fontSize: 13, padding: "5px 8px", width: 140 }}>
+        <option value="">No category</option>
+        {categories.map(c => (
+          <option key={c.id} value={c.id}>{c.name} ({c.weight}%)</option>
+        ))}
+      </select>
+
+      {/* Due date */}
+      <input
+        type="date"
+        value={assignment.dueDate || ""}
+        onChange={e => onUpdate({ dueDate: e.target.value || null })}
+        style={{ fontSize: 13, padding: "5px 8px", width: 140 }}
+      />
+
+      <button onClick={onRemove}
+        style={{ background: "rgba(239,68,68,0.1)", color: "var(--red)", border: "1px solid rgba(239,68,68,0.3)", borderRadius: "var(--radius-sm)", padding: "4px 10px", fontSize: 12, cursor: "pointer", fontFamily: "var(--font)", fontWeight: 600, whiteSpace: "nowrap" }}>
+        Remove
+      </button>
+    </div>
+  );
+}
+
+// ─── Gradebook ────────────────────────────────────────────────────
+function Gradebook({ students, assignments, categories }) {
+  const [progress, setProgress] = useState({});
   const [loading, setLoading] = useState(true);
+
+  const topicIds = assignments.map(a => a.topicId);
 
   useEffect(() => {
     const load = async () => {
-      const data = {};
-      for (const s of students) {
-        data[s.id] = {};
-        for (const tid of assignedTopics) {
-          const p = await getProgress(s.id, tid);
-          data[s.id][tid] = p;
-        }
-      }
-      setProgressData(data);
+      const data = await getClassProgress(students.map(s => s.id), topicIds);
+      setProgress(data);
       setLoading(false);
     };
-    if (students.length > 0) load();
+    if (students.length && topicIds.length) load();
     else setLoading(false);
-  }, [students, assignedTopics]);
+  }, [students, assignments]);
 
   if (loading) return <div style={{ display: "flex", justifyContent: "center", padding: 20 }}><div className="spinner" /></div>;
-  if (students.length === 0) return (
-    <div style={{ textAlign: "center", padding: "20px 0", color: "var(--text3)", fontSize: 13 }}>
-      No students yet. Share the class name & password so they can join.
-    </div>
+
+  if (!students.length) return (
+    <p style={{ color: "var(--text3)", fontSize: 13 }}>No students enrolled yet.</p>
   );
 
-  const topics = assignedTopics.map(id => getTopic(id)).filter(Boolean);
+  if (!assignments.length) return (
+    <p style={{ color: "var(--text3)", fontSize: 13 }}>No assignments yet. Add topics above.</p>
+  );
+
+  const today = new Date().toISOString().split("T")[0];
 
   return (
     <div style={{ overflowX: "auto" }}>
-      <table className="data-table" style={{ minWidth: 500 }}>
+      <table className="data-table" style={{ minWidth: 600 }}>
         <thead>
           <tr>
-            <th>Student</th>
-            {topics.map(t => (
-              <th key={t.id} style={{ textAlign: "center" }}>{t.icon} {t.title}</th>
-            ))}
+            <th style={{ minWidth: 130 }}>Student</th>
+            {assignments.map(a => {
+              const topic = getTopic(a.topicId);
+              const cat = categories.find(c => c.id === a.categoryId);
+              const overdue = a.dueDate && a.dueDate < today;
+              return (
+                <th key={a.topicId} style={{ textAlign: "center", minWidth: 110 }}>
+                  <div>{topic?.icon} {topic?.title}</div>
+                  {cat && <div style={{ fontSize: 10, color: "var(--text3)", fontWeight: 400 }}>{cat.name}</div>}
+                  {a.dueDate && (
+                    <div style={{ fontSize: 10, color: overdue ? "var(--red)" : "var(--text3)", fontWeight: 400 }}>
+                      Due {a.dueDate}
+                    </div>
+                  )}
+                </th>
+              );
+            })}
+            <th style={{ textAlign: "center", minWidth: 80 }}>Grade</th>
+            <th style={{ textAlign: "center", minWidth: 50 }}>Letter</th>
           </tr>
         </thead>
         <tbody>
-          {students.map(s => (
-            <tr key={s.id}>
-              <td style={{ fontWeight: 600 }}>{s.name}</td>
-              {topics.map(t => {
-                const p = progressData[s.id]?.[t.id];
-                const pct = p?.percentComplete || 0;
-                const completed = p?.completed;
-                const started = p?.started;
-                return (
-                  <td key={t.id} style={{ textAlign: "center" }}>
-                    {!started ? (
-                      <span style={{ color: "var(--text3)", fontSize: 12 }}>—</span>
-                    ) : completed ? (
-                      <span style={{ color: "var(--green)", fontWeight: 700 }}>✓ Done</span>
-                    ) : (
-                      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
-                        <span style={{ fontSize: 12, color: "var(--text2)" }}>{pct}%</span>
-                        <div style={{ width: 60, height: 5, background: "var(--surface2)", borderRadius: 99, overflow: "hidden" }}>
-                          <div style={{ height: "100%", width: `${pct}%`, background: "var(--blue)", borderRadius: 99 }} />
+          {students.map(s => {
+            const studentProg = progress[s.id] || {};
+            const grade = calculateGrade(assignments, categories, studentProg);
+            const letter = gradeToLetter(grade);
+            const letterColor = letter === "A" ? "var(--green)" : letter === "B" ? "var(--cyan)" : letter === "C" ? "var(--amber)" : letter === "F" ? "var(--red)" : "var(--text2)";
+
+            return (
+              <tr key={s.id}>
+                <td style={{ fontWeight: 600 }}>{s.name}</td>
+                {assignments.map(a => {
+                  const p = studentProg[a.topicId];
+                  const pct = p?.percentComplete ?? null;
+                  const completed = p?.completed;
+                  const overdue = a.dueDate && a.dueDate < today && !completed;
+                  return (
+                    <td key={a.topicId} style={{ textAlign: "center" }}>
+                      {pct === null ? (
+                        <span style={{ color: overdue ? "var(--red)" : "var(--text3)", fontSize: 12 }}>
+                          {overdue ? "Overdue" : "—"}
+                        </span>
+                      ) : (
+                        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
+                          <span style={{ fontSize: 13, fontWeight: 700, color: completed ? "var(--green)" : "var(--text)" }}>
+                            {pct}%
+                          </span>
+                          <div style={{ width: 60, height: 4, background: "var(--surface2)", borderRadius: 99, overflow: "hidden" }}>
+                            <div style={{ height: "100%", width: `${pct}%`, background: completed ? "var(--green)" : "var(--blue)", borderRadius: 99 }} />
+                          </div>
                         </div>
-                      </div>
-                    )}
-                  </td>
-                );
-              })}
-            </tr>
-          ))}
+                      )}
+                    </td>
+                  );
+                })}
+                <td style={{ textAlign: "center", fontWeight: 700, fontSize: 15 }}>
+                  {grade !== null ? `${grade}%` : "—"}
+                </td>
+                <td style={{ textAlign: "center", fontWeight: 800, fontSize: 16, color: letterColor }}>
+                  {letter}
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>
@@ -146,10 +232,18 @@ function StudentProgressTable({ students, assignedTopics }) {
 // ─── Class Panel ──────────────────────────────────────────────────
 function ClassPanel({ cls, onUpdate }) {
   const [expanded, setExpanded] = useState(false);
+  const [tab, setTab] = useState("assignments"); // assignments | gradebook
   const [students, setStudents] = useState([]);
   const [studentsLoaded, setStudentsLoaded] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [categories, setCategories] = useState(cls.categories || []);
+  const [catDirty, setCatDirty] = useState(false);
+  const [saving, setSaving] = useState(false);
+
   const publishedTopics = getPublishedTopics();
+  const assignments = normalizeAssignments(cls.assignedTopics);
+  const assignedIds = assignments.map(a => a.topicId);
+  const unassignedTopics = publishedTopics.filter(t => !assignedIds.includes(t.id));
 
   const loadStudents = async () => {
     if (studentsLoaded) return;
@@ -165,15 +259,21 @@ function ClassPanel({ cls, onUpdate }) {
     setExpanded(e => !e);
   };
 
-  const assignedTopics = (cls.assignedTopics || [])
-    .map(id => getTopic(id)).filter(Boolean);
+  const handleCatChange = (updated) => {
+    setCategories(updated);
+    setCatDirty(true);
+  };
 
-  const unassignedTopics = publishedTopics.filter(
-    t => !(cls.assignedTopics || []).includes(t.id)
-  );
+  const saveCategoriesToDB = async () => {
+    setSaving(true);
+    await saveCategories(cls.id, categories);
+    setCatDirty(false);
+    setSaving(false);
+    onUpdate();
+  };
 
-  const handleReorder = async (orderedIds) => {
-    await reorderTopics(cls.id, orderedIds);
+  const handleAdd = async (topicId) => {
+    await assignTopicToClass(cls.id, topicId);
     onUpdate();
   };
 
@@ -182,8 +282,13 @@ function ClassPanel({ cls, onUpdate }) {
     onUpdate();
   };
 
-  const handleAdd = async (topicId) => {
-    await assignTopicToClass(cls.id, topicId);
+  const handleUpdate = async (topicId, updates) => {
+    await updateAssignment(cls.id, topicId, updates);
+    onUpdate();
+  };
+
+  const handleReorder = async (orderedIds) => {
+    await reorderTopics(cls.id, orderedIds);
     onUpdate();
   };
 
@@ -196,7 +301,8 @@ function ClassPanel({ cls, onUpdate }) {
           <div style={{ color: "var(--text2)", fontSize: 13 }}>
             Password: <strong style={{ color: "var(--text)" }}>{cls.password}</strong>
             {" · "}{cls.studentIds?.length || 0} student{cls.studentIds?.length !== 1 ? "s" : ""}
-            {" · "}{assignedTopics.length} topic{assignedTopics.length !== 1 ? "s" : ""}
+            {" · "}{assignments.length} assignment{assignments.length !== 1 ? "s" : ""}
+            {" · "}{categories.length} categor{categories.length !== 1 ? "ies" : "y"}
           </div>
         </div>
         <div style={{ width: 28, height: 28, borderRadius: "50%", background: "var(--bg2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, color: "var(--text2)", transition: "transform 0.2s", transform: expanded ? "rotate(180deg)" : "none" }}>▼</div>
@@ -205,51 +311,75 @@ function ClassPanel({ cls, onUpdate }) {
       {expanded && (
         <div style={{ marginTop: 20 }} onClick={e => e.stopPropagation()}>
 
-          {/* Topic assignment section */}
-          <div style={{ marginBottom: 20 }}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text2)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 12 }}>
-              Assigned Topics
-            </div>
-            <p style={{ fontSize: 12, color: "var(--text3)", marginBottom: 12 }}>
-              Drag to reorder. Students work through topics in this order, unlocking each after completing the previous.
-            </p>
+          {/* Tab bar */}
+          <div style={{ display: "flex", gap: 4, background: "var(--bg2)", borderRadius: "var(--radius)", padding: 4, marginBottom: 20, width: "fit-content" }}>
+            {[["assignments", "📋 Assignments"], ["gradebook", "📊 Gradebook"]].map(([id, label]) => (
+              <button key={id} onClick={() => { setTab(id); if (id === "gradebook") loadStudents(); }}
+                style={{ padding: "8px 18px", borderRadius: "var(--radius-sm)", border: "none", background: tab === id ? "var(--blue)" : "transparent", color: tab === id ? "#fff" : "var(--text2)", fontFamily: "var(--font)", fontWeight: 600, fontSize: 13, cursor: "pointer", transition: "all 0.15s" }}>
+                {label}
+              </button>
+            ))}
+          </div>
 
-            <DraggableTopicList
-              topics={assignedTopics}
-              onReorder={handleReorder}
-              onRemove={handleRemove}
-            />
-
-            {/* Add topic buttons */}
-            {unassignedTopics.length > 0 && (
-              <div>
-                <div style={{ fontSize: 12, color: "var(--text3)", marginBottom: 8 }}>Add a topic:</div>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                  {unassignedTopics.map(t => (
-                    <button key={t.id} onClick={() => handleAdd(t.id)}
-                      className="btn btn-ghost btn-sm">
-                      + {t.icon} {t.title}
+          {tab === "assignments" && (
+            <>
+              {/* Categories */}
+              <div style={{ background: "var(--bg2)", borderRadius: "var(--radius)", padding: "16px 18px", marginBottom: 20 }}>
+                <CategoryManager categories={categories} onChange={handleCatChange} />
+                {catDirty && (
+                  <div style={{ marginTop: 12 }}>
+                    <button className="btn btn-primary btn-sm" onClick={saveCategoriesToDB} disabled={saving}>
+                      {saving ? "Saving…" : "Save Categories"}
                     </button>
-                  ))}
-                </div>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
 
-          {/* Divider */}
-          <div className="divider" />
+              {/* Assigned topics */}
+              <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text2)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 8 }}>
+                Assignments
+              </div>
+              <p style={{ fontSize: 12, color: "var(--text3)", marginBottom: 12 }}>
+                Set a category and due date for each assignment. Students work through them in this order.
+              </p>
 
-          {/* Student progress */}
-          <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text2)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 12 }}>
-            Student Progress
-          </div>
-          {loading ? (
-            <div style={{ display: "flex", justifyContent: "center", padding: 20 }}><div className="spinner" /></div>
-          ) : (
-            <StudentProgressTable
-              students={students}
-              assignedTopics={cls.assignedTopics || []}
-            />
+              <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 14 }}>
+                {assignments.map(a => (
+                  <AssignmentRow
+                    key={a.topicId}
+                    assignment={a}
+                    categories={categories}
+                    onUpdate={updates => handleUpdate(a.topicId, updates)}
+                    onRemove={() => handleRemove(a.topicId)}
+                  />
+                ))}
+              </div>
+
+              {unassignedTopics.length > 0 && (
+                <div>
+                  <div style={{ fontSize: 12, color: "var(--text3)", marginBottom: 8 }}>Add an assignment:</div>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                    {unassignedTopics.map(t => (
+                      <button key={t.id} onClick={() => handleAdd(t.id)} className="btn btn-ghost btn-sm">
+                        + {t.icon} {t.title}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+
+          {tab === "gradebook" && (
+            loading ? (
+              <div style={{ display: "flex", justifyContent: "center", padding: 20 }}><div className="spinner" /></div>
+            ) : (
+              <Gradebook
+                students={students}
+                assignments={assignments}
+                categories={categories}
+              />
+            )
           )}
         </div>
       )}
@@ -304,13 +434,11 @@ export default function TeacherHome({ user, onLogout }) {
           </div>
         </div>
 
-        {/* Header */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24, flexWrap: "wrap", gap: 12 }}>
           <h1 style={{ fontSize: "clamp(22px,4vw,32px)", fontWeight: 900, letterSpacing: "-0.5px" }}>My Classes</h1>
           <button className="btn btn-primary" onClick={() => setShowCreate(s => !s)}>+ New Class</button>
         </div>
 
-        {/* Create class form */}
         {showCreate && (
           <div className="card" style={{ marginBottom: 20, animation: "slideDown 0.25s ease" }}>
             <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 16 }}>Create a New Class</h3>
@@ -332,15 +460,11 @@ export default function TeacherHome({ user, onLogout }) {
           <div className="card" style={{ textAlign: "center", padding: "50px 20px" }}>
             <div style={{ fontSize: 48, marginBottom: 12 }}>🏫</div>
             <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 8 }}>No classes yet</h3>
-            <p style={{ color: "var(--text2)", fontSize: 14, marginBottom: 20 }}>
-              Create your first class and share the name and password with your students.
-            </p>
+            <p style={{ color: "var(--text2)", fontSize: 14, marginBottom: 20 }}>Create your first class to get started.</p>
             <button className="btn btn-primary btn-lg" onClick={() => setShowCreate(true)}>+ Create Your First Class</button>
           </div>
         ) : (
-          classes.map(cls => (
-            <ClassPanel key={cls.id} cls={cls} onUpdate={loadClasses} />
-          ))
+          classes.map(cls => <ClassPanel key={cls.id} cls={cls} onUpdate={loadClasses} />)
         )}
       </div>
     </div>

@@ -1,14 +1,16 @@
 import { useState, useEffect } from "react";
-import { getClass, getProgress, leaveClass, joinClass } from "./firebase";
+import { getClass, getProgress, leaveClass, joinClass, normalizeAssignments, calculateGrade, gradeToLetter } from "./firebase";
 import { getTopic, getPublishedTopics } from "./registry";
 import TopicRouter from "./TopicRouter";
 
 // ─── Topic Roadmap Card ───────────────────────────────────────────
-function TopicRoadmapCard({ topic, progress, isUnlocked, position, onClick }) {
+function TopicRoadmapCard({ topic, progress, assignment, isUnlocked, position, onClick }) {
   const completed = progress?.completed === true;
   const started = progress?.started === true;
   const pct = progress?.percentComplete || 0;
   const notStarted = !started;
+  const today = new Date().toISOString().split("T")[0];
+  const overdue = assignment?.dueDate && assignment.dueDate < today && !completed;
 
   let statusLabel, statusColor, statusBg;
   if (completed) {
@@ -16,7 +18,9 @@ function TopicRoadmapCard({ topic, progress, isUnlocked, position, onClick }) {
   } else if (!isUnlocked) {
     statusLabel = "🔒 Locked"; statusColor = "var(--text3)"; statusBg = "rgba(255,255,255,0.05)";
   } else if (notStarted) {
-    statusLabel = "Not started"; statusColor = "var(--text2)"; statusBg = "rgba(255,255,255,0.08)";
+    statusLabel = overdue ? "⚠️ Overdue" : "Not started";
+    statusColor = overdue ? "var(--red)" : "var(--text2)";
+    statusBg = overdue ? "rgba(239,68,68,0.1)" : "rgba(255,255,255,0.08)";
   } else {
     statusLabel = `${pct}% complete`; statusColor = "var(--blue)"; statusBg = "rgba(59,130,246,0.15)";
   }
@@ -65,6 +69,11 @@ function TopicRoadmapCard({ topic, progress, isUnlocked, position, onClick }) {
         <p style={{ color: "var(--text2)", fontSize: 13, marginBottom: isUnlocked && started ? 10 : 0 }}>
           {topic.description}
         </p>
+        {assignment?.dueDate && !completed && (
+          <div style={{ fontSize: 12, color: overdue ? "var(--red)" : "var(--text3)", marginTop: 4, marginBottom: 6 }}>
+            {overdue ? "⚠️ Due date passed: " : "📅 Due: "}{assignment.dueDate}
+          </div>
+        )}
         {isUnlocked && started && (
           <>
             <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "var(--text3)", marginBottom: 5 }}>
@@ -96,12 +105,15 @@ function ClassView({ cls, userId, onBack, onPlayTopic }) {
   const [progress, setProgress] = useState({});
   const [loading, setLoading] = useState(true);
 
+  const assignments = normalizeAssignments(cls.assignedTopics);
+  const categories = cls.categories || [];
+
   useEffect(() => {
     const load = async () => {
       const progMap = {};
-      for (const tid of (cls.assignedTopics || [])) {
-        const p = await getProgress(userId, tid);
-        if (p) progMap[tid] = p;
+      for (const a of assignments) {
+        const p = await getProgress(userId, a.topicId);
+        if (p) progMap[a.topicId] = p;
       }
       setProgress(progMap);
       setLoading(false);
@@ -109,43 +121,66 @@ function ClassView({ cls, userId, onBack, onPlayTopic }) {
     load();
   }, [cls, userId]);
 
-  // Topics in the teacher-defined order, filtered to known topics
-  const assignedTopics = (cls.assignedTopics || [])
-    .map(tid => getTopic(tid))
-    .filter(Boolean);
+  const assignedTopics = assignments.map(a => ({ assignment: a, topic: getTopic(a.topicId) })).filter(t => t.topic);
 
-  // Topic unlocks sequentially — must complete previous to unlock next
   const isTopicUnlocked = (idx) => {
     if (idx === 0) return true;
-    const prevTopic = assignedTopics[idx - 1];
-    return progress[prevTopic?.id]?.completed === true;
+    const prev = assignedTopics[idx - 1];
+    return progress[prev?.assignment.topicId]?.completed === true;
   };
+
+  // Calculate student's overall grade
+  const grade = calculateGrade(assignments, categories, progress);
+  const letter = gradeToLetter(grade);
+  const letterColor = letter === "A" ? "var(--green)" : letter === "B" ? "var(--cyan)" : letter === "C" ? "var(--amber)" : letter === "F" ? "var(--red)" : "var(--text2)";
 
   return (
     <div>
-      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24, flexWrap: "wrap" }}>
         <button className="btn btn-ghost btn-sm" onClick={onBack}>← Back</button>
-        <h2 style={{ fontSize: 22, fontWeight: 800 }}>{cls.name}</h2>
+        <h2 style={{ fontSize: 22, fontWeight: 800, flex: 1 }}>{cls.name}</h2>
+        {/* Grade summary pill */}
+        {grade !== null && (
+          <div style={{ display: "flex", alignItems: "center", gap: 10, background: "var(--surface)", border: "1px solid var(--border2)", borderRadius: "var(--radius-lg)", padding: "10px 20px" }}>
+            <div>
+              <div style={{ fontSize: 11, color: "var(--text3)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em" }}>Current Grade</div>
+              <div style={{ fontSize: 22, fontWeight: 900, color: letterColor }}>{grade}% — {letter}</div>
+            </div>
+            {categories.length > 0 && (
+              <div style={{ borderLeft: "1px solid var(--border)", paddingLeft: 16, display: "flex", flexDirection: "column", gap: 3 }}>
+                {categories.map(cat => {
+                  const catAssignments = assignments.filter(a => a.categoryId === cat.id);
+                  if (!catAssignments.length) return null;
+                  const scores = catAssignments.map(a => progress[a.topicId]?.percentComplete ?? 0);
+                  const avg = Math.round(scores.reduce((s, v) => s + v, 0) / scores.length);
+                  return (
+                    <div key={cat.id} style={{ fontSize: 12, color: "var(--text2)" }}>
+                      <span style={{ color: "var(--text3)" }}>{cat.name} ({cat.weight}%): </span>
+                      <strong>{avg}%</strong>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {loading ? (
-        <div style={{ display: "flex", justifyContent: "center", padding: 40 }}>
-          <div className="spinner" />
-        </div>
+        <div style={{ display: "flex", justifyContent: "center", padding: 40 }}><div className="spinner" /></div>
       ) : assignedTopics.length === 0 ? (
         <div className="card" style={{ textAlign: "center", padding: "40px 20px" }}>
           <div style={{ fontSize: 40, marginBottom: 12 }}>📭</div>
           <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 8 }}>No topics assigned yet</h3>
-          <p style={{ color: "var(--text2)", fontSize: 14 }}>
-            Your teacher hasn't assigned any topics to this class yet. Check back soon!
-          </p>
+          <p style={{ color: "var(--text2)", fontSize: 14 }}>Your teacher hasn't assigned any topics yet. Check back soon!</p>
         </div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          {assignedTopics.map((topic, idx) => (
+          {assignedTopics.map(({ assignment, topic }, idx) => (
             <TopicRoadmapCard
               key={topic.id}
               topic={topic}
+              assignment={assignment}
               progress={progress[topic.id]}
               isUnlocked={isTopicUnlocked(idx)}
               position={idx + 1}
