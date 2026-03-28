@@ -104,13 +104,22 @@ function LessonScreen({ level, onComplete, isReview }) {
           heading: "Step 1 — Line up the digits",
           color: "var(--blue)",
           text: "Write numbers so that place values match up vertically. Ones under ones, tens under tens, hundreds under hundreds.",
-          example: "    47\n+  31\n——",
+          example: [
+            { prefix: "",  value: "47" },
+            { prefix: "+", value: "31" },
+            { prefix: "",  value: "——" },
+          ],
         },
         {
           heading: "Step 2 — Add right to left",
           color: "var(--cyan)",
           text: "Start from the rightmost column (ones) and work your way left. Write the sum of each column below the line.",
-          example: "    47\n+  31\n——\n    78",
+          example: [
+            { prefix: "",  value: "47" },
+            { prefix: "+", value: "31" },
+            { prefix: "",  value: "——" },
+            { prefix: "",  value: "78" },
+          ],
         },
         {
           heading: "Why right to left?",
@@ -133,12 +142,18 @@ function LessonScreen({ level, onComplete, isReview }) {
           heading: "What to write and what to carry",
           color: "var(--cyan)",
           text: "Write the ONES digit of the column sum in the answer row. Carry the TENS digit to the top of the next column to the left.",
-          example: "  ¹\n  47\n+  35\n——\n    2   ← write 2 (ones of 12)\n        ← carry 1 (tens of 12)",
+          example: [
+            { prefix: "",  value: "¹  " },
+            { prefix: "",  value: "47" },
+            { prefix: "+", value: "35" },
+            { prefix: "",  value: "——" },
+            { prefix: "",  value: "82" },
+          ],
         },
         {
           heading: "3 steps per column",
           color: "var(--amber)",
-          text: "For each column you will: (1) give the sum of the digits, (2) say what digit to write in the answer, and (3) say what digit to carry — but only if the sum is 10 or more.",
+          text: "For each column you will: (1) give the sum of the digits including any carry, (2) say what digit to write in the answer, and (3) say what digit to carry — but only if the sum is 10 or more.",
         },
       ],
     },
@@ -150,12 +165,19 @@ function LessonScreen({ level, onComplete, isReview }) {
         {
           heading: "Same process, more numbers",
           color: "var(--blue)",
-          text: "Add all digits in each column together, including any carry from the previous column. The sum might be larger now — for example, 9 + 8 + 7 = 24, so you write 4 and carry 2.",
+          text: "Add all digits in each column together, including any carry from the previous column. The sum might be larger — for example, 9 + 8 + 7 = 24, so you write 4 and carry 2.",
+          example: [
+            { prefix: "",  value: "129" },
+            { prefix: "",  value: " 84" },
+            { prefix: "+", value: " 37" },
+            { prefix: "",  value: "———" },
+            { prefix: "",  value: "250" },
+          ],
         },
         {
           heading: "Keep track of carries",
           color: "var(--amber)",
-          text: "With more numbers, carries can be larger than 1. Always add the carry digit along with the column digits before deciding what to write and what to carry.",
+          text: "With more numbers, carries can be larger than 1. Always add the carry digit along with all the column digits before deciding what to write and what to carry.",
         },
       ],
     },
@@ -164,8 +186,8 @@ function LessonScreen({ level, onComplete, isReview }) {
   const c = content[level];
 
   useEffect(() => {
-    const t = setTimeout(() => speak(c.voiceText), 600);
-    return () => { clearTimeout(t); window.speechSynthesis?.cancel(); };
+    // Voice is optional - no auto-speak on lesson screen
+    return () => { window.speechSynthesis?.cancel(); };
   }, []);
 
   return (
@@ -185,7 +207,14 @@ function LessonScreen({ level, onComplete, isReview }) {
               <div style={{ fontSize: 14, fontWeight: 700, color: s.color, marginBottom: 6 }}>{s.heading}</div>
               <p style={{ fontSize: 15, lineHeight: 1.75, color: "var(--text2)", marginBottom: s.example ? 10 : 0 }}>{s.text}</p>
               {s.example && (
-                <pre style={{ fontFamily: "var(--mono)", fontSize: 16, color: "var(--text)", background: "var(--bg)", padding: "10px 14px", borderRadius: "var(--radius-sm)", margin: 0 }}>{s.example}</pre>
+                <div style={{ fontFamily: "var(--mono)", fontSize: 20, color: "var(--text)", background: "var(--bg)", padding: "14px 20px", borderRadius: "var(--radius-sm)", display: "inline-block", minWidth: 120 }}>
+                  {s.example.map((line, li) => (
+                    <div key={li} style={{ display: "flex", alignItems: "center", gap: 0, lineHeight: "1.8" }}>
+                      <span style={{ width: 28, color: "var(--text3)", textAlign: "right", marginRight: 8, flexShrink: 0 }}>{line.prefix || ""}</span>
+                      <span style={{ textAlign: "right", minWidth: 60, display: "inline-block" }}>{line.value}</span>
+                    </div>
+                  ))}
+                </div>
               )}
             </div>
           ))}
