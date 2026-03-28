@@ -313,7 +313,7 @@ function QuestionScreen({ tierNum, questions, onComplete, onHome, onReviewLesson
           const i = idx % newQs.length;
           newQs[i] = {...newQs[i], streak:0, streakNeeded: newQs[i].streakNeeded+1};
           setQs(newQs);
-          setWrong({a:q.a, b:q.b, correct:q.a+q.b, timedOut:true});
+          setWrong({a:q.a, b:q.b, correct:q.a+q.b, timedOut:true, isReview: !q.isCurrent});
           setInput("");
         }
       }
@@ -349,7 +349,7 @@ function QuestionScreen({ tierNum, questions, onComplete, onHome, onReviewLesson
       const newQs = [...qs];
       newQs[i] = {...newQs[i], streak:0, streakNeeded: newQs[i].streakNeeded+1};
       setQs(newQs);
-      setWrong({a:q.a, b:q.b, correct});
+      setWrong({a:q.a, b:q.b, correct, isReview: !q.isCurrent});
       setInput("");
     }
   };
@@ -428,9 +428,14 @@ function QuestionScreen({ tierNum, questions, onComplete, onHome, onReviewLesson
 
         {wrong ? (
           <div style={{animation:"popIn 0.25s ease"}}>
-            <div style={{fontSize:18,fontWeight:700,color:"#fca5a5",marginBottom:10}}>
+            <div style={{fontSize:18,fontWeight:700,color:"#fca5a5",marginBottom:6}}>
               {wrong.timedOut ? "⏰ Time's up!" : "Not quite!"}
             </div>
+            {wrong.isReview && (
+              <div style={{fontSize:13,color:"var(--text3)",marginBottom:8}}>
+                (Review question — adding {wrong.a}s)
+              </div>
+            )}
             <div style={{
               fontFamily:"var(--mono)",fontSize:"clamp(48px,10vw,72px)",fontWeight:700,
               color:"var(--text)",marginBottom:8
