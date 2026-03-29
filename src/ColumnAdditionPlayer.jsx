@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { saveProgress, getProgress } from "./firebase";
-import { genLevel1Problem, genLevel2Problem, genLevel3Problem, buildColumns, getAnswer } from "./columnAddition";
+import { genLevel1Problem, genLevel2Problem, genLevel3Problem, getAnswer } from "./columnAddition";
 
 export const COLUMN_ADDITION_TOPIC_ID = "column-addition-v1";
 const TOTAL_LEVELS = 3;
@@ -18,69 +18,16 @@ function speak(text) {
   window.speechSynthesis.speak(utter);
 }
 
-// ─── Column Display (used during practice) ────────────────────────
-function ColumnDisplay({ numbers, activeColIndex, answeredDigits, carries }) {
-  const maxLen = Math.max(...numbers.map(n => String(n).length));
-  const padded = numbers.map(n => String(n).padStart(maxLen, " "));
-  const answerRow = Array(maxLen).fill(null);
-  answeredDigits.forEach((d, i) => { answerRow[maxLen - 1 - i] = d; });
-
-  const cellStyle = (colIdx, isActive) => ({
-    width: 36, height: 44, display: "flex", alignItems: "center", justifyContent: "center",
-    fontSize: 26, fontWeight: 700, fontFamily: "var(--mono)",
-    background: isActive ? "rgba(59,130,246,0.25)" : "transparent",
-    border: isActive ? "2px solid var(--blue)" : "2px solid transparent",
-    borderRadius: 6, transition: "all 0.2s", color: "var(--text)", minWidth: 36,
-  });
-
-  return (
-    <div style={{ display: "inline-block", background: "var(--bg2)", borderRadius: "var(--radius)", padding: "20px 28px" }}>
-      <div style={{ display: "flex", gap: 4, marginBottom: 2, paddingLeft: 4 }}>
-        <div style={{ width: 28 }} />
-        {Array.from({ length: maxLen }, (_, ci) => {
-          const carryHere = carries[maxLen - 1 - ci];
-          return (
-            <div key={ci} style={{ width: 36, height: 20, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, color: "var(--amber)", fontWeight: 700, fontFamily: "var(--mono)" }}>
-              {carryHere || ""}
-            </div>
-          );
-        })}
-      </div>
-      {padded.map((row, ri) => (
-        <div key={ri} style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 2 }}>
-          <div style={{ width: 28, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, color: "var(--text3)" }}>
-            {ri === padded.length - 1 ? "+" : ""}
-          </div>
-          {row.split("").map((ch, ci) => (
-            <div key={ci} style={cellStyle(ci, ci === activeColIndex)}>
-              {ch === " " ? "" : ch}
-            </div>
-          ))}
-        </div>
-      ))}
-      <div style={{ borderTop: "2.5px solid var(--text2)", margin: "6px 0 6px 32px" }} />
-      <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-        <div style={{ width: 28 }} />
-        {answerRow.map((d, ci) => (
-          <div key={ci} style={{ ...cellStyle(ci, false), color: d !== null ? "var(--green)" : "transparent", background: "transparent", border: "2px solid transparent" }}>
-            {d !== null ? d : "·"}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 // ─── Visual Column Panel (used in lesson) ─────────────────────────
-// partialAnswer: array of digits filled in from the right, e.g. [8] means ones=8, tens=blank
-function VisualColumnProblem({ numbers, highlightCol, showAnswer, partialAnswer, label, labelColor }) {
+// partialAnswer: digits filled in from the right, e.g. [2] means ones=2, tens=blank
+// carryAbove: { colFromRight: digit } — carry digits shown above that column
+function VisualColumnProblem({ numbers, highlightCol, showAnswer, partialAnswer, carryAbove, label, labelColor }) {
   const maxLen = Math.max(...numbers.map(n => String(n).length));
   const padded = numbers.map(n => String(n).padStart(maxLen, " "));
   const answer = numbers.reduce((s, n) => s + n, 0);
   const answerStr = String(answer).padStart(maxLen, " ");
   const colNames = ["ones", "tens", "hundreds", "thousands"];
 
-  // Build partial answer row: partialAnswer[0] = ones, [1] = tens, etc. (right to left)
   const answerRow = Array(maxLen).fill(null);
   if (partialAnswer) {
     partialAnswer.forEach((d, i) => { answerRow[maxLen - 1 - i] = d; });
@@ -102,6 +49,7 @@ function VisualColumnProblem({ numbers, highlightCol, showAnswer, partialAnswer,
           {label}
         </div>
       )}
+      {/* Column name headers */}
       <div style={{ display: "flex", gap: 2, paddingLeft: 30 }}>
         {Array.from({ length: maxLen }, (_, ci) => {
           const colFromRight = maxLen - 1 - ci;
@@ -114,6 +62,20 @@ function VisualColumnProblem({ numbers, highlightCol, showAnswer, partialAnswer,
         })}
       </div>
       <div style={{ background: "var(--bg)", borderRadius: "var(--radius)", padding: "12px 16px", display: "inline-block" }}>
+        {/* Carry row */}
+        <div style={{ display: "flex", alignItems: "center", gap: 2, marginBottom: 2 }}>
+          <div style={{ width: 24 }} />
+          {Array.from({ length: maxLen }, (_, ci) => {
+            const colFromRight = maxLen - 1 - ci;
+            const carryDigit = carryAbove?.[colFromRight];
+            return (
+              <div key={ci} style={{ width: 34, height: 20, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 800, fontFamily: "var(--mono)", color: "var(--amber)" }}>
+                {carryDigit !== undefined ? carryDigit : ""}
+              </div>
+            );
+          })}
+        </div>
+        {/* Number rows */}
         {padded.map((row, ri) => (
           <div key={ri} style={{ display: "flex", alignItems: "center", gap: 2, marginBottom: 2 }}>
             <div style={{ width: 24, textAlign: "right", fontSize: 20, color: "var(--text)", fontWeight: 700, fontFamily: "var(--mono)", paddingRight: 4 }}>
@@ -127,14 +89,20 @@ function VisualColumnProblem({ numbers, highlightCol, showAnswer, partialAnswer,
           </div>
         ))}
         <div style={{ borderTop: "2.5px solid var(--text2)", margin: "4px 0 4px 28px" }} />
-        {/* Answer row — show partial, full, or nothing */}
+        {/* Answer row */}
         {(showAnswer || partialAnswer) && (
           <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
             <div style={{ width: 24 }} />
-            {(showAnswer ? answerStr.split("") : Array(maxLen).fill(" ")).map((ch, ci) => {
-              const partialDigit = answerRow[ci];
-              const display = showAnswer ? (ch === " " ? "" : ch) : (partialDigit !== null ? partialDigit : "");
-              const color = showAnswer ? "var(--green)" : "var(--cyan)";
+            {Array.from({ length: maxLen }, (_, ci) => {
+              let display = "";
+              let color = "var(--green)";
+              if (showAnswer) {
+                const ch = answerStr[ci];
+                display = ch === " " ? "" : ch;
+              } else if (answerRow[ci] !== null) {
+                display = String(answerRow[ci]);
+                color = "var(--cyan)";
+              }
               return (
                 <div key={ci} style={{ width: 34, height: 38, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, fontWeight: 700, fontFamily: "var(--mono)", color: display !== "" ? color : "transparent" }}>
                   {display !== "" ? display : "·"}
@@ -161,62 +129,25 @@ function LessonScreen({ level, onComplete, isReview }) {
 
   const voiceTexts = {
     1: "Welcome to column addition! We line up numbers so that digits with the same place value are in the same column — ones under ones, tens under tens. Then we add each column right to left.",
-    2: "Now we tackle carrying. When a column adds up to 10 or more, write the ones digit and carry the tens digit to the next column. You will practice the sum, what to write, and what to carry.",
+    2: "Now we tackle carrying. When a column adds up to 10 or more, write the ones digit in the answer and carry the tens digit to the top of the next column on the left.",
     3: "Now we add three or more numbers at once. Same process — line up place values, add right to left. Column sums can be larger, so carries might be bigger than 1.",
   };
 
-  // panels: each has props for VisualColumnProblem + a caption
   const panels = {
     1: [
-      {
-        label: "The numbers to add", labelColor: "var(--text2)",
-        highlightCol: null, showAnswer: false, partialAnswer: null,
-        caption: "We need to add 47 and 31. First, line them up so place values match.",
-      },
-      {
-        label: "Step 1 — Add the ones", labelColor: "var(--blue)",
-        highlightCol: 0, showAnswer: false, partialAnswer: [8],
-        caption: "Ones column: 7 + 1 = 8. Write 8 in the answer.",
-      },
-      {
-        label: "Step 2 — Add the tens", labelColor: "var(--cyan)",
-        highlightCol: 1, showAnswer: true, partialAnswer: null,
-        caption: "Tens column: 4 + 3 = 7. Write 7. Final answer: 78.",
-      },
+      { label: "The numbers to add", labelColor: "var(--text2)", highlightCol: null, showAnswer: false, partialAnswer: null, carryAbove: null, caption: "We need to add 47 and 31. Line them up so place values match." },
+      { label: "Step 1 — Add the ones", labelColor: "var(--blue)", highlightCol: 0, showAnswer: false, partialAnswer: [8], carryAbove: null, caption: "Ones: 7 + 1 = 8. Write 8 in the answer." },
+      { label: "Step 2 — Add the tens", labelColor: "var(--cyan)", highlightCol: 1, showAnswer: true, partialAnswer: null, carryAbove: null, caption: "Tens: 4 + 3 = 7. Write 7. Final answer: 78." },
     ],
     2: [
-      {
-        label: "Set up the problem", labelColor: "var(--text2)",
-        highlightCol: null, showAnswer: false, partialAnswer: null,
-        caption: "Line up 47 and 35 by place value.",
-      },
-      {
-        label: "Step 1 — Ones: 7+5=12", labelColor: "var(--blue)",
-        highlightCol: 0, showAnswer: false, partialAnswer: [2],
-        caption: "7 + 5 = 12. Write the 2. Carry the 1 to the tens column.",
-      },
-      {
-        label: "Step 2 — Tens: 1+4+3=8", labelColor: "var(--cyan)",
-        highlightCol: 1, showAnswer: true, partialAnswer: null,
-        caption: "Add the carry! 1 + 4 + 3 = 8. Write 8. Final answer: 82.",
-      },
+      { label: "Set up the problem", labelColor: "var(--text2)", highlightCol: null, showAnswer: false, partialAnswer: null, carryAbove: null, caption: "Line up 47 and 35 by place value." },
+      { label: "Step 1 — Ones: 7+5=12", labelColor: "var(--blue)", highlightCol: 0, showAnswer: false, partialAnswer: [2], carryAbove: { 1: 1 }, caption: "7 + 5 = 12. Write 2. Carry the 1 above the tens column." },
+      { label: "Step 2 — Tens: 1+4+3=8", labelColor: "var(--cyan)", highlightCol: 1, showAnswer: true, partialAnswer: null, carryAbove: { 1: 1 }, caption: "Add the carry! 1 + 4 + 3 = 8. Write 8. Answer: 82." },
     ],
     3: [
-      {
-        label: "Three numbers lined up", labelColor: "var(--text2)",
-        highlightCol: null, showAnswer: false, partialAnswer: null,
-        caption: "Line up 129, 84, and 37 by place value.",
-      },
-      {
-        label: "Step 1 — Ones: 9+4+7=20", labelColor: "var(--blue)",
-        highlightCol: 0, showAnswer: false, partialAnswer: [0],
-        caption: "9 + 4 + 7 = 20. Write 0. Carry 2 to the tens column.",
-      },
-      {
-        label: "Step 2 — Continue left", labelColor: "var(--cyan)",
-        highlightCol: 1, showAnswer: true, partialAnswer: null,
-        caption: "Tens: 2+2+8+3=15, write 5, carry 1. Hundreds: 1+1=2. Answer: 250.",
-      },
+      { label: "Three numbers lined up", labelColor: "var(--text2)", highlightCol: null, showAnswer: false, partialAnswer: null, carryAbove: null, caption: "Line up 129, 84, and 37 by place value." },
+      { label: "Step 1 — Ones: 9+4+7=20", labelColor: "var(--blue)", highlightCol: 0, showAnswer: false, partialAnswer: [0], carryAbove: { 1: 2 }, caption: "9 + 4 + 7 = 20. Write 0. Carry 2 above the tens column." },
+      { label: "Step 2 — Continue left", labelColor: "var(--cyan)", highlightCol: 1, showAnswer: true, partialAnswer: null, carryAbove: { 1: 2, 2: 1 }, caption: "Tens: 2+2+8+3=15, write 5, carry 1. Hundreds: 1+1=2. Answer: 250." },
     ],
   };
 
@@ -245,6 +176,7 @@ function LessonScreen({ level, onComplete, isReview }) {
                 highlightCol={panel.highlightCol}
                 showAnswer={panel.showAnswer}
                 partialAnswer={panel.partialAnswer}
+                carryAbove={panel.carryAbove}
                 label={panel.label}
                 labelColor={panel.labelColor}
               />
@@ -280,15 +212,8 @@ function PracticeScreen({ level, onComplete, onReviewLesson, onHome }) {
   const [phaseIdx, setPhaseIdx] = useState(0);
   const [streak, setStreak] = useState(0);
   const [problem, setProblem] = useState(null);
-  const [columns, setColumns] = useState([]);
-  const [colIdx, setColIdx] = useState(0);
-  const [step, setStep] = useState("sum");
   const [input, setInput] = useState("");
-  const [feedback, setFeedback] = useState(null);
-  const [wrongAnswer, setWrongAnswer] = useState(null);
-  const [answeredDigits, setAnsweredDigits] = useState([]);
-  const [carries, setCarries] = useState({});
-  const [problemComplete, setProblemComplete] = useState(false);
+  const [wrong, setWrong] = useState(null);
   const inputRef = useRef(null);
 
   const phase = phases[phaseIdx];
@@ -297,86 +222,32 @@ function PracticeScreen({ level, onComplete, onReviewLesson, onHome }) {
     const prob = phase.multi
       ? genLevel3Problem()
       : level === 1 ? genLevel1Problem(phase.digits) : genLevel2Problem(phase.digits);
-    const cols = buildColumns(prob.numbers);
     setProblem(prob);
-    setColumns(cols);
-    setColIdx(0); setStep("sum"); setInput("");
-    setFeedback(null); setWrongAnswer(null);
-    setAnsweredDigits([]); setCarries({});
-    setProblemComplete(false);
+    setInput("");
+    setWrong(null);
     setTimeout(() => inputRef.current?.focus(), 80);
   };
 
   useEffect(() => { genProblem(); }, [phaseIdx]);
-  useEffect(() => { if (!problemComplete) setTimeout(() => inputRef.current?.focus(), 80); }, [step, colIdx, problemComplete]);
+  useEffect(() => { if (!wrong) setTimeout(() => inputRef.current?.focus(), 80); }, [wrong]);
 
   if (!problem) return <div style={{ display: "flex", justifyContent: "center", padding: 60 }}><div className="spinner" /></div>;
 
   const maxLen = Math.max(...problem.numbers.map(n => String(n).length));
-  const currentCol = columns[colIdx];
-  if (!currentCol) return null;
-
-  const activeColIndex = currentCol.isFinalCarry ? -1 : currentCol.colIndex;
+  const padded = problem.numbers.map(n => String(n).padStart(maxLen, " "));
+  const correctAnswer = getAnswer(problem.numbers);
   const phaseLabel = phase.multi
     ? `${problem.numbers.length} numbers, ${problem.numbers[0].toString().length} digits each`
     : `${phase.digits}-digit numbers`;
 
-  const getPrompt = () => {
-    const col = currentCol;
-    if (step === "sum") {
-      const parts = col.digits.filter((d, i) => {
-        const p = String(problem.numbers[i]).padStart(maxLen, " ");
-        return p[col.colIndex] !== " ";
-      });
-      const carryPart = col.carryIn > 0 ? ` + ${col.carryIn} (carry)` : "";
-      return `What is ${parts.join(" + ")}${carryPart}?`;
-    }
-    if (step === "write") return `What digit do we write in the answer? (ones digit of ${currentCol.sum})`;
-    if (step === "carry") return `What digit do we carry to the next column? (tens digit of ${currentCol.sum})`;
-    return "";
-  };
-
-  const getCorrectAnswer = () => {
-    if (step === "sum") return currentCol.sum;
-    if (step === "write") return currentCol.writeDown;
-    if (step === "carry") return currentCol.carryOut;
-    return 0;
-  };
-
   const handleSubmit = () => {
     const val = parseInt(input.trim(), 10);
-    const correct = getCorrectAnswer();
-    if (isNaN(val) || val !== correct) {
-      setFeedback("wrong"); setWrongAnswer(correct);
-      speak(`Not quite! The answer is ${correct}.`);
+    if (isNaN(val) || val !== correctAnswer) {
+      speak(`Not quite! The answer is ${correctAnswer}.`);
+      setWrong(correctAnswer);
       return;
     }
-    setFeedback("correct"); setInput("");
-    const col = currentCol;
-    const needsCarry = step === "write" && col.sum >= 10;
-    if (step === "sum") {
-      if (level === 1) { setAnsweredDigits(prev => [...prev, col.writeDown]); advanceColumn(); }
-      else { setStep("write"); }
-    } else if (step === "write") {
-      setAnsweredDigits(prev => [...prev, val]);
-      if (needsCarry) { setStep("carry"); } else { advanceColumn(); }
-    } else if (step === "carry") {
-      setCarries(prev => ({ ...prev, [maxLen - 1 - colIdx - 1]: val }));
-      advanceColumn();
-    }
-  };
-
-  const advanceColumn = () => {
-    const nextColIdx = colIdx + 1;
-    if (nextColIdx >= columns.length) {
-      setProblemComplete(true);
-      speak("Excellent! Problem complete!");
-    } else {
-      setColIdx(nextColIdx); setStep("sum"); setFeedback(null); setWrongAnswer(null);
-    }
-  };
-
-  const handleProblemNext = () => {
+    speak("Correct!");
     const newStreak = streak + 1;
     setStreak(newStreak);
     if (newStreak >= phase.target) {
@@ -387,12 +258,13 @@ function PracticeScreen({ level, onComplete, onReviewLesson, onHome }) {
   };
 
   const handleWrongNext = () => {
-    setStreak(0); setFeedback(null); setWrongAnswer(null); setInput("");
-    setTimeout(() => inputRef.current?.focus(), 80);
+    setStreak(0);
+    setWrong(null);
+    genProblem();
   };
 
   return (
-    <div style={{ maxWidth: 640, margin: "0 auto", animation: "fadeUp 0.3s ease" }}>
+    <div style={{ maxWidth: 520, margin: "0 auto", animation: "fadeUp 0.3s ease" }}>
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16, gap: 8, flexWrap: "wrap" }}>
         <div style={{ background: "rgba(59,130,246,0.15)", border: "1px solid rgba(59,130,246,0.3)", borderRadius: 99, padding: "5px 14px", fontSize: 14, fontWeight: 700, color: "var(--blue)" }}>
@@ -413,45 +285,49 @@ function PracticeScreen({ level, onComplete, onReviewLesson, onHome }) {
         <span style={{ fontSize: 13, color: "var(--text3)", marginLeft: 4 }}>{streak}/{phase.target} correct in a row</span>
       </div>
 
-      {/* Problem */}
-      <div className="card" style={{ textAlign: "center", marginBottom: 16 }}>
-        <div style={{ display: "flex", justifyContent: "center", marginBottom: 20 }}>
-          <ColumnDisplay numbers={problem.numbers} activeColIndex={activeColIndex} answeredDigits={answeredDigits} carries={carries} />
+      <div className="card" style={{ textAlign: "center" }}>
+        {/* Problem display */}
+        <div style={{ display: "inline-block", background: "var(--bg2)", borderRadius: "var(--radius)", padding: "18px 24px", marginBottom: 24 }}>
+          {padded.map((row, ri) => (
+            <div key={ri} style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 2 }}>
+              <div style={{ width: 28, textAlign: "right", fontSize: 24, color: "var(--text3)", fontFamily: "var(--mono)", paddingRight: 4 }}>
+                {ri === padded.length - 1 ? "+" : ""}
+              </div>
+              {row.split("").map((ch, ci) => (
+                <div key={ci} style={{ width: 38, height: 46, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28, fontWeight: 700, fontFamily: "var(--mono)", color: "var(--text)" }}>
+                  {ch === " " ? "" : ch}
+                </div>
+              ))}
+            </div>
+          ))}
+          <div style={{ borderTop: "2.5px solid var(--text2)", margin: "6px 0 6px 32px" }} />
         </div>
 
-        {problemComplete ? (
-          <div style={{ animation: "popIn 0.3s ease" }}>
-            <div style={{ fontSize: 48, marginBottom: 8 }}>🎉</div>
-            <div style={{ fontSize: 20, fontWeight: 800, color: "var(--green)", marginBottom: 6 }}>
-              Correct! Answer: {getAnswer(problem.numbers)}
-            </div>
-            <p style={{ color: "var(--text2)", fontSize: 14, marginBottom: 20 }}>
-              {streak + 1 >= phase.target ? "Phase complete! Moving on…" : `${streak + 1}/${phase.target} — keep going!`}
-            </p>
-            <button className="btn btn-success" style={{ width: "100%", fontSize: 17, padding: "14px" }} onClick={handleProblemNext}>
-              {streak + 1 >= phase.target && phaseIdx + 1 >= phases.length ? "Complete Level →" : "Next Problem →"}
-            </button>
-          </div>
-        ) : feedback === "wrong" ? (
+        {wrong !== null ? (
           <div style={{ animation: "popIn 0.25s ease" }}>
-            <div style={{ fontSize: 16, fontWeight: 700, color: "#fca5a5", marginBottom: 10 }}>Not quite!</div>
-            <div style={{ fontFamily: "var(--mono)", fontSize: "clamp(36px,8vw,56px)", fontWeight: 700, color: "var(--text)", marginBottom: 8 }}>
-              {step === "sum" ? "Sum = " : step === "write" ? "Write: " : "Carry: "}
-              <span style={{ color: "var(--green)" }}>{wrongAnswer}</span>
+            <div style={{ fontSize: 15, fontWeight: 700, color: "#fca5a5", marginBottom: 8 }}>Not quite!</div>
+            <div style={{ fontSize: 18, color: "var(--text2)", marginBottom: 4 }}>The correct answer is</div>
+            <div style={{ fontFamily: "var(--mono)", fontSize: 48, fontWeight: 800, color: "var(--green)", marginBottom: 20 }}>
+              {wrong}
             </div>
             <button className="btn btn-success" style={{ width: "100%", fontSize: 16, padding: "13px" }}
               onMouseDown={e => { e.preventDefault(); handleWrongNext(); }}
               onTouchEnd={e => { e.preventDefault(); handleWrongNext(); }}>
-              Got it — continue →
+              Got it — next problem →
             </button>
           </div>
         ) : (
           <>
-            <p style={{ color: "var(--text2)", fontSize: 16, marginBottom: 14, fontWeight: 600 }}>{getPrompt()}</p>
-            <input ref={inputRef} value={input}
+            <p style={{ color: "var(--text2)", fontSize: 16, marginBottom: 14, fontWeight: 600 }}>
+              What is the sum?
+            </p>
+            <input
+              ref={inputRef}
+              value={input}
               onChange={e => setInput(e.target.value.replace(/\D/g, ""))}
               onKeyDown={e => e.key === "Enter" && handleSubmit()}
-              inputMode="numeric" placeholder="?"
+              inputMode="numeric"
+              placeholder="?"
               style={{ textAlign: "center", fontSize: 32, fontFamily: "var(--mono)", fontWeight: 700, padding: "12px", marginBottom: 12 }}
             />
             <button className="btn btn-primary" style={{ width: "100%", fontSize: 18, padding: "14px" }}
