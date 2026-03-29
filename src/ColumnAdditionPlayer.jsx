@@ -145,31 +145,36 @@ function LessonScreen({ level, onComplete, isReview }) {
       { label: "Step 2 — Tens: 1+4+3=8", labelColor: "var(--cyan)", highlightCol: 1, showAnswer: true, partialAnswer: null, carryAbove: { 1: 1 }, caption: "Add the carry! 1 + 4 + 3 = 8. Write 8. Answer: 82." },
     ],
     3: [
-      { label: "Three numbers lined up", labelColor: "var(--text2)", highlightCol: null, showAnswer: false, partialAnswer: null, carryAbove: null, caption: "Line up 129, 84, and 37 by place value." },
-      { label: "Step 1 — Ones: 9+4+7=20", labelColor: "var(--blue)", highlightCol: 0, showAnswer: false, partialAnswer: [0], carryAbove: { 1: 2 }, caption: "9 + 4 + 7 = 20. Write 0. Carry 2 above the tens column." },
-      { label: "Step 2 — Continue left", labelColor: "var(--cyan)", highlightCol: 1, showAnswer: true, partialAnswer: null, carryAbove: { 1: 2, 2: 1 }, caption: "Tens: 2+2+8+3=15, write 5, carry 1. Hundreds: 1+1=2. Answer: 250." },
+      { label: "Three numbers lined up", labelColor: "var(--text2)", highlightCol: null, showAnswer: false, partialAnswer: null, carryAbove: null, caption: "Line up 129, 84, and 37. Shorter numbers get spaces to fill their place." },
+      { label: "Step 1 — Ones: 9+4+7=20", labelColor: "var(--blue)", highlightCol: 0, showAnswer: false, partialAnswer: [0], carryAbove: { 1: 2 }, caption: "9+4+7=20. Write 0 in ones. Carry 2 to tens." },
+      { label: "Step 2 — Tens: 2+2+8+3=15", labelColor: "var(--cyan)", highlightCol: 1, showAnswer: false, partialAnswer: [5, 0], carryAbove: { 1: 2, 2: 1 }, caption: "Add carry! 2+2+8+3=15. Write 5 in tens. Carry 1 to hundreds." },
+      { label: "Step 3 — Hundreds: 1+1=2", labelColor: "var(--green)", highlightCol: 2, showAnswer: true, partialAnswer: null, carryAbove: { 2: 1 }, caption: "Add carry! 1+1=2. Write 2 in hundreds. Final answer: 250." },
     ],
   };
+
+  const panelCount = panels[level].length;
+  const gridCols = panelCount === 4 ? "repeat(4, 1fr)" : "repeat(3, 1fr)";
+  const borderColors = ["var(--border)", "rgba(59,130,246,0.3)", "rgba(6,182,212,0.3)", "rgba(16,185,129,0.3)"];
 
   useEffect(() => { return () => { window.speechSynthesis?.cancel(); }; }, []);
 
   return (
-    <div style={{ maxWidth: 960, margin: "0 auto", animation: "fadeUp 0.4s ease" }}>
+    <div style={{ maxWidth: panelCount === 4 ? 1200 : 960, margin: "0 auto", animation: "fadeUp 0.4s ease" }}>
       <div className="card">
         <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 24 }}>
           <div style={{ fontSize: 34 }}>📐</div>
           <div>
             <h2 style={{ fontSize: 22, fontWeight: 800, marginBottom: 4 }}>{titles[level]}</h2>
-            <p style={{ color: "var(--text2)", fontSize: 14 }}>Level {level} of {TOTAL_LEVELS} — study the three steps below</p>
+            <p style={{ color: "var(--text2)", fontSize: 14 }}>Level {level} of {TOTAL_LEVELS} — study the steps below</p>
           </div>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 14, marginBottom: 24 }}>
+        <div style={{ display: "grid", gridTemplateColumns: gridCols, gap: 14, marginBottom: 24 }}>
           {panels[level].map((panel, i) => (
             <div key={i} style={{
               background: "var(--bg2)", borderRadius: "var(--radius)", padding: "16px 12px",
               display: "flex", flexDirection: "column", alignItems: "center", gap: 12,
-              border: `1px solid ${i === 0 ? "var(--border)" : i === 1 ? "rgba(59,130,246,0.3)" : "rgba(6,182,212,0.3)"}`,
+              border: `1px solid ${borderColors[i] || "var(--border)"}`,
             }}>
               <VisualColumnProblem
                 numbers={nums}

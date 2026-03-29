@@ -40,12 +40,22 @@ export function genLevel2Problem(digits) {
   }
 }
 
-// Generate a Level 3 problem (3-4 numbers, 2-4 digits each)
+// Generate a Level 3 problem (3-4 numbers, mixed digit lengths, shuffled order)
 export function genLevel3Problem() {
   const numCount = Math.floor(Math.random() * 2) + 3; // 3 or 4 numbers
-  const digits = Math.floor(Math.random() * 3) + 2;   // 2, 3, or 4 digits
-  const numbers = Array.from({ length: numCount }, () => randInt(digits));
-  return { numbers, digits };
+  // Pick mixed digit lengths: always include at least one 3-digit and one 2-digit
+  const digitOptions = [2, 3, 4];
+  const numbers = [];
+  // Ensure variety: first pick 2, 3, 4 then fill remaining randomly
+  const base = [2, 3, 4].slice(0, numCount);
+  const pool = [...base];
+  while (pool.length < numCount) pool.push(digitOptions[Math.floor(Math.random() * digitOptions.length)]);
+  // Shuffle digit lengths so they're out of order
+  pool.sort(() => Math.random() - 0.5);
+  for (const d of pool) numbers.push(randInt(d));
+  // Shuffle number order too
+  numbers.sort(() => Math.random() - 0.5);
+  return { numbers };
 }
 
 // Build column steps for a problem (right to left)
