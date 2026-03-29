@@ -71,13 +71,20 @@ function ColumnDisplay({ numbers, activeColIndex, answeredDigits, carries }) {
   );
 }
 
-// ─── Visual Column Panel (used in lesson) ────────────────────────
-function VisualColumnProblem({ numbers, highlightCol, showAnswer, label, labelColor }) {
+// ─── Visual Column Panel (used in lesson) ─────────────────────────
+// partialAnswer: array of digits filled in from the right, e.g. [8] means ones=8, tens=blank
+function VisualColumnProblem({ numbers, highlightCol, showAnswer, partialAnswer, label, labelColor }) {
   const maxLen = Math.max(...numbers.map(n => String(n).length));
   const padded = numbers.map(n => String(n).padStart(maxLen, " "));
   const answer = numbers.reduce((s, n) => s + n, 0);
   const answerStr = String(answer).padStart(maxLen, " ");
   const colNames = ["ones", "tens", "hundreds", "thousands"];
+
+  // Build partial answer row: partialAnswer[0] = ones, [1] = tens, etc. (right to left)
+  const answerRow = Array(maxLen).fill(null);
+  if (partialAnswer) {
+    partialAnswer.forEach((d, i) => { answerRow[maxLen - 1 - i] = d; });
+  }
 
   const cellBg = (ci) => {
     if (highlightCol === null || highlightCol === undefined) return "transparent";
@@ -120,14 +127,20 @@ function VisualColumnProblem({ numbers, highlightCol, showAnswer, label, labelCo
           </div>
         ))}
         <div style={{ borderTop: "2.5px solid var(--text2)", margin: "4px 0 4px 28px" }} />
-        {showAnswer && (
+        {/* Answer row — show partial, full, or nothing */}
+        {(showAnswer || partialAnswer) && (
           <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
             <div style={{ width: 24 }} />
-            {answerStr.split("").map((ch, ci) => (
-              <div key={ci} style={{ width: 34, height: 38, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, fontWeight: 700, fontFamily: "var(--mono)", color: "var(--green)" }}>
-                {ch === " " ? "" : ch}
-              </div>
-            ))}
+            {(showAnswer ? answerStr.split("") : Array(maxLen).fill(" ")).map((ch, ci) => {
+              const partialDigit = answerRow[ci];
+              const display = showAnswer ? (ch === " " ? "" : ch) : (partialDigit !== null ? partialDigit : "");
+              const color = showAnswer ? "var(--green)" : "var(--cyan)";
+              return (
+                <div key={ci} style={{ width: 34, height: 38, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, fontWeight: 700, fontFamily: "var(--mono)", color: display !== "" ? color : "transparent" }}>
+                  {display !== "" ? display : "·"}
+                </div>
+              );
+            })}
           </div>
         )}
       </div>
@@ -152,21 +165,58 @@ function LessonScreen({ level, onComplete, isReview }) {
     3: "Now we add three or more numbers at once. Same process — line up place values, add right to left. Column sums can be larger, so carries might be bigger than 1.",
   };
 
+  // panels: each has props for VisualColumnProblem + a caption
   const panels = {
     1: [
-      { label: "The numbers to add", labelColor: "var(--text2)", highlightCol: null, showAnswer: false, caption: "We need to add these two numbers. First, line them up correctly." },
-      { label: "Ones column aligned", labelColor: "var(--blue)", highlightCol: 0, showAnswer: false, caption: "The ones digits line up in the same column. 7 is above 1." },
-      { label: "Tens column — then add!", labelColor: "var(--cyan)", highlightCol: 1, showAnswer: true, caption: "Tens line up too. Now add each column right to left. Answer: 78." },
+      {
+        label: "The numbers to add", labelColor: "var(--text2)",
+        highlightCol: null, showAnswer: false, partialAnswer: null,
+        caption: "We need to add 47 and 31. First, line them up so place values match.",
+      },
+      {
+        label: "Step 1 — Add the ones", labelColor: "var(--blue)",
+        highlightCol: 0, showAnswer: false, partialAnswer: [8],
+        caption: "Ones column: 7 + 1 = 8. Write 8 in the answer.",
+      },
+      {
+        label: "Step 2 — Add the tens", labelColor: "var(--cyan)",
+        highlightCol: 1, showAnswer: true, partialAnswer: null,
+        caption: "Tens column: 4 + 3 = 7. Write 7. Final answer: 78.",
+      },
     ],
     2: [
-      { label: "Set up the problem", labelColor: "var(--text2)", highlightCol: null, showAnswer: false, caption: "Line up the digits by place value as before." },
-      { label: "Ones: 7+5=12 → write 2, carry 1", labelColor: "var(--blue)", highlightCol: 0, showAnswer: false, caption: "7+5=12. Write the 2 below. Carry the 1 to the tens column." },
-      { label: "Tens: 1+4+3=8 → write 8", labelColor: "var(--cyan)", highlightCol: 1, showAnswer: true, caption: "Include the carry! 1+4+3=8. Write 8. Final answer: 82." },
+      {
+        label: "Set up the problem", labelColor: "var(--text2)",
+        highlightCol: null, showAnswer: false, partialAnswer: null,
+        caption: "Line up 47 and 35 by place value.",
+      },
+      {
+        label: "Step 1 — Ones: 7+5=12", labelColor: "var(--blue)",
+        highlightCol: 0, showAnswer: false, partialAnswer: [2],
+        caption: "7 + 5 = 12. Write the 2. Carry the 1 to the tens column.",
+      },
+      {
+        label: "Step 2 — Tens: 1+4+3=8", labelColor: "var(--cyan)",
+        highlightCol: 1, showAnswer: true, partialAnswer: null,
+        caption: "Add the carry! 1 + 4 + 3 = 8. Write 8. Final answer: 82.",
+      },
     ],
     3: [
-      { label: "Three numbers lined up", labelColor: "var(--text2)", highlightCol: null, showAnswer: false, caption: "Same idea — line up all three numbers by place value." },
-      { label: "Ones: 9+4+7=20 → write 0, carry 2", labelColor: "var(--blue)", highlightCol: 0, showAnswer: false, caption: "9+4+7=20. Write 0. Carry 2 to the tens column." },
-      { label: "Continue left — final answer", labelColor: "var(--cyan)", highlightCol: 1, showAnswer: true, caption: "Tens: 2+2+8+3=15, write 5, carry 1. Hundreds: 1+1=2. Answer: 250." },
+      {
+        label: "Three numbers lined up", labelColor: "var(--text2)",
+        highlightCol: null, showAnswer: false, partialAnswer: null,
+        caption: "Line up 129, 84, and 37 by place value.",
+      },
+      {
+        label: "Step 1 — Ones: 9+4+7=20", labelColor: "var(--blue)",
+        highlightCol: 0, showAnswer: false, partialAnswer: [0],
+        caption: "9 + 4 + 7 = 20. Write 0. Carry 2 to the tens column.",
+      },
+      {
+        label: "Step 2 — Continue left", labelColor: "var(--cyan)",
+        highlightCol: 1, showAnswer: true, partialAnswer: null,
+        caption: "Tens: 2+2+8+3=15, write 5, carry 1. Hundreds: 1+1=2. Answer: 250.",
+      },
     ],
   };
 
@@ -194,6 +244,7 @@ function LessonScreen({ level, onComplete, isReview }) {
                 numbers={nums}
                 highlightCol={panel.highlightCol}
                 showAnswer={panel.showAnswer}
+                partialAnswer={panel.partialAnswer}
                 label={panel.label}
                 labelColor={panel.labelColor}
               />
@@ -238,12 +289,6 @@ function PracticeScreen({ level, onComplete, onReviewLesson, onHome }) {
   const [answeredDigits, setAnsweredDigits] = useState([]);
   const [carries, setCarries] = useState({});
   const [problemComplete, setProblemComplete] = useState(false);
-  // Drag-to-align state
-  const [alignPhase, setAlignPhase] = useState(true);
-  const [slots, setSlots] = useState([]);
-  const [draggedIdx, setDraggedIdx] = useState(null);
-  const [alignedWrong, setAlignedWrong] = useState(false);
-  const [dragOver, setDragOver] = useState(null);
   const inputRef = useRef(null);
 
   const phase = phases[phaseIdx];
@@ -259,124 +304,29 @@ function PracticeScreen({ level, onComplete, onReviewLesson, onHome }) {
     setFeedback(null); setWrongAnswer(null);
     setAnsweredDigits([]); setCarries({});
     setProblemComplete(false);
-    const shuffled = [...prob.numbers].sort(() => Math.random() - 0.5);
-    setSlots(shuffled);
-    setDraggedIdx(null); setAlignedWrong(false); setAlignPhase(true);
+    setTimeout(() => inputRef.current?.focus(), 80);
   };
 
   useEffect(() => { genProblem(); }, [phaseIdx]);
-  useEffect(() => { if (!problemComplete && !alignPhase) setTimeout(() => inputRef.current?.focus(), 80); }, [step, colIdx, problemComplete, alignPhase]);
-
-  // ── Drag handlers ──────────────────────────────────────────────
-  const handleDragStart = (idx) => setDraggedIdx(idx);
-  const handleDragOver = (e, idx) => { e.preventDefault(); setDragOver(idx); };
-  const handleDrop = (e, dropIdx) => {
-    e.preventDefault();
-    if (draggedIdx === null || draggedIdx === dropIdx) { setDragOver(null); return; }
-    const newSlots = [...slots];
-    [newSlots[draggedIdx], newSlots[dropIdx]] = [newSlots[dropIdx], newSlots[draggedIdx]];
-    setSlots(newSlots);
-    setDraggedIdx(null); setDragOver(null);
-  };
-  const handleDragEnd = () => { setDraggedIdx(null); setDragOver(null); };
-
-  const checkAlignment = () => {
-    const correct = problem.numbers;
-    const isCorrect = slots.every((n, i) => n === correct[i]);
-    if (!isCorrect) {
-      setAlignedWrong(true);
-      setSlots([...correct]);
-      setTimeout(() => { setAlignPhase(false); setTimeout(() => inputRef.current?.focus(), 100); }, 1200);
-    } else {
-      setAlignPhase(false);
-      setTimeout(() => inputRef.current?.focus(), 100);
-    }
-  };
+  useEffect(() => { if (!problemComplete) setTimeout(() => inputRef.current?.focus(), 80); }, [step, colIdx, problemComplete]);
 
   if (!problem) return <div style={{ display: "flex", justifyContent: "center", padding: 60 }}><div className="spinner" /></div>;
 
   const maxLen = Math.max(...problem.numbers.map(n => String(n).length));
   const currentCol = columns[colIdx];
-  const activeColIndex = currentCol?.isFinalCarry ? -1 : currentCol?.colIndex;
+  if (!currentCol) return null;
+
+  const activeColIndex = currentCol.isFinalCarry ? -1 : currentCol.colIndex;
   const phaseLabel = phase.multi
     ? `${problem.numbers.length} numbers, ${problem.numbers[0].toString().length} digits each`
     : `${phase.digits}-digit numbers`;
-
-  // ── Header (shared by align and answer screens) ────────────────
-  const Header = () => (
-    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16, gap: 8, flexWrap: "wrap" }}>
-      <div style={{ background: "rgba(59,130,246,0.15)", border: "1px solid rgba(59,130,246,0.3)", borderRadius: 99, padding: "5px 14px", fontSize: 14, fontWeight: 700, color: "var(--blue)" }}>
-        Level {level} — {phaseLabel}
-      </div>
-      <div style={{ display: "flex", gap: 8 }}>
-        <button className="btn btn-ghost btn-sm" style={{ fontSize: 13 }} onClick={() => { window.speechSynthesis?.cancel(); onReviewLesson(); }}>📖 Review Lesson</button>
-        <button className="btn btn-ghost btn-sm" style={{ fontSize: 13 }} onClick={onHome}>← Home</button>
-      </div>
-    </div>
-  );
-
-  const StreakBar = () => (
-    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
-      <span style={{ fontSize: 13, color: "var(--text3)" }}>Streak:</span>
-      {Array.from({ length: phase.target }).map((_, i) => (
-        <div key={i} style={{ width: 12, height: 12, borderRadius: "50%", background: i < streak ? "var(--green)" : "var(--surface2)", border: `2px solid ${i < streak ? "var(--green)" : "var(--border2)"}`, transition: "all 0.2s" }} />
-      ))}
-      <span style={{ fontSize: 13, color: "var(--text3)", marginLeft: 4 }}>{streak}/{phase.target} correct in a row</span>
-    </div>
-  );
-
-  // ── Drag-to-align screen ───────────────────────────────────────
-  if (alignPhase) {
-    return (
-      <div style={{ maxWidth: 640, margin: "0 auto", animation: "fadeUp 0.3s ease" }}>
-        <Header />
-        <StreakBar />
-        <div className="card" style={{ textAlign: "center" }}>
-          <h3 style={{ fontSize: 18, fontWeight: 800, marginBottom: 6 }}>Line up the numbers!</h3>
-          <p style={{ color: "var(--text2)", fontSize: 14, marginBottom: 24 }}>
-            Drag the numbers into the correct order so that place values line up, then click <strong>Check Alignment</strong>.
-          </p>
-          <div style={{ display: "inline-flex", flexDirection: "column", gap: 6, background: "var(--bg2)", borderRadius: "var(--radius)", padding: "20px 28px", marginBottom: 24, minWidth: 160 }}>
-            {slots.map((num, i) => (
-              <div key={i} draggable
-                onDragStart={() => handleDragStart(i)}
-                onDragOver={e => handleDragOver(e, i)}
-                onDrop={e => handleDrop(e, i)}
-                onDragEnd={handleDragEnd}
-                style={{
-                  display: "flex", alignItems: "center", gap: 10, padding: "8px 14px",
-                  background: dragOver === i ? "rgba(59,130,246,0.2)" : draggedIdx === i ? "rgba(255,255,255,0.04)" : "var(--surface)",
-                  border: `2px solid ${dragOver === i ? "var(--blue)" : "var(--border2)"}`,
-                  borderRadius: "var(--radius-sm)", cursor: "grab",
-                  opacity: draggedIdx === i ? 0.4 : 1, transition: "all 0.15s",
-                  userSelect: "none", justifyContent: "flex-end",
-                }}>
-                <span style={{ color: "var(--text3)", fontSize: 13 }}>⠿</span>
-                <span style={{ fontFamily: "var(--mono)", fontSize: 28, fontWeight: 700, color: "var(--text)", minWidth: maxLen * 20, textAlign: "right" }}>{num}</span>
-              </div>
-            ))}
-            <div style={{ borderTop: "2.5px solid var(--text2)", margin: "6px 0" }} />
-            <div style={{ height: 44, display: "flex", alignItems: "center", justifyContent: "flex-end", paddingRight: 14 }}>
-              <span style={{ color: "var(--text3)", fontFamily: "var(--mono)", fontSize: 22 }}>?</span>
-            </div>
-          </div>
-          <button className="btn btn-primary btn-lg" style={{ width: "100%" }} onClick={checkAlignment}>
-            Check Alignment →
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  // ── Column answering screen ────────────────────────────────────
-  if (!currentCol) return null;
 
   const getPrompt = () => {
     const col = currentCol;
     if (step === "sum") {
       const parts = col.digits.filter((d, i) => {
-        const padded = String(problem.numbers[i]).padStart(maxLen, " ");
-        return padded[col.colIndex] !== " ";
+        const p = String(problem.numbers[i]).padStart(maxLen, " ");
+        return p[col.colIndex] !== " ";
       });
       const carryPart = col.carryIn > 0 ? ` + ${col.carryIn} (carry)` : "";
       return `What is ${parts.join(" + ")}${carryPart}?`;
@@ -427,7 +377,7 @@ function PracticeScreen({ level, onComplete, onReviewLesson, onHome }) {
   };
 
   const handleProblemNext = () => {
-    const newStreak = alignedWrong ? 0 : streak + 1;
+    const newStreak = streak + 1;
     setStreak(newStreak);
     if (newStreak >= phase.target) {
       const nextPhaseIdx = phaseIdx + 1;
@@ -441,13 +391,29 @@ function PracticeScreen({ level, onComplete, onReviewLesson, onHome }) {
     setTimeout(() => inputRef.current?.focus(), 80);
   };
 
-  const remaining = columns.length - colIdx;
-  const done = columns.length - remaining;
-
   return (
     <div style={{ maxWidth: 640, margin: "0 auto", animation: "fadeUp 0.3s ease" }}>
-      <Header />
-      <StreakBar />
+      {/* Header */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16, gap: 8, flexWrap: "wrap" }}>
+        <div style={{ background: "rgba(59,130,246,0.15)", border: "1px solid rgba(59,130,246,0.3)", borderRadius: 99, padding: "5px 14px", fontSize: 14, fontWeight: 700, color: "var(--blue)" }}>
+          Level {level} — {phaseLabel}
+        </div>
+        <div style={{ display: "flex", gap: 8 }}>
+          <button className="btn btn-ghost btn-sm" style={{ fontSize: 13 }} onClick={() => { window.speechSynthesis?.cancel(); onReviewLesson(); }}>📖 Review Lesson</button>
+          <button className="btn btn-ghost btn-sm" style={{ fontSize: 13 }} onClick={onHome}>← Home</button>
+        </div>
+      </div>
+
+      {/* Streak */}
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
+        <span style={{ fontSize: 13, color: "var(--text3)" }}>Streak:</span>
+        {Array.from({ length: phase.target }).map((_, i) => (
+          <div key={i} style={{ width: 12, height: 12, borderRadius: "50%", background: i < streak ? "var(--green)" : "var(--surface2)", border: `2px solid ${i < streak ? "var(--green)" : "var(--border2)"}`, transition: "all 0.2s" }} />
+        ))}
+        <span style={{ fontSize: 13, color: "var(--text3)", marginLeft: 4 }}>{streak}/{phase.target} correct in a row</span>
+      </div>
+
+      {/* Problem */}
       <div className="card" style={{ textAlign: "center", marginBottom: 16 }}>
         <div style={{ display: "flex", justifyContent: "center", marginBottom: 20 }}>
           <ColumnDisplay numbers={problem.numbers} activeColIndex={activeColIndex} answeredDigits={answeredDigits} carries={carries} />
@@ -459,23 +425,18 @@ function PracticeScreen({ level, onComplete, onReviewLesson, onHome }) {
             <div style={{ fontSize: 20, fontWeight: 800, color: "var(--green)", marginBottom: 6 }}>
               Correct! Answer: {getAnswer(problem.numbers)}
             </div>
-            {alignedWrong && (
-              <div style={{ fontSize: 13, color: "var(--amber)", marginBottom: 8 }}>
-                ⚠️ Alignment was incorrect — streak not counted
-              </div>
-            )}
             <p style={{ color: "var(--text2)", fontSize: 14, marginBottom: 20 }}>
-              {!alignedWrong && streak + 1 >= phase.target ? "Phase complete! Moving on…" : `Keep going!`}
+              {streak + 1 >= phase.target ? "Phase complete! Moving on…" : `${streak + 1}/${phase.target} — keep going!`}
             </p>
             <button className="btn btn-success" style={{ width: "100%", fontSize: 17, padding: "14px" }} onClick={handleProblemNext}>
-              {!alignedWrong && streak + 1 >= phase.target && phaseIdx + 1 >= phases.length ? "Complete Level →" : "Next Problem →"}
+              {streak + 1 >= phase.target && phaseIdx + 1 >= phases.length ? "Complete Level →" : "Next Problem →"}
             </button>
           </div>
         ) : feedback === "wrong" ? (
           <div style={{ animation: "popIn 0.25s ease" }}>
             <div style={{ fontSize: 16, fontWeight: 700, color: "#fca5a5", marginBottom: 10 }}>Not quite!</div>
             <div style={{ fontFamily: "var(--mono)", fontSize: "clamp(36px,8vw,56px)", fontWeight: 700, color: "var(--text)", marginBottom: 8 }}>
-              {step === "sum" ? `= ` : step === "write" ? "Write: " : "Carry: "}
+              {step === "sum" ? "Sum = " : step === "write" ? "Write: " : "Carry: "}
               <span style={{ color: "var(--green)" }}>{wrongAnswer}</span>
             </div>
             <button className="btn btn-success" style={{ width: "100%", fontSize: 16, padding: "13px" }}
