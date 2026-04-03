@@ -4,6 +4,7 @@ import Auth from "./Auth";
 import StudentHome from "./StudentHome";
 import TeacherHome from "./TeacherHome";
 import DevHome from "./DevHome";
+import LiveSession from "./LiveSession";
 
 function Spinner() {
   return (
@@ -20,6 +21,7 @@ function Spinner() {
 export default function App() {
   const [authLoading, setAuthLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState(null);
+  const [screen, setScreen] = useState("home"); // home | live
 
   useEffect(()=>{
     const unsub = onAuthChange(async (fbUser)=>{
@@ -37,16 +39,21 @@ export default function App() {
   const handleLogout = async () => {
     await logoutUser();
     setCurrentUser(null);
+    setScreen("home");
   };
 
   if (authLoading) return <Spinner/>;
   if (!currentUser) return <Auth onAuth={setCurrentUser}/>;
 
+  if (screen === "live") {
+    return <LiveSession user={currentUser} onHome={() => setScreen("home")} />;
+  }
+
   if (currentUser.role === "student") {
-    return <StudentHome user={currentUser} onLogout={handleLogout}/>;
+    return <StudentHome user={currentUser} onLogout={handleLogout} onLiveSession={() => setScreen("live")} />;
   }
   if (currentUser.role === "teacher") {
-    return <TeacherHome user={currentUser} onLogout={handleLogout}/>;
+    return <TeacherHome user={currentUser} onLogout={handleLogout} onLiveSession={() => setScreen("live")} />;
   }
   if (currentUser.role === "developer") {
     return <DevHome user={currentUser} onLogout={handleLogout}/>;

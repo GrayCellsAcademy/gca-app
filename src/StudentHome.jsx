@@ -194,7 +194,7 @@ function ClassView({ cls, userId, onBack, onPlayTopic }) {
 }
 
 // ─── Main Student Home ────────────────────────────────────────────
-export default function StudentHome({ user, onLogout }) {
+export default function StudentHome({ user, onLogout, onLiveSession }) {
   const [classes, setClasses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedClass, setSelectedClass] = useState(null);
@@ -284,6 +284,7 @@ export default function StudentHome({ user, onLogout }) {
               <div style={{ fontWeight: 700, fontSize: 15 }}>{user.name}</div>
               <div style={{ color: "var(--text3)", fontSize: 12 }}>Student</div>
             </div>
+            <button className="btn btn-ghost btn-sm" onClick={onLiveSession}>🎮 Live Session</button>
             <button className="btn btn-ghost btn-sm" onClick={onLogout}>Log Out</button>
           </div>
         </div>

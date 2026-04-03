@@ -19,6 +19,8 @@ import {
   arrayUnion,
   arrayRemove,
   deleteDoc,
+  increment,
+  onSnapshot,
 } from "firebase/firestore";
 
 const firebaseConfig = {
@@ -262,4 +264,95 @@ export function gradeToLetter(grade) {
   if (grade >= 70) return "C";
   if (grade >= 60) return "D";
   return "F";
+}
+
+// ─── Live Sessions ────────────────────────────────────────────────
+
+export function generateJoinCode() {
+  return Math.random().toString(36).slice(2, 7).toUpperCase();
+}
+
+export async function createSession(teacherId, classId, questions, timerSeconds) {
+  const sessionId = "sess_" + Date.now().toString(36);
+  const joinCode = generateJoinCode();
+  await setDoc(doc(db, "sessions", sessionId), {
+    id: sessionId,
+    teacherId,
+    classId,
+    joinCode,
+    status: "waiting",       // waiting | question | revealing | ended
+    currentQuestion: -1,     // -1 = not started
+    timerSeconds,
+    timerEndsAt: null,
+    questions,
+    participants: {},         // uid -> { name, totalScore }
+    createdAt: Date.now(),
+  });
+  return { sessionId, joinCode };
+}
+
+export async function joinSession(joinCode, uid, name) {
+  const q = query(collection(db, "sessions"), where("joinCode", "==", joinCode), where("status", "in", ["waiting", "question"]));
+  const snap = await getDocs(q);
+  if (snap.empty) throw new Error("Session not found or already ended.");
+  const sessionDoc = snap.docs[0];
+  const sessionId = sessionDoc.id;
+  await updateDoc(doc(db, "sessions", sessionId), {
+    [`participants.${uid}`]: { name, totalScore: 0, joinedAt: Date.now() },
+  });
+  return sessionId;
+}
+
+export async function startQuestion(sessionId, questionIndex, timerSeconds) {
+  await updateDoc(doc(db, "sessions", sessionId), {
+    status: "question",
+    currentQuestion: questionIndex,
+    timerSeconds,
+    timerEndsAt: Date.now() + timerSeconds * 1000,
+  });
+}
+
+export async function revealQuestion(sessionId) {
+  await updateDoc(doc(db, "sessions", sessionId), { status: "revealing" });
+}
+
+export async function endSession(sessionId) {
+  await updateDoc(doc(db, "sessions", sessionId), { status: "ended" });
+}
+
+export async function submitAnswer(sessionId, uid, questionIndex, answer, correct, points) {
+  const answerId = `${uid}_${questionIndex}`;
+  await setDoc(doc(db, "sessions", sessionId, "answers", answerId), {
+    uid, questionIndex, answer, correct, points, submittedAt: Date.now(),
+  });
+  if (correct && points > 0) {
+    await updateDoc(doc(db, "sessions", sessionId), {
+      [`participants.${uid}.totalScore`]: points,
+    });
+  }
+}
+
+export async function addToScore(sessionId, uid, points) {
+  await updateDoc(doc(db, "sessions", sessionId), {
+    [`participants.${uid}.totalScore`]: increment(points),
+  });
+}
+
+export async function getSessionAnswers(sessionId, questionIndex) {
+  const snap = await getDocs(collection(db, "sessions", sessionId, "answers"));
+  return snap.docs.map(d => d.data()).filter(a => a.questionIndex === questionIndex);
+}
+
+export function onSessionChange(sessionId, cb) {
+  return onSnapshot(doc(db, "sessions", sessionId), snap => {
+    if (snap.exists()) cb(snap.data());
+  });
+}
+
+export function onAnswersChange(sessionId, questionIndex, cb) {
+  const q = query(
+    collection(db, "sessions", sessionId, "answers"),
+    where("questionIndex", "==", questionIndex)
+  );
+  return onSnapshot(q, snap => cb(snap.docs.map(d => d.data())));
 }
