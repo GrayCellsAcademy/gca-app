@@ -4,8 +4,8 @@ import {
   assignTopicToClass, unassignTopicFromClass, reorderTopics,
   updateAssignment, saveCategories, getClassProgress,
   normalizeAssignments, calculateGrade, gradeToLetter,
-} from "./firebase";
-import { getPublishedTopics, getTopic } from "./registry";
+} from "../core/firebase";
+import { getPublishedTopics, getTopic } from "../topics/registry";
 
 // ─── Helpers ──────────────────────────────────────────────────────
 function uid4() { return Math.random().toString(36).slice(2, 6); }

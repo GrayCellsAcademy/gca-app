@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { buildTierQuestions, TIER_COLORS, speak, ADDITION_TOPIC_ID } from "./additionTables";
-import { saveProgress, getProgress } from "./firebase";
+import { saveProgress, getProgress } from "../../core/firebase";
 
 const QUESTION_TIME = 15;
 
@@ -313,7 +313,7 @@ function QuestionScreen({ tierNum, questions, onComplete, onHome, onReviewLesson
           const i = idx % newQs.length;
           newQs[i] = {...newQs[i], streak:0, streakNeeded: newQs[i].streakNeeded+1};
           setQs(newQs);
-          setWrong({a:q.a, b:q.b, correct:q.a+q.b, timedOut:true});
+          setWrong({a:q.a, b:q.b, correct:q.a+q.b, timedOut:true, isReview: !q.isCurrent});
           setInput("");
         }
       }
@@ -349,7 +349,7 @@ function QuestionScreen({ tierNum, questions, onComplete, onHome, onReviewLesson
       const newQs = [...qs];
       newQs[i] = {...newQs[i], streak:0, streakNeeded: newQs[i].streakNeeded+1};
       setQs(newQs);
-      setWrong({a:q.a, b:q.b, correct});
+      setWrong({a:q.a, b:q.b, correct, isReview: !q.isCurrent});
       setInput("");
     }
   };

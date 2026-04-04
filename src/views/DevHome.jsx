@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { getAllUsers, getAllClasses, deleteUser, getProgress } from "./firebase";
-import { ADDITION_TOPIC_ID } from "./additionTables";
+import { getAllUsers, getAllClasses, deleteUser, getProgress } from "../core/firebase";
+import { ADDITION_TOPIC_ID } from "../topics/mental-math/additionTables";
 
 export default function DevHome({ user, onLogout }) {
   const [users, setUsers] = useState([]);
