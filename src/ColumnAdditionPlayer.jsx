@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { saveProgress, getProgress } from "./firebase";
+import { saveProgress, getProgress } from "./core/firebase";
 import { genLevel1Problem, genLevel2Problem, genLevel3Problem, getAnswer } from "./columnAddition";
 
 export const COLUMN_ADDITION_TOPIC_ID = "column-addition-v1";
