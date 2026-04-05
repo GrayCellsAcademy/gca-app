@@ -1,11 +1,7 @@
 // ─── Topic Registry ───────────────────────────────────────────────
-// To add a new topic:
-// 1. Build a player component in src/
-// 2. Import it here and add an entry to TOPICS
-// 3. That's it — the rest of the app picks it up automatically
-
 import AdditionTablesPlayer from "./AdditionTablesPlayer";
 import ColumnAdditionPlayer from "./ColumnAdditionPlayer";
+import Lesson01MasteryPlayer from "./Lesson01MasteryPlayer";
 
 export const TOPICS = {
   "addition-tables-v1": {
@@ -31,6 +27,18 @@ export const TOPICS = {
     status: "published",
     order: 2,
     Player: ColumnAdditionPlayer,
+  },
+  "lesson01-mastery-v1": {
+    id: "lesson01-mastery-v1",
+    title: "Column Addition & Subtraction Mastery",
+    description: "Master column addition and subtraction across 6 difficulty levels — no carrying to borrowing from zero.",
+    subject: "math",
+    gradeLevel: "6+",
+    icon: "🔢",
+    type: "mastery",
+    status: "published",
+    order: 3,
+    Player: Lesson01MasteryPlayer,
   },
 };
 
