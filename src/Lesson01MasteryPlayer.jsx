@@ -7,7 +7,7 @@ import {
 } from "./lesson01Mastery";
 
 export const TOPIC_ID = "lesson01-mastery-v1";
-const STREAK_NEEDED = 3;
+const STREAK_NEEDED = 2;
 
 // ─── Column Problem Display ───────────────────────────────────────
 function ColumnProblem({ problem, showAnswer = false, showWorking = false }) {
