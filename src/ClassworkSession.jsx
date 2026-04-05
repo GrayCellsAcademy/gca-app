@@ -632,6 +632,8 @@ function CreateClassworkSession({ user, onCreated }) {
 }
 
 // ─── Main ClassworkSession Export ─────────────────────────────────
+export { TeacherClasswork as ClassworkTeacherView, StudentClasswork as ClassworkStudentView };
+
 export default function ClassworkSession({ user, onHome }) {
   const [view, setView] = useState("create");
   const [sessionId, setSessionId] = useState(null);
