@@ -3,9 +3,15 @@ import { setDoc, doc } from "firebase/firestore";
 import {
   createSession, joinSession, startQuestion, revealQuestion, endSession,
   addToScore, onSessionChange, onAnswersChange, getTeacherClasses, db,
-} from "../core/firebase";
-import { gradeAnswer } from "../core/utils/fractionUtils";
-import { REVIEW_QUESTIONS, TOTAL_POINTS } from "./sessionQuestions/lesson14";
+} from "./firebase";
+import { gradeAnswer } from "./fractionUtils";
+import { REVIEW_QUESTIONS, TOTAL_POINTS } from "./sessionQuestions";
+import ClassworkSession from "./ClassworkSession";
+
+// Wrapper so classwork session gets the same full-screen treatment
+function ClassworkSessionWrapper({ user, onHome }) {
+  return <ClassworkSession user={user} onHome={onHome} />;
+}
 
 // ─── Helpers ──────────────────────────────────────────────────────
 function medalEmoji(rank) {
@@ -598,11 +604,10 @@ function CreateSession({ user, onCreated }) {
 
 // ─── Main LiveSession Component ────────────────────────────────────
 export default function LiveSession({ user, onHome }) {
-  const [view, setView] = useState("menu"); // menu | create | join | session
+  const [view, setView] = useState("menu"); // menu | create | join | session | classwork
   const [sessionId, setSessionId] = useState(null);
   const [session, setSession] = useState(null);
 
-  // Listen to session changes
   useEffect(() => {
     if (!sessionId) return;
     const unsub = onSessionChange(sessionId, setSession);
@@ -611,6 +616,11 @@ export default function LiveSession({ user, onHome }) {
 
   const handleCreated = (sid) => { setSessionId(sid); setView("session"); };
   const handleJoined = (sid) => { setSessionId(sid); setView("session"); };
+
+  // Classwork session is handled by its own component
+  if (view === "classwork") {
+    return <ClassworkSessionWrapper user={user} onHome={() => setView("menu")} />;
+  }
 
   return (
     <div style={{ minHeight: "100vh", background: "var(--bg)", padding: "clamp(16px,3vw,32px)" }} className="dot-bg">
@@ -635,22 +645,34 @@ export default function LiveSession({ user, onHome }) {
         {/* Menu */}
         {view === "menu" && (
           <div style={{ maxWidth: 600, margin: "0 auto" }}>
-            <h1 style={{ fontSize: "clamp(22px,4vw,32px)", fontWeight: 900, marginBottom: 8 }}>Live Review Session</h1>
+            <h1 style={{ fontSize: "clamp(22px,4vw,32px)", fontWeight: 900, marginBottom: 8 }}>Live Sessions</h1>
             <p style={{ color: "var(--text2)", fontSize: 15, marginBottom: 28 }}>
-              {user.role === "teacher" ? "Start a session for your class or join one as a demo student." : "Join a session your teacher has started."}
+              {user.role === "teacher" ? "Choose a session type or join a session." : "Join a session your teacher has started."}
             </p>
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
               {user.role === "teacher" && (
-                <div className="card" onClick={() => setView("create")}
-                  style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 16 }}
-                  onMouseEnter={e => e.currentTarget.style.borderColor = "var(--blue)"}
-                  onMouseLeave={e => e.currentTarget.style.borderColor = "var(--border)"}>
-                  <div style={{ fontSize: 36 }}>🎮</div>
-                  <div>
-                    <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 4 }}>Start a Session</div>
-                    <div style={{ color: "var(--text2)", fontSize: 13 }}>Create a new review session and get a join code for your students.</div>
+                <>
+                  <div className="card" onClick={() => setView("classwork")}
+                    style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 16 }}
+                    onMouseEnter={e => e.currentTarget.style.borderColor = "var(--blue)"}
+                    onMouseLeave={e => e.currentTarget.style.borderColor = "var(--border)"}>
+                    <div style={{ fontSize: 36 }}>📋</div>
+                    <div>
+                      <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 4 }}>Classwork Session</div>
+                      <div style={{ color: "var(--text2)", fontSize: 13 }}>Push column addition and subtraction problems one at a time. You control the pace.</div>
+                    </div>
                   </div>
-                </div>
+                  <div className="card" onClick={() => setView("create")}
+                    style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 16 }}
+                    onMouseEnter={e => e.currentTarget.style.borderColor = "var(--blue)"}
+                    onMouseLeave={e => e.currentTarget.style.borderColor = "var(--border)"}>
+                    <div style={{ fontSize: 36 }}>🎮</div>
+                    <div>
+                      <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 4 }}>Review Session</div>
+                      <div style={{ color: "var(--text2)", fontSize: 13 }}>Pre-loaded fraction and algebra questions mirroring Test 2.</div>
+                    </div>
+                  </div>
+                </>
               )}
               <div className="card" onClick={() => setView("join")}
                 style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 16 }}
@@ -659,7 +681,7 @@ export default function LiveSession({ user, onHome }) {
                 <div style={{ fontSize: 36 }}>🔑</div>
                 <div>
                   <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 4 }}>Join a Session</div>
-                  <div style={{ color: "var(--text2)", fontSize: 13 }}>Enter a join code to participate in a live review.</div>
+                  <div style={{ color: "var(--text2)", fontSize: 13 }}>Enter a join code to participate in a live session.</div>
                 </div>
               </div>
             </div>

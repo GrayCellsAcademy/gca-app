@@ -272,6 +272,7 @@ export function generateJoinCode() {
   return Math.random().toString(36).slice(2, 7).toUpperCase();
 }
 
+// ── Review session (pre-loaded questions) ─────────────────────────
 export async function createSession(teacherId, classId, questions, timerSeconds) {
   const sessionId = "sess_" + Date.now().toString(36);
   const joinCode = generateJoinCode();
@@ -280,15 +281,57 @@ export async function createSession(teacherId, classId, questions, timerSeconds)
     teacherId,
     classId,
     joinCode,
-    status: "waiting",       // waiting | question | revealing | ended
-    currentQuestion: -1,     // -1 = not started
+    type: "review",
+    status: "waiting",
+    currentQuestion: -1,
     timerSeconds,
     timerEndsAt: null,
     questions,
-    participants: {},         // uid -> { name, totalScore }
+    participants: {},
     createdAt: Date.now(),
   });
   return { sessionId, joinCode };
+}
+
+// ── Classwork session (teacher-generated questions) ───────────────
+export async function createClassworkSession(teacherId, classId, timerSeconds) {
+  const sessionId = "sess_" + Date.now().toString(36);
+  const joinCode = generateJoinCode();
+  await setDoc(doc(db, "sessions", sessionId), {
+    id: sessionId,
+    teacherId,
+    classId,
+    joinCode,
+    type: "classwork",
+    status: "waiting",
+    currentTopic: null,
+    currentQuestion: null,   // { id, prompt, top, bot, numbers, answer, type }
+    questionCount: 0,        // how many questions pushed so far
+    timerSeconds,
+    timerEndsAt: null,
+    participants: {},
+    createdAt: Date.now(),
+  });
+  return { sessionId, joinCode };
+}
+
+// Push a newly generated question to all students
+export async function pushGeneratedQuestion(sessionId, question, timerSeconds) {
+  const qId = "q_" + Date.now().toString(36);
+  await updateDoc(doc(db, "sessions", sessionId), {
+    status: "question",
+    currentQuestion: { ...question, id: qId },
+    currentTopic: question.topic,
+    timerSeconds,
+    timerEndsAt: Date.now() + timerSeconds * 1000,
+    questionCount: increment(1),
+  });
+  return qId;
+}
+
+// Reveal answers for current generated question
+export async function revealGeneratedQuestion(sessionId) {
+  await updateDoc(doc(db, "sessions", sessionId), { status: "revealing" });
 }
 
 export async function joinSession(joinCode, uid, name) {
@@ -320,7 +363,25 @@ export async function endSession(sessionId) {
   await updateDoc(doc(db, "sessions", sessionId), { status: "ended" });
 }
 
-export async function submitAnswer(sessionId, uid, questionIndex, answer, correct, points) {
+export async function submitClassworkAnswer(sessionId, uid, questionId, answer, correct) {
+  const answerId = `${uid}_${questionId}`;
+  await setDoc(doc(db, "sessions", sessionId, "answers", answerId), {
+    uid, questionId, answer, correct, submittedAt: Date.now(),
+  });
+  if (correct) {
+    await updateDoc(doc(db, "sessions", sessionId), {
+      [`participants.${uid}.totalScore`]: increment(1),
+    });
+  }
+}
+
+export function onClassworkAnswersChange(sessionId, questionId, cb) {
+  const q = query(
+    collection(db, "sessions", sessionId, "answers"),
+    where("questionId", "==", questionId)
+  );
+  return onSnapshot(q, snap => cb(snap.docs.map(d => d.data())));
+}
   const answerId = `${uid}_${questionIndex}`;
   await setDoc(doc(db, "sessions", sessionId, "answers", answerId), {
     uid, questionIndex, answer, correct, points, submittedAt: Date.now(),
