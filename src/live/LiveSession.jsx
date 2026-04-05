@@ -3,10 +3,10 @@ import { setDoc, doc } from "firebase/firestore";
 import {
   createSession, joinSession, startQuestion, revealQuestion, endSession,
   addToScore, onSessionChange, onAnswersChange, getTeacherClasses, db,
-} from "../core/firebase";
-import { gradeAnswer } from "../core/utils/fractionUtils";
-import { REVIEW_QUESTIONS, TOTAL_POINTS } from "./sessionQuestions/lesson14";
-import ClassworkSession from "../ClassworkSession";
+} from "./firebase";
+import { gradeAnswer } from "./fractionUtils";
+import { REVIEW_QUESTIONS, TOTAL_POINTS } from "./sessionQuestions";
+import ClassworkSession from "./ClassworkSession";
 
 // Wrapper so classwork session gets the same full-screen treatment
 function ClassworkSessionWrapper({ user, onHome }) {
