@@ -364,16 +364,6 @@ export async function endSession(sessionId) {
 }
 
 export async function submitClassworkAnswer(sessionId, uid, questionId, answer, correct) {
-  const answerId = `${uid}_${questionId}`;
-  await setDoc(doc(db, "sessions", sessionId, "answers", answerId), {
-    uid, questionId, answer, correct, submittedAt: Date.now(),
-  });
-  if (correct) {
-    await updateDoc(doc(db, "sessions", sessionId), {
-      [`participants.${uid}.totalScore`]: increment(1),
-    });
-  }
-}
 
 export function onClassworkAnswersChange(sessionId, questionId, cb) {
   const q = query(
@@ -381,16 +371,6 @@ export function onClassworkAnswersChange(sessionId, questionId, cb) {
     where("questionId", "==", questionId)
   );
   return onSnapshot(q, snap => cb(snap.docs.map(d => d.data())));
-}
-  const answerId = `${uid}_${questionIndex}`;
-  await setDoc(doc(db, "sessions", sessionId, "answers", answerId), {
-    uid, questionIndex, answer, correct, points, submittedAt: Date.now(),
-  });
-  if (correct && points > 0) {
-    await updateDoc(doc(db, "sessions", sessionId), {
-      [`participants.${uid}.totalScore`]: points,
-    });
-  }
 }
 
 export async function addToScore(sessionId, uid, points) {
