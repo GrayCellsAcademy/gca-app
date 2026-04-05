@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { buildTierQuestions, TIER_COLORS, speak, ADDITION_TOPIC_ID } from "./additionTables";
-import { saveProgress, getProgress } from "./core/firebase";
+import { saveProgress, getProgress } from "./firebase";
 
 const QUESTION_TIME = 15;
 
@@ -103,8 +103,7 @@ function LessonScreen({ onComplete, isReview }) {
   const voiceText = "Welcome to Addition Tables! Here is what you are about to do. You are going to memorize every single digit addition fact — from 1 plus 1 all the way to 9 plus 9. That is 81 facts total, and by the end of this course, you will know all of them instantly. Now, why is that worth your time? Think about a problem like this: find two numbers that add up to 14 and multiply to 48. To solve that quickly in your head, you need to know your addition facts cold — no counting, no hesitating. The same is true for long division, fractions, and mental math in everyday life. Every time you have to stop and count on your fingers, it slows you down and uses up brain power you need for the harder part of the problem. Students who have these facts memorized think faster, make fewer errors, and find advanced math much less stressful. So let's build that foundation right now. You will work one number at a time, starting with adding 1s. Each question gives you 15 seconds. Let's go!";
 
   useEffect(()=>{
-    const t = setTimeout(()=>speak(voiceText), 600);
-    return ()=>{ clearTimeout(t); window.speechSynthesis?.cancel(); };
+    return ()=>{ window.speechSynthesis?.cancel(); };
   },[]);
 
   return (
@@ -204,8 +203,7 @@ function TierIntroScreen({ tierNum, masteredTiers, onStart }) {
   const msg = `Tier ${tierNum}. Adding ${tierNum} to every number from 1 to 9.${masteredTiers.length>0?` You will also see review questions from the ${masteredTiers.map(t=>`${t}s`).join(", ")} you have already learned. Those only need 1 correct answer each.`:""} New questions need 3 correct answers in a row. You have 15 seconds per question. Let's go!`;
 
   useEffect(()=>{
-    const t = setTimeout(()=>speak(msg), 500);
-    return ()=>{ clearTimeout(t); window.speechSynthesis?.cancel(); };
+    return ()=>{ window.speechSynthesis?.cancel(); };
   },[]);
 
   return (
@@ -504,8 +502,7 @@ function CelebrationScreen({ tierNum, isLast, onContinue }) {
     : `Amazing! You have mastered adding ${tierNum}s! You are on a roll! Up next, adding ${tierNum+1}s.`;
 
   useEffect(()=>{
-    const t = setTimeout(()=>speak(msg), 400);
-    return()=>{ clearTimeout(t); window.speechSynthesis?.cancel(); };
+    return()=>{ window.speechSynthesis?.cancel(); };
   },[]);
 
   return (
@@ -553,7 +550,13 @@ export default function AdditionTablesPlayer({ user, topic, onHome }) {
         const tier = data.currentTier || 1;
         setMasteredTiers(mastered);
         setCurrentTier(tier);
-        setScreen(mastered.length === 0 && tier === 1 ? "lesson" : "tier-intro");
+        if (mastered.length === 0 && tier === 1) {
+          setScreen("lesson");
+        } else if (mastered.length === TOTAL_TIERS) {
+          setScreen("completed"); // All done — review mode only
+        } else {
+          setScreen("tier-intro");
+        }
       } else {
         setScreen("lesson");
       }
@@ -639,6 +642,32 @@ export default function AdditionTablesPlayer({ user, topic, onHome }) {
       isLast={currentTier === TOTAL_TIERS}
       onContinue={handleCelebrationContinue}
     />
+  );
+
+  if (screen === "completed") return (
+    <div style={{maxWidth:520,margin:"0 auto",textAlign:"center",animation:"fadeUp 0.4s ease"}}>
+      <div className="card">
+        <div style={{fontSize:64,marginBottom:16}}>🏆</div>
+        <h2 style={{fontSize:26,fontWeight:800,marginBottom:8}}>Addition Tables Complete!</h2>
+        <p style={{color:"var(--text2)",fontSize:15,marginBottom:8}}>
+          You have mastered all 9 addition tiers. Great work!
+        </p>
+        <p style={{color:"var(--text3)",fontSize:13,marginBottom:24}}>
+          You can review the last tier for practice, but your progress is already saved.
+        </p>
+        <div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap"}}>
+          <button className="btn btn-ghost" onClick={onHome}>← Back to Home</button>
+          <button className="btn btn-primary" onClick={()=>{
+            const qs = buildTierQuestions(TOTAL_TIERS, masteredTiers.filter(t=>t!==TOTAL_TIERS));
+            setQuestions(qs);
+            setCurrentTier(TOTAL_TIERS);
+            setScreen("questions");
+          }}>
+            🔄 Review Tier 9
+          </button>
+        </div>
+      </div>
+    </div>
   );
 
   return null;
