@@ -691,9 +691,16 @@ export default function LiveSession({ user, onHome }) {
         {view === "create" && <CreateSession user={user} onCreated={handleCreated} />}
         {view === "join" && <JoinScreen user={user} onJoined={handleJoined} />}
         {view === "session" && session && (
-          user.role === "teacher"
-            ? <TeacherSession session={session} sessionId={sessionId} uid={user.id} />
-            : <StudentSession session={session} sessionId={sessionId} uid={user.id} />
+          (() => {
+            if (session.type === "classwork") {
+              return user.role === "teacher"
+                ? <ClassworkTeacherView session={session} sessionId={sessionId} uid={user.id} />
+                : <ClassworkStudentView session={session} sessionId={sessionId} uid={user.id} />;
+            }
+            return user.role === "teacher"
+              ? <TeacherSession session={session} sessionId={sessionId} uid={user.id} />
+              : <StudentSession session={session} sessionId={sessionId} uid={user.id} />;
+          })()
         )}
         {view === "session" && !session && (
           <div style={{ display: "flex", justifyContent: "center", padding: 60 }}><div className="spinner" /></div>
