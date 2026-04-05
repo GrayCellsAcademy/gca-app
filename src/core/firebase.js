@@ -37,7 +37,7 @@ const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 
-// ─── Auth ────────────────────────────────────────────────────────
+// ─── Auth ─────────────────────────────────────────────────────────
 export const DEV_CODE = "GCA_DEV_2025";
 
 export async function registerUser(email, password, name, role) {
@@ -60,7 +60,7 @@ export async function logoutUser() { await signOut(auth); }
 
 export function onAuthChange(cb) { return onAuthStateChanged(auth, cb); }
 
-// ─── Users ───────────────────────────────────────────────────────
+// ─── Users ────────────────────────────────────────────────────────
 export async function getUser(uid) {
   const snap = await getDoc(doc(db, "users", uid));
   return snap.exists() ? snap.data() : null;
@@ -79,19 +79,14 @@ export async function deleteUser(uid) {
   await deleteDoc(doc(db, "users", uid));
 }
 
-// ─── Classes ─────────────────────────────────────────────────────
-// assignedTopics is an array of assignment objects:
-// { topicId, categoryId, dueDate (ISO string or null), addedAt }
-// categories is an array of category objects:
-// { id, name, weight (0-100) }
-
+// ─── Classes ──────────────────────────────────────────────────────
 export async function createClass(name, password, teacherId) {
   const classId = "cls_" + Date.now().toString(36);
   await setDoc(doc(db, "classes", classId), {
     id: classId, name, password, teacherId,
     studentIds: [],
-    assignedTopics: [],  // array of assignment objects
-    categories: [],      // array of category objects
+    assignedTopics: [],
+    categories: [],
     createdAt: Date.now(),
   });
   await updateDoc(doc(db, "users", teacherId), {
@@ -134,13 +129,12 @@ export async function leaveClass(uid, classId) {
   await updateDoc(doc(db, "users", uid), { classIds: arrayRemove(classId) });
 }
 
-// ─── Categories ──────────────────────────────────────────────────
+// ─── Categories ───────────────────────────────────────────────────
 export async function saveCategories(classId, categories) {
   await updateDoc(doc(db, "classes", classId), { categories });
 }
 
-// ─── Assignments (topics assigned to a class) ─────────────────────
-// Normalize: handle both old string format and new object format
+// ─── Assignments ──────────────────────────────────────────────────
 export function normalizeAssignments(assignedTopics) {
   return (assignedTopics || []).map(a =>
     typeof a === "string"
@@ -191,68 +185,30 @@ export async function getStudentsForClass(classId) {
   return students.filter(Boolean);
 }
 
-// ─── Progress ────────────────────────────────────────────────────
-export async function getProgress(uid, topicId) {
-  const id = `${uid}_${topicId}`;
-  const snap = await getDoc(doc(db, "progress", id));
-  return snap.exists() ? snap.data() : null;
-}
-
-export async function saveProgress(uid, topicId, data) {
-  const id = `${uid}_${topicId}`;
-  await setDoc(doc(db, "progress", id), {
-    uid, topicId, ...data, updatedAt: Date.now(),
-  }, { merge: true });
-}
-
-// Load all progress for a list of students across all assigned topics
-export async function getClassProgress(studentIds, topicIds) {
-  const results = {};
-  for (const uid of studentIds) {
-    results[uid] = {};
-    for (const topicId of topicIds) {
-      const p = await getProgress(uid, topicId);
-      results[uid][topicId] = p;
-    }
-  }
-  return results;
-}
-
-// ─── Grade calculation ────────────────────────────────────────────
-// Returns weighted grade (0-100) for a student given assignments and progress
+// ─── Grade Calculation ────────────────────────────────────────────
 export function calculateGrade(assignments, categories, progressMap) {
   if (!categories.length) return null;
-
-  // Group assignments by category
   const byCategory = {};
   for (const cat of categories) {
     byCategory[cat.id] = { category: cat, assignments: [] };
   }
-
   for (const a of assignments) {
     const catId = a.categoryId;
     if (catId && byCategory[catId]) {
       const prog = progressMap[a.topicId];
-      const score = prog?.percentComplete ?? 0; // missing = 0
+      const score = prog?.percentComplete ?? 0;
       byCategory[catId].assignments.push(score);
     }
   }
-
-  // Weighted average across categories
   let totalWeight = 0;
   let weightedSum = 0;
-
   for (const cat of categories) {
     const group = byCategory[cat.id];
-    if (!group || group.assignments.length === 0) {
-      // Category has no assignments — skip from weight calculation
-      continue;
-    }
+    if (!group || group.assignments.length === 0) continue;
     const catAvg = group.assignments.reduce((s, v) => s + v, 0) / group.assignments.length;
     weightedSum += catAvg * cat.weight;
     totalWeight += cat.weight;
   }
-
   if (totalWeight === 0) return null;
   return Math.round(weightedSum / totalWeight);
 }
@@ -266,26 +222,47 @@ export function gradeToLetter(grade) {
   return "F";
 }
 
-// ─── Live Sessions ────────────────────────────────────────────────
+// ─── Progress ─────────────────────────────────────────────────────
+export async function getProgress(uid, topicId) {
+  const id = `${uid}_${topicId}`;
+  const snap = await getDoc(doc(db, "progress", id));
+  return snap.exists() ? snap.data() : null;
+}
 
+export async function saveProgress(uid, topicId, data) {
+  const id = `${uid}_${topicId}`;
+  await setDoc(doc(db, "progress", id), {
+    uid, topicId, ...data, updatedAt: Date.now(),
+  }, { merge: true });
+}
+
+export async function getClassProgress(studentIds, topicIds) {
+  const results = {};
+  for (const uid of studentIds) {
+    results[uid] = {};
+    for (const topicId of topicIds) {
+      const p = await getProgress(uid, topicId);
+      results[uid][topicId] = p;
+    }
+  }
+  return results;
+}
+
+// ─── Live Sessions ────────────────────────────────────────────────
 export function generateJoinCode() {
   return Math.random().toString(36).slice(2, 7).toUpperCase();
 }
 
-// ── Review session (pre-loaded questions) ─────────────────────────
+// Review session (pre-loaded questions)
 export async function createSession(teacherId, classId, questions, timerSeconds) {
   const sessionId = "sess_" + Date.now().toString(36);
   const joinCode = generateJoinCode();
   await setDoc(doc(db, "sessions", sessionId), {
-    id: sessionId,
-    teacherId,
-    classId,
-    joinCode,
+    id: sessionId, teacherId, classId, joinCode,
     type: "review",
     status: "waiting",
     currentQuestion: -1,
-    timerSeconds,
-    timerEndsAt: null,
+    timerSeconds, timerEndsAt: null,
     questions,
     participants: {},
     createdAt: Date.now(),
@@ -293,45 +270,22 @@ export async function createSession(teacherId, classId, questions, timerSeconds)
   return { sessionId, joinCode };
 }
 
-// ── Classwork session (teacher-generated questions) ───────────────
+// Classwork session (teacher-generated questions)
 export async function createClassworkSession(teacherId, classId, timerSeconds) {
   const sessionId = "sess_" + Date.now().toString(36);
   const joinCode = generateJoinCode();
   await setDoc(doc(db, "sessions", sessionId), {
-    id: sessionId,
-    teacherId,
-    classId,
-    joinCode,
+    id: sessionId, teacherId, classId, joinCode,
     type: "classwork",
     status: "waiting",
     currentTopic: null,
-    currentQuestion: null,   // { id, prompt, top, bot, numbers, answer, type }
-    questionCount: 0,        // how many questions pushed so far
-    timerSeconds,
-    timerEndsAt: null,
+    currentQuestion: null,
+    questionCount: 0,
+    timerSeconds, timerEndsAt: null,
     participants: {},
     createdAt: Date.now(),
   });
   return { sessionId, joinCode };
-}
-
-// Push a newly generated question to all students
-export async function pushGeneratedQuestion(sessionId, question, timerSeconds) {
-  const qId = "q_" + Date.now().toString(36);
-  await updateDoc(doc(db, "sessions", sessionId), {
-    status: "question",
-    currentQuestion: { ...question, id: qId },
-    currentTopic: question.topic,
-    timerSeconds,
-    timerEndsAt: Date.now() + timerSeconds * 1000,
-    questionCount: increment(1),
-  });
-  return qId;
-}
-
-// Reveal answers for current generated question
-export async function revealGeneratedQuestion(sessionId) {
-  await updateDoc(doc(db, "sessions", sessionId), { status: "revealing" });
 }
 
 export async function joinSession(joinCode, uid, name) {
@@ -355,12 +309,35 @@ export async function startQuestion(sessionId, questionIndex, timerSeconds) {
   });
 }
 
+export async function pushGeneratedQuestion(sessionId, question, timerSeconds) {
+  const qId = "q_" + Date.now().toString(36);
+  await updateDoc(doc(db, "sessions", sessionId), {
+    status: "question",
+    currentQuestion: { ...question, id: qId },
+    currentTopic: question.topic,
+    timerSeconds,
+    timerEndsAt: Date.now() + timerSeconds * 1000,
+    questionCount: increment(1),
+  });
+  return qId;
+}
+
 export async function revealQuestion(sessionId) {
+  await updateDoc(doc(db, "sessions", sessionId), { status: "revealing" });
+}
+
+export async function revealGeneratedQuestion(sessionId) {
   await updateDoc(doc(db, "sessions", sessionId), { status: "revealing" });
 }
 
 export async function endSession(sessionId) {
   await updateDoc(doc(db, "sessions", sessionId), { status: "ended" });
+}
+
+export async function addToScore(sessionId, uid, points) {
+  await updateDoc(doc(db, "sessions", sessionId), {
+    [`participants.${uid}.totalScore`]: increment(points),
+  });
 }
 
 export async function submitClassworkAnswer(sessionId, uid, questionId, answer, correct) {
@@ -373,30 +350,6 @@ export async function submitClassworkAnswer(sessionId, uid, questionId, answer, 
       [`participants.${uid}.totalScore`]: increment(1),
     });
   }
-}
-
-export function onClassworkAnswersChange(sessionId, questionId, cb) {
-  const q = query(
-    collection(db, "sessions", sessionId, "answers"),
-    where("questionId", "==", questionId)
-  );
-  return onSnapshot(q, snap => cb(snap.docs.map(d => d.data())));
-}
-  const answerId = `${uid}_${questionIndex}`;
-  await setDoc(doc(db, "sessions", sessionId, "answers", answerId), {
-    uid, questionIndex, answer, correct, points, submittedAt: Date.now(),
-  });
-  if (correct && points > 0) {
-    await updateDoc(doc(db, "sessions", sessionId), {
-      [`participants.${uid}.totalScore`]: points,
-    });
-  }
-}
-
-export async function addToScore(sessionId, uid, points) {
-  await updateDoc(doc(db, "sessions", sessionId), {
-    [`participants.${uid}.totalScore`]: increment(points),
-  });
 }
 
 export async function getSessionAnswers(sessionId, questionIndex) {
@@ -414,6 +367,14 @@ export function onAnswersChange(sessionId, questionIndex, cb) {
   const q = query(
     collection(db, "sessions", sessionId, "answers"),
     where("questionIndex", "==", questionIndex)
+  );
+  return onSnapshot(q, snap => cb(snap.docs.map(d => d.data())));
+}
+
+export function onClassworkAnswersChange(sessionId, questionId, cb) {
+  const q = query(
+    collection(db, "sessions", sessionId, "answers"),
+    where("questionId", "==", questionId)
   );
   return onSnapshot(q, snap => cb(snap.docs.map(d => d.data())));
 }
