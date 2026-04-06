@@ -4,7 +4,7 @@ import {
   assignTopicToClass, unassignTopicFromClass, reorderTopics,
   updateAssignment, saveCategories, getClassProgress,
   normalizeAssignments, calculateGrade, gradeToLetter,
-} from "./firebase";
+} from "../core/firebase";
 import { getPublishedTopics, getTopic } from "./registry";
 
 // ─── Helpers ──────────────────────────────────────────────────────
