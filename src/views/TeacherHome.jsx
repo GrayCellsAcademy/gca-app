@@ -4,8 +4,8 @@ import {
   assignTopicToClass, unassignTopicFromClass, reorderTopics,
   updateAssignment, saveCategories, getClassProgress,
   normalizeAssignments, calculateGrade, gradeToLetter,
-} from "../core/firebase";
-import { getPublishedTopics, getTopic } from "../registry";
+} from "./firebase";
+import { getPublishedTopics, getTopic } from "./registry";
 
 // ─── Helpers ──────────────────────────────────────────────────────
 function uid4() { return Math.random().toString(36).slice(2, 6); }
@@ -86,7 +86,7 @@ function CategoryManager({ categories, onChange }) {
 }
 
 // ─── Assignment Row (in topic list) ──────────────────────────────
-function AssignmentRow({ assignment, categories, onUpdate, onRemove }) {
+function AssignmentRow({ assignment, categories, onUpdate, onRemove, onReset }) {
   const topic = getTopic(assignment.topicId);
   if (!topic) return null;
 
@@ -117,6 +117,10 @@ function AssignmentRow({ assignment, categories, onUpdate, onRemove }) {
         style={{ fontSize: 13, padding: "5px 8px", width: 140 }}
       />
 
+      <button onClick={onReset}
+        style={{ background: "rgba(251,191,36,0.1)", color: "var(--amber)", border: "1px solid rgba(251,191,36,0.3)", borderRadius: "var(--radius-sm)", padding: "4px 10px", fontSize: 12, cursor: "pointer", fontFamily: "var(--font)", fontWeight: 600, whiteSpace: "nowrap" }}>
+        Reset All
+      </button>
       <button onClick={onRemove}
         style={{ background: "rgba(239,68,68,0.1)", color: "var(--red)", border: "1px solid rgba(239,68,68,0.3)", borderRadius: "var(--radius-sm)", padding: "4px 10px", fontSize: 12, cursor: "pointer", fontFamily: "var(--font)", fontWeight: 600, whiteSpace: "nowrap" }}>
         Remove
@@ -126,7 +130,7 @@ function AssignmentRow({ assignment, categories, onUpdate, onRemove }) {
 }
 
 // ─── Gradebook ────────────────────────────────────────────────────
-function Gradebook({ students, assignments, categories }) {
+function Gradebook({ students, assignments, categories, onResetStudent }) {
   const [progress, setProgress] = useState({});
   const [loading, setLoading] = useState(true);
 
@@ -178,6 +182,7 @@ function Gradebook({ students, assignments, categories }) {
             })}
             <th style={{ textAlign: "center", minWidth: 80 }}>Grade</th>
             <th style={{ textAlign: "center", minWidth: 50 }}>Letter</th>
+            <th style={{ textAlign: "center", minWidth: 60 }}>Reset</th>
           </tr>
         </thead>
         <tbody>
@@ -220,11 +225,80 @@ function Gradebook({ students, assignments, categories }) {
                 <td style={{ textAlign: "center", fontWeight: 800, fontSize: 16, color: letterColor }}>
                   {letter}
                 </td>
+                <td style={{ textAlign: "center" }}>
+                  <button
+                    onClick={() => onResetStudent(s.id, s.name)}
+                    style={{ background: "rgba(251,191,36,0.1)", color: "var(--amber)", border: "1px solid rgba(251,191,36,0.3)", borderRadius: "var(--radius-sm)", padding: "3px 8px", fontSize: 11, cursor: "pointer", fontFamily: "var(--font)", fontWeight: 600, whiteSpace: "nowrap" }}>
+                    Reset
+                  </button>
+                </td>
               </tr>
             );
           })}
         </tbody>
       </table>
+    </div>
+  );
+}
+
+
+// ─── Reset Dialog ─────────────────────────────────────────────────
+function ResetDialog({ topicTitle, targetName, onConfirm, onCancel }) {
+  const [checked, setChecked] = useState(false);
+  return (
+    <div style={{
+      position: "fixed", inset: 0, zIndex: 1000,
+      background: "rgba(0,0,0,0.7)",
+      display: "flex", alignItems: "center", justifyContent: "center",
+      padding: 20,
+    }}>
+      <div className="card" style={{
+        maxWidth: 480, width: "100%",
+        border: "2px solid rgba(239,68,68,0.5)",
+        animation: "popIn 0.2s ease",
+      }}>
+        <div style={{ fontSize: 36, marginBottom: 12 }}>⚠️</div>
+        <h3 style={{ fontSize: 18, fontWeight: 800, marginBottom: 8, color: "var(--red)" }}>
+          Reset Assignment Progress
+        </h3>
+        <p style={{ fontSize: 14, color: "var(--text2)", marginBottom: 8, lineHeight: 1.7 }}>
+          You are about to reset <strong style={{ color: "var(--text)" }}>{topicTitle}</strong> for{" "}
+          <strong style={{ color: "var(--text)" }}>{targetName}</strong>.
+        </p>
+        <p style={{ fontSize: 14, color: "var(--text2)", marginBottom: 20, lineHeight: 1.7 }}>
+          This will permanently erase all progress and set their grade for this assignment back to zero.
+          This action cannot be undone.
+        </p>
+        <label style={{
+          display: "flex", alignItems: "center", gap: 10,
+          padding: "12px 16px", borderRadius: "var(--radius-sm)",
+          background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)",
+          cursor: "pointer", marginBottom: 20,
+        }}>
+          <input type="checkbox" checked={checked} onChange={e => setChecked(e.target.checked)}
+            style={{ width: 18, height: 18, cursor: "pointer" }} />
+          <span style={{ fontSize: 14, fontWeight: 600, color: "var(--text)" }}>
+            I understand this will affect grades and cannot be undone
+          </span>
+        </label>
+        <div style={{ display: "flex", gap: 10 }}>
+          <button className="btn btn-ghost" style={{ flex: 1 }} onClick={onCancel}>
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            disabled={!checked}
+            style={{
+              flex: 1, padding: "10px", borderRadius: "var(--radius)", border: "none",
+              background: checked ? "var(--red)" : "rgba(239,68,68,0.3)",
+              color: "#fff", fontFamily: "var(--font)", fontWeight: 700,
+              fontSize: 14, cursor: checked ? "pointer" : "not-allowed",
+              transition: "all 0.2s",
+            }}>
+            Reset Progress
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -239,6 +313,7 @@ function ClassPanel({ cls, onUpdate }) {
   const [categories, setCategories] = useState(cls.categories || []);
   const [catDirty, setCatDirty] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [resetDialog, setResetDialog] = useState(null); // { topicId, topicTitle, uid, name } or { topicId, topicTitle, all: true }
 
   const publishedTopics = getPublishedTopics();
   const assignments = normalizeAssignments(cls.assignedTopics);
@@ -277,6 +352,19 @@ function ClassPanel({ cls, onUpdate }) {
     onUpdate();
   };
 
+  const handleResetClass = async (topicId) => {
+    const sids = cls.studentIds || [];
+    await resetClassProgress(sids, topicId);
+    setResetDialog(null);
+    onUpdate();
+  };
+
+  const handleResetStudent = async (uid, topicId) => {
+    await resetStudentProgress(uid, topicId);
+    setResetDialog(null);
+    onUpdate();
+  };
+
   const handleRemove = async (topicId) => {
     await unassignTopicFromClass(cls.id, topicId);
     onUpdate();
@@ -294,6 +382,32 @@ function ClassPanel({ cls, onUpdate }) {
 
   return (
     <div className="card" style={{ marginBottom: 16 }}>
+      {/* Reset Dialog */}
+      {resetDialog && (
+        <ResetDialog
+          topicTitle={resetDialog.topicTitle}
+          targetName={resetDialog.all
+            ? `all ${cls.studentIds?.length || 0} students in this class`
+            : resetDialog.name}
+          onCancel={() => setResetDialog(null)}
+          onConfirm={async () => {
+            if (resetDialog.all) {
+              await handleResetClass(resetDialog.topicId);
+            } else if (resetDialog.uid && resetDialog.topicId === null) {
+              // Reset all assignments for this student
+              const assignments = normalizeAssignments(cls.assignedTopics);
+              for (const a of assignments) {
+                await resetStudentProgress(resetDialog.uid, a.topicId);
+              }
+              setResetDialog(null);
+              onUpdate();
+            } else {
+              await handleResetStudent(resetDialog.uid, resetDialog.topicId);
+            }
+          }}
+        />
+      )}
+
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", cursor: "pointer", flexWrap: "wrap", gap: 10 }} onClick={toggle}>
         <div>
@@ -351,6 +465,10 @@ function ClassPanel({ cls, onUpdate }) {
                     categories={categories}
                     onUpdate={updates => handleUpdate(a.topicId, updates)}
                     onRemove={() => handleRemove(a.topicId)}
+                    onReset={() => {
+                      const t = getTopic(a.topicId);
+                      setResetDialog({ topicId: a.topicId, topicTitle: t?.title || a.topicId, all: true });
+                    }}
                   />
                 ))}
               </div>
@@ -378,6 +496,10 @@ function ClassPanel({ cls, onUpdate }) {
                 students={students}
                 assignments={assignments}
                 categories={categories}
+                onResetStudent={(uid, name) => {
+                  // Reset all assignments for this student
+                  setResetDialog({ uid, name, all: false, topicId: null, topicTitle: "all assignments" });
+                }}
               />
             )
           )}
