@@ -3,11 +3,13 @@ import {
   getTeacherClasses, createClass, getStudentsForClass,
   assignTopicToClass, unassignTopicFromClass, reorderTopics,
   updateAssignment, saveCategories, getClassProgress,
-  normalizeAssignments, calculateGrade, gradeToLetter,
+  normalizeAssignments, calculateGrade, gradeToLetter, resetStudentProgress, resetClassProgress,
 } from "../core/firebase";
 import { getPublishedTopics, getTopic } from "../registry";
 
+
 // ─── Helpers ──────────────────────────────────────────────────────
+
 function uid4() { return Math.random().toString(36).slice(2, 6); }
 
 function weightTotal(categories) {
@@ -313,8 +315,8 @@ function ClassPanel({ cls, onUpdate }) {
   const [categories, setCategories] = useState(cls.categories || []);
   const [catDirty, setCatDirty] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [resetDialog, setResetDialog] = useState(null); // { topicId, topicTitle, uid, name } or { topicId, topicTitle, all: true }
-
+  const [resetDialog, setResetDialog] = useState(null);
+  
   const publishedTopics = getPublishedTopics();
   const assignments = normalizeAssignments(cls.assignedTopics);
   const assignedIds = assignments.map(a => a.topicId);
@@ -364,6 +366,10 @@ function ClassPanel({ cls, onUpdate }) {
     setResetDialog(null);
     onUpdate();
   };
+
+  
+
+  
 
   const handleRemove = async (topicId) => {
     await unassignTopicFromClass(cls.id, topicId);
