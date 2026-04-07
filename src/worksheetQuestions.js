@@ -267,3 +267,165 @@ export function gradeDecimalAnswer(studentAnswer, question) {
 
   return false;
 }
+
+// ─── Question Generators (for repeat functionality) ───────────────
+
+function randDecimal(intDigits, decDigits) {
+  const intPart = Math.floor(Math.random() * (Math.pow(10, intDigits) - Math.pow(10, intDigits-1))) + Math.pow(10, intDigits-1);
+  const decPart = Math.floor(Math.random() * Math.pow(10, decDigits));
+  return parseFloat(`${intPart}.${String(decPart).padStart(decDigits, '0')}`);
+}
+
+function round(n, places) {
+  return Math.round(n * Math.pow(10, places)) / Math.pow(10, places);
+}
+
+export function generateSimilarQuestion(originalQuestion) {
+  const id = originalQuestion.id;
+  const qNum = parseInt(id.replace('w', ''));
+
+  // Section 1: Decimal Multiplication
+  if (qNum === 1) {
+    // decimal × whole number
+    const a = randDecimal(1, 2); // e.g. 6.38
+    const b = Math.floor(Math.random() * 8) + 2; // 2-9
+    const ans = round(a * b, 2);
+    return { ...originalQuestion, prompt: `${a} × ${b}`, answer: String(ans), altAnswers: [String(ans)] };
+  }
+  if (qNum === 2) {
+    // decimal × decimal (1dp × 2dp)
+    const a = randDecimal(2, 1); // e.g. 10.1
+    const b = randDecimal(0, 2); // e.g. 0.53
+    const ans = round(a * b, 3);
+    return { ...originalQuestion, prompt: `${a} × ${b}`, answer: String(ans), altAnswers: [String(ans)] };
+  }
+  if (qNum === 3) {
+    // decimal × decimal (1dp × 2dp)
+    const a = randDecimal(1, 1); // e.g. 5.8
+    const b = randDecimal(0, 2); // e.g. 0.62
+    const ans = round(a * b, 3);
+    return { ...originalQuestion, prompt: `${a} × ${b}`, answer: String(ans), altAnswers: [String(ans)] };
+  }
+
+  // Section 2: Fraction to Decimal
+  if (qNum >= 4 && qNum <= 6) {
+    // Terminating decimals - denominator from {2,4,5,8,10,20,25}
+    const denoms = [2, 4, 5, 8, 10, 20, 25];
+    const den = denoms[Math.floor(Math.random() * denoms.length)];
+    const num = Math.floor(Math.random() * (den * 3)) + den + 1;
+    const ans = round(num / den, 4);
+    return { ...originalQuestion, prompt: `Convert ${num}/${den} to a decimal`, answer: String(ans), altAnswers: [String(ans)], mode: 'decimal' };
+  }
+  if (qNum === 7) {
+    // Repeating - /3
+    const num = Math.floor(Math.random() * 20) + 1;
+    const ans = round(num / 3, 3);
+    return { ...originalQuestion, prompt: `Convert ${num}/3 to a decimal`, answer: String(ans), altAnswers: [String(ans), String(round(num/3, 4)), String(round(num/3, 2))] };
+  }
+  if (qNum === 8) {
+    // Repeating - large/6
+    const num = Math.floor(Math.random() * 500) + 100;
+    const ans = round(num / 6, 3);
+    return { ...originalQuestion, prompt: `Convert ${num}/6 to a decimal`, answer: String(ans), altAnswers: [String(ans), String(round(num/6, 4)), String(round(num/6, 2))] };
+  }
+  if (qNum === 9) {
+    // Repeating - /11
+    const num = Math.floor(Math.random() * 50) + 10;
+    const ans = round(num / 11, 4);
+    return { ...originalQuestion, prompt: `Convert ${num}/11 to a decimal`, answer: String(ans), altAnswers: [String(ans), String(round(num/11, 2))] };
+  }
+
+  // Section 3: Decimal Division
+  if (qNum === 10) {
+    // whole ÷ 0.0x
+    const b = (Math.floor(Math.random() * 9) + 1) / 100;
+    const quotient = Math.floor(Math.random() * 8) + 2;
+    const a = round(b * quotient, 0);
+    const ans = round(a / b, 1);
+    return { ...originalQuestion, prompt: `${a} ÷ ${b}`, answer: String(ans), altAnswers: [String(ans)] };
+  }
+  if (qNum === 11) {
+    // 0.0x ÷ 0.x
+    const b = (Math.floor(Math.random() * 9) + 1) / 10;
+    const quotient = (Math.floor(Math.random() * 9) + 1) / 10;
+    const a = round(b * quotient, 2);
+    const ans = round(a / b, 2);
+    return { ...originalQuestion, prompt: `${a} ÷ ${b}`, answer: String(ans), altAnswers: [String(ans)] };
+  }
+  if (qNum === 12) {
+    // 0.0xx ÷ 0.x
+    const b = (Math.floor(Math.random() * 8) + 2) / 10;
+    const quotient = (Math.floor(Math.random() * 9) + 1) / 100;
+    const a = round(b * quotient, 3);
+    const ans = round(a / b, 2);
+    return { ...originalQuestion, prompt: `${a} ÷ ${b}`, answer: String(ans), altAnswers: [String(ans)] };
+  }
+  if (qNum === 13) {
+    // 0.x ÷ whole
+    const b = Math.floor(Math.random() * 8) + 2;
+    const quotient = (Math.floor(Math.random() * 9) + 1) / 100;
+    const a = round(b * quotient, 1);
+    const ans = round(a / b, 2);
+    return { ...originalQuestion, prompt: `${a} ÷ ${b}`, answer: String(ans), altAnswers: [String(ans)] };
+  }
+  if (qNum === 14) {
+    // decimal ÷ 0.00x (repeating result)
+    const b = (Math.floor(Math.random() * 6) + 2) / 1000;
+    const quotient = Math.floor(Math.random() * 200) + 50;
+    const a = round(b * quotient, 2);
+    const ans = round(a / b, 2);
+    return { ...originalQuestion, prompt: `${a} ÷ ${b}`, answer: String(ans), altAnswers: [String(ans)], mode: 'decimal-repeating' };
+  }
+  if (qNum === 15) {
+    // xx.x ÷ 0.x
+    const b = (Math.floor(Math.random() * 8) + 2) / 10;
+    const quotient = Math.floor(Math.random() * 60) + 10;
+    const a = round(b * quotient, 1);
+    const ans = round(a / b, 1);
+    return { ...originalQuestion, prompt: `${a} ÷ ${b}`, answer: String(ans), altAnswers: [String(ans)] };
+  }
+
+  // Section 4: Order of Operations
+  if (qNum === 16) {
+    // a + b × c  (decimals)
+    const b = round((Math.floor(Math.random() * 8) + 1) / 10, 1);
+    const c = round((Math.floor(Math.random() * 8) + 1) / 10, 1);
+    const a = round((Math.floor(Math.random() * 8) + 1) / 100, 2);
+    const ans = round(a + b * c, 4);
+    return { ...originalQuestion, prompt: `${a} + ${b} · ${c}`, answer: String(ans), altAnswers: [String(ans)] };
+  }
+  if (qNum === 17) {
+    // a + b²
+    const b = round((Math.floor(Math.random() * 8) + 1) / 10, 1);
+    const a = round((Math.floor(Math.random() * 8) + 1) / 100, 2);
+    const ans = round(a + b * b, 4);
+    return { ...originalQuestion, prompt: `${a} + ${b}²`, answer: String(ans), altAnswers: [String(ans)] };
+  }
+  if (qNum === 18) {
+    // (a ÷ b)³
+    const b = round((Math.floor(Math.random() * 4) + 1) / 2, 1); // 0.5, 1.0, 1.5, 2.0
+    const quotient = Math.floor(Math.random() * 5) + 2;
+    const a = round(b * quotient, 1);
+    const ans = round(Math.pow(a / b, 3), 2);
+    return { ...originalQuestion, prompt: `(${a} ÷ ${b})³`, answer: String(ans), altAnswers: [String(ans)] };
+  }
+  if (qNum === 19) {
+    // a ÷ (b - c)
+    const c = round((Math.floor(Math.random() * 8) + 1) / 10, 1);
+    const b = round(c + (Math.floor(Math.random() * 5) + 1) / 10, 1);
+    const diff = round(b - c, 1);
+    const quotient = Math.floor(Math.random() * 50) + 10;
+    const a = round(diff * quotient, 2);
+    const ans = round(a / diff, 2);
+    return { ...originalQuestion, prompt: `${a} ÷ (${b} − ${c})`, answer: String(ans), altAnswers: [String(ans)] };
+  }
+  if (qNum === 20) {
+    // a² ÷ b
+    const a = round((Math.floor(Math.random() * 8) + 1) / 10, 1);
+    const b = Math.floor(Math.random() * 8) + 2;
+    const ans = round((a * a) / b, 4);
+    return { ...originalQuestion, prompt: `${a}² ÷ ${b}`, answer: String(ans), altAnswers: [String(ans)] };
+  }
+
+  return originalQuestion;
+}

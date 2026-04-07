@@ -4,7 +4,7 @@ import {
   createSession, joinSession, startQuestion, revealQuestion, endSession,
   addToScore, onSessionChange, onAnswersChange, getTeacherClasses, db,
 } from "./core/firebase";
-import { WORKSHEET_QUESTIONS, TOTAL_POINTS, gradeDecimalAnswer } from "./worksheetQuestions";
+import { WORKSHEET_QUESTIONS, TOTAL_POINTS, gradeDecimalAnswer, generateSimilarQuestion } from "./worksheetQuestions";
 
 // ─── Helpers ──────────────────────────────────────────────────────
 function medalEmoji(rank) {
@@ -79,9 +79,11 @@ function Leaderboard({ participants, currentUid, isEnded }) {
 function TeacherWorksheet({ session, sessionId, uid }) {
   const [answers, setAnswers] = useState([]);
   const [timerInput, setTimerInput] = useState(90);
+  const [overrideQuestion, setOverrideQuestion] = useState(null);
 
   const qIdx = session.currentQuestion >= 0 ? session.currentQuestion : null;
-  const question = qIdx !== null ? WORKSHEET_QUESTIONS[qIdx] : null;
+  const baseQuestion = qIdx !== null ? WORKSHEET_QUESTIONS[qIdx] : null;
+  const question = overrideQuestion || baseQuestion;
   const participants = session.participants || {};
   const totalStudents = Object.keys(participants).length;
 
@@ -97,8 +99,24 @@ function TeacherWorksheet({ session, sessionId, uid }) {
   };
   const handleNext = async () => {
     const next = (qIdx ?? -1) + 1;
+    setOverrideQuestion(null);
     if (next >= WORKSHEET_QUESTIONS.length) await endSession(sessionId);
     else await startQuestion(sessionId, next, timerInput);
+  };
+
+  const handleRepeat = async () => {
+    const base = baseQuestion;
+    if (!base) return;
+    const similar = generateSimilarQuestion(base);
+    setOverrideQuestion(similar);
+    // Push new question to Firestore so students see it
+    await updateDoc(doc(db, "sessions", sessionId), {
+      currentQuestionOverride: similar,
+      status: "question",
+      timerEndsAt: Date.now() + timerInput * 1000,
+      timerSeconds: timerInput,
+    });
+    setAnswers([]);
   };
   const handleReveal = async () => {
     // Award points for correct answers
@@ -141,9 +159,12 @@ function TeacherWorksheet({ session, sessionId, uid }) {
               <button className="btn btn-ghost" onClick={handleReveal}>📊 Reveal</button>
             )}
             {session.status === "revealing" && (
-              <button className="btn btn-primary" onClick={handleNext}>
-                {(qIdx ?? -1) + 1 >= WORKSHEET_QUESTIONS.length ? "End Session" : "Next Question →"}
-              </button>
+              <>
+                <button className="btn btn-ghost" onClick={handleRepeat}>🔁 Repeat Question</button>
+                <button className="btn btn-primary" onClick={handleNext}>
+                  {(qIdx ?? -1) + 1 >= WORKSHEET_QUESTIONS.length ? "End Session" : "Next Question →"}
+                </button>
+              </>
             )}
             <button className="btn btn-ghost" style={{ color: "var(--red)" }} onClick={handleEnd}>End</button>
           </div>
@@ -258,7 +279,7 @@ function StudentWorksheet({ session, sessionId, uid }) {
   const inputRef = useRef(null);
 
   const qIdx = session.currentQuestion >= 0 ? session.currentQuestion : null;
-  const question = qIdx !== null ? WORKSHEET_QUESTIONS[qIdx] : null;
+  const question = session.currentQuestionOverride || (qIdx !== null ? WORKSHEET_QUESTIONS[qIdx] : null);
   const participants = session.participants || {};
   const myScore = participants[uid]?.totalScore || 0;
 
@@ -269,6 +290,13 @@ function StudentWorksheet({ session, sessionId, uid }) {
       setTimeout(() => inputRef.current?.focus(), 100);
     }
   }, [qIdx]);
+
+  // Reset when teacher pushes a repeat question
+  const overrideKey = JSON.stringify(session.currentQuestionOverride?.prompt);
+  useEffect(() => {
+    setInput(""); setSubmitted(false); setResult(null);
+    setTimeout(() => inputRef.current?.focus(), 100);
+  }, [overrideKey]);
 
   const handleSubmit = async () => {
     if (!question || submitted || !input.trim()) return;
