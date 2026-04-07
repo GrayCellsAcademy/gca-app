@@ -709,7 +709,7 @@ export default function LiveSession({ user, onHome }) {
             ? (user.role === "teacher" ? <ClassworkTeacherView session={session} sessionId={sessionId} uid={user.id} /> : <ClassworkStudentView session={session} sessionId={sessionId} uid={user.id} />)
             : (user.role === "teacher"
             ? <TeacherSession session={session} sessionId={sessionId} uid={user.id} />
-            : <StudentSession session={session} sessionId={sessionId} uid={user.id} />
+            : <StudentSession session={session} sessionId={sessionId} uid={user.id} />)
         )}
         {view === "session" && !session && (
           <div style={{ display: "flex", justifyContent: "center", padding: 60 }}><div className="spinner" /></div>
