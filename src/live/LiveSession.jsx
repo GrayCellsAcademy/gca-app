@@ -623,13 +623,8 @@ export default function LiveSession({ user, onHome }) {
     return <WorksheetSession user={user} onHome={() => setView("menu")} />;
   }
 
-  if (view === "worksheet") {
-    return <WorksheetSession user={user} onHome={() => setView("menu")} />;
-  }
-
   if (view === "classwork") {
     return <ClassworkSessionWrapper user={user} onHome={() => setView("menu")} />;
-  }
   }
 
   return (
