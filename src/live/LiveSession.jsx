@@ -623,6 +623,10 @@ export default function LiveSession({ user, onHome }) {
     return <WorksheetSession user={user} onHome={() => setView("menu")} />;
   }
 
+  if (view === "worksheet") {
+    return <WorksheetSession user={user} onHome={() => setView("menu")} />;
+  }
+
   if (view === "classwork") {
     return <ClassworkSessionWrapper user={user}
 
@@ -691,6 +695,16 @@ export default function LiveSession({ user, onHome }) {
                       <div style={{ color: "var(--text2)", fontSize: 13 }}>20 questions - decimal multiplication, division, fraction conversion, order of operations.</div>
                     </div>
                   </div>
+                  <div className="card" onClick={() => setView("worksheet")}
+                    style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 16 }}
+                    onMouseEnter={e => e.currentTarget.style.borderColor = "var(--blue)"}
+                    onMouseLeave={e => e.currentTarget.style.borderColor = "var(--border)"}>
+                    <div style={{ fontSize: 36 }}>W</div>
+                    <div>
+                      <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 4 }}>Decimal Operations Worksheet</div>
+                      <div style={{ color: "var(--text2)", fontSize: 13 }}>20 questions - decimals.</div>
+                    </div>
+                  </div>
                   <div className="card" onClick={() => setView("create")}
                     style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 16 }}
                     onMouseEnter={e => e.currentTarget.style.borderColor = "var(--blue)"}
@@ -731,4 +745,5 @@ export default function LiveSession({ user, onHome }) {
     </div>
   );
 }
+
 
