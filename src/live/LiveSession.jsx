@@ -3,10 +3,10 @@ import { setDoc, doc } from "firebase/firestore";
 import {
   createSession, joinSession, startQuestion, revealQuestion, endSession,
   addToScore, onSessionChange, onAnswersChange, getTeacherClasses, db,
-} from "../core/firebase";
-import { gradeAnswer } from "../core/utils/fractionUtils";
-import { REVIEW_QUESTIONS, TOTAL_POINTS } from "./sessionQuestions/lesson14";
-import ClassworkSession, { ClassworkTeacherView, ClassworkStudentView } from "../ClassworkSession";
+} from "./firebase";
+import { gradeAnswer } from "./fractionUtils";
+import { REVIEW_QUESTIONS, TOTAL_POINTS } from "./sessionQuestions";
+import ClassworkSession from "./ClassworkSession";
 
 // Wrapper so classwork session gets the same full-screen treatment
 function ClassworkSessionWrapper({ user, onHome }) {
@@ -691,16 +691,9 @@ export default function LiveSession({ user, onHome }) {
         {view === "create" && <CreateSession user={user} onCreated={handleCreated} />}
         {view === "join" && <JoinScreen user={user} onJoined={handleJoined} />}
         {view === "session" && session && (
-          (() => {
-            if (session.type === "classwork") {
-              return user.role === "teacher"
-                ? <ClassworkTeacherView session={session} sessionId={sessionId} uid={user.id} />
-                : <ClassworkStudentView session={session} sessionId={sessionId} uid={user.id} />;
-            }
-            return user.role === "teacher"
-              ? <TeacherSession session={session} sessionId={sessionId} uid={user.id} />
-              : <StudentSession session={session} sessionId={sessionId} uid={user.id} />;
-          })()
+          user.role === "teacher"
+            ? <TeacherSession session={session} sessionId={sessionId} uid={user.id} />
+            : <StudentSession session={session} sessionId={sessionId} uid={user.id} />
         )}
         {view === "session" && !session && (
           <div style={{ display: "flex", justifyContent: "center", padding: 60 }}><div className="spinner" /></div>
