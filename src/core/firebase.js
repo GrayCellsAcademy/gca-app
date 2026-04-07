@@ -254,12 +254,12 @@ export function generateJoinCode() {
 }
 
 // Review session (pre-loaded questions)
-export async function createSession(teacherId, classId, questions, timerSeconds) {
+export async function createSession(teacherId, classId, questions, timerSeconds, type = "review") {
   const sessionId = "sess_" + Date.now().toString(36);
   const joinCode = generateJoinCode();
   await setDoc(doc(db, "sessions", sessionId), {
     id: sessionId, teacherId, classId, joinCode,
-    type: "review",
+    type,
     status: "waiting",
     currentQuestion: -1,
     timerSeconds, timerEndsAt: null,
