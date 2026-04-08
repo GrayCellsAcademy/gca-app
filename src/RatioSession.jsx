@@ -105,6 +105,31 @@ function TimerBar({ endsAt, totalSeconds, onExpired }) {
   );
 }
 
+
+// ─── Fraction Display ─────────────────────────────────────────────
+function AlgebraicDisplay({ prompt }) {
+  // Parse "a/(bx+c) = d/(ex+f)" into fraction display
+  const match = prompt.match(/^(.+)\/\((.+)\)\s*=\s*(.+)\/\((.+)\)$/);
+  if (!match) return <div style={{ fontSize: 22, fontWeight: 800 }}>{prompt}</div>;
+  const [, num1, den1, num2, den2] = match;
+  const fracStyle = { display: "inline-flex", flexDirection: "column", alignItems: "center", gap: 0, verticalAlign: "middle", margin: "0 8px" };
+  const numStyle = { fontSize: 22, fontWeight: 800, padding: "2px 8px", borderBottom: "2.5px solid var(--text)", textAlign: "center", minWidth: 40 };
+  const denStyle = { fontSize: 22, fontWeight: 800, padding: "2px 8px", textAlign: "center", minWidth: 40 };
+  return (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, flexWrap: "wrap", fontSize: 22, fontWeight: 800 }}>
+      <div style={fracStyle}>
+        <div style={numStyle}>{num1}</div>
+        <div style={denStyle}>{den1}</div>
+      </div>
+      <span style={{ fontSize: 24 }}>=</span>
+      <div style={fracStyle}>
+        <div style={numStyle}>{num2}</div>
+        <div style={denStyle}>{den2}</div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Teacher View ─────────────────────────────────────────────────
 function TeacherRatio({ session, sessionId, uid }) {
   const [answers, setAnswers] = useState([]);
@@ -153,6 +178,26 @@ function TeacherRatio({ session, sessionId, uid }) {
     await revealGeneratedQuestion(sessionId);
   };
 
+  const handleNextTopic = async () => {
+    const nextIdx = Math.min(currentTopicIdx + 1, TOPIC_LABELS.length - 1);
+    setCurrentTopicIdx(nextIdx);
+    const nextTopic = TOPIC_LABELS[nextIdx];
+    const q = generateQuestion(nextTopic.id);
+    const qId = "q_" + Date.now().toString(36);
+    q.id = qId;
+    q.points = POINTS_PER_QUESTION;
+    revealedRef.current = false;
+    setAnswers([]);
+    await updateDoc(doc(db, "sessions", sessionId), {
+      status: "question",
+      currentQuestion: q,
+      currentTopic: nextTopic.id,
+      timerSeconds: timerInput,
+      timerEndsAt: Date.now() + timerInput * 1000,
+      questionCount: session.questionCount ? session.questionCount + 1 : 1,
+    });
+  };
+
   const handleTimerExpired = async () => {
     if (session.status === "question" && !revealedRef.current) {
       await handleReveal();
@@ -187,7 +232,14 @@ function TeacherRatio({ session, sessionId, uid }) {
               <button className="btn btn-ghost" onClick={handleReveal}>Reveal Answers</button>
             )}
             {session.status === "revealing" && (
-              <button className="btn btn-primary" onClick={handleGenerate}>Next Question</button>
+              <>
+                <button className="btn btn-ghost" onClick={handleGenerate}>Repeat Topic</button>
+                {currentTopicIdx < TOPIC_LABELS.length - 1 && (
+                  <button className="btn btn-primary" onClick={handleNextTopic}>
+                    Next Topic: {TOPIC_LABELS[Math.min(currentTopicIdx + 1, TOPIC_LABELS.length - 1)].label}
+                  </button>
+                )}
+              </>
             )}
             <button className="btn btn-ghost" style={{ color: "var(--red)" }} onClick={handleEnd}>End</button>
           </div>
@@ -257,8 +309,11 @@ function TeacherRatio({ session, sessionId, uid }) {
                 <div style={{ fontSize: 12, color: "var(--text3)", marginBottom: 8 }}>
                   {TOPIC_LABELS.find(t => t.id === question.type)?.label} - {submittedCount}/{totalStudents} submitted - {correctCount} correct
                 </div>
-                <div style={{ fontSize: question.prompt.length > 80 ? 16 : 22, fontWeight: 800, color: "var(--text)", lineHeight: 1.5, marginBottom: 12 }}>
-                  {question.prompt}
+                <div style={{ marginBottom: 12 }}>
+                  {question.type === "algebraic"
+                    ? <AlgebraicDisplay prompt={question.prompt} />
+                    : <div style={{ fontSize: question.prompt.length > 80 ? 16 : 22, fontWeight: 800, color: "var(--text)", lineHeight: 1.5 }}>{question.prompt}</div>
+                  }
                 </div>
                 {session.status === "question" && session.timerEndsAt && (
                   <TimerBar endsAt={session.timerEndsAt} totalSeconds={session.timerSeconds} onExpired={handleTimerExpired} />
@@ -410,8 +465,11 @@ function StudentRatio({ session, sessionId, uid }) {
         )}
 
         {question && (
-          <div style={{ fontSize: question.prompt.length > 100 ? 15 : 20, fontWeight: 700, marginBottom: 20, color: "var(--text)", lineHeight: 1.6 }}>
-            {question.prompt}
+          <div style={{ marginBottom: 20 }}>
+            {question.type === "algebraic"
+              ? <AlgebraicDisplay prompt={question.prompt} />
+              : <div style={{ fontSize: question.prompt.length > 100 ? 15 : 20, fontWeight: 700, color: "var(--text)", lineHeight: 1.6 }}>{question.prompt}</div>
+            }
           </div>
         )}
 

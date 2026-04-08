@@ -144,10 +144,15 @@ export function genAlgebraicProportion() {
     const ae = a * e, dc2 = d * c, db = d * b, af = a * f;
     const lhsCoef = ae - db;
     const rhs = dc2 - af;
+    // Build expanded terms carefully
+    const lhsExpanded = af >= 0 ? `${ae}x + ${af}` : `${ae}x - ${Math.abs(af)}`;
+    const rhsExpanded = dc2 >= 0 ? `${db}x + ${dc2}` : `${db}x - ${Math.abs(dc2)}`;
+    const rhsVal = rhs >= 0 ? `${rhs}` : `${rhs}`;
     const work = [
-      `Cross multiply: ${a}(${rhsDen}) = ${d}(${lhsDen})`,
-      `${ae}x + ${af} = ${db}x + ${dc2}`,
-      `${lhsCoef}x = ${rhs}`,
+      `Cross multiply:`,
+      `${a}(${rhsDen}) = ${d}(${lhsDen})`,
+      `${lhsExpanded} = ${rhsExpanded}`,
+      `${lhsCoef}x = ${rhsVal}`,
       `x = ${answer}`,
     ].join('\n');
 
