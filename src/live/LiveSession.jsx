@@ -715,7 +715,6 @@ export default function LiveSession({ user, onHome }) {
         {view === "create" && <CreateSession user={user} onCreated={handleCreated} />}
         {view === "join" && <JoinScreen user={user} onJoined={handleJoined} />}
         {view === "session" && session && (
-          user.role === "teacher"
             session.type === "ratio"
             ? (user.role === "teacher" ? <RatioTeacherView session={session} sessionId={sessionId} uid={user.id} /> : <RatioStudentView session={session} sessionId={sessionId} uid={user.id} />)
             : session.type === "worksheet"
