@@ -254,12 +254,12 @@ export function generateJoinCode() {
 }
 
 // Review session (pre-loaded questions)
-export async function createSession(teacherId, classId, questions, timerSeconds, type = "review") {
+export async function createSession(teacherId, classId, questions, timerSeconds) {
   const sessionId = "sess_" + Date.now().toString(36);
   const joinCode = generateJoinCode();
   await setDoc(doc(db, "sessions", sessionId), {
     id: sessionId, teacherId, classId, joinCode,
-    type,
+    type: "review",
     status: "waiting",
     currentQuestion: -1,
     timerSeconds, timerEndsAt: null,
@@ -377,13 +377,4 @@ export function onClassworkAnswersChange(sessionId, questionId, cb) {
     where("questionId", "==", questionId)
   );
   return onSnapshot(q, snap => cb(snap.docs.map(d => d.data())));
-}
-
-export async function resetStudentProgress(uid, topicId) {
-  const id = `${uid}_${topicId}`;
-  await deleteDoc(doc(db, "progress", id));
-}
-
-export async function resetClassProgress(studentIds, topicId) {
-  await Promise.all(studentIds.map(uid => resetStudentProgress(uid, topicId)));
 }
