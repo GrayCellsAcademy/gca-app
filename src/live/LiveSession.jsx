@@ -716,8 +716,13 @@ export default function LiveSession({ user, onHome }) {
         {view === "join" && <JoinScreen user={user} onJoined={handleJoined} />}
         {view === "session" && session && (
           user.role === "teacher"
-            ? <TeacherSession session={session} sessionId={sessionId} uid={user.id} />
-            : <StudentSession session={session} sessionId={sessionId} uid={user.id} />
+            session.type === "ratio"
+            ? (user.role === "teacher" ? <RatioTeacherView session={session} sessionId={sessionId} uid={user.id} /> : <RatioStudentView session={session} sessionId={sessionId} uid={user.id} />)
+            : session.type === "worksheet"
+            ? (user.role === "teacher" ? <WorksheetTeacherView session={session} sessionId={sessionId} uid={user.id} /> : <WorksheetStudentView session={session} sessionId={sessionId} uid={user.id} />)
+            : session.type === "classwork"
+            ? (user.role === "teacher" ? <ClassworkTeacherView session={session} sessionId={sessionId} uid={user.id} /> : <ClassworkStudentView session={session} sessionId={sessionId} uid={user.id} />)
+            : (user.role === "teacher" ? <TeacherSession session={session} sessionId={sessionId} uid={user.id} /> : <StudentSession session={session} sessionId={sessionId} uid={user.id} />)
         )}
         {view === "session" && !session && (
           <div style={{ display: "flex", justifyContent: "center", padding: 60 }}><div className="spinner" /></div>
@@ -726,6 +731,7 @@ export default function LiveSession({ user, onHome }) {
     </div>
   );
 }
+
 
 
 
