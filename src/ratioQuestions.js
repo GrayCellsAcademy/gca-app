@@ -269,36 +269,52 @@ export function gradeWriteProportion(studentInput, question) {
 // ── Type 5: Solve Word Problem ────────────────────────────────────
 const SOLVE_TEMPLATES = [
   {
-    context: "A train travels {a} km in {b} hours. At the same speed, how many hours will it take to travel {c} km?",
-    unit: "hours",
+    // a km per b hours, how many km in c hours? (c = b*mult, answer = a*mult)
+    context: "A train travels {a} km every {b} hours. At the same speed, how many km will it travel in {c} hours?",
+    unit: "km",
+    askA: true,
   },
   {
-    context: "A pump fills {a} liters of water in {b} minutes. How many minutes will it take to fill {c} liters?",
-    unit: "minutes",
+    // a liters per b minutes, how many liters in c minutes?
+    context: "A pump fills {a} liters every {b} minutes. How many liters will it fill in {c} minutes?",
+    unit: "liters",
+    askA: true,
   },
   {
-    context: "If {a} workers can build a wall in {b} days, how many days will it take {c} workers at the same rate?",
-    unit: "days",
+    // a pages per b seconds, how many pages in c seconds?
+    context: "A printer prints {a} pages every {b} seconds. How many pages will it print in {c} seconds?",
+    unit: "pages",
+    askA: true,
   },
   {
+    // shadow a per pole b, tree shadow c, how tall is tree?
     context: "A shadow {a} meters long is cast by a pole {b} meters tall. How tall is a tree that casts a shadow {c} meters long?",
     unit: "meters",
+    askA: true,
   },
   {
-    context: "A painter paints {a} square meters in {b} hours. How many square meters can they paint in {c} hours?",
+    // a sq meters per b hours, how many sq meters in c hours?
+    context: "A painter paints {a} square meters every {b} hours. How many square meters can they paint in {c} hours?",
     unit: "square meters",
+    askA: true,
   },
   {
+    // a mL per b seconds, how many mL in c seconds?
     context: "A faucet drips {a} mL of water every {b} seconds. How many mL will drip in {c} seconds?",
     unit: "mL",
+    askA: true,
   },
   {
+    // a kg per b sq meters, how many kg for c sq meters?
     context: "If {a} kg of fertilizer covers {b} square meters of lawn, how many kg are needed for {c} square meters?",
     unit: "kg",
+    askA: true,
   },
   {
-    context: "A snail moves {a} cm in {b} minutes. How many cm will it move in {c} minutes?",
+    // a cm per b minutes, how many cm in c minutes?
+    context: "A snail moves {a} cm every {b} minutes. How many cm will it move in {c} minutes?",
     unit: "cm",
+    askA: true,
   },
 ];
 
@@ -308,22 +324,24 @@ export function genSolveWordProblem() {
     const a = randInt(2, 15);
     const b = randInt(2, 15);
     const mult = randInt(2, 6);
-    const c = a * mult;
-    const d = b * mult;
-    if (c >= 100 || d >= 100) continue;
+    // c is always a multiple of b, answer (x) is always a*mult
+    const c = b * mult;
+    const answer = a * mult;
+    if (c >= 100 || answer >= 100) continue;
 
     const prompt = tmpl.context
       .replace('{a}', a)
       .replace('{b}', b)
       .replace('{c}', c);
 
-    const proportion = `${a}:${b} = ${c}:x`;
-    const work = `${a}:${b} = ${c}:x\n${a}x = ${b}×${c}\n${a}x = ${b * c}\nx = ${d}`;
+    // Proportion: a:b = x:c  →  bx = ac  →  x = ac/b = a*mult
+    const proportion = `${a}:${b} = x:${c}`;
+    const work = `${a}:${b} = x:${c}\n${b}x = ${a}*${c}\n${b}x = ${a * c}\nx = ${answer}`;
 
     return {
       type: "solve-word",
       prompt,
-      answer: String(d),
+      answer: String(answer),
       unit: tmpl.unit,
       proportion,
       work,
