@@ -2,6 +2,7 @@
 import AdditionTablesPlayer from "./AdditionTablesPlayer";
 import ColumnAdditionPlayer from "./ColumnAdditionPlayer";
 import Lesson01MasteryPlayer from "./Lesson01MasteryPlayer";
+import ExtraCredit01Player from "./ExtraCredit01Player";
 
 export const TOPICS = {
   "addition-tables-v1": {
@@ -39,6 +40,18 @@ export const TOPICS = {
     status: "published",
     order: 3,
     Player: Lesson01MasteryPlayer,
+  },
+  "lesson01-extra-credit-v1": {
+    id: "lesson01-extra-credit-v1",
+    title: "Missing Digit Challenge",
+    description: "Find the missing digit in column addition and subtraction problems. Get all 6 types correct in a row.",
+    subject: "math",
+    gradeLevel: "6+",
+    icon: "⭐",
+    type: "extra-credit",
+    status: "published",
+    order: 4,
+    Player: ExtraCredit01Player,
   },
 };
 
