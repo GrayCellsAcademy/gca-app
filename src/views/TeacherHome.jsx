@@ -1,20 +1,21 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   getTeacherClasses, createClass, getStudentsForClass,
   assignTopicToClass, unassignTopicFromClass, reorderTopics,
   updateAssignment, saveCategories, getClassProgress,
   normalizeAssignments, calculateGrade, gradeToLetter,
+  resetStudentProgress, resetClassProgress,
 } from "../core/firebase";
 import { getPublishedTopics, getTopic } from "../registry";
 
-//  Helpers 
+// ─── Helpers ──────────────────────────────────────────────────────
 function uid4() { return Math.random().toString(36).slice(2, 6); }
 
 function weightTotal(categories) {
   return categories.reduce((s, c) => s + (Number(c.weight) || 0), 0);
 }
 
-//  Category Manager 
+// ─── Category Manager ─────────────────────────────────────────────
 function CategoryManager({ categories, onChange }) {
   const [cats, setCats] = useState(categories);
   const [newName, setNewName] = useState("");
@@ -43,7 +44,7 @@ function CategoryManager({ categories, onChange }) {
           Grade Categories
         </div>
         <div style={{ fontSize: 13, fontWeight: 700, color: totalOk ? "var(--green)" : "var(--red)" }}>
-          Total: {total}% {totalOk ? "" : "(must equal 100%)"}
+          Total: {total}% {totalOk ? "✓" : "(must equal 100%)"}
         </div>
       </div>
 
@@ -66,7 +67,7 @@ function CategoryManager({ categories, onChange }) {
               <span style={{ fontSize: 13, color: "var(--text3)" }}>%</span>
             </div>
             <button onClick={() => removeCat(cat.id)}
-              style={{ background: "none", border: "none", color: "var(--red)", cursor: "pointer", fontSize: 16, padding: "0 4px" }}></button>
+              style={{ background: "none", border: "none", color: "var(--red)", cursor: "pointer", fontSize: 16, padding: "0 4px" }}>×</button>
           </div>
         ))}
       </div>
@@ -85,14 +86,19 @@ function CategoryManager({ categories, onChange }) {
   );
 }
 
-//  Assignment Row (in topic list) 
+// ─── Assignment Row (in topic list) ──────────────────────────────
 function AssignmentRow({ assignment, categories, onUpdate, onRemove, onReset }) {
   const topic = getTopic(assignment.topicId);
-  if (!topic) return null;
+  // For live session assignments, topic won't be in registry
+  const isSession = assignment.isSession || false;
+  const displayTitle = isSession
+    ? (assignment.sessionTitle || "Live Session")
+    : (topic?.title || assignment.topicId);
+  if (!topic && !isSession) return null;
 
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 10, background: "var(--bg2)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "10px 14px" }}>
-      <div style={{ color: "var(--text3)", fontSize: 16, userSelect: "none" }}></div>
+      <div style={{ color: "var(--text3)", fontSize: 16, userSelect: "none" }}>⠿</div>
       <span style={{ fontSize: 18 }}>{topic.icon}</span>
       <div style={{ flex: 1 }}>
         <div style={{ fontWeight: 700, fontSize: 14 }}>{topic.title}</div>
@@ -129,7 +135,7 @@ function AssignmentRow({ assignment, categories, onUpdate, onRemove, onReset }) 
   );
 }
 
-//  Gradebook 
+// ─── Gradebook ────────────────────────────────────────────────────
 function Gradebook({ students, assignments, categories, onResetStudent }) {
   const [progress, setProgress] = useState({});
   const [loading, setLoading] = useState(true);
@@ -166,6 +172,8 @@ function Gradebook({ students, assignments, categories, onResetStudent }) {
             <th style={{ minWidth: 130 }}>Student</th>
             {assignments.map(a => {
               const topic = getTopic(a.topicId);
+              const isSession = a.isSession || false;
+              const displayTitle = isSession ? (a.sessionTitle || "Live Session") : (topic?.title || a.topicId);
               const cat = categories.find(c => c.id === a.categoryId);
               const overdue = a.dueDate && a.dueDate < today;
               return (
@@ -204,7 +212,7 @@ function Gradebook({ students, assignments, categories, onResetStudent }) {
                     <td key={a.topicId} style={{ textAlign: "center" }}>
                       {pct === null ? (
                         <span style={{ color: overdue ? "var(--red)" : "var(--text3)", fontSize: 12 }}>
-                          {overdue ? "Overdue" : ""}
+                          {overdue ? "Overdue" : "—"}
                         </span>
                       ) : (
                         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
@@ -220,7 +228,7 @@ function Gradebook({ students, assignments, categories, onResetStudent }) {
                   );
                 })}
                 <td style={{ textAlign: "center", fontWeight: 700, fontSize: 15 }}>
-                  {grade !== null ? `${grade}%` : ""}
+                  {grade !== null ? `${grade}%` : "—"}
                 </td>
                 <td style={{ textAlign: "center", fontWeight: 800, fontSize: 16, color: letterColor }}>
                   {letter}
@@ -242,7 +250,7 @@ function Gradebook({ students, assignments, categories, onResetStudent }) {
 }
 
 
-//  Reset Dialog 
+// ─── Reset Dialog ─────────────────────────────────────────────────
 function ResetDialog({ topicTitle, targetName, onConfirm, onCancel }) {
   const [checked, setChecked] = useState(false);
   return (
@@ -257,7 +265,7 @@ function ResetDialog({ topicTitle, targetName, onConfirm, onCancel }) {
         border: "2px solid rgba(239,68,68,0.5)",
         animation: "popIn 0.2s ease",
       }}>
-        <div style={{ fontSize: 36, marginBottom: 12 }}></div>
+        <div style={{ fontSize: 36, marginBottom: 12 }}>⚠️</div>
         <h3 style={{ fontSize: 18, fontWeight: 800, marginBottom: 8, color: "var(--red)" }}>
           Reset Assignment Progress
         </h3>
@@ -303,7 +311,7 @@ function ResetDialog({ topicTitle, targetName, onConfirm, onCancel }) {
   );
 }
 
-//  Class Panel 
+// ─── Class Panel ──────────────────────────────────────────────────
 function ClassPanel({ cls, onUpdate }) {
   const [expanded, setExpanded] = useState(false);
   const [tab, setTab] = useState("assignments"); // assignments | gradebook
@@ -414,12 +422,12 @@ function ClassPanel({ cls, onUpdate }) {
           <h3 style={{ fontSize: 18, fontWeight: 800, marginBottom: 2 }}>{cls.name}</h3>
           <div style={{ color: "var(--text2)", fontSize: 13 }}>
             Password: <strong style={{ color: "var(--text)" }}>{cls.password}</strong>
-            {"  "}{cls.studentIds?.length || 0} student{cls.studentIds?.length !== 1 ? "s" : ""}
-            {"  "}{assignments.length} assignment{assignments.length !== 1 ? "s" : ""}
-            {"  "}{categories.length} categor{categories.length !== 1 ? "ies" : "y"}
+            {" · "}{cls.studentIds?.length || 0} student{cls.studentIds?.length !== 1 ? "s" : ""}
+            {" · "}{assignments.length} assignment{assignments.length !== 1 ? "s" : ""}
+            {" · "}{categories.length} categor{categories.length !== 1 ? "ies" : "y"}
           </div>
         </div>
-        <div style={{ width: 28, height: 28, borderRadius: "50%", background: "var(--bg2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, color: "var(--text2)", transition: "transform 0.2s", transform: expanded ? "rotate(180deg)" : "none" }}></div>
+        <div style={{ width: 28, height: 28, borderRadius: "50%", background: "var(--bg2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, color: "var(--text2)", transition: "transform 0.2s", transform: expanded ? "rotate(180deg)" : "none" }}>▼</div>
       </div>
 
       {expanded && (
@@ -427,7 +435,7 @@ function ClassPanel({ cls, onUpdate }) {
 
           {/* Tab bar */}
           <div style={{ display: "flex", gap: 4, background: "var(--bg2)", borderRadius: "var(--radius)", padding: 4, marginBottom: 20, width: "fit-content" }}>
-            {[["assignments", " Assignments"], ["gradebook", " Gradebook"]].map(([id, label]) => (
+            {[["assignments", "📋 Assignments"], ["gradebook", "📊 Gradebook"]].map(([id, label]) => (
               <button key={id} onClick={() => { setTab(id); if (id === "gradebook") loadStudents(); }}
                 style={{ padding: "8px 18px", borderRadius: "var(--radius-sm)", border: "none", background: tab === id ? "var(--blue)" : "transparent", color: tab === id ? "#fff" : "var(--text2)", fontFamily: "var(--font)", fontWeight: 600, fontSize: 13, cursor: "pointer", transition: "all 0.15s" }}>
                 {label}
@@ -443,7 +451,7 @@ function ClassPanel({ cls, onUpdate }) {
                 {catDirty && (
                   <div style={{ marginTop: 12 }}>
                     <button className="btn btn-primary btn-sm" onClick={saveCategoriesToDB} disabled={saving}>
-                      {saving ? "Saving" : "Save Categories"}
+                      {saving ? "Saving…" : "Save Categories"}
                     </button>
                   </div>
                 )}
@@ -509,7 +517,7 @@ function ClassPanel({ cls, onUpdate }) {
   );
 }
 
-//  Teacher Home 
+// ─── Teacher Home ─────────────────────────────────────────────────
 export default function TeacherHome({ user, onLogout, onLiveSession }) {
   const [classes, setClasses] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -541,7 +549,7 @@ export default function TeacherHome({ user, onLogout, onLiveSession }) {
         {/* Top bar */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 32, flexWrap: "wrap", gap: 12 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <div style={{ width: 40, height: 40, borderRadius: 12, background: "linear-gradient(135deg,var(--blue),var(--cyan))", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}></div>
+            <div style={{ width: 40, height: 40, borderRadius: 12, background: "linear-gradient(135deg,var(--blue),var(--cyan))", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>🎓</div>
             <div>
               <div style={{ fontWeight: 800, fontSize: 20 }}>GCA</div>
               <div style={{ color: "var(--text3)", fontSize: 12 }}>Teacher Dashboard</div>
@@ -552,7 +560,7 @@ export default function TeacherHome({ user, onLogout, onLiveSession }) {
               <div style={{ fontWeight: 700, fontSize: 15 }}>{user.name}</div>
               <div style={{ color: "var(--text3)", fontSize: 12 }}>Teacher</div>
             </div>
-            <button className="btn btn-ghost btn-sm" onClick={onLiveSession}> Live Session</button>
+            <button className="btn btn-ghost btn-sm" onClick={onLiveSession}>🎮 Live Session</button>
             <button className="btn btn-ghost btn-sm" onClick={onLogout}>Log Out</button>
           </div>
         </div>
@@ -581,7 +589,7 @@ export default function TeacherHome({ user, onLogout, onLiveSession }) {
           <div style={{ display: "flex", justifyContent: "center", padding: 60 }}><div className="spinner" /></div>
         ) : classes.length === 0 ? (
           <div className="card" style={{ textAlign: "center", padding: "50px 20px" }}>
-            <div style={{ fontSize: 48, marginBottom: 12 }}></div>
+            <div style={{ fontSize: 48, marginBottom: 12 }}>🏫</div>
             <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 8 }}>No classes yet</h3>
             <p style={{ color: "var(--text2)", fontSize: 14, marginBottom: 20 }}>Create your first class to get started.</p>
             <button className="btn btn-primary btn-lg" onClick={() => setShowCreate(true)}>+ Create Your First Class</button>
@@ -593,5 +601,3 @@ export default function TeacherHome({ user, onLogout, onLiveSession }) {
     </div>
   );
 }
-
-

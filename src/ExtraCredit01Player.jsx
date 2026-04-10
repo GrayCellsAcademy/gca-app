@@ -227,6 +227,13 @@ export default function ExtraCredit01Player({ user, topic, onHome }) {
     </div>
   );
 
+  // Still generating problem
+  if (!display) return (
+    <div style={{ display: "flex", justifyContent: "center", padding: 60 }}>
+      <div className="spinner" />
+    </div>
+  );
+
   const currentTopicLabel = EC_TOPICS[streak % EC_TOPICS.length]?.label || "";
   const allMissing = display?.allMissing || [];
   const filledCount = Object.keys(enteredDigits).length;
