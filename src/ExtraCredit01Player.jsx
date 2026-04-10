@@ -1,11 +1,11 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import { saveProgress, getProgress } from "./core/firebase";
 import { EC_TOPICS, generateExtraCreditProblem, buildProblemDisplay, gradeAllMissing } from "./extraCredit01";
 
 export const EC_TOPIC_ID = "lesson01-extra-credit-v1";
 const STREAK_NEEDED = 6;
 
-// ─── Column Problem Display ───────────────────────────────────────
+//  Column Problem Display 
 function MissingDigitProblem({ display, activeCellKey, enteredDigits, phase }) {
   if (!display) return null;
   const { rows, ansRow, isAdd } = display;
@@ -62,7 +62,7 @@ function MissingDigitProblem({ display, activeCellKey, enteredDigits, phase }) {
   );
 }
 
-// ─── Digit Keypad ─────────────────────────────────────────────────
+//  Digit Keypad 
 function Keypad({ onDigit, onBack, disabled }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 6, alignItems: "center" }}>
@@ -88,7 +88,7 @@ function Keypad({ onDigit, onBack, disabled }) {
   );
 }
 
-// ─── Streak Bar ───────────────────────────────────────────────────
+//  Streak Bar 
 function StreakBar({ streak, needed }) {
   return (
     <div style={{ marginBottom: 16 }}>
@@ -105,7 +105,7 @@ function StreakBar({ streak, needed }) {
   );
 }
 
-// ─── Main Player ──────────────────────────────────────────────────
+//  Main Player 
 export default function ExtraCredit01Player({ user, topic, onHome }) {
   const topicId = topic?.id || EC_TOPIC_ID;
 
@@ -175,7 +175,7 @@ export default function ExtraCredit01Player({ user, topic, onHome }) {
     if (activeCellIdx + 1 < allMissing.length) {
       setActiveCellIdx(activeCellIdx + 1);
     } else {
-      // All cells filled — check answer
+      // All cells filled  check answer
       const correct = gradeAllMissing(newEntered, problem);
       if (correct) {
         const newStreak = streak + 1;
@@ -294,3 +294,4 @@ export default function ExtraCredit01Player({ user, topic, onHome }) {
     </div>
   );
 }
+

@@ -1,10 +1,10 @@
-// ─── Lesson 1 Extra Credit — Missing Digit Problems ───────────────
+﻿//  Lesson 1 Extra Credit  Missing Digit Problems 
 import {
   genAddNoCarry, genAddCarry, genAddMulti,
   genSubNoBorow, genSubBorrow, genSubBorrowZero,
 } from "./lesson01Mastery";
 
-// ─── Core equation checker ────────────────────────────────────────
+//  Core equation checker 
 function checkAdd(numbers, answer) {
   return numbers.reduce((s, n) => s + n, 0) === answer;
 }
@@ -12,7 +12,7 @@ function checkSub(top, bot, answer) {
   return top - bot === answer;
 }
 
-// ─── Represent a problem as arrays of digit slots ─────────────────
+//  Represent a problem as arrays of digit slots 
 // slot: { value: digit, missing: bool, target: 'num'|'ans'|'top'|'bot', numIdx, posFromRight }
 function problemToSlots(problem) {
   const isAdd = problem.type.startsWith("add");
@@ -51,7 +51,7 @@ function problemToSlots(problem) {
   return { slots, isAdd, numbers: [...numbers], answer, maxLen };
 }
 
-// ─── Reconstruct numbers from slots ──────────────────────────────
+//  Reconstruct numbers from slots 
 function slotsToValues(slots, isAdd, origNumbers, origAnswer) {
   const numbers = origNumbers.map((num, ni) => {
     const numStr = String(num);
@@ -76,7 +76,7 @@ function slotsToValues(slots, isAdd, origNumbers, origAnswer) {
   return { numbers, answer };
 }
 
-// ─── Check if a set of missing slots has unique solutions ─────────
+//  Check if a set of missing slots has unique solutions 
 function hasUniqueSolution(problem, missingSlotIndices, slots) {
   const { isAdd, numbers: origNums, answer: origAns } = problem;
   const missingSlots = missingSlotIndices.map(i => slots[i]);
@@ -117,7 +117,7 @@ function hasUniqueSolution(problem, missingSlotIndices, slots) {
   return { unique: validCombos === 1, solution: validCombo };
 }
 
-// ─── Find maximum set of removable digits ─────────────────────────
+//  Find maximum set of removable digits 
 function maximizeRemovals(problem) {
   const { slots, isAdd } = problemToSlots(problem);
   const n = slots.length;
@@ -176,7 +176,7 @@ function maximizeRemovals(problem) {
   return { removals, slots };
 }
 
-// ─── Generate a missing digit problem ─────────────────────────────
+//  Generate a missing digit problem 
 export function generateExtraCreditProblem(topicId) {
   let attempts = 0;
   while (attempts < 200) {
@@ -204,7 +204,7 @@ export function generateExtraCreditProblem(topicId) {
   return null;
 }
 
-// ─── The 6 extra credit topic types ──────────────────────────────
+//  The 6 extra credit topic types 
 export const EC_TOPICS = [
   { id: "add-no-carry",    label: "Addition - No Carrying" },
   { id: "add-carry",       label: "Addition - With Carrying" },
@@ -214,7 +214,7 @@ export const EC_TOPICS = [
   { id: "sub-borrow-zero", label: "Subtraction - Borrowing from Zero" },
 ];
 
-// ─── Build display rows for rendering ────────────────────────────
+//  Build display rows for rendering 
 export function buildProblemDisplay(problem) {
   if (!problem) return null;
   const { removals } = problem;
@@ -281,7 +281,7 @@ export function buildProblemDisplay(problem) {
   return { rows, ansRow, isAdd, maxLen, allMissing };
 }
 
-// ─── Grade answer for all missing digits ─────────────────────────
+//  Grade answer for all missing digits 
 export function gradeAllMissing(enteredDigits, problem) {
   // enteredDigits: { posFromRight, target, numIdx } -> digit
   return problem.removals.every(r => {
@@ -289,3 +289,4 @@ export function gradeAllMissing(enteredDigits, problem) {
     return enteredDigits[key] === r.correctDigit;
   });
 }
+
