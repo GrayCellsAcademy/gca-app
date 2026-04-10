@@ -381,7 +381,7 @@ export function onClassworkAnswersChange(sessionId, questionId, cb) {
 
 
 export async function resetStudentProgress(uid, topicId) {
-  const id = `_`;
+  const id = uid + '_' + topicId;
   await deleteDoc(doc(db, 'progress', id));
 }
 

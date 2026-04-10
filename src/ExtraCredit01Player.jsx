@@ -227,7 +227,7 @@ export default function ExtraCredit01Player({ user, topic, onHome }) {
     </div>
   );
 
-  // Still generating problem
+  // Still generating problem - show spinner until display is ready
   if (!display) return (
     <div style={{ display: "flex", justifyContent: "center", padding: 60 }}>
       <div className="spinner" />
