@@ -4,200 +4,288 @@ import {
   genSubNoBorow, genSubBorrow, genSubBorrowZero,
 } from "./lesson01Mastery";
 
-// ── Check if an equation is valid ────────────────────────────────
-// Given numbers array and answer, check if addition holds
-function checkAddition(numbers, answer) {
+// ─── Core equation checker ────────────────────────────────────────
+function checkAdd(numbers, answer) {
   return numbers.reduce((s, n) => s + n, 0) === answer;
 }
-function checkSubtraction(top, bot, answer) {
+function checkSub(top, bot, answer) {
   return top - bot === answer;
 }
 
-// ── Try to substitute a digit into a position and check validity ──
-function substituteDigit(str, posFromRight, digit) {
-  const arr = str.split("");
-  const pos = arr.length - 1 - posFromRight;
-  if (pos < 0 || pos >= arr.length) return null;
-  arr[pos] = String(digit);
-  return parseInt(arr.join(""));
+// ─── Represent a problem as arrays of digit slots ─────────────────
+// slot: { value: digit, missing: bool, target: 'num'|'ans'|'top'|'bot', numIdx, posFromRight }
+function problemToSlots(problem) {
+  const isAdd = problem.type.startsWith("add");
+  const numbers = isAdd ? problem.numbers : [problem.top, problem.bot];
+  const answer = problem.answer;
+  const maxLen = Math.max(...numbers.map(n => String(n).length), String(answer).length);
+  const slots = [];
+
+  numbers.forEach((num, ni) => {
+    const str = String(num).padStart(maxLen, " ");
+    str.split("").forEach((ch, ci) => {
+      if (ch === " ") return;
+      const posFromRight = maxLen - 1 - ci;
+      slots.push({
+        value: parseInt(ch),
+        missing: false,
+        target: isAdd ? "num" : (ni === 0 ? "top" : "bot"),
+        numIdx: ni,
+        posFromRight,
+      });
+    });
+  });
+
+  const ansStr = String(answer).padStart(maxLen, " ");
+  ansStr.split("").forEach((ch, ci) => {
+    if (ch === " ") return;
+    const posFromRight = maxLen - 1 - ci;
+    slots.push({
+      value: parseInt(ch),
+      missing: false,
+      target: "ans",
+      posFromRight,
+    });
+  });
+
+  return { slots, isAdd, numbers: [...numbers], answer, maxLen };
 }
 
-// ── Find positions where removing a digit gives unique solution ───
-function findRemovableDigits(problem) {
-  const { type } = problem;
-  const removable = []; // { target: 'number'|'answer'|'top'|'bot', numberIdx, posFromRight, correctDigit }
+// ─── Reconstruct numbers from slots ──────────────────────────────
+function slotsToValues(slots, isAdd, origNumbers, origAnswer) {
+  const numbers = origNumbers.map((num, ni) => {
+    const numStr = String(num);
+    let arr = numStr.split("");
+    slots.filter(s => (isAdd ? s.target === "num" : (ni === 0 ? s.target === "top" : s.target === "bot")) && s.numIdx === ni)
+      .forEach(s => {
+        const pos = arr.length - 1 - s.posFromRight;
+        if (pos >= 0) arr[pos] = String(s.value);
+      });
+    return parseInt(arr.join(""));
+  });
 
-  if (type === "add-no-carry" || type === "add-carry" || type === "add-multi") {
-    const numbers = problem.numbers;
-    const answer = problem.answer;
-
-    // Try removing a digit from each number
-    numbers.forEach((num, ni) => {
-      const numStr = String(num);
-      for (let pos = 0; pos < numStr.length; pos++) {
-        const posFromRight = numStr.length - 1 - pos;
-        const correctDigit = parseInt(numStr[pos]);
-        // Count how many digits 0-9 work
-        let validDigits = [];
-        for (let d = 0; d <= 9; d++) {
-          const newNum = substituteDigit(numStr, posFromRight, d);
-          if (newNum === null) continue;
-          // Leading zero check
-          if (numStr.length > 1 && d === 0 && pos === 0) continue;
-          const newNumbers = [...numbers];
-          newNumbers[ni] = newNum;
-          if (checkAddition(newNumbers, answer)) validDigits.push(d);
-        }
-        if (validDigits.length === 1) {
-          removable.push({ target: "number", numberIdx: ni, posFromRight, correctDigit });
-        }
-      }
+  const ansStr = String(origAnswer);
+  let ansArr = ansStr.split("");
+  slots.filter(s => s.target === "ans")
+    .forEach(s => {
+      const pos = ansArr.length - 1 - s.posFromRight;
+      if (pos >= 0) ansArr[pos] = String(s.value);
     });
+  const answer = parseInt(ansArr.join(""));
 
-    // Try removing a digit from the answer
-    const ansStr = String(answer);
-    for (let pos = 0; pos < ansStr.length; pos++) {
-      const posFromRight = ansStr.length - 1 - pos;
-      const correctDigit = parseInt(ansStr[pos]);
-      let validDigits = [];
-      for (let d = 0; d <= 9; d++) {
-        const newAns = substituteDigit(ansStr, posFromRight, d);
-        if (newAns === null) continue;
-        if (ansStr.length > 1 && d === 0 && pos === 0) continue;
-        if (checkAddition(numbers, newAns)) validDigits.push(d);
+  return { numbers, answer };
+}
+
+// ─── Check if a set of missing slots has unique solutions ─────────
+function hasUniqueSolution(problem, missingSlotIndices, slots) {
+  const { isAdd, numbers: origNums, answer: origAns } = problem;
+  const missingSlots = missingSlotIndices.map(i => slots[i]);
+
+  // Try all combinations of digits for the missing slots
+  const digits = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+  let validCombos = 0;
+  let validCombo = null;
+
+  function tryCombo(slotIdx, current) {
+    if (validCombos > 1) return; // Early exit
+    if (slotIdx === missingSlots.length) {
+      // Check equation
+      const testSlots = slots.map((s, i) => {
+        const missingIdx = missingSlotIndices.indexOf(i);
+        return missingIdx >= 0 ? { ...s, value: current[missingIdx] } : s;
+      });
+      const { numbers, answer } = slotsToValues(testSlots, isAdd, origNums, origAns);
+      const valid = isAdd ? checkAdd(numbers, answer) : checkSub(numbers[0], numbers[1], answer);
+      if (valid) {
+        validCombos++;
+        if (validCombos === 1) validCombo = [...current];
       }
-      if (validDigits.length === 1) {
-        removable.push({ target: "answer", posFromRight, correctDigit });
-      }
+      return;
     }
 
-  } else {
-    // Subtraction
-    const { top, bot, answer } = problem;
-
-    // Try removing from top
-    const topStr = String(top);
-    for (let pos = 0; pos < topStr.length; pos++) {
-      const posFromRight = topStr.length - 1 - pos;
-      const correctDigit = parseInt(topStr[pos]);
-      let validDigits = [];
-      for (let d = 0; d <= 9; d++) {
-        const newTop = substituteDigit(topStr, posFromRight, d);
-        if (newTop === null) continue;
-        if (topStr.length > 1 && d === 0 && pos === 0) continue;
-        if (newTop >= bot && checkSubtraction(newTop, bot, answer)) validDigits.push(d);
-      }
-      if (validDigits.length === 1) {
-        removable.push({ target: "top", posFromRight, correctDigit });
-      }
+    const slot = missingSlots[slotIdx];
+    for (const d of digits) {
+      // No leading zeros
+      const strLen = String(isAdd ? origNums[slot.numIdx] : (slot.target === "top" ? origNums[0] : slot.target === "bot" ? origNums[1] : origAns)).length;
+      if (strLen > 1 && slot.posFromRight === strLen - 1 && d === 0) continue;
+      tryCombo(slotIdx + 1, [...current, d]);
+      if (validCombos > 1) return;
     }
+  }
 
-    // Try removing from bot
-    const botStr = String(bot);
-    for (let pos = 0; pos < botStr.length; pos++) {
-      const posFromRight = botStr.length - 1 - pos;
-      const correctDigit = parseInt(botStr[pos]);
-      let validDigits = [];
-      for (let d = 0; d <= 9; d++) {
-        const newBot = substituteDigit(botStr, posFromRight, d);
-        if (newBot === null) continue;
-        if (botStr.length > 1 && d === 0 && pos === 0) continue;
-        if (top >= newBot && checkSubtraction(top, newBot, answer)) validDigits.push(d);
-      }
-      if (validDigits.length === 1) {
-        removable.push({ target: "bot", posFromRight, correctDigit });
-      }
+  tryCombo(0, []);
+  return { unique: validCombos === 1, solution: validCombo };
+}
+
+// ─── Find maximum set of removable digits ─────────────────────────
+function maximizeRemovals(problem) {
+  const { slots, isAdd } = problemToSlots(problem);
+  const n = slots.length;
+
+  // Start with no removals, greedily add more
+  let currentMissing = [];
+  let shuffledIndices = [...Array(n).keys()].sort(() => Math.random() - 0.5);
+
+  for (const idx of shuffledIndices) {
+    const candidate = [...currentMissing, idx];
+    const { unique } = hasUniqueSolution(problem, candidate, slots);
+    if (unique) {
+      currentMissing = candidate;
     }
+  }
 
-    // Try removing from answer
-    const ansStr = String(answer);
-    for (let pos = 0; pos < ansStr.length; pos++) {
-      const posFromRight = ansStr.length - 1 - pos;
-      const correctDigit = parseInt(ansStr[pos]);
-      let validDigits = [];
-      for (let d = 0; d <= 9; d++) {
-        const newAns = substituteDigit(ansStr, posFromRight, d);
-        if (newAns === null) continue;
-        if (ansStr.length > 1 && d === 0 && pos === 0) continue;
-        if (checkSubtraction(top, bot, newAns)) validDigits.push(d);
-      }
-      if (validDigits.length === 1) {
-        removable.push({ target: "answer", posFromRight, correctDigit });
+  // Ensure at least one missing slot is in a number (not just answer)
+  const hasNumberMissing = currentMissing.some(i => slots[i].target !== "ans");
+  if (!hasNumberMissing) {
+    // Force include a number slot
+    const numSlotIndices = shuffledIndices.filter(i => slots[i].target !== "ans");
+    for (const idx of numSlotIndices) {
+      const candidate = [...currentMissing, idx];
+      const { unique } = hasUniqueSolution(problem, candidate, slots);
+      if (unique) {
+        currentMissing = candidate;
+        break;
+      } else {
+        // Try replacing answer slot with this number slot
+        for (let ai = 0; ai < currentMissing.length; ai++) {
+          if (slots[currentMissing[ai]].target === "ans") {
+            const swapped = [...currentMissing];
+            swapped[ai] = idx;
+            const { unique: u2 } = hasUniqueSolution(problem, swapped, slots);
+            if (u2) {
+              currentMissing = swapped;
+              break;
+            }
+          }
+        }
+        const hasNum = currentMissing.some(i => slots[i].target !== "ans");
+        if (hasNum) break;
       }
     }
   }
 
-  return removable;
+  // Get the correct values for missing slots
+  const removals = currentMissing.map(i => ({
+    slotIndex: i,
+    target: slots[i].target,
+    numIdx: slots[i].numIdx,
+    posFromRight: slots[i].posFromRight,
+    correctDigit: slots[i].value,
+  }));
+
+  return { removals, slots };
 }
 
-// ── Generate a missing digit problem ─────────────────────────────
-function genMissingDigitProblem(topicId) {
+// ─── Generate a missing digit problem ─────────────────────────────
+export function generateExtraCreditProblem(topicId) {
   let attempts = 0;
-  while (attempts < 100) {
+  while (attempts < 50) {
     attempts++;
     let problem;
     switch (topicId) {
-      case "add-no-carry":  problem = genAddNoCarry(3, 3); break;
-      case "add-carry":     problem = genAddCarry(4, 4); break;
-      case "add-multi":     problem = genAddMulti(); break;
-      case "sub-no-borrow": problem = genSubNoBorow(3, 3); break;
-      case "sub-borrow":    problem = genSubBorrow(4, 4); break;
+      case "add-no-carry":    problem = genAddNoCarry(3, 3); break;
+      case "add-carry":       problem = genAddCarry(4, 4); break;
+      case "add-multi":       problem = genAddMulti(); break;
+      case "sub-no-borrow":   problem = genSubNoBorow(3, 3); break;
+      case "sub-borrow":      problem = genSubBorrow(4, 4); break;
       case "sub-borrow-zero": problem = genSubBorrowZero(4, 4); break;
       default: problem = genAddNoCarry(3, 3);
     }
 
-    const removable = findRemovableDigits(problem);
-    if (removable.length === 0) continue;
+    const { removals, slots } = maximizeRemovals(problem);
+    if (removals.length === 0) continue;
 
-    // Pick one removal at random
-    const removal = removable[Math.floor(Math.random() * removable.length)];
-    return { ...problem, removal, topicId };
+    // Require at least one missing in a number
+    const hasNumberMissing = removals.some(r => r.target !== "ans");
+    if (!hasNumberMissing) continue;
+
+    return { ...problem, removals, slots };
   }
   return null;
 }
 
-// ── The 6 extra credit topic types ───────────────────────────────
+// ─── The 6 extra credit topic types ──────────────────────────────
 export const EC_TOPICS = [
-  { id: "add-no-carry",    label: "Addition — No Carrying" },
-  { id: "add-carry",       label: "Addition — With Carrying" },
-  { id: "add-multi",       label: "Addition — Multiple Numbers" },
-  { id: "sub-no-borrow",   label: "Subtraction — No Borrowing" },
-  { id: "sub-borrow",      label: "Subtraction — With Borrowing" },
-  { id: "sub-borrow-zero", label: "Subtraction — Borrowing from Zero" },
+  { id: "add-no-carry",    label: "Addition - No Carrying" },
+  { id: "add-carry",       label: "Addition - With Carrying" },
+  { id: "add-multi",       label: "Addition - Multiple Numbers" },
+  { id: "sub-no-borrow",   label: "Subtraction - No Borrowing" },
+  { id: "sub-borrow",      label: "Subtraction - With Borrowing" },
+  { id: "sub-borrow-zero", label: "Subtraction - Borrowing from Zero" },
 ];
 
-export function generateExtraCreditProblem(topicId) {
-  return genMissingDigitProblem(topicId);
-}
-
-// ── Build display representation ──────────────────────────────────
-// Returns rows of cells: each cell is { digit, isMissing, target, posFromRight, numberIdx? }
+// ─── Build display rows for rendering ────────────────────────────
 export function buildProblemDisplay(problem) {
   if (!problem) return null;
-  const { removal } = problem;
-  const isAddition = problem.type.startsWith("add");
-  const numbers = isAddition ? problem.numbers : [problem.top, problem.bot];
+  const { removals } = problem;
+  const isAdd = problem.type.startsWith("add");
+  const numbers = isAdd ? problem.numbers : [problem.top, problem.bot];
   const answer = problem.answer;
   const maxLen = Math.max(...numbers.map(n => String(n).length), String(answer).length);
 
+  function isMissing(target, numIdx, posFromRight) {
+    return removals.some(r =>
+      r.target === target &&
+      (target === "ans" || r.numIdx === numIdx) &&
+      r.posFromRight === posFromRight
+    );
+  }
+
+  function getCorrectDigit(target, numIdx, posFromRight) {
+    const r = removals.find(r =>
+      r.target === target &&
+      (target === "ans" || r.numIdx === numIdx) &&
+      r.posFromRight === posFromRight
+    );
+    return r ? r.correctDigit : null;
+  }
+
   const rows = numbers.map((num, ni) => {
     const str = String(num).padStart(maxLen, " ");
+    const target = isAdd ? "num" : (ni === 0 ? "top" : "bot");
     return str.split("").map((ch, ci) => {
       const posFromRight = maxLen - 1 - ci;
-      const isMissing = (
-        (isAddition && removal.target === "number" && removal.numberIdx === ni && removal.posFromRight === posFromRight) ||
-        (!isAddition && removal.target === (ni === 0 ? "top" : "bot") && removal.posFromRight === posFromRight)
-      );
-      return { digit: ch === " " ? "" : ch, isMissing, posFromRight, rowIndex: ni };
+      const missing = ch !== " " && isMissing(target, ni, posFromRight);
+      return {
+        digit: ch === " " ? "" : ch,
+        isMissing: missing,
+        correctDigit: missing ? getCorrectDigit(target, ni, posFromRight) : null,
+        posFromRight,
+        rowIndex: ni,
+        target,
+        numIdx: ni,
+      };
     });
   });
 
   const ansStr = String(answer).padStart(maxLen, " ");
   const ansRow = ansStr.split("").map((ch, ci) => {
     const posFromRight = maxLen - 1 - ci;
-    const isMissing = removal.target === "answer" && removal.posFromRight === posFromRight;
-    return { digit: ch === " " ? "" : ch, isMissing, posFromRight, rowIndex: -1 };
+    const missing = ch !== " " && isMissing("ans", null, posFromRight);
+    return {
+      digit: ch === " " ? "" : ch,
+      isMissing: missing,
+      correctDigit: missing ? getCorrectDigit("ans", null, posFromRight) : null,
+      posFromRight,
+      rowIndex: -1,
+      target: "ans",
+    };
   });
 
-  return { rows, ansRow, isAddition, maxLen };
+  // All missing cells in order for sequential answering
+  const allMissing = [
+    ...rows.flatMap(row => row.filter(c => c.isMissing)),
+    ...ansRow.filter(c => c.isMissing),
+  ];
+
+  return { rows, ansRow, isAdd, maxLen, allMissing };
+}
+
+// ─── Grade answer for all missing digits ─────────────────────────
+export function gradeAllMissing(enteredDigits, problem) {
+  // enteredDigits: { posFromRight, target, numIdx } -> digit
+  return problem.removals.every(r => {
+    const key = `${r.target}_${r.numIdx}_${r.posFromRight}`;
+    return enteredDigits[key] === r.correctDigit;
+  });
 }
