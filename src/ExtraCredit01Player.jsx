@@ -132,7 +132,17 @@ export default function ExtraCredit01Player({ user, topic, onHome }) {
 
   const newProblem = (tIdx) => {
     const t = EC_TOPICS[tIdx];
-    const prob = generateExtraCreditProblem(t.id);
+    // Try up to 5 times, then try adjacent topics as fallback
+    let prob = null;
+    for (let attempt = 0; attempt < 5 && !prob; attempt++) {
+      prob = generateExtraCreditProblem(t.id);
+    }
+    // Fallback: try other topics
+    if (!prob) {
+      for (let fallback = 0; fallback < EC_TOPICS.length && !prob; fallback++) {
+        if (fallback !== tIdx) prob = generateExtraCreditProblem(EC_TOPICS[fallback].id);
+      }
+    }
     if (!prob) return;
     const disp = buildProblemDisplay(prob);
     setProblem(prob);
@@ -153,7 +163,7 @@ export default function ExtraCredit01Player({ user, topic, onHome }) {
 
   const handleDigit = async (digit) => {
     if (!display || phase !== "answering") return;
-    const allMissing = display.allMissing;
+    const allMissing = display?.allMissing || [];
     const activeCell = allMissing[activeCellIdx];
     if (!activeCell) return;
 
@@ -188,7 +198,7 @@ export default function ExtraCredit01Player({ user, topic, onHome }) {
 
   const handleBack = () => {
     if (activeCellIdx === 0) return;
-    const allMissing = display.allMissing;
+    const allMissing = display?.allMissing || [];
     const prevIdx = activeCellIdx - 1;
     const prevCell = allMissing[prevIdx];
     const key = `${prevCell.target}_${prevCell.numIdx}_${prevCell.posFromRight}`;

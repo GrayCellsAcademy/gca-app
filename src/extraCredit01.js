@@ -179,7 +179,7 @@ function maximizeRemovals(problem) {
 // ─── Generate a missing digit problem ─────────────────────────────
 export function generateExtraCreditProblem(topicId) {
   let attempts = 0;
-  while (attempts < 50) {
+  while (attempts < 200) {
     attempts++;
     let problem;
     switch (topicId) {
