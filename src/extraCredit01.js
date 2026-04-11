@@ -1,10 +1,10 @@
-// ─── Lesson 1 Extra Credit — Missing Digit Problems ───────────────
+﻿// â”€â”€â”€ Lesson 1 Extra Credit â€” Missing Digit Problems â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 import {
   genAddNoCarry, genAddCarry, genAddMulti,
   genSubNoBorow, genSubBorrow, genSubBorrowZero,
 } from "./lesson01Mastery";
 
-// ─── Core equation checker ────────────────────────────────────────
+// â”€â”€â”€ Core equation checker â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function checkAdd(numbers, answer) {
   return numbers.reduce((s, n) => s + n, 0) === answer;
 }
@@ -12,7 +12,7 @@ function checkSub(top, bot, answer) {
   return top - bot === answer;
 }
 
-// ─── Represent a problem as arrays of digit slots ─────────────────
+// â”€â”€â”€ Represent a problem as arrays of digit slots â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // slot: { value: digit, missing: bool, target: 'num'|'ans'|'top'|'bot', numIdx, posFromRight }
 function problemToSlots(problem) {
   const isAdd = problem.type.startsWith("add");
@@ -55,7 +55,7 @@ function problemToSlots(problem) {
   return { slots, isAdd, numbers: [...numbers], answer, maxLen };
 }
 
-// ─── Reconstruct numbers from slots ──────────────────────────────
+// â”€â”€â”€ Reconstruct numbers from slots â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function slotsToValues(slots, isAdd, origNumbers, origAnswer) {
   if (!origNumbers || origNumbers.length === 0) return { numbers: [], answer: origAnswer };
   const numbers = origNumbers.map((num, ni) => {
@@ -81,7 +81,7 @@ function slotsToValues(slots, isAdd, origNumbers, origAnswer) {
   return { numbers, answer };
 }
 
-// ─── Check if a set of missing slots has unique solutions ─────────
+// â”€â”€â”€ Check if a set of missing slots has unique solutions â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function hasUniqueSolution(problem, missingSlotIndices, slots) {
   const isAdd = problem.type.startsWith("add");
   const origNums = isAdd
@@ -128,7 +128,7 @@ function hasUniqueSolution(problem, missingSlotIndices, slots) {
   return { unique: validCombos === 1, solution: validCombo };
 }
 
-// ─── Find maximum set of removable digits ─────────────────────────
+// â”€â”€â”€ Find maximum set of removable digits â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function maximizeRemovals(problem) {
   const { slots, isAdd } = problemToSlots(problem);
   const n = slots.length;
@@ -187,7 +187,7 @@ function maximizeRemovals(problem) {
   return { removals, slots };
 }
 
-// ─── Generate a missing digit problem ─────────────────────────────
+// â”€â”€â”€ Generate a missing digit problem â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export function generateExtraCreditProblem(topicId) {
   let attempts = 0;
   while (attempts < 200) {
@@ -215,7 +215,7 @@ export function generateExtraCreditProblem(topicId) {
   return null;
 }
 
-// ─── The 6 extra credit topic types ──────────────────────────────
+// â”€â”€â”€ The 6 extra credit topic types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export const EC_TOPICS = [
   { id: "add-no-carry",    label: "Addition - No Carrying" },
   { id: "add-carry",       label: "Addition - With Carrying" },
@@ -225,7 +225,7 @@ export const EC_TOPICS = [
   { id: "sub-borrow-zero", label: "Subtraction - Borrowing from Zero" },
 ];
 
-// ─── Build display rows for rendering ────────────────────────────
+// â”€â”€â”€ Build display rows for rendering â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export function buildProblemDisplay(problem) {
   if (!problem) return null;
   const { removals } = problem;
@@ -293,8 +293,10 @@ export function buildProblemDisplay(problem) {
   return { rows, ansRow, isAdd, maxLen, allMissing };
 }
 
-// ─── Grade answer for all missing digits ─────────────────────────
+// â”€â”€â”€ Grade answer for all missing digits â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export function gradeAllMissing(enteredDigits, problem) {
+  console.log("enteredDigits:", JSON.stringify(enteredDigits));
+  console.log("removals:", JSON.stringify(problem.removals));
   // Build full numbers by substituting entered digits into the original problem
   const isAdd = problem.type.startsWith("add");
   const numbers = isAdd
@@ -338,3 +340,4 @@ export function gradeAllMissing(enteredDigits, problem) {
     return filledNumbers[0] - filledNumbers[1] === filledAnswer;
   }
 }
+
