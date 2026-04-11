@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
-import { getClass, getProgress, leaveClass, joinClass, normalizeAssignments, calculateGrade, gradeToLetter } from "./firebase";
-import { getTopic, getPublishedTopics } from "./registry";
-import TopicRouter from "./TopicRouter";
+﻿import { useState, useEffect } from "react";
+import { getClass, getProgress, leaveClass, joinClass, normalizeAssignments, calculateGrade, gradeToLetter } from "../core/firebase";
+import { getTopic, getPublishedTopics } from "../registry";
+import TopicRouter from "../TopicRouter";
 
 //  Topic Roadmap Card 
 function TopicRoadmapCard({ topic, progress, assignment, isUnlocked, position, onClick }) {
@@ -390,3 +390,4 @@ export default function StudentHome({ user, onLogout, onLiveSession, onTicTacToe
     </div>
   );
 }
+
