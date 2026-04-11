@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
-import { onAuthChange, getUser, logoutUser } from "../core/firebase";
-import Auth from "../core/auth/Auth";
-import StudentHome from "../views/StudentHome";
-import TeacherHome from "../views/TeacherHome";
-import DevHome from "../views/DevHome";
+import { onAuthChange, getUser, logoutUser } from "./firebase";
+import Auth from "./Auth";
+import StudentHome from "./StudentHome";
+import TeacherHome from "./TeacherHome";
+import DevHome from "./DevHome";
 import LiveSession from "../live/LiveSession";
+import TicTacToe from "../TicTacToe";
 
 function Spinner() {
   return (
@@ -21,7 +22,7 @@ function Spinner() {
 export default function App() {
   const [authLoading, setAuthLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState(null);
-  const [screen, setScreen] = useState("home");
+  const [screen, setScreen] = useState("home"); // home | live | tictactoe
 
   useEffect(()=>{
     const unsub = onAuthChange(async (fbUser)=>{
@@ -48,8 +49,9 @@ export default function App() {
   if (screen === "live") {
     return <LiveSession user={currentUser} onHome={() => setScreen("home")} />;
   }
+
   if (currentUser.role === "student") {
-    return <StudentHome user={currentUser} onLogout={handleLogout} onLiveSession={() => setScreen("live")} />;
+    return <StudentHome user={currentUser} onLogout={handleLogout} onLiveSession={() => setScreen("live")} onTicTacToe={() => setScreen("tictactoe")} />;
   }
   if (currentUser.role === "teacher") {
     return <TeacherHome user={currentUser} onLogout={handleLogout} onLiveSession={() => setScreen("live")} />;
@@ -57,5 +59,6 @@ export default function App() {
   if (currentUser.role === "developer") {
     return <DevHome user={currentUser} onLogout={handleLogout}/>;
   }
+
   return <Auth onAuth={setCurrentUser}/>;
 }
