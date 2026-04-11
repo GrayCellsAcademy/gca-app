@@ -46,7 +46,10 @@ export default function App() {
   if (authLoading) return <Spinner/>;
   if (!currentUser) return <Auth onAuth={setCurrentUser}/>;
 
-  if (screen === "live") {
+  if (screen === "tictactoe") {
+      return <TicTacToe user={currentUser} onHome={() => setScreen("home")} />;
+    }
+    if (screen === "live") {
     return <LiveSession user={currentUser} onHome={() => setScreen("home")} />;
   }
 
@@ -62,4 +65,5 @@ export default function App() {
 
   return <Auth onAuth={setCurrentUser}/>;
 }
+
 
