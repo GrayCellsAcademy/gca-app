@@ -295,9 +295,46 @@ export function buildProblemDisplay(problem) {
 
 // ─── Grade answer for all missing digits ─────────────────────────
 export function gradeAllMissing(enteredDigits, problem) {
-  // enteredDigits: { posFromRight, target, numIdx } -> digit
-  return problem.removals.every(r => {
-    const key = `${r.target}_${r.numIdx}_${r.posFromRight}`;
-    return parseInt(enteredDigits[key]) === parseInt(r.correctDigit);
+  // Build full numbers by substituting entered digits into the original problem
+  const isAdd = problem.type.startsWith("add");
+  const numbers = isAdd
+    ? (problem.numbers || [])
+    : [problem.top, problem.bot].filter(n => n !== undefined);
+
+  // Apply each removal - substitute entered digit
+  const filledNumbers = numbers.map((num, ni) => {
+    let str = String(num);
+    problem.removals
+      .filter(r => r.target === (isAdd ? "num" : (ni === 0 ? "top" : "bot")) && r.numIdx === ni)
+      .forEach(r => {
+        const arr = str.split("");
+        const pos = arr.length - 1 - r.posFromRight;
+        const key = r.target + "_" + r.numIdx + "_" + r.posFromRight;
+        const entered = enteredDigits[key];
+        if (entered !== undefined) arr[pos] = String(entered);
+        str = arr.join("");
+      });
+    return parseInt(str);
   });
+
+  // Apply answer removals
+  let ansStr = String(problem.answer);
+  problem.removals
+    .filter(r => r.target === "ans")
+    .forEach(r => {
+      const arr = ansStr.split("");
+      const pos = arr.length - 1 - r.posFromRight;
+      const key = "ans_" + r.numIdx + "_" + r.posFromRight;
+      const entered = enteredDigits[key];
+      if (entered !== undefined) arr[pos] = String(entered);
+      ansStr = arr.join("");
+    });
+  const filledAnswer = parseInt(ansStr);
+
+  // Check equation
+  if (isAdd) {
+    return filledNumbers.reduce((s, n) => s + n, 0) === filledAnswer;
+  } else {
+    return filledNumbers[0] - filledNumbers[1] === filledAnswer;
+  }
 }
