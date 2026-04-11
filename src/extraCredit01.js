@@ -47,6 +47,7 @@ function problemToSlots(problem) {
       value: parseInt(ch),
       missing: false,
       target: "ans",
+      numIdx: 0,
       posFromRight,
     });
   });
@@ -236,7 +237,7 @@ export function buildProblemDisplay(problem) {
   function isMissing(target, numIdx, posFromRight) {
     return removals.some(r =>
       r.target === target &&
-      (target === "ans" || r.numIdx === numIdx) &&
+      (target === "ans" ? r.numIdx === 0 : r.numIdx === numIdx) &&
       r.posFromRight === posFromRight
     );
   }
@@ -244,7 +245,7 @@ export function buildProblemDisplay(problem) {
   function getCorrectDigit(target, numIdx, posFromRight) {
     const r = removals.find(r =>
       r.target === target &&
-      (target === "ans" || r.numIdx === numIdx) &&
+      (target === "ans" ? r.numIdx === 0 : r.numIdx === numIdx) &&
       r.posFromRight === posFromRight
     );
     return r ? r.correctDigit : null;
@@ -271,14 +272,15 @@ export function buildProblemDisplay(problem) {
   const ansStr = String(answer).padStart(maxLen, " ");
   const ansRow = ansStr.split("").map((ch, ci) => {
     const posFromRight = maxLen - 1 - ci;
-    const missing = ch !== " " && isMissing("ans", null, posFromRight);
+    const missing = ch !== " " && isMissing("ans", 0, posFromRight);
     return {
       digit: ch === " " ? "" : ch,
       isMissing: missing,
-      correctDigit: missing ? getCorrectDigit("ans", null, posFromRight) : null,
+      correctDigit: missing ? getCorrectDigit("ans", 0, posFromRight) : null,
       posFromRight,
       rowIndex: -1,
       target: "ans",
+      numIdx: 0,
     };
   });
 
