@@ -1,11 +1,11 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import { saveProgress, getProgress } from "./core/firebase";
 import { EC_TOPICS, generateExtraCreditProblem, buildProblemDisplay, gradeAllMissing } from "./extraCredit01";
 
 export const EC_TOPIC_ID = "lesson01-extra-credit-v1";
 const STREAK_NEEDED = 6;
 
-// ─── Column Problem Display ───────────────────────────────────────
+// â”€â”€â”€ Column Problem Display â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function MissingDigitProblem({ display, activeCellKey, enteredDigits, phase, onCellClick }) {
   if (!display) return null;
   const { rows, ansRow, isAdd } = display;
@@ -64,7 +64,7 @@ function MissingDigitProblem({ display, activeCellKey, enteredDigits, phase, onC
   );
 }
 
-// ─── Digit Keypad ─────────────────────────────────────────────────
+// â”€â”€â”€ Digit Keypad â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function Keypad({ onDigit, onBack, disabled }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 6, alignItems: "center" }}>
@@ -90,7 +90,7 @@ function Keypad({ onDigit, onBack, disabled }) {
   );
 }
 
-// ─── Streak Bar ───────────────────────────────────────────────────
+// â”€â”€â”€ Streak Bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function StreakBar({ streak, needed }) {
   return (
     <div style={{ marginBottom: 16 }}>
@@ -107,7 +107,7 @@ function StreakBar({ streak, needed }) {
   );
 }
 
-// ─── Main Player ──────────────────────────────────────────────────
+// â”€â”€â”€ Main Player â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export default function ExtraCredit01Player({ user, topic, onHome }) {
   const topicId = topic?.id || EC_TOPIC_ID;
 
@@ -243,6 +243,16 @@ export default function ExtraCredit01Player({ user, topic, onHome }) {
   );
 
   // Still generating problem
+
+  const handleCellClick = (cell) => {
+    if (phase !== "answering") return;
+    const allMissing = display?.allMissing || [];
+    const idx = allMissing.findIndex(function(c) {
+      return c.target === cell.target && c.numIdx === cell.numIdx && c.posFromRight === cell.posFromRight;
+    });
+    if (idx >= 0) setActiveCellIdx(idx);
+  };
+
   if (!display) return (
     <div style={{ display: "flex", justifyContent: "center", padding: 60 }}>
       <div className="spinner" />
