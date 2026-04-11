@@ -1,12 +1,12 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { saveProgress, getProgress } from "./core/firebase";
 import { EC_TOPICS, generateExtraCreditProblem, buildProblemDisplay, gradeAllMissing } from "./extraCredit01";
 
 export const EC_TOPIC_ID = "lesson01-extra-credit-v1";
 const STREAK_NEEDED = 6;
 
-//  Column Problem Display 
-function MissingDigitProblem({ display, activeCellKey, enteredDigits, phase }) {
+// ─── Column Problem Display ───────────────────────────────────────
+function MissingDigitProblem({ display, activeCellKey, enteredDigits, phase, onCellClick }) {
   if (!display) return null;
   const { rows, ansRow, isAdd } = display;
   const cellW = 44, cellH = 52;
@@ -20,10 +20,12 @@ function MissingDigitProblem({ display, activeCellKey, enteredDigits, phase }) {
 
     return (
       <div key={key}
+        onClick={() => cell.isMissing && onCellClick && onCellClick(cell)}
         style={{
           width: cellW, height: cellH,
           display: "flex", alignItems: "center", justifyContent: "center",
           fontSize: 28, fontWeight: 800, fontFamily: "var(--mono)",
+          cursor: cell.isMissing ? "pointer" : "default",
           color: showCorrect ? "var(--green)" : cell.isMissing ? "var(--blue)" : "var(--text)",
           background: cell.isMissing
             ? isActive ? "rgba(59,130,246,0.25)" : entered !== undefined ? "rgba(16,185,129,0.1)" : "rgba(59,130,246,0.06)"
@@ -62,7 +64,7 @@ function MissingDigitProblem({ display, activeCellKey, enteredDigits, phase }) {
   );
 }
 
-//  Digit Keypad 
+// ─── Digit Keypad ─────────────────────────────────────────────────
 function Keypad({ onDigit, onBack, disabled }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 6, alignItems: "center" }}>
@@ -88,7 +90,7 @@ function Keypad({ onDigit, onBack, disabled }) {
   );
 }
 
-//  Streak Bar 
+// ─── Streak Bar ───────────────────────────────────────────────────
 function StreakBar({ streak, needed }) {
   return (
     <div style={{ marginBottom: 16 }}>
@@ -105,7 +107,7 @@ function StreakBar({ streak, needed }) {
   );
 }
 
-//  Main Player 
+// ─── Main Player ──────────────────────────────────────────────────
 export default function ExtraCredit01Player({ user, topic, onHome }) {
   const topicId = topic?.id || EC_TOPIC_ID;
 
@@ -171,11 +173,22 @@ export default function ExtraCredit01Player({ user, topic, onHome }) {
     const newEntered = { ...enteredDigits, [key]: digit };
     setEnteredDigits(newEntered);
 
-    // Move to next missing cell
-    if (activeCellIdx + 1 < allMissing.length) {
-      setActiveCellIdx(activeCellIdx + 1);
-    } else {
-      // All cells filled  check answer
+    // Find next unfilled cell
+    let nextIdx = activeCellIdx + 1;
+    while (nextIdx < allMissing.length) {
+      const c = allMissing[nextIdx];
+      const k = `${c.target}_${c.numIdx}_${c.posFromRight}`;
+      if (newEntered[k] === undefined) break;
+      nextIdx++;
+    }
+
+    // Check if all cells filled
+    const allFilled = allMissing.every(c => {
+      const k = `${c.target}_${c.numIdx}_${c.posFromRight}`;
+      return newEntered[k] !== undefined;
+    });
+
+    if (allFilled) {
       const correct = gradeAllMissing(newEntered, problem);
       if (correct) {
         const newStreak = streak + 1;
@@ -193,6 +206,8 @@ export default function ExtraCredit01Player({ user, topic, onHome }) {
         setStreak(0);
         await saveProgressData(0, false);
       }
+    } else {
+      setActiveCellIdx(nextIdx < allMissing.length ? nextIdx : activeCellIdx);
     }
   };
 
@@ -227,7 +242,7 @@ export default function ExtraCredit01Player({ user, topic, onHome }) {
     </div>
   );
 
-  // Still generating problem - show spinner until display is ready
+  // Still generating problem
   if (!display) return (
     <div style={{ display: "flex", justifyContent: "center", padding: 60 }}>
       <div className="spinner" />
@@ -264,6 +279,7 @@ export default function ExtraCredit01Player({ user, topic, onHome }) {
               activeCellKey={allMissing[activeCellIdx] ? `${allMissing[activeCellIdx].target}_${allMissing[activeCellIdx].numIdx}_${allMissing[activeCellIdx].posFromRight}` : null}
               enteredDigits={enteredDigits}
               phase={phase}
+              onCellClick={handleCellClick}
             />
           )}
         </div>
@@ -289,9 +305,8 @@ export default function ExtraCredit01Player({ user, topic, onHome }) {
       </div>
 
       <div style={{ marginTop: 12, fontSize: 12, color: "var(--text3)", textAlign: "center" }}>
-        Digits are entered left to right. Get all 6 types correct in a row to earn extra credit.
+        Click any blank cell to select it, then tap a digit. Get all 6 types correct in a row to earn extra credit.
       </div>
     </div>
   );
 }
-
