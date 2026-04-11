@@ -294,10 +294,7 @@ export function buildProblemDisplay(problem) {
 }
 
 // â”€â”€â”€ Grade answer for all missing digits â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-export function gradeAllMissing(enteredDigits, problem) {
-  console.log("enteredDigits:", JSON.stringify(enteredDigits));
-  console.log("removals:", JSON.stringify(problem.removals));
-  // Build full numbers by substituting entered digits into the original problem
+export function gradeAllMissing(enteredDigits, problem) {  // Build full numbers by substituting entered digits into the original problem
   const isAdd = problem.type.startsWith("add");
   const numbers = isAdd
     ? (problem.numbers || [])
@@ -340,4 +337,5 @@ export function gradeAllMissing(enteredDigits, problem) {
     return filledNumbers[0] - filledNumbers[1] === filledAnswer;
   }
 }
+
 
