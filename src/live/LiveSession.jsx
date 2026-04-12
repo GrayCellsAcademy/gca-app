@@ -677,18 +677,18 @@ export default function LiveSession({ user, onHome }) {
                       <div style={{ color: "var(--text2)", fontSize: 13 }}>Push column addition and subtraction problems one at a time. You control the pace.</div>
                     </div>
                   </div>
-                  <d                  <div className="card" onClick={() => setView("ratio")} style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 16 }}>
+                  <div className="card" onClick={() => setView("lesson02")} style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 16 }}>
                     <div style={{ fontSize: 20, fontWeight: 800, color: "var(--blue)", minWidth: 36 }}>R:P</div>
                     <div>
                       <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 4 }}>Ratios and Proportions</div>
                       <div style={{ color: "var(--text2)", fontSize: 13 }}>5 types: simplify, solve, algebraic, write and solve word problems.</div>
                     </div>
                   </div>
-                  iv className="card" onClick={() => setView("worksheet")}
+                  <div className="card" onClick={() => setView("worksheet")} style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 16 }}>
                     style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 16 }}
                     onMouseEnter={e => e.currentTarget.style.borderColor = "var(--blue)"}
                     onMouseLeave={e => e.currentTarget.style.borderColor = "var(--border)"}>
-                    <div style={{ fontSize: 36 }}>ðŸ“‹</div>
+                    <div style={{ fontSize: 16, fontWeight: 800, color: "var(--blue)", minWidth: 36 }}>WS</div>
                     <div>
                       <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 4 }}>Decimal Operations Worksheet</div>
                       <div style={{ color: "var(--text2)", fontSize: 13 }}>20 questions â€” decimal multiplication, division, fraction conversion, order of operations.</div>
