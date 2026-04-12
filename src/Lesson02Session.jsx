@@ -178,10 +178,15 @@ function RectilinearSVG({ question, selectedSides, onSideClick, highlightSideIdx
           <g key={i} style={{ cursor: activityType === "5A" && !isHL ? "pointer" : "default" }}
             onClick={() => activityType === "5A" && !isHL && onSideClick && onSideClick(i)}>
             <line x1={p.x} y1={p.y} x2={next.x} y2={next.y} stroke={strokeColor} strokeWidth={strokeW} />
-            {showLabels && !isHidden && (
+            {showLabels && (!isHidden || activityType === "5B") && (
               <g>
-                <rect x={lx - 24} y={ly - 12} width={48} height={24} rx={5} fill="var(--bg2)" stroke="var(--border)" strokeWidth="1" />
-                <text x={lx} y={ly + 5} textAnchor="middle" fontSize="12" fontWeight="700" fill="var(--text)" fontFamily="var(--mono)">{sides[i]?.length}{unit}</text>
+                <rect x={lx - 24} y={ly - 12} width={48} height={24} rx={5}
+                  fill={isHidden ? "rgba(251,191,36,0.15)" : "var(--bg2)"}
+                  stroke={isHidden ? "var(--amber)" : "var(--border)"} strokeWidth="1" />
+                <text x={lx} y={ly + 5} textAnchor="middle" fontSize="12" fontWeight="700"
+                  fill={isHidden ? "var(--amber)" : "var(--text)"} fontFamily="var(--mono)">
+                  {isHidden ? "?" : sides[i]?.length + unit}
+                </text>
               </g>
             )}
           </g>
