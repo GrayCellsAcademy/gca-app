@@ -6,47 +6,48 @@ import {
 } from "../core/firebase";
 import { gradeAnswer } from "../core/utils/fractionUtils";
 import { REVIEW_QUESTIONS, TOTAL_POINTS } from "./sessionQuestions/lesson14";
-import ClassworkSession from "../ClassworkSession";
+import ClassworkSession, { ClassworkTeacherView, ClassworkStudentView } from "../ClassworkSession";
 import WorksheetSession, { WorksheetTeacherView, WorksheetStudentView } from "../WorksheetSession";
 import RatioSession, { RatioTeacherView, RatioStudentView } from "../RatioSession";
+import Lesson02Session, { Lesson02TeacherView, Lesson02StudentView } from "../Lesson02Session";
 
 // Wrapper so classwork session gets the same full-screen treatment
 function ClassworkSessionWrapper({ user, onHome }) {
   return <ClassworkSession user={user} onHome={onHome} />;
 }
 
-//  Helpers 
+// â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function medalEmoji(rank) {
-  if (rank === 1) return "";
-  if (rank === 2) return "";
-  if (rank === 3) return "";
+  if (rank === 1) return "ðŸ¥‡";
+  if (rank === 2) return "ðŸ¥ˆ";
+  if (rank === 3) return "ðŸ¥‰";
   return `#${rank}`;
 }
 
 function pct(score) { return Math.round((score / TOTAL_POINTS) * 100); }
 
-//  Math Display 
+// â”€â”€â”€ Math Display â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Simple fraction renderer without LaTeX dependency
 function MathDisplay({ question }) {
   const style = { fontSize: "clamp(18px,3.5vw,28px)", fontWeight: 700, color: "var(--text)", lineHeight: 1.6 };
   return (
     <div style={style}>
       <div style={{ marginBottom: 8, fontSize: "clamp(14px,2.5vw,18px)", color: "var(--text2)", fontWeight: 500 }}>
-        [{question.section}] {question.sectionTitle}  {question.points} pts
+        [{question.section}] {question.sectionTitle} â€” {question.points} pts
       </div>
       <div style={{ fontSize: "clamp(20px,4vw,32px)", fontWeight: 800, marginBottom: 8 }}>
         {question.prompt}
       </div>
       {question.hint && (
         <div style={{ fontSize: "clamp(12px,2vw,15px)", color: "var(--text3)", fontStyle: "italic", marginTop: 4 }}>
-           {question.hint}
+          ðŸ’¡ {question.hint}
         </div>
       )}
     </div>
   );
 }
 
-//  Timer Bar 
+// â”€â”€â”€ Timer Bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function TimerBar({ endsAt, totalSeconds }) {
   const [remaining, setRemaining] = useState(totalSeconds);
 
@@ -76,7 +77,7 @@ function TimerBar({ endsAt, totalSeconds }) {
   );
 }
 
-//  Leaderboard 
+// â”€â”€â”€ Leaderboard â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function Leaderboard({ participants, currentUid, isEnded }) {
   const sorted = Object.entries(participants)
     .map(([uid, p]) => ({ uid, ...p }))
@@ -85,7 +86,7 @@ function Leaderboard({ participants, currentUid, isEnded }) {
   return (
     <div style={{ maxWidth: 600, margin: "0 auto" }}>
       <h2 style={{ fontSize: 24, fontWeight: 800, marginBottom: 4, textAlign: "center" }}>
-        {isEnded ? " Final Scores" : " Leaderboard"}
+        {isEnded ? "ðŸ† Final Scores" : "ðŸ“Š Leaderboard"}
       </h2>
       <p style={{ color: "var(--text3)", fontSize: 13, textAlign: "center", marginBottom: 20 }}>
         Out of {TOTAL_POINTS} points total
@@ -125,7 +126,7 @@ function Leaderboard({ participants, currentUid, isEnded }) {
   );
 }
 
-//  Teacher View 
+// â”€â”€â”€ Teacher View â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function TeacherSession({ session, sessionId, uid }) {
   const [answers, setAnswers] = useState([]);
   const [timerInput, setTimerInput] = useState(60);
@@ -203,15 +204,15 @@ function TeacherSession({ session, sessionId, uid }) {
             )}
             {session.status === "waiting" && (
               <button className="btn btn-primary" onClick={handleStart} disabled={totalStudents === 0}>
-                 Start Session
+                â–¶ Start Session
               </button>
             )}
             {session.status === "question" && (
-              <button className="btn btn-ghost" onClick={handleReveal}> Reveal Answers</button>
+              <button className="btn btn-ghost" onClick={handleReveal}>ðŸ“Š Reveal Answers</button>
             )}
             {session.status === "revealing" && (
               <button className="btn btn-primary" onClick={handleNext}>
-                {qIdx + 1 >= REVIEW_QUESTIONS.length ? "End Session" : `Next Question `}
+                {qIdx + 1 >= REVIEW_QUESTIONS.length ? "End Session" : `Next Question â†’`}
               </button>
             )}
             {(session.status === "question" || session.status === "revealing") && (
@@ -224,7 +225,7 @@ function TeacherSession({ session, sessionId, uid }) {
       {/* Waiting state */}
       {session.status === "waiting" && (
         <div className="card" style={{ textAlign: "center", padding: "48px 20px" }}>
-          <div style={{ fontSize: 48, marginBottom: 12 }}></div>
+          <div style={{ fontSize: 48, marginBottom: 12 }}>â³</div>
           <h3 style={{ fontSize: 22, fontWeight: 800, marginBottom: 8 }}>Waiting for students to join</h3>
           <p style={{ color: "var(--text2)", fontSize: 15, marginBottom: 20 }}>
             Tell your students to go to the GCA website and enter join code <strong style={{ color: "var(--blue)", fontFamily: "var(--mono)", fontSize: 20 }}>{session.joinCode}</strong>
@@ -268,7 +269,7 @@ function TeacherSession({ session, sessionId, uid }) {
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
               <h3 style={{ fontSize: 16, fontWeight: 700 }}>Submissions</h3>
               <div style={{ fontSize: 13, color: "var(--text3)" }}>
-                {submittedCount}/{totalStudents}  {correctCount} correct
+                {submittedCount}/{totalStudents} Â· {correctCount} correct
               </div>
             </div>
             {/* Submission progress bar */}
@@ -292,11 +293,11 @@ function TeacherSession({ session, sessionId, uid }) {
                             <span style={{ fontFamily: "var(--mono)", fontSize: 14, color: "var(--text2)" }}>{ans.answer}</span>
                           )}
                           <span style={{ fontSize: 14, fontWeight: 700, color: ans.correct ? "var(--green)" : "var(--red)" }}>
-                            {ans.correct ? `+${ans.points}` : ""}
+                            {ans.correct ? `+${ans.points}` : "âœ—"}
                           </span>
                         </>
                       ) : (
-                        <span style={{ fontSize: 12, color: "var(--text3)" }}>waiting</span>
+                        <span style={{ fontSize: 12, color: "var(--text3)" }}>waitingâ€¦</span>
                       )}
                     </div>
                   </div>
@@ -324,7 +325,7 @@ function TeacherSession({ session, sessionId, uid }) {
   );
 }
 
-//  Student View 
+// â”€â”€â”€ Student View â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function StudentSession({ session, sessionId, uid }) {
   const [input, setInput] = useState("");
   const [submitted, setSubmitted] = useState(false);
@@ -380,10 +381,10 @@ function StudentSession({ session, sessionId, uid }) {
   if (session.status === "waiting") {
     return (
       <div style={{ textAlign: "center", padding: "60px 20px" }}>
-        <div style={{ fontSize: 48, marginBottom: 16 }}></div>
-        <h2 style={{ fontSize: 24, fontWeight: 800, marginBottom: 8 }}>Waiting for the teacher to start</h2>
+        <div style={{ fontSize: 48, marginBottom: 16 }}>â³</div>
+        <h2 style={{ fontSize: 24, fontWeight: 800, marginBottom: 8 }}>Waiting for the teacher to startâ€¦</h2>
         <p style={{ color: "var(--text2)", fontSize: 15 }}>
-          You're in! Get ready  the review is about to begin.
+          You're in! Get ready â€” the review is about to begin.
         </p>
         <div style={{ marginTop: 16, fontSize: 14, color: "var(--text3)" }}>
           {Object.keys(participants).length} student{Object.keys(participants).length !== 1 ? "s" : ""} joined
@@ -397,7 +398,7 @@ function StudentSession({ session, sessionId, uid }) {
     return (
       <div className="card" style={{ maxWidth: 700, margin: "0 auto" }}>
         <div style={{ textAlign: "center", marginBottom: 24 }}>
-          <div style={{ fontSize: 48, marginBottom: 8 }}></div>
+          <div style={{ fontSize: 48, marginBottom: 8 }}>ðŸŽ‰</div>
           <h2 style={{ fontSize: 24, fontWeight: 800, marginBottom: 4 }}>Session Complete!</h2>
           <div style={{ fontSize: 28, fontWeight: 900, color: "var(--blue)", marginBottom: 4 }}>
             Your score: {myScore} / {TOTAL_POINTS}
@@ -437,7 +438,7 @@ function StudentSession({ session, sessionId, uid }) {
             <div style={{ animation: "fadeUp 0.3s ease" }}>
               {result ? (
                 <div style={{ textAlign: "center" }}>
-                  <div style={{ fontSize: 48, marginBottom: 8 }}>{result.correct ? "" : ""}</div>
+                  <div style={{ fontSize: 48, marginBottom: 8 }}>{result.correct ? "ðŸŽ‰" : "ðŸ˜”"}</div>
                   <div style={{ fontSize: 22, fontWeight: 800, color: result.correct ? "var(--green)" : "var(--red)", marginBottom: 8 }}>
                     {result.correct ? `+${result.points} points!` : "Incorrect"}
                   </div>
@@ -452,7 +453,7 @@ function StudentSession({ session, sessionId, uid }) {
                 </div>
               ) : (
                 <div style={{ textAlign: "center", color: "var(--text3)" }}>
-                  <div style={{ fontSize: 32, marginBottom: 8 }}></div>
+                  <div style={{ fontSize: 32, marginBottom: 8 }}>â°</div>
                   <div>You didn't submit an answer.</div>
                   <div style={{ marginTop: 8, color: "var(--green)", fontSize: 15 }}>
                     Correct answer: <strong style={{ fontFamily: "var(--mono)" }}>{question?.answer}</strong>
@@ -466,10 +467,10 @@ function StudentSession({ session, sessionId, uid }) {
             </div>
           ) : submitted ? (
             <div style={{ textAlign: "center", animation: "popIn 0.3s ease" }}>
-              <div style={{ fontSize: 48, marginBottom: 8 }}></div>
+              <div style={{ fontSize: 48, marginBottom: 8 }}>âœ…</div>
               <div style={{ fontSize: 18, fontWeight: 700, color: "var(--green)", marginBottom: 4 }}>Answer submitted!</div>
               <div style={{ fontSize: 14, color: "var(--text2)" }}>
-                Waiting for other students and the teacher to reveal
+                Waiting for other students and the teacher to revealâ€¦
               </div>
             </div>
           ) : (
@@ -490,7 +491,7 @@ function StudentSession({ session, sessionId, uid }) {
               />
               <button className="btn btn-primary" style={{ width: "100%", fontSize: 18, padding: "14px" }}
                 onClick={handleSubmit} disabled={submitted || !input.trim()}>
-                Submit Answer 
+                Submit Answer âœ“
               </button>
               <div style={{ fontSize: 12, color: "var(--text3)", textAlign: "center", marginTop: 8 }}>
                 {question?.mode === "mixed" && "Write mixed numbers like: 2 3/4 (whole number, space, fraction)"}
@@ -505,7 +506,7 @@ function StudentSession({ session, sessionId, uid }) {
   );
 }
 
-//  Join Screen 
+// â”€â”€â”€ Join Screen â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function JoinScreen({ user, onJoined }) {
   const [code, setCode] = useState("");
   const [err, setErr] = useState("");
@@ -524,7 +525,7 @@ function JoinScreen({ user, onJoined }) {
   return (
     <div style={{ maxWidth: 420, margin: "0 auto", textAlign: "center" }}>
       <div className="card">
-        <div style={{ fontSize: 48, marginBottom: 12 }}></div>
+        <div style={{ fontSize: 48, marginBottom: 12 }}>ðŸŽ®</div>
         <h2 style={{ fontSize: 24, fontWeight: 800, marginBottom: 8 }}>Join a Live Session</h2>
         <p style={{ color: "var(--text2)", fontSize: 14, marginBottom: 20 }}>
           Enter the join code your teacher gives you.
@@ -540,14 +541,14 @@ function JoinScreen({ user, onJoined }) {
         />
         <button className="btn btn-primary btn-lg" style={{ width: "100%" }}
           onClick={handleJoin} disabled={loading}>
-          {loading ? "Joining" : "Join Session "}
+          {loading ? "Joiningâ€¦" : "Join Session â†’"}
         </button>
       </div>
     </div>
   );
 }
 
-//  Teacher Create Screen 
+// â”€â”€â”€ Teacher Create Screen â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function CreateSession({ user, onCreated }) {
   const [classes, setClasses] = useState([]);
   const [selectedClass, setSelectedClass] = useState("");
@@ -570,15 +571,15 @@ function CreateSession({ user, onCreated }) {
   return (
     <div style={{ maxWidth: 480, margin: "0 auto" }}>
       <div className="card">
-        <div style={{ fontSize: 40, marginBottom: 12 }}></div>
+        <div style={{ fontSize: 40, marginBottom: 12 }}>ðŸŽ®</div>
         <h2 style={{ fontSize: 22, fontWeight: 800, marginBottom: 4 }}>Start a Live Review Session</h2>
         <p style={{ color: "var(--text2)", fontSize: 14, marginBottom: 20 }}>
-          This review covers fractions, fraction operations, and equations  mirroring Test 2.
+          This review covers fractions, fraction operations, and equations â€” mirroring Test 2.
         </p>
         <div style={{ marginBottom: 14 }}>
           <label style={{ fontSize: 13, fontWeight: 600, color: "var(--text2)", display: "block", marginBottom: 6 }}>Class</label>
           <select value={selectedClass} onChange={e => setSelectedClass(e.target.value)} style={{ width: "100%", padding: "10px 12px", fontSize: 14 }}>
-            <option value="">Select a class</option>
+            <option value="">Select a classâ€¦</option>
             {classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
           </select>
         </div>
@@ -592,19 +593,19 @@ function CreateSession({ user, onCreated }) {
           <div style={{ fontSize: 11, color: "var(--text3)", marginTop: 4 }}>You can adjust this for each question during the session.</div>
         </div>
         <div style={{ background: "var(--bg2)", borderRadius: "var(--radius-sm)", padding: "12px 14px", marginBottom: 20, fontSize: 13, color: "var(--text2)" }}>
-          <strong>{REVIEW_QUESTIONS.length} questions</strong>  {TOTAL_POINTS} points total<br />
-          Sections: Equivalent Fractions  Simplify  Operations  Equations
+          <strong>{REVIEW_QUESTIONS.length} questions</strong> â€” {TOTAL_POINTS} points total<br />
+          Sections: Equivalent Fractions Â· Simplify Â· Operations Â· Equations
         </div>
         <button className="btn btn-primary btn-lg" style={{ width: "100%" }}
           onClick={handleCreate} disabled={loading || !selectedClass}>
-          {loading ? "Creating" : "Create Session "}
+          {loading ? "Creatingâ€¦" : "Create Session ðŸš€"}
         </button>
       </div>
     </div>
   );
 }
 
-//  Main LiveSession Component 
+// â”€â”€â”€ Main LiveSession Component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export default function LiveSession({ user, onHome }) {
   const [view, setView] = useState("menu"); // menu | create | join | session | classwork
   const [sessionId, setSessionId] = useState(null);
@@ -620,16 +621,20 @@ export default function LiveSession({ user, onHome }) {
   const handleJoined = (sid) => { setSessionId(sid); setView("session"); };
 
   // Classwork session is handled by its own component
-  if (view === "worksheet") {
-    return <WorksheetSession user={user} onHome={() => setView("menu")} />;
+  if (view === "classwork") {
+    return <ClassworkSessionWrapper user={user} onHome={() => setView("menu")} />;
+  }
+
+  if (view === "lesson02") {
+    return <Lesson02Session user={user} onHome={() => setView("menu")} />;
   }
 
   if (view === "ratio") {
     return <RatioSession user={user} onHome={() => setView("menu")} />;
   }
 
-  if (view === "classwork") {
-    return <ClassworkSessionWrapper user={user} onHome={() => setView("menu")} />;
+  if (view === "worksheet") {
+    return <WorksheetSession user={user} onHome={() => setView("menu")} />;
   }
 
   return (
@@ -638,7 +643,7 @@ export default function LiveSession({ user, onHome }) {
         {/* Top bar */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 32, flexWrap: "wrap", gap: 12 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <div style={{ width: 40, height: 40, borderRadius: 12, background: "linear-gradient(135deg,var(--blue),var(--cyan))", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}></div>
+            <div style={{ width: 40, height: 40, borderRadius: 12, background: "linear-gradient(135deg,var(--blue),var(--cyan))", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>ðŸŽ“</div>
             <div>
               <div style={{ fontWeight: 800, fontSize: 20 }}>GCA</div>
               <div style={{ color: "var(--text3)", fontSize: 12 }}>Live Session</div>
@@ -646,9 +651,9 @@ export default function LiveSession({ user, onHome }) {
           </div>
           <div style={{ display: "flex", gap: 8 }}>
             {view !== "menu" && !sessionId && (
-              <button className="btn btn-ghost btn-sm" onClick={() => setView("menu")}> Back</button>
+              <button className="btn btn-ghost btn-sm" onClick={() => setView("menu")}>â† Back</button>
             )}
-            <button className="btn btn-ghost btn-sm" onClick={onHome}> Home</button>
+            <button className="btn btn-ghost btn-sm" onClick={onHome}>â† Home</button>
           </div>
         </div>
 
@@ -666,10 +671,44 @@ export default function LiveSession({ user, onHome }) {
                     style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 16 }}
                     onMouseEnter={e => e.currentTarget.style.borderColor = "var(--blue)"}
                     onMouseLeave={e => e.currentTarget.style.borderColor = "var(--border)"}>
-                    <div style={{ fontSize: 36 }}></div>
+                    <div style={{ fontSize: 36 }}>ðŸ“‹</div>
                     <div>
-                      <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 4 }}>(1) Column Addition and Subtraction</div>
+                      <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 4 }}>Classwork Session</div>
                       <div style={{ color: "var(--text2)", fontSize: 13 }}>Push column addition and subtraction problems one at a time. You control the pace.</div>
+                    </div>
+                  </div>
+                  <d                  <div className="card" onClick={() => setView("ratio")} style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 16 }}>
+                    <div style={{ fontSize: 20, fontWeight: 800, color: "var(--blue)", minWidth: 36 }}>R:P</div>
+                    <div>
+                      <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 4 }}>Ratios and Proportions</div>
+                      <div style={{ color: "var(--text2)", fontSize: 13 }}>5 types: simplify, solve, algebraic, write and solve word problems.</div>
+                    </div>
+                  </div>
+                  iv className="card" onClick={() => setView("worksheet")}
+                    style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 16 }}
+                    onMouseEnter={e => e.currentTarget.style.borderColor = "var(--blue)"}
+                    onMouseLeave={e => e.currentTarget.style.borderColor = "var(--border)"}>
+                    <div style={{ fontSize: 36 }}>ðŸ“‹</div>
+                    <div>
+                      <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 4 }}>Decimal Operations Worksheet</div>
+                      <div style={{ color: "var(--text2)", fontSize: 13 }}>20 questions â€” decimal multiplication, division, fraction conversion, order of operations.</div>
+                    </div>
+                  </div>
+                  <div className="card" onClick={() => setView("create")}
+                    style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 16 }}
+                    onMouseEnter={e => e.currentTarget.style.borderColor = "var(--blue)"}
+                    onMouseLeave={e => e.currentTarget.style.borderColor = "var(--border)"}>
+                    <div style={{ fontSize: 36 }}>ðŸŽ®</div>
+                    <div>
+                      <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 4 }}>Review Session</div>
+                      <div style={{ color: "var(--text2)", fontSize: 13 }}>Pre-loaded fraction and algebra questions mirroring Test 2.</div>
+                    </div>
+                  </div>
+                  <div className="card" onClick={() => setView("lesson02")} style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 16 }}>
+                    <div style={{ fontSize: 14, fontWeight: 800, color: "var(--blue)", minWidth: 36 }}>L2</div>
+                    <div>
+                      <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 4 }}>(2) Geometry</div>
+                      <div style={{ color: "var(--text2)", fontSize: 13 }}>Line segments, polygons, rectangles, squares, composite shapes.</div>
                     </div>
                   </div>
                 </>
@@ -678,7 +717,7 @@ export default function LiveSession({ user, onHome }) {
                 style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 16 }}
                 onMouseEnter={e => e.currentTarget.style.borderColor = "var(--blue)"}
                 onMouseLeave={e => e.currentTarget.style.borderColor = "var(--border)"}>
-                <div style={{ fontSize: 36 }}></div>
+                <div style={{ fontSize: 36 }}>ðŸ”‘</div>
                 <div>
                   <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 4 }}>Join a Session</div>
                   <div style={{ color: "var(--text2)", fontSize: 13 }}>Enter a join code to participate in a live session.</div>
@@ -690,15 +729,32 @@ export default function LiveSession({ user, onHome }) {
 
         {view === "create" && <CreateSession user={user} onCreated={handleCreated} />}
         {view === "join" && <JoinScreen user={user} onJoined={handleJoined} />}
-        {view === "session" && session && (
-            session.type === "ratio"
-            ? (user.role === "teacher" ? <RatioTeacherView session={session} sessionId={sessionId} uid={user.id} /> : <RatioStudentView session={session} sessionId={sessionId} uid={user.id} />)
-            : session.type === "worksheet"
-            ? (user.role === "teacher" ? <WorksheetTeacherView session={session} sessionId={sessionId} uid={user.id} /> : <WorksheetStudentView session={session} sessionId={sessionId} uid={user.id} />)
-            : session.type === "classwork"
-            ? (user.role === "teacher" ? <ClassworkTeacherView session={session} sessionId={sessionId} uid={user.id} /> : <ClassworkStudentView session={session} sessionId={sessionId} uid={user.id} />)
-            : (user.role === "teacher" ? <TeacherSession session={session} sessionId={sessionId} uid={user.id} /> : <StudentSession session={session} sessionId={sessionId} uid={user.id} />)
-        )}
+        {view === "session" && session && (() => {
+          // Route to correct component based on session type
+          if (session.type === "lesson02") {
+            return user.role === "teacher"
+              ? <Lesson02TeacherView session={session} sessionId={sessionId} uid={user.id} />
+              : <Lesson02StudentView session={session} sessionId={sessionId} uid={user.id} />;
+          }
+          if (session.type === "ratio") {
+            return user.role === "teacher"
+              ? <RatioTeacherView session={session} sessionId={sessionId} uid={user.id} />
+              : <RatioStudentView session={session} sessionId={sessionId} uid={user.id} />;
+          }
+          if (session.type === "worksheet") {
+            return user.role === "teacher"
+              ? <WorksheetTeacherView session={session} sessionId={sessionId} uid={user.id} />
+              : <WorksheetStudentView session={session} sessionId={sessionId} uid={user.id} />;
+          }
+          if (session.type === "classwork") {
+            return user.role === "teacher"
+              ? <ClassworkTeacherView session={session} sessionId={sessionId} uid={user.id} />
+              : <ClassworkStudentView session={session} sessionId={sessionId} uid={user.id} />;
+          }
+          return user.role === "teacher"
+            ? <TeacherSession session={session} sessionId={sessionId} uid={user.id} />
+            : <StudentSession session={session} sessionId={sessionId} uid={user.id} />;
+        })()}
         {view === "session" && !session && (
           <div style={{ display: "flex", justifyContent: "center", padding: 60 }}><div className="spinner" /></div>
         )}
@@ -706,7 +762,4 @@ export default function LiveSession({ user, onHome }) {
     </div>
   );
 }
-
-
-
 
