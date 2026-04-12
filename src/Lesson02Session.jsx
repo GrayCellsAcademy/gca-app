@@ -12,41 +12,50 @@ const POINTS = 5;
 
 function LineSegmentsSVG({ question }) {
   const { segments, unit, angles } = question;
-  const W = 500, H = 180;
-  const startX = 60, startY = H / 2;
-  const segLen = 120;
-  let x = startX, y = startY;
-  let cumulAngle = 0;
-  const points = [{ x, y }];
-  const midpoints = [];
-  const labelAngles = [];
+  const segLen = 110;
+  // Build raw points
+  let x = 0, y = 0, cumulAngle = 0;
+  const rawPoints = [{ x, y }];
+  const midpoints = [], labelAngles = [];
   for (let i = 0; i < segments.length; i++) {
     if (i > 0) cumulAngle += angles[i - 1] * (Math.PI / 180);
-    const dx = segLen * Math.cos(cumulAngle);
-    const dy = segLen * Math.sin(cumulAngle);
-    const nx = x + dx, ny = y + dy;
+    const nx = x + segLen * Math.cos(cumulAngle);
+    const ny = y + segLen * Math.sin(cumulAngle);
     midpoints.push({ x: (x + nx) / 2, y: (y + ny) / 2 });
     labelAngles.push(cumulAngle);
     x = nx; y = ny;
-    points.push({ x, y });
+    rawPoints.push({ x, y });
   }
-  const pathD = points.map((p, i) => (i === 0 ? "M" : "L") + " " + p.x.toFixed(1) + " " + p.y.toFixed(1)).join(" ");
+  // Scale and center to fit in viewBox
+  const pad = 50;
+  const xs = rawPoints.map(p => p.x), ys = rawPoints.map(p => p.y);
+  const minX = Math.min(...xs), maxX = Math.max(...xs);
+  const minY = Math.min(...ys), maxY = Math.max(...ys);
+  const W = 520, H = 200;
+  const scaleX = (W - pad * 2) / (maxX - minX || 1);
+  const scaleY = (H - pad * 2 - 30) / (maxY - minY || 1);
+  const scale = Math.min(scaleX, scaleY, 1.5);
+  const offX = (W - (maxX - minX) * scale) / 2 - minX * scale;
+  const offY = (H - 20 - (maxY - minY) * scale) / 2 - minY * scale;
+  const sv = rawPoints.map(p => ({ x: p.x * scale + offX, y: p.y * scale + offY }));
+  const svm = midpoints.map(p => ({ x: p.x * scale + offX, y: p.y * scale + offY }));
+  const pathD = sv.map((p, i) => (i === 0 ? "M" : "L") + " " + p.x.toFixed(1) + " " + p.y.toFixed(1)).join(" ");
   return (
-    <svg viewBox={"0 0 " + W + " " + H} style={{ width: "100%", maxWidth: 500, display: "block", margin: "0 auto" }}>
-      <path d={pathD} stroke="var(--text)" strokeWidth="3" fill="none" strokeLinecap="round" />
-      {points.map((p, i) => <circle key={i} cx={p.x} cy={p.y} r="5" fill="var(--blue)" />)}
-      {midpoints.map((m, i) => {
+    <svg viewBox={"0 0 " + W + " " + H} style={{ width: "100%", maxWidth: 520, display: "block", margin: "0 auto" }}>
+      <path d={pathD} stroke="var(--text)" strokeWidth="3" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+      {sv.map((p, i) => <circle key={i} cx={p.x} cy={p.y} r="5" fill="var(--blue)" />)}
+      {svm.map((m, i) => {
         const angle = labelAngles[i];
-        const perpX = -Math.sin(angle) * 22;
-        const perpY = Math.cos(angle) * 22;
+        const perpX = -Math.sin(angle) * 24;
+        const perpY = Math.cos(angle) * 24;
         return (
           <g key={i}>
-            <rect x={m.x + perpX - 30} y={m.y + perpY - 12} width={60} height={24} rx={5} fill="var(--bg2)" stroke="var(--border)" strokeWidth="1" />
-            <text x={m.x + perpX} y={m.y + perpY + 5} textAnchor="middle" fontSize="13" fontWeight="700" fill="var(--text)" fontFamily="var(--mono)">{segments[i]} {unit}</text>
+            <rect x={m.x + perpX - 32} y={m.y + perpY - 13} width={64} height={26} rx={5} fill="var(--bg2)" stroke="var(--border)" strokeWidth="1" />
+            <text x={m.x + perpX} y={m.y + perpY + 6} textAnchor="middle" fontSize="13" fontWeight="700" fill="var(--text)" fontFamily="var(--mono)">{segments[i]} {unit}</text>
           </g>
         );
       })}
-      <text x={W / 2} y={H - 10} textAnchor="middle" fontSize="12" fill="var(--text3)" fontStyle="italic">Not drawn to scale</text>
+      <text x={W / 2} y={H - 4} textAnchor="middle" fontSize="11" fill="var(--text3)" fontStyle="italic">Not drawn to scale</text>
     </svg>
   );
 }
