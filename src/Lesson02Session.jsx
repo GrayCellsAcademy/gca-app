@@ -1,4 +1,5 @@
-﻿import { useState, useEffect, useRef } from "react";
+﻿// Lesson 2 Geometry Session
+import { useState, useEffect, useRef } from "react";
 import { setDoc, doc, updateDoc } from "firebase/firestore";
 import {
   createClassworkSession, onSessionChange, onClassworkAnswersChange,
@@ -802,3 +803,4 @@ export default function Lesson02Session({ user, onHome }) {
 }
 
 export { TeacherLesson02 as Lesson02TeacherView, StudentLesson02 as Lesson02StudentView };
+
