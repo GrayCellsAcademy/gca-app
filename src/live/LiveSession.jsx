@@ -668,7 +668,7 @@ export default function LiveSession({ user, onHome }) {
                     onMouseLeave={e => e.currentTarget.style.borderColor = "var(--border)"}>
                     <div style={{ fontSize: 36 }}></div>
                     <div>
-                      <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 4 }}>Classwork Session</div>
+                      <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 4 }}>(1) Column Addition and Subtraction</div>
                       <div style={{ color: "var(--text2)", fontSize: 13 }}>Push column addition and subtraction problems one at a time. You control the pace.</div>
                     </div>
                   </div>
@@ -677,23 +677,6 @@ export default function LiveSession({ user, onHome }) {
                     <div>
                       <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 4 }}>Ratios and Proportions</div>
                       <div style={{ color: "var(--text2)", fontSize: 13 }}>5 types: simplify, solve, algebraic, write and solve word problems.</div>
-                    </div>
-                  </div>
-                  <div className="card" onClick={() => setView("worksheet")} style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 16 }}>
-                    <div style={{ fontSize: 16, fontWeight: 800, color: "var(--blue)", minWidth: 36 }}>WS</div>
-                    <div>
-                      <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 4 }}>Decimal Operations Worksheet</div>
-                      <div style={{ color: "var(--text2)", fontSize: 13 }}>20 questions - decimal multiplication, division, fractions, order of operations.</div>
-                    </div>
-                  </div>
-                  <div className="card" onClick={() => setView("create")}
-                    style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 16 }}
-                    onMouseEnter={e => e.currentTarget.style.borderColor = "var(--blue)"}
-                    onMouseLeave={e => e.currentTarget.style.borderColor = "var(--border)"}>
-                    <div style={{ fontSize: 36 }}></div>
-                    <div>
-                      <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 4 }}>Review Session</div>
-                      <div style={{ color: "var(--text2)", fontSize: 13 }}>Pre-loaded fraction and algebra questions mirroring Test 2.</div>
                     </div>
                   </div>
                 </>
