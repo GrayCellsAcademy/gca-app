@@ -671,7 +671,7 @@ export default function LiveSession({ user, onHome }) {
                     style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 16 }}
                     onMouseEnter={e => e.currentTarget.style.borderColor = "var(--blue)"}
                     onMouseLeave={e => e.currentTarget.style.borderColor = "var(--border)"}>
-                    <div style={{ fontSize: 36 }}>ðŸ“‹</div>
+                <div style={{ fontSize: 16, fontWeight: 800, color: "var(--blue)", minWidth: 36 }}>JOIN</div>
                     <div>
                       <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 4 }}>Classwork Session</div>
                       <div style={{ color: "var(--text2)", fontSize: 13 }}>Push column addition and subtraction problems one at a time. You control the pace.</div>
@@ -691,16 +691,6 @@ export default function LiveSession({ user, onHome }) {
                       <div style={{ color: "var(--text2)", fontSize: 13 }}>20 questions â€” decimal multiplication, division, fraction conversion, order of operations.</div>
                       <div style={{ color: "var(--text2)", fontSize: 13 }}>20 questions - decimal multiplication, division, fraction conversion, order of operations.</div>
                   </div>
-                  <div className="card" onClick={() => setView("create")}
-                    style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 16 }}
-                    onMouseEnter={e => e.currentTarget.style.borderColor = "var(--blue)"}
-                    onMouseLeave={e => e.currentTarget.style.borderColor = "var(--border)"}>
-                    <div style={{ fontSize: 36 }}>ðŸŽ®</div>
-                    <div>
-                      <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 4 }}>Review Session</div>
-                      <div style={{ color: "var(--text2)", fontSize: 13 }}>Pre-loaded fraction and algebra questions mirroring Test 2.</div>
-                    </div>
-                  </div>
                   <div className="card" onClick={() => setView("lesson02")} style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 16 }}>
                     <div style={{ fontSize: 14, fontWeight: 800, color: "var(--blue)", minWidth: 36 }}>L2</div>
                     <div>
@@ -714,7 +704,7 @@ export default function LiveSession({ user, onHome }) {
                 style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 16 }}
                 onMouseEnter={e => e.currentTarget.style.borderColor = "var(--blue)"}
                 onMouseLeave={e => e.currentTarget.style.borderColor = "var(--border)"}>
-                <div style={{ fontSize: 36 }}>ðŸ”‘</div>
+                <div style={{ fontSize: 16, fontWeight: 800, color: "var(--blue)", minWidth: 36 }}>JOIN</div>
                 <div>
                   <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 4 }}>Join a Session</div>
                   <div style={{ color: "var(--text2)", fontSize: 13 }}>Enter a join code to participate in a live session.</div>
