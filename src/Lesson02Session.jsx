@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { setDoc, doc, updateDoc } from "firebase/firestore";
 import {
   createClassworkSession, onSessionChange, onClassworkAnswersChange,
@@ -271,6 +271,92 @@ function RectilinearSVG({ question, selectedSides, onSideClick, highlightSideIdx
       </text>
     </svg>
   );
+}) {
+  const { vertices, sides, unit, hideIdx, activityType } = question;
+  if (!vertices) return null;
+
+  const W = 360, H = 320;
+  const xs = vertices.map(v => v.x);
+  const ys = vertices.map(v => v.y);
+  const minX = Math.min(...xs), maxX = Math.max(...xs);
+  const minY = Math.min(...ys), maxY = Math.max(...ys);
+  const scaleX = (W - 100) / (maxX - minX || 1);
+  const scaleY = (H - 100) / (maxY - minY || 1);
+  const scale = Math.min(scaleX, scaleY);
+  const offX = (W - (maxX - minX) * scale) / 2;
+  const offY = (H - (maxY - minY) * scale) / 2;
+  const sv = vertices.map(v => ({
+    x: (v.x - minX) * scale + offX,
+    y: (v.y - minY) * scale + offY,
+  }));
+
+  const n = sv.length;
+  const edgeMidpoints = sv.map((p, i) => {
+    const next = sv[(i + 1) % n];
+    return { x: (p.x + next.x) / 2, y: (p.y + next.y) / 2 };
+  });
+
+  const pathD = sv.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(" ") + " Z";
+
+  // For label offset: push label away from shape center
+  const cx = sv.reduce((s, p) => s + p.x, 0) / n;
+  const cy = sv.reduce((s, p) => s + p.y, 0) / n;
+
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", maxWidth: 360, display: "block", margin: "0 auto" }}>
+      <path d={pathD} stroke="var(--blue)" strokeWidth="2.5" fill="rgba(59,130,246,0.07)" />
+      {sv.map((p, i) => {
+        const next = sv[(i + 1) % n];
+        const isHidden = i === hideIdx;
+        const isHighlight = i === highlightSideIdx;
+        const isSelected = selectedSides?.includes(i);
+        const m = edgeMidpoints[i];
+        // Calculate edge direction to offset label perpendicularly
+        const edgeX = next.x - p.x;
+        const edgeY = next.y - p.y;
+        const edgeLen = Math.sqrt(edgeX*edgeX + edgeY*edgeY) || 1;
+        // Perpendicular direction (rotated 90deg)
+        const perpX = -edgeY / edgeLen;
+        const perpY = edgeX / edgeLen;
+        // Push away from center
+        const outDir = (m.x - cx) * perpX + (m.y - cy) * perpY > 0 ? 1 : -1;
+        const labelOffX = perpX * outDir * 38;
+        const labelOffY = perpY * outDir * 38;
+        const lx = m.x + labelOffX;
+        const ly = m.y + labelOffY;
+        const sideLen = isHidden ? "?" : sides[i]?.length;
+        const showLabel = !isHidden || activityType === "5B" || activityType === "5C";
+
+        return (
+          <g key={i} style={{ cursor: activityType === "5A" ? "pointer" : "default" }}
+            onClick={() => activityType === "5A" && !isHighlight && onSideClick && onSideClick(i)}>
+            <line x1={p.x} y1={p.y} x2={next.x} y2={next.y}
+              stroke={isHighlight ? "var(--amber)" : isSelected ? "var(--green)" : "var(--blue)"}
+              strokeWidth={isHighlight || isSelected ? 5 : 2.5} />
+            {showLabel && (
+              <>
+                <rect x={lx - 22} y={ly - 12} width={44} height={24} rx={5}
+                  fill={isHidden ? "rgba(251,191,36,0.15)" : isHighlight ? "rgba(251,191,36,0.2)" : "var(--bg)"}
+                  stroke={isHidden ? "var(--amber)" : isHighlight ? "var(--amber)" : "var(--border)"}
+                  strokeWidth="1" />
+                <text x={lx} y={ly + 5} textAnchor="middle"
+                  fontSize="12" fontWeight="800"
+                  fill={isHidden ? "var(--amber)" : "var(--text)"}
+                  fontFamily="var(--mono)">
+                  {isHidden ? "?" : `${sideLen}${unit}`}
+                </text>
+              </>
+            )}
+          </g>
+        );
+      })}
+      <text x={W / 2} y={H - 8} textAnchor="middle" fontSize="11" fill="var(--text3)" fontStyle="italic">
+        Not drawn to scale
+      </text>
+    </svg>
+  );
+}
+
 //  Question Display 
 function QuestionDisplay({ question, selectedSides, onSideClick, revealCorrect }) {
   if (!question) return null;
