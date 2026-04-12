@@ -1,4 +1,5 @@
-﻿// Lesson 2 Geometry Session
+﻿// v2 - geometry session
+// Lesson 2 Geometry Session
 import { useState, useEffect, useRef } from "react";
 import { setDoc, doc, updateDoc } from "firebase/firestore";
 import {
@@ -804,3 +805,4 @@ export default function Lesson02Session({ user, onHome }) {
 
 export { TeacherLesson02 as Lesson02TeacherView, StudentLesson02 as Lesson02StudentView };
  
+
