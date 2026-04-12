@@ -168,8 +168,10 @@ function RectilinearSVG({ question, selectedSides, onSideClick, highlightSideIdx
         const el = Math.sqrt(ex * ex + ey * ey) || 1;
         const px = -ey / el, py = ex / el;
         const outDir = (m.x - cx) * px + (m.y - cy) * py > 0 ? 1 : -1;
-        const lx = m.x + px * outDir * 42;
-        const ly = m.y + py * outDir * 42;
+        // Offset proportional to edge length but capped
+        const offset = Math.max(26, Math.min(44, el * 0.28));
+        const lx = m.x + px * outDir * offset;
+        const ly = m.y + py * outDir * offset;
         let strokeColor = "var(--blue)", strokeW = 2.5;
         if (isHL) { strokeColor = "var(--amber)"; strokeW = 5; }
         else if (isCorrect) { strokeColor = "var(--green)"; strokeW = 5; }
