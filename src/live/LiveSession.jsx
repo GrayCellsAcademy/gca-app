@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+﻿import { useState, useEffect, useRef } from "react";
 import { setDoc, doc } from "firebase/firestore";
 import {
   createSession, joinSession, startQuestion, revealQuestion, endSession,
@@ -9,7 +9,7 @@ import { REVIEW_QUESTIONS, TOTAL_POINTS } from "./sessionQuestions/lesson14";
 import ClassworkSession, { ClassworkTeacherView, ClassworkStudentView } from "../ClassworkSession";
 import WorksheetSession, { WorksheetTeacherView, WorksheetStudentView } from "../WorksheetSession";
 import RatioSession, { RatioTeacherView, RatioStudentView } from "../RatioSession";
-import Lesson02Session, { Lesson02TeacherView, Lesson02StudentView } from "../Lesson02Session";
+import Lesson02Session, { Lesson02TeacherView, Lesson02StudentView } from "../Lesson02Session2";
 
 function ClassworkSessionWrapper({ user, onHome }) {
   return <ClassworkSession user={user} onHome={onHome} />;
@@ -278,3 +278,4 @@ export default function LiveSession({ user, onHome }) {
     </div>
   );
 }
+
