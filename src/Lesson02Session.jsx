@@ -799,4 +799,6 @@ export default function Lesson02Session({ user, onHome }) {
   );
 }
 
+}
+
 export { TeacherLesson02 as Lesson02TeacherView, StudentLesson02 as Lesson02StudentView };
