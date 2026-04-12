@@ -185,7 +185,93 @@ function SquareSVG({ question }) {
 }
 
 //  SVG: Rectilinear Shape 
-function RectilinearSVG({ question, selectedSides, onSideClick, highlightSideIdx }) {
+function RectilinearSVG({ question, selectedSides, onSideClick, highlightSideIdx, revealCorrect }) {
+  const { vertices, sides, unit, hideIdx, activityType, correctSideIndices } = question;
+  if (!vertices) return null;
+
+  const W = 400, H = 360;
+  const xs = vertices.map(v => v.x);
+  const ys = vertices.map(v => v.y);
+  const minX = Math.min(...xs), maxX = Math.max(...xs);
+  const minY = Math.min(...ys), maxY = Math.max(...ys);
+  const scaleX = (W - 120) / (maxX - minX || 1);
+  const scaleY = (H - 120) / (maxY - minY || 1);
+  const scale = Math.min(scaleX, scaleY);
+  const offX = (W - (maxX - minX) * scale) / 2;
+  const offY = (H - (maxY - minY) * scale) / 2;
+  const sv = vertices.map(v => ({
+    x: (v.x - minX) * scale + offX,
+    y: (v.y - minY) * scale + offY,
+  }));
+
+  const n = sv.length;
+  const cx = sv.reduce((s, p) => s + p.x, 0) / n;
+  const cy = sv.reduce((s, p) => s + p.y, 0) / n;
+
+  const edgeMidpoints = sv.map((p, i) => {
+    const next = sv[(i + 1) % n];
+    return { x: (p.x + next.x) / 2, y: (p.y + next.y) / 2 };
+  });
+
+  const pathD = sv.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(" ") + " Z";
+
+  // 5A: no labels at all
+  // 5B/5C: show labels for all sides EXCEPT the hidden one, no question mark
+  const showLabels = activityType !== "5A";
+
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", maxWidth: 400, display: "block", margin: "0 auto" }}>
+      <path d={pathD} stroke="var(--blue)" strokeWidth="2.5" fill="rgba(59,130,246,0.07)" />
+      {sv.map((p, i) => {
+        const next = sv[(i + 1) % n];
+        const isHighlight = i === highlightSideIdx;
+        const isSelected = selectedSides?.includes(i);
+        const isCorrect = revealCorrect && correctSideIndices?.includes(i);
+        const isHidden = i === hideIdx;
+        const m = edgeMidpoints[i];
+
+        // Calculate perpendicular offset for label
+        const edgeX = next.x - p.x;
+        const edgeY = next.y - p.y;
+        const edgeLen = Math.sqrt(edgeX*edgeX + edgeY*edgeY) || 1;
+        const perpX = -edgeY / edgeLen;
+        const perpY = edgeX / edgeLen;
+        const outDir = (m.x - cx) * perpX + (m.y - cy) * perpY > 0 ? 1 : -1;
+        const dist = 42;
+        const lx = m.x + perpX * outDir * dist;
+        const ly = m.y + perpY * outDir * dist;
+
+        // Side color
+        let strokeColor = "var(--blue)";
+        let strokeW = 2.5;
+        if (isHighlight) { strokeColor = "var(--amber)"; strokeW = 5; }
+        else if (isCorrect) { strokeColor = "var(--green)"; strokeW = 5; }
+        else if (isSelected) { strokeColor = "var(--green)"; strokeW = 4; }
+
+        return (
+          <g key={i} style={{ cursor: activityType === "5A" && !isHighlight ? "pointer" : "default" }}
+            onClick={() => activityType === "5A" && !isHighlight && onSideClick && onSideClick(i)}>
+            <line x1={p.x} y1={p.y} x2={next.x} y2={next.y}
+              stroke={strokeColor} strokeWidth={strokeW} />
+            {showLabels && !isHidden && (
+              <g>
+                <rect x={lx-24} y={ly-12} width={48} height={24} rx={5}
+                  fill="var(--bg2)" stroke="var(--border)" strokeWidth="1" />
+                <text x={lx} y={ly+5} textAnchor="middle"
+                  fontSize="12" fontWeight="700" fill="var(--text)" fontFamily="var(--mono)">
+                  {sides[i]?.length}{unit}
+                </text>
+              </g>
+            )}
+          </g>
+        );
+      })}
+      <text x={W/2} y={H-8} textAnchor="middle" fontSize="11" fill="var(--text3)" fontStyle="italic">
+        Not drawn to scale
+      </text>
+    </svg>
+  );
+}) {
   const { vertices, sides, unit, hideIdx, activityType } = question;
   if (!vertices) return null;
 
@@ -272,7 +358,7 @@ function RectilinearSVG({ question, selectedSides, onSideClick, highlightSideIdx
 }
 
 //  Question Display 
-function QuestionDisplay({ question, selectedSides, onSideClick }) {
+function QuestionDisplay({ question, selectedSides, onSideClick, revealCorrect }) {
   if (!question) return null;
   switch (question.type) {
     case "line-segments":
@@ -289,7 +375,8 @@ function QuestionDisplay({ question, selectedSides, onSideClick }) {
     case "rectilinear-5B":
     case "rectilinear-5C":
       return <RectilinearSVG question={question} selectedSides={selectedSides} onSideClick={onSideClick}
-        highlightSideIdx={question.type === "rectilinear-5A" ? question.highlightSideIdx : undefined} />;
+        highlightSideIdx={question.type === "rectilinear-5A" ? question.highlightSideIdx : undefined}
+        revealCorrect={revealCorrect} />;
     default:
       return null;
   }
@@ -542,7 +629,7 @@ function TeacherLesson02({ session, sessionId, uid }) {
                 <div style={{ fontSize: 16, fontWeight: 700, color: "var(--text)", marginBottom: 12 }}>
                   {question.prompt}
                 </div>
-                <QuestionDisplay question={question} />
+                <QuestionDisplay question={question} revealCorrect={session.status === "revealing"} />
                 {session.status === "question" && session.timerEndsAt && (
                   <div style={{ marginTop: 12 }}>
                     <TimerBar endsAt={session.timerEndsAt} totalSeconds={session.timerSeconds} onExpired={handleTimerExpired} />
@@ -664,7 +751,7 @@ function StudentLesson02({ session, sessionId, uid }) {
         {question && (
           <>
             <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 12, color: "var(--text)" }}>{question.prompt}</div>
-            <QuestionDisplay question={question} selectedSides={selectedSides} onSideClick={handleSideClick} />
+            <QuestionDisplay question={question} selectedSides={selectedSides} onSideClick={handleSideClick} revealCorrect={session.status === "revealing"} />
           </>
         )}
 
