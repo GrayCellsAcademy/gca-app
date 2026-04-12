@@ -672,13 +672,6 @@ export default function LiveSession({ user, onHome }) {
                       <div style={{ color: "var(--text2)", fontSize: 13 }}>Push column addition and subtraction problems one at a time. You control the pace.</div>
                     </div>
                   </div>
-                                    <div className="card" onClick={() => setView("ratio")} style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 16 }}>
-                    <div style={{ fontSize: 16, fontWeight: 800, color: "var(--blue)", minWidth: 36 }}>R:P</div>
-                    <div>
-                      <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 4 }}>Ratios and Proportions</div>
-                      <div style={{ color: "var(--text2)", fontSize: 13 }}>5 types: simplify, solve, algebraic, write and solve word problems.</div>
-                    </div>
-                  </div>
                 </>
               )}
               <div className="card" onClick={() => setView("join")}
