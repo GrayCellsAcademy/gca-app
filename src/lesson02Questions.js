@@ -139,10 +139,10 @@ export function gradeSquare(input, question) {
 function genLShape(unit) {
   // L shape: big rect minus corner
   // Outer: W x H, cutout: cw x ch from top-right
-  const W = randInt(40, 90);
-  const H = randInt(40, 90);
-  const cw = randInt(15, W - 15);
-  const ch = randInt(15, H - 15);
+  const W = randInt(55, 90);
+  const H = randInt(55, 90);
+  const cw = randInt(20, W - 25);
+  const ch = randInt(20, H - 25);
   // Sides: going clockwise from bottom-left
   // bottom=W, right-short=H-ch, top-right=cw, inner-vert=ch, top-left=W-cw, left=H
   const sides = [
@@ -170,11 +170,11 @@ function genLShape(unit) {
 }
 
 function genTShape(unit) {
-  const W = randInt(50, 90);
-  const H = randInt(40, 80);
-  const tw = randInt(15, W - 30); // stem width
-  const th = randInt(15, H - 10); // stem height
-  const stemLeft = randInt(10, W - tw - 10);
+  const W = randInt(60, 90);
+  const H = randInt(50, 80);
+  const tw = randInt(20, W - 35); // stem width
+  const th = randInt(20, H - 20); // stem height
+  const stemLeft = randInt(15, W - tw - 15);
   // sides: bottom-left, bottom-stem-left, stem-left, stem-right, bottom-stem-right, bottom-right, top-right, top-left
   const sides = [
     { length: stemLeft,    label: "bottom-left",       dir: "h" },
@@ -203,11 +203,11 @@ function genTShape(unit) {
 }
 
 function genUShape(unit) {
-  const W = randInt(50, 90);
-  const H = randInt(50, 90);
-  const lw = randInt(10, 20); // left arm width
-  const rw = randInt(10, 20); // right arm width
-  const ch = randInt(20, H - 15); // cutout height
+  const W = randInt(60, 90);
+  const H = randInt(60, 90);
+  const lw = randInt(15, 22); // left arm width
+  const rw = randInt(15, 22); // right arm width
+  const ch = randInt(25, H - 20); // cutout height
   const sides = [
     { length: W,         label: "bottom",      dir: "h" },
     { length: H,         label: "right",       dir: "v" },
@@ -254,10 +254,13 @@ export function genRectilinearShape(activityType) {
     // Find the longest horizontal side
     const hSides = sides.map((s, i) => ({ ...s, i })).filter(s => s.dir === "h");
     const vSides = sides.map((s, i) => ({ ...s, i })).filter(s => s.dir === "v");
-    // The longest h-side should equal sum of other h-sides
-    hSides.sort((a, b) => b.length - a.length);
-    const highlightSide = hSides[0]; // longest horizontal side
-    const sumSides = hSides.slice(1); // remaining h-sides that sum to it
+    // Randomly pick horizontal or vertical
+    const useHorizontal = Math.random() < 0.5;
+    const candSides = useHorizontal ? hSides : vSides;
+    const otherSides = useHorizontal ? hSides : vSides;
+    candSides.sort((a, b) => b.length - a.length);
+    const highlightSide = candSides[0]; // longest side in chosen direction
+    const sumSides = candSides.slice(1); // remaining sides that sum to it
     const correctIndices = sumSides.map(s => s.i);
     return {
       type: "rectilinear-5A",
