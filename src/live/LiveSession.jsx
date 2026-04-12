@@ -685,14 +685,11 @@ export default function LiveSession({ user, onHome }) {
                     </div>
                   </div>
                   <div className="card" onClick={() => setView("worksheet")} style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 16 }}>
-                    style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 16 }}
-                    onMouseEnter={e => e.currentTarget.style.borderColor = "var(--blue)"}
-                    onMouseLeave={e => e.currentTarget.style.borderColor = "var(--border)"}>
                     <div style={{ fontSize: 16, fontWeight: 800, color: "var(--blue)", minWidth: 36 }}>WS</div>
                     <div>
                       <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 4 }}>Decimal Operations Worksheet</div>
                       <div style={{ color: "var(--text2)", fontSize: 13 }}>20 questions â€” decimal multiplication, division, fraction conversion, order of operations.</div>
-                    </div>
+                      <div style={{ color: "var(--text2)", fontSize: 13 }}>20 questions - decimal multiplication, division, fraction conversion, order of operations.</div>
                   </div>
                   <div className="card" onClick={() => setView("create")}
                     style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 16 }}
