@@ -9,7 +9,7 @@ import { REVIEW_QUESTIONS, TOTAL_POINTS } from "./sessionQuestions/lesson14";
 import ClassworkSession, { ClassworkTeacherView, ClassworkStudentView } from "../ClassworkSession";
 import WorksheetSession, { WorksheetTeacherView, WorksheetStudentView } from "../WorksheetSession";
 import RatioSession, { RatioTeacherView, RatioStudentView } from "../RatioSession";
-import Lesson02Session, { Lesson02TeacherView, Lesson02StudentView } from "../Lesson02Session2";
+import Lesson02Session, { Lesson02TeacherView, Lesson02StudentView } from "../Lesson02Session";
 
 function ClassworkSessionWrapper({ user, onHome }) {
   return <ClassworkSession user={user} onHome={onHome} />;
@@ -278,4 +278,5 @@ export default function LiveSession({ user, onHome }) {
     </div>
   );
 }
+
 
