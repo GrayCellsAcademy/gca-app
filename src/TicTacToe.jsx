@@ -60,6 +60,7 @@ function QuestionBox({ question, onCorrect, onWrong, disabled }) {
           onKeyDown={e => e.key === "Enter" && handleSubmit()}
           disabled={disabled}
           type="number"
+          autoFocus
           style={{ width: 100, fontSize: 24, textAlign: "center", fontFamily: "var(--mono)", padding: "8px" }}
         />
         <button className="btn btn-primary" onClick={handleSubmit} disabled={disabled || !input}>
@@ -149,9 +150,15 @@ function GameView({ gameId, symbol, user, game, onFinish }) {
     await submitAnswer(gameId, myUid);
   };
 
+  const [cellTakenMsg, setCellTakenMsg] = useState(false);
+
   const handleCellClick = async (cellIdx) => {
     if (!canPlace) return;
-    await placeMark(gameId, myUid, cellIdx, symbol, myProgress.qIdx);
+    const result = await placeMark(gameId, myUid, cellIdx, symbol, myProgress.qIdx);
+    if (result?.cellTaken) {
+      setCellTakenMsg(true);
+      setTimeout(() => setCellTakenMsg(false), 2000);
+    }
   };
 
   const myName = symbol === "X" ? game.players.X?.name : game.players.O?.name;
@@ -188,12 +195,19 @@ function GameView({ gameId, symbol, user, game, onFinish }) {
         <div>
           {canPlace ? (
             <div style={{
-              background: "rgba(16,185,129,0.1)", border: "2px solid var(--green)",
+              background: cellTakenMsg ? "rgba(239,68,68,0.1)" : "rgba(16,185,129,0.1)",
+              border: "2px solid " + (cellTakenMsg ? "var(--red)" : "var(--green)"),
               borderRadius: "var(--radius)", padding: "16px", textAlign: "center",
             }}>
-              <div style={{ fontSize: 18, fontWeight: 800, color: "var(--green)", marginBottom: 4 }}>
-                Correct! Click any open cell to place your {symbol}
-              </div>
+              {cellTakenMsg ? (
+                <div style={{ fontSize: 18, fontWeight: 800, color: "var(--red)" }}>
+                  That cell was just taken! Pick another cell.
+                </div>
+              ) : (
+                <div style={{ fontSize: 18, fontWeight: 800, color: "var(--green)", marginBottom: 4 }}>
+                  Correct! Click any open cell to place your {symbol}
+                </div>
+              )}
             </div>
           ) : (
             <QuestionBox

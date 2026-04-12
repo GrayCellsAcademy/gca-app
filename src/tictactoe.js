@@ -128,29 +128,39 @@ export function checkWinner(board) {
 }
 
 export async function placeMark(gameId, uid, cellIdx, symbol, currentQIdx) {
-  const snap = await getDoc(doc(db, "games", gameId));
-  if (!snap.exists()) return;
-  const game = snap.data();
-  if (game.board[cellIdx] !== null) return; // cell taken
+  const { runTransaction } = await import("firebase/firestore");
+  let result = null;
+  let cellTaken = false;
 
-  const newBoard = [...game.board];
-  newBoard[cellIdx] = symbol;
-  const result = checkWinner(newBoard);
+  await runTransaction(db, async (transaction) => {
+    const snap = await transaction.get(doc(db, "games", gameId));
+    if (!snap.exists()) return;
+    const game = snap.data();
+    if (game.board[cellIdx] !== null) {
+      cellTaken = true;
+      return; // cell already taken - transaction will still commit but we flag it
+    }
 
-  const updates = {
-    board: newBoard,
-    [`progress.${uid}.pendingPlace`]: false,
-    [`progress.${uid}.qIdx`]: currentQIdx + 1,
-  };
+    const newBoard = [...game.board];
+    newBoard[cellIdx] = symbol;
+    result = checkWinner(newBoard);
 
-  if (result) {
-    updates.status = "finished";
-    updates.winner = result.winner;
-    updates.winLine = result.line;
-  }
+    const updates = {
+      board: newBoard,
+      [`progress.${uid}.pendingPlace`]: false,
+      [`progress.${uid}.qIdx`]: currentQIdx + 1,
+    };
 
-  await updateDoc(doc(db, "games", gameId), updates);
-  return result;
+    if (result) {
+      updates.status = "finished";
+      updates.winner = result.winner;
+      updates.winLine = result.line;
+    }
+
+    transaction.update(doc(db, "games", gameId), updates);
+  });
+
+  return cellTaken ? { cellTaken: true } : result;
 }
 
 //  Post game ratings 
