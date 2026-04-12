@@ -237,10 +237,21 @@ function genUShape(unit) {
 export function genRectilinearShape(activityType) {
   const unit = randUnit();
   const shapeType = ["L", "T", "U"][randInt(0, 2)];
+  const rotateU = shapeType === "U" && Math.random() < 0.5; // sometimes rotate U 90deg
   let shapeData;
   if (shapeType === "L") shapeData = genLShape(unit);
   else if (shapeType === "T") shapeData = genTShape(unit);
-  else shapeData = genUShape(unit);
+  else {
+    shapeData = genUShape(unit);
+    if (rotateU) {
+      // Rotate 90 degrees: swap x/y in vertices, swap h/v in sides
+      shapeData = {
+        ...shapeData,
+        vertices: shapeData.vertices.map(v => ({ x: v.y, y: v.x })),
+        sides: shapeData.sides.map(s => ({ ...s, dir: s.dir === "h" ? "v" : "h" })),
+      };
+    }
+  }
 
   const { sides, perimeter, hideIdx } = shapeData;
   const missingLen = sides[hideIdx].length;

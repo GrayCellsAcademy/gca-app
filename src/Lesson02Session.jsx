@@ -166,10 +166,11 @@ function RectilinearSVG({ question, selectedSides, onSideClick, highlightSideIdx
         const m = mids[i];
         const ex = next.x - p.x, ey = next.y - p.y;
         const el = Math.sqrt(ex * ex + ey * ey) || 1;
-        const px = -ey / el, py = ex / el;
-        const outDir = (m.x - cx) * px + (m.y - cy) * py > 0 ? 1 : -1;
-        const lx = m.x + px * outDir * 42;
-        const ly = m.y + py * outDir * 42;
+        const perpX = -ey / el, perpY = ex / el;
+        const outDir = (m.x - cx) * perpX + (m.y - cy) * perpY > 0 ? 1 : -1;
+        // Place label at midpoint with small offset just enough to not overlap the line
+        const lx = m.x + perpX * outDir * 18;
+        const ly = m.y + perpY * outDir * 18;
         let strokeColor = "var(--blue)", strokeW = 2.5;
         if (isHL) { strokeColor = "var(--amber)"; strokeW = 5; }
         else if (isCorrect) { strokeColor = "var(--green)"; strokeW = 5; }
