@@ -246,12 +246,25 @@ export function genRectilinearShape(activityType) {
   const missingLen = sides[hideIdx].length;
 
   if (activityType === "5A") {
-    // Find which sides sum to a long side
-    // Pick a horizontal long side and identify vertical sides opposite
+    // For L/T/U shapes, a key property is:
+    // One long horizontal side = sum of shorter horizontal sides opposite it
+    // One long vertical side = sum of shorter vertical sides opposite it
+    // Find a horizontal side and the horizontal sides on the opposite face that sum to it
+    const { sides } = shapeData;
+    // Find the longest horizontal side
+    const hSides = sides.map((s, i) => ({ ...s, i })).filter(s => s.dir === "h");
+    const vSides = sides.map((s, i) => ({ ...s, i })).filter(s => s.dir === "v");
+    // The longest h-side should equal sum of other h-sides
+    hSides.sort((a, b) => b.length - a.length);
+    const highlightSide = hSides[0]; // longest horizontal side
+    const sumSides = hSides.slice(1); // remaining h-sides that sum to it
+    const correctIndices = sumSides.map(s => s.i);
     return {
       type: "rectilinear-5A",
       ...shapeData,
-      prompt: "Click all shorter sides on the opposite side that sum to the highlighted side.",
+      highlightSideIdx: highlightSide.i,
+      correctSideIndices: correctIndices,
+      prompt: "Click all shorter sides on the opposite side that sum to the highlighted (orange) side.",
       activityType: "5A",
     };
   } else if (activityType === "5B") {
@@ -286,6 +299,12 @@ export function gradeLesson02Answer(input, question) {
     case "polygon": return gradePolygon(input, question);
     case "rectangle-perimeter": return gradeRectangle(input, question);
     case "square-perimeter": return gradeSquare(input, question);
+    case "rectilinear-5A": {
+      // input is comma-separated selected side indices
+      const selected = input.split(",").map(Number).filter(n => !isNaN(n)).sort().join(",");
+      const correct = (question.correctSideIndices || []).slice().sort().join(",");
+      return selected === correct;
+    }
     case "rectilinear-5B":
     case "rectilinear-5C": return gradeRectilinear(input, question);
     default: return false;

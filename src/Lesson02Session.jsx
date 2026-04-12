@@ -118,37 +118,45 @@ function PolygonSVG({ question }) {
 //  SVG: Rectangle 
 function RectangleSVG({ question, mode, selectedSides, onSideClick }) {
   const { w, h, unit } = question;
-  const W = 320, H = 220;
-  const rx = 40, ry = 30, rw = 240, rh = 160;
+  const W = 360, H = 260;
+  const rx = 70, ry = 45, rw = 220, rh = 170;
   // Sides: 0=top, 1=right, 2=bottom, 3=left
   const sides = [
-    { x1: rx, y1: ry, x2: rx+rw, y2: ry, mx: rx+rw/2, my: ry-18, label: w, orient: "h" },
-    { x1: rx+rw, y1: ry, x2: rx+rw, y2: ry+rh, mx: rx+rw+30, my: ry+rh/2, label: h, orient: "v" },
-    { x1: rx+rw, y1: ry+rh, x2: rx, y2: ry+rh, mx: rx+rw/2, my: ry+rh+18, label: w, orient: "h" },
-    { x1: rx, y1: ry+rh, x2: rx, y2: ry, mx: rx-30, my: ry+rh/2, label: h, orient: "v" },
+    { x1: rx, y1: ry, x2: rx+rw, y2: ry, mx: rx+rw/2, my: ry-22, label: w },
+    { x1: rx+rw, y1: ry, x2: rx+rw, y2: ry+rh, mx: rx+rw+38, my: ry+rh/2, label: h },
+    { x1: rx+rw, y1: ry+rh, x2: rx, y2: ry+rh, mx: rx+rw/2, my: ry+rh+22, label: w },
+    { x1: rx, y1: ry+rh, x2: rx, y2: ry, mx: rx-38, my: ry+rh/2, label: h },
   ];
 
+  // For 3B mode: only show top and right labels (two perpendicular sides)
+  const showLabelForSide = (i) => {
+    if (mode === "3B") return i === 0 || i === 1;
+    return false; // 3A: no labels shown
+  };
+
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", maxWidth: 320, display: "block", margin: "0 auto" }}>
+    <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", maxWidth: 360, display: "block", margin: "0 auto" }}>
       <rect x={rx} y={ry} width={rw} height={rh}
-        stroke="var(--blue)" strokeWidth="2.5" fill="rgba(59,130,246,0.07)" />
-      {/* Right angle marks */}
-      <polyline points={`${rx+12},${ry} ${rx+12},${ry+12} ${rx},${ry+12}`}
+        stroke="var(--blue)" strokeWidth="2.5" fill="rgba(59,130,246,0.07)" rx="2" />
+      <polyline points={`${rx+14},${ry} ${rx+14},${ry+14} ${rx},${ry+14}`}
         fill="none" stroke="var(--text3)" strokeWidth="1.5" />
       {sides.map((s, i) => {
         const isSelected = selectedSides?.includes(i);
-        const showLabel = mode === "3B" || mode === "equal-sides";
         return (
           <g key={i} style={{ cursor: mode === "equal-sides" ? "pointer" : "default" }}
             onClick={() => mode === "equal-sides" && onSideClick && onSideClick(i)}>
             <line x1={s.x1} y1={s.y1} x2={s.x2} y2={s.y2}
               stroke={isSelected ? "var(--green)" : "var(--blue)"}
               strokeWidth={isSelected ? 5 : 2.5} />
-            {showLabel && (
-              <text x={s.mx} y={s.my} textAnchor="middle" dominantBaseline="middle"
-                fontSize="14" fontWeight="700" fill="var(--text)" fontFamily="var(--mono)">
-                {s.label}{unit}
-              </text>
+            {showLabelForSide(i) && (
+              <g>
+                <rect x={s.mx-28} y={s.my-12} width={56} height={24} rx={5}
+                  fill="var(--bg)" stroke="var(--border)" strokeWidth="1" />
+                <text x={s.mx} y={s.my+5} textAnchor="middle"
+                  fontSize="13" fontWeight="700" fill="var(--text)" fontFamily="var(--mono)">
+                  {s.label}{unit}
+                </text>
+              </g>
             )}
           </g>
         );
@@ -217,8 +225,17 @@ function RectilinearSVG({ question, selectedSides, onSideClick, highlightSideIdx
         const isHighlight = i === highlightSideIdx;
         const isSelected = selectedSides?.includes(i);
         const m = edgeMidpoints[i];
-        const labelOffX = (m.x - cx) > 0 ? 32 : -32;
-        const labelOffY = (m.y - cy) > 0 ? 22 : -22;
+        // Calculate edge direction to offset label perpendicularly
+        const edgeX = next.x - p.x;
+        const edgeY = next.y - p.y;
+        const edgeLen = Math.sqrt(edgeX*edgeX + edgeY*edgeY) || 1;
+        // Perpendicular direction (rotated 90deg)
+        const perpX = -edgeY / edgeLen;
+        const perpY = edgeX / edgeLen;
+        // Push away from center
+        const outDir = (m.x - cx) * perpX + (m.y - cy) * perpY > 0 ? 1 : -1;
+        const labelOffX = perpX * outDir * 38;
+        const labelOffY = perpY * outDir * 38;
         const lx = m.x + labelOffX;
         const ly = m.y + labelOffY;
         const sideLen = isHidden ? "?" : sides[i]?.length;
@@ -272,7 +289,7 @@ function QuestionDisplay({ question, selectedSides, onSideClick }) {
     case "rectilinear-5B":
     case "rectilinear-5C":
       return <RectilinearSVG question={question} selectedSides={selectedSides} onSideClick={onSideClick}
-        highlightSideIdx={question.type === "rectilinear-5A" ? 0 : undefined} />;
+        highlightSideIdx={question.type === "rectilinear-5A" ? question.highlightSideIdx : undefined} />;
     default:
       return null;
   }
@@ -299,7 +316,7 @@ function AnswerInput({ question, onSubmit, submitted, selectedSides }) {
             : `Click all sides that sum to the highlighted side. Selected: ${selectedSides?.length || 0}`}
         </div>
         <button className="btn btn-primary" style={{ width: "100%" }}
-          onClick={() => onSubmit(selectedSides?.join(",") || "")}
+          onClick={() => onSubmit((selectedSides || []).slice().sort((a,b)=>a-b).join(","))}
           disabled={submitted}>
           Submit
         </button>
