@@ -170,36 +170,46 @@ function genLShape(unit) {
 }
 
 function genTShape(unit) {
+  // T shape: wide base with a narrower stem rising from the top center
+  // Base: W wide, bh tall. Stem: tw wide, sh tall, centered on base
   const W = randInt(60, 90);
-  const H = randInt(50, 80);
-  const tw = randInt(18, Math.max(19, W - 36)); // stem width
-  const th = randInt(18, Math.max(19, H - 22)); // stem height
-  const stemLeft = randInt(12, Math.max(13, W - tw - 12));
-  // sides: bottom-left, bottom-stem-left, stem-left, stem-right, bottom-stem-right, bottom-right, top-right, top-left
+  const bh = randInt(20, 35); // base height
+  const sh = randInt(25, 45); // stem height
+  const tw = randInt(20, Math.max(21, W - 30)); // stem width
+  const stemLeft = randInt(12, Math.max(13, W - tw - 12)); // stem left offset
+  const H = bh + sh; // total height
+  // Vertices clockwise from bottom-left:
+  // bottom-left -> bottom-right -> right-base-top -> stem-right-base -> stem-right-top
+  // -> stem-left-top -> stem-left-base -> left-base-top -> back to start
+  const scale = 2;
+  const vertices = [
+    { x: 0,                   y: H*scale },          // bottom-left
+    { x: W*scale,             y: H*scale },          // bottom-right
+    { x: W*scale,             y: sh*scale },         // right shoulder
+    { x: (stemLeft+tw)*scale, y: sh*scale },         // stem-right bottom
+    { x: (stemLeft+tw)*scale, y: 0 },               // stem-right top
+    { x: stemLeft*scale,      y: 0 },               // stem-left top
+    { x: stemLeft*scale,      y: sh*scale },         // stem-left bottom
+    { x: 0,                   y: sh*scale },         // left shoulder
+  ];
+  // Sides clockwise: bottom(W), right(H-sh=bh... wait
+  // Going around: bottom, right-outer(bh... 
+  // Let me think carefully about the sides
+  const rightOuter = H - sh; // = bh
+  const leftOuter = H - sh;  // = bh
   const sides = [
-    { length: stemLeft,    label: "bottom-left",       dir: "h" },
-    { length: th,          label: "stem-left-vert",    dir: "v" },
-    { length: tw,          label: "stem-bottom",       dir: "h" },
-    { length: th,          label: "stem-right-vert",   dir: "v" },
-    { length: W-stemLeft-tw, label: "bottom-right",   dir: "h" },
-    { length: H,           label: "right",             dir: "v" },
-    { length: W,           label: "top",               dir: "h" },
-    { length: H,           label: "left",              dir: "v" },
+    { length: W,              dir: "h", label: "bottom" },
+    { length: bh,             dir: "v", label: "right-outer" },
+    { length: W-stemLeft-tw,  dir: "h", label: "right-shoulder" },
+    { length: sh,             dir: "v", label: "stem-right" },
+    { length: tw,             dir: "h", label: "stem-top" },
+    { length: sh,             dir: "v", label: "stem-left" },
+    { length: stemLeft,       dir: "h", label: "left-shoulder" },
+    { length: bh,             dir: "v", label: "left-outer" },
   ];
   const perimeter = sides.reduce((s, x) => s + x.length, 0);
   const hideIdx = Math.floor(Math.random() * sides.length);
-  const scale = 2;
-  const vertices = [
-    { x: 0,                      y: H*scale },
-    { x: stemLeft*scale,         y: H*scale },
-    { x: stemLeft*scale,         y: (H-th)*scale },
-    { x: (stemLeft+tw)*scale,    y: (H-th)*scale },
-    { x: (stemLeft+tw)*scale,    y: H*scale },
-    { x: W*scale,                y: H*scale },
-    { x: W*scale,                y: 0 },
-    { x: 0,                      y: 0 },
-  ];
-  return { shape: "T", W, H, tw, th, stemLeft, sides, perimeter, hideIdx, vertices, unit };
+  return { shape: "T", W, H, bh, sh, tw, stemLeft, sides, perimeter, hideIdx, vertices, unit };
 }
 
 function genUShape(unit) {
@@ -236,23 +246,21 @@ function genUShape(unit) {
 
 export function genRectilinearShape(activityType) {
   const unit = randUnit();
-  // Weighted: L=35%, T=35%, U=30%
-  const shapeRoll = Math.random();
-  const shapeType = shapeRoll < 0.35 ? "L" : shapeRoll < 0.70 ? "T" : "U";
-  const rotateU = shapeType === "U" && Math.random() < 0.5; // sometimes rotate U 90deg
+  // Equal probability L/T/U, random rotation for all
+  const shapeIdx = randInt(0, 2);
+  const shapeType = ["L", "T", "U"][shapeIdx];
+  const shouldRotate = Math.random() < 0.5; // rotate any shape 90deg
   let shapeData;
   if (shapeType === "L") shapeData = genLShape(unit);
   else if (shapeType === "T") shapeData = genTShape(unit);
-  else {
-    shapeData = genUShape(unit);
-    if (rotateU) {
-      // Rotate 90 degrees: swap x/y in vertices, swap h/v in sides
-      shapeData = {
-        ...shapeData,
-        vertices: shapeData.vertices.map(v => ({ x: v.y, y: v.x })),
-        sides: shapeData.sides.map(s => ({ ...s, dir: s.dir === "h" ? "v" : "h" })),
-      };
-    }
+  else shapeData = genUShape(unit);
+  if (shouldRotate) {
+    // Rotate 90 degrees: swap x/y in vertices, swap h/v in sides
+    shapeData = {
+      ...shapeData,
+      vertices: shapeData.vertices.map(v => ({ x: v.y, y: v.x })),
+      sides: shapeData.sides.map(s => ({ ...s, dir: s.dir === "h" ? "v" : "h" })),
+    };
   }
 
   const { sides, perimeter, hideIdx } = shapeData;
