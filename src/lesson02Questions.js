@@ -172,9 +172,9 @@ function genLShape(unit) {
 function genTShape(unit) {
   const W = randInt(60, 90);
   const H = randInt(50, 80);
-  const tw = randInt(20, W - 35); // stem width
-  const th = randInt(20, H - 20); // stem height
-  const stemLeft = randInt(15, W - tw - 15);
+  const tw = randInt(18, Math.max(19, W - 36)); // stem width
+  const th = randInt(18, Math.max(19, H - 22)); // stem height
+  const stemLeft = randInt(12, Math.max(13, W - tw - 12));
   // sides: bottom-left, bottom-stem-left, stem-left, stem-right, bottom-stem-right, bottom-right, top-right, top-left
   const sides = [
     { length: stemLeft,    label: "bottom-left",       dir: "h" },
@@ -236,7 +236,9 @@ function genUShape(unit) {
 
 export function genRectilinearShape(activityType) {
   const unit = randUnit();
-  const shapeType = ["L", "T", "U"][randInt(0, 2)];
+  // Weighted: L=35%, T=35%, U=30%
+  const shapeRoll = Math.random();
+  const shapeType = shapeRoll < 0.35 ? "L" : shapeRoll < 0.70 ? "T" : "U";
   const rotateU = shapeType === "U" && Math.random() < 0.5; // sometimes rotate U 90deg
   let shapeData;
   if (shapeType === "L") shapeData = genLShape(unit);
@@ -265,13 +267,21 @@ export function genRectilinearShape(activityType) {
     // Find the longest horizontal side
     const hSides = sides.map((s, i) => ({ ...s, i })).filter(s => s.dir === "h");
     const vSides = sides.map((s, i) => ({ ...s, i })).filter(s => s.dir === "v");
-    // Randomly pick horizontal or vertical
-    const useHorizontal = Math.random() < 0.5;
+    // Find the longest side in each direction and randomly pick one
+    hSides.sort((a, b) => b.length - a.length);
+    vSides.sort((a, b) => b.length - a.length);
+    // Pick direction based on which has a valid sum relationship
+    // The longest side in a direction should equal sum of others in same direction
+    const hValid = hSides.length > 1 && hSides[0].length === hSides.slice(1).reduce((s, x) => s + x.length, 0);
+    const vValid = vSides.length > 1 && vSides[0].length === vSides.slice(1).reduce((s, x) => s + x.length, 0);
+    const useHorizontal = hValid && (!vValid || Math.random() < 0.5);
     const candSides = useHorizontal ? hSides : vSides;
-    const otherSides = useHorizontal ? hSides : vSides;
-    candSides.sort((a, b) => b.length - a.length);
-    const highlightSide = candSides[0]; // longest side in chosen direction
-    const sumSides = candSides.slice(1); // remaining sides that sum to it
+    if (candSides.length < 2) {
+      // Fallback - just use horizontal
+      hSides.sort((a, b) => b.length - a.length);
+    }
+    const highlightSide = candSides[0];
+    const sumSides = candSides.slice(1);
     const correctIndices = sumSides.map(s => s.i);
     return {
       type: "rectilinear-5A",
