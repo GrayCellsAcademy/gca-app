@@ -138,7 +138,8 @@ function SquareSVG({ question }) {
 }
 
 function RectilinearSVG({ question, selectedSides, onSideClick, highlightSideIdx, revealCorrect }) {
-  const { vertices, sides, unit, hideIdx, activityType, correctSideIndices } = question;
+  const { vertices, sides, unit, hideIdx, hideIndices, activityType, correctSideIndices, activeMissingIdx } = question;
+  const hiddenSet = new Set(hideIndices || (hideIdx !== undefined ? [hideIdx] : []));
   if (!vertices) return null;
   const W = 400, H = 360;
   const xs = vertices.map(v => v.x), ys = vertices.map(v => v.y);
@@ -162,7 +163,8 @@ function RectilinearSVG({ question, selectedSides, onSideClick, highlightSideIdx
         const isHL = i === highlightSideIdx;
         const isSel = selectedSides?.includes(i);
         const isCorrect = revealCorrect && correctSideIndices?.includes(i);
-        const isHidden = i === hideIdx;
+        const isHidden = hiddenSet.has(i);
+        const isActiveMissing = activeMissingIdx === i;
         const m = mids[i];
         const ex = next.x - p.x, ey = next.y - p.y;
         const el = Math.sqrt(ex * ex + ey * ey) || 1;
@@ -180,12 +182,13 @@ function RectilinearSVG({ question, selectedSides, onSideClick, highlightSideIdx
             onClick={() => activityType === "5A" && !isHL && onSideClick && onSideClick(i)}>
             <line x1={p.x} y1={p.y} x2={next.x} y2={next.y} stroke={strokeColor} strokeWidth={strokeW} />
             {showLabels && (!isHidden || activityType === "5B") && (
-              <g>
+              <g style={{ cursor: activityType === "5B" && isHidden ? "pointer" : "default" }}
+                onClick={() => activityType === "5B" && isHidden && onSideClick && onSideClick(i)}>
                 <rect x={lx - 24} y={ly - 12} width={48} height={24} rx={5}
-                  fill={isHidden ? "rgba(251,191,36,0.15)" : "var(--bg2)"}
-                  stroke={isHidden ? "var(--amber)" : "var(--border)"} strokeWidth="1" />
+                  fill={isActiveMissing ? "rgba(59,130,246,0.3)" : isHidden ? "rgba(251,191,36,0.15)" : "var(--bg2)"}
+                  stroke={isActiveMissing ? "var(--blue)" : isHidden ? "var(--amber)" : "var(--border)"} strokeWidth={isActiveMissing ? 2 : 1} />
                 <text x={lx} y={ly + 5} textAnchor="middle" fontSize="12" fontWeight="700"
-                  fill={isHidden ? "var(--amber)" : "var(--text)"} fontFamily="var(--mono)">
+                  fill={isActiveMissing ? "var(--blue)" : isHidden ? "var(--amber)" : "var(--text)"} fontFamily="var(--mono)">
                   {isHidden ? "?" : sides[i]?.length + unit}
                 </text>
               </g>
@@ -198,7 +201,7 @@ function RectilinearSVG({ question, selectedSides, onSideClick, highlightSideIdx
   );
 }
 
-function QuestionDisplay({ question, selectedSides, onSideClick, revealCorrect }) {
+function QuestionDisplay({ question, selectedSides, onSideClick, revealCorrect, activeMissingIdx }) {
   if (!question) return null;
   switch (question.type) {
     case "line-segments": return <LineSegmentsSVG question={question} />;
@@ -209,17 +212,87 @@ function QuestionDisplay({ question, selectedSides, onSideClick, revealCorrect }
     case "rectilinear-5A":
     case "rectilinear-5B":
     case "rectilinear-5C":
-      return <RectilinearSVG question={question} selectedSides={selectedSides} onSideClick={onSideClick}
+      return <RectilinearSVG
+        question={{ ...question, activeMissingIdx }}
+        selectedSides={selectedSides} onSideClick={onSideClick}
         highlightSideIdx={question.type === "rectilinear-5A" ? question.highlightSideIdx : undefined}
         revealCorrect={revealCorrect} />;
     default: return null;
   }
 }
 
-function AnswerInput({ question, onSubmit, submitted, selectedSides }) {
+function AnswerInput({ question, onSubmit, submitted, selectedSides, onSideClick }) {
   const [input, setInput] = useState("");
+  const [activeSideIdx, setActiveSideIdx] = useState(null);
+  const [enteredSides, setEnteredSides] = useState({});
   const inputRef = useRef(null);
-  useEffect(() => { setInput(""); setTimeout(() => inputRef.current?.focus(), 100); }, [question?.type]);
+
+  useEffect(() => {
+    setInput(""); setActiveSideIdx(null); setEnteredSides({});
+    setTimeout(() => inputRef.current?.focus(), 100);
+  }, [question?.type, question?.id]);
+
+  // For 5B: click side -> enter length -> confirm -> next side
+  if (question?.type === "rectilinear-5B") {
+    const missingAnswers = question.missingAnswers || [];
+    const allEntered = missingAnswers.every(ma => enteredSides[ma.idx] !== undefined);
+
+    const handleSideSelect = (idx) => {
+      if (enteredSides[idx] !== undefined) return; // already entered
+      setActiveSideIdx(idx);
+      setInput("");
+      setTimeout(() => inputRef.current?.focus(), 100);
+    };
+
+    const handleConfirm = () => {
+      if (activeSideIdx === null || !input.trim()) return;
+      const newEntered = { ...enteredSides, [activeSideIdx]: input.trim() };
+      setEnteredSides(newEntered);
+      setActiveSideIdx(null);
+      setInput("");
+      // Move to next unentered missing side
+      const next = missingAnswers.find(ma => newEntered[ma.idx] === undefined);
+      if (next) { setActiveSideIdx(next.idx); setTimeout(() => inputRef.current?.focus(), 100); }
+    };
+
+    // Pass activeSideIdx to parent for SVG highlighting
+    if (onSideClick && activeSideIdx !== question.activeMissingIdx) {
+      // handled via question prop
+    }
+
+    return (
+      <div>
+        <div style={{ fontSize: 13, color: "var(--text3)", marginBottom: 8 }}>
+          {activeSideIdx !== null
+            ? "Enter the length for the selected side (include units)"
+            : allEntered ? "All sides entered - ready to submit!"
+            : "Click a ? side to select it, then enter its length"}
+        </div>
+        {activeSideIdx !== null && (
+          <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
+            <input ref={inputRef} value={input} onChange={e => setInput(e.target.value)}
+              onKeyDown={e => e.key === "Enter" && handleConfirm()}
+              placeholder="e.g. 35cm" autoFocus
+              style={{ flex: 1, fontSize: 20, fontFamily: "var(--mono)", padding: "10px 14px" }} />
+            <button className="btn btn-primary" onClick={handleConfirm} disabled={!input.trim()}>OK</button>
+          </div>
+        )}
+        {Object.entries(enteredSides).length > 0 && (
+          <div style={{ fontSize: 13, color: "var(--text2)", marginBottom: 8 }}>
+            {Object.entries(enteredSides).map(([idx, val]) => (
+              <span key={idx} style={{ marginRight: 12 }}>Side {parseInt(idx)+1}: <strong style={{ fontFamily: "var(--mono)" }}>{val}</strong></span>
+            ))}
+          </div>
+        )}
+        <button className="btn btn-primary" style={{ width: "100%" }}
+          onClick={() => onSubmit(JSON.stringify(missingAnswers.map(ma => ({ idx: ma.idx, value: enteredSides[ma.idx]?.replace(/[^0-9.]/g, "") || "" }))))}
+          disabled={submitted || !allEntered}>
+          Submit All
+        </button>
+      </div>
+    );
+  }
+
   const isClick = question?.type === "rectangle-equal-sides" || question?.type === "rectilinear-5A";
   if (isClick) {
     return (
@@ -231,6 +304,7 @@ function AnswerInput({ question, onSubmit, submitted, selectedSides }) {
       </div>
     );
   }
+
   return (
     <div>
       <div style={{ fontSize: 13, color: "var(--text3)", marginBottom: 6 }}>Include units (e.g. 45cm, 120ft)</div>
@@ -464,6 +538,7 @@ function StudentLesson02({ session, sessionId, uid }) {
   const [result, setResult] = useState(null);
   const [lastQId, setLastQId] = useState(null);
   const [selectedSides, setSelectedSides] = useState([]);
+  const [activeMissingIdx, setActiveMissingIdx] = useState(null);
   const question = session.currentQuestion;
   const participants = session.participants || {};
   const myScore = participants[uid]?.totalScore || 0;
@@ -475,7 +550,11 @@ function StudentLesson02({ session, sessionId, uid }) {
   }, [question?.id]);
 
   const handleSideClick = (idx) => {
-    setSelectedSides(prev => prev.includes(idx) ? prev.filter(i => i !== idx) : [...prev, idx]);
+    if (question?.type === "rectilinear-5B") {
+      setActiveMissingIdx(idx);
+    } else {
+      setSelectedSides(prev => prev.includes(idx) ? prev.filter(i => i !== idx) : [...prev, idx]);
+    }
   };
 
   const handleSubmit = async (inputVal) => {
@@ -518,7 +597,7 @@ function StudentLesson02({ session, sessionId, uid }) {
         {question && (
           <>
             <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 12, color: "var(--text)" }}>{question.prompt}</div>
-            <QuestionDisplay question={question} selectedSides={selectedSides} onSideClick={handleSideClick} revealCorrect={session.status === "revealing"} />
+            <QuestionDisplay question={question} selectedSides={selectedSides} onSideClick={handleSideClick} revealCorrect={session.status === "revealing"} activeMissingIdx={activeMissingIdx} />
           </>
         )}
         {session.status === "revealing" ? (
@@ -547,7 +626,7 @@ function StudentLesson02({ session, sessionId, uid }) {
           </div>
         ) : question ? (
           <div style={{ marginTop: 14 }}>
-            <AnswerInput question={question} onSubmit={handleSubmit} submitted={submitted} selectedSides={selectedSides} />
+            <AnswerInput question={question} onSubmit={handleSubmit} submitted={submitted} selectedSides={selectedSides} onSideClick={handleSideClick} />
           </div>
         ) : null}
       </div>

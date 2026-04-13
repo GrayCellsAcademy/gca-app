@@ -137,14 +137,10 @@ export function gradeSquare(input, question) {
 // L, T, U shapes
 
 function genLShape(unit) {
-  // L shape: big rect minus corner
-  // Outer: W x H, cutout: cw x ch from top-right
   const W = randInt(55, 90);
   const H = randInt(55, 90);
   const cw = randInt(20, W - 25);
   const ch = randInt(20, H - 25);
-  // Sides: going clockwise from bottom-left
-  // bottom=W, right-short=H-ch, top-right=cw, inner-vert=ch, top-left=W-cw, left=H
   const sides = [
     { length: W,    label: "bottom",     dir: "h" },
     { length: H-ch, label: "right",      dir: "v" },
@@ -154,19 +150,19 @@ function genLShape(unit) {
     { length: H,    label: "left",       dir: "v" },
   ];
   const perimeter = sides.reduce((s, x) => s + x.length, 0);
-  // Pick one side to hide
-  const hideIdx = Math.floor(Math.random() * sides.length);
-  // Vertices for SVG (scaled)
+  // L shape: hide one h and one v side (indices 2,3 = top-right and inner-vert are derivable)
+  const hideIndices = [2, 3]; // top-right (h) and inner-vert (v) are both derivable
+  const hideIdx = hideIndices[0]; // for 5B/5C single hide compat, use first
   const scale = 2;
   const vertices = [
-    { x: 0,      y: H*scale },     // bottom-left
-    { x: W*scale,y: H*scale },     // bottom-right
-    { x: W*scale,y: ch*scale },    // right notch bottom
-    { x: (W-cw)*scale, y: ch*scale }, // inner corner
-    { x: (W-cw)*scale, y: 0 },    // top-left of notch
-    { x: 0,      y: 0 },           // top-left
+    { x: 0,            y: H*scale },
+    { x: W*scale,      y: H*scale },
+    { x: W*scale,      y: ch*scale },
+    { x: (W-cw)*scale, y: ch*scale },
+    { x: (W-cw)*scale, y: 0 },
+    { x: 0,            y: 0 },
   ];
-  return { shape: "L", W, H, cw, ch, sides, perimeter, hideIdx, vertices, unit };
+  return { shape: "L", W, H, cw, ch, sides, perimeter, hideIdx, hideIndices, vertices, unit };
 }
 
 function genTShape(unit) {
@@ -208,8 +204,10 @@ function genTShape(unit) {
     { length: bh,             dir: "v", label: "left-outer" },
   ];
   const perimeter = sides.reduce((s, x) => s + x.length, 0);
-  const hideIdx = Math.floor(Math.random() * sides.length);
-  return { shape: "T", W, H, bh, sh, tw, stemLeft, sides, perimeter, hideIdx, vertices, unit };
+  // T shape: hide left-shoulder (idx 6) and right-shoulder (idx 2) - both derivable
+  const hideIndices = [2, 6]; // right-shoulder and left-shoulder
+  const hideIdx = hideIndices[0];
+  return { shape: "T", W, H, bh, sh, tw, stemLeft, sides, perimeter, hideIdx, hideIndices, vertices, unit };
 }
 
 function genUShape(unit) {
@@ -229,7 +227,9 @@ function genUShape(unit) {
     { length: H,         label: "left",        dir: "v" },
   ];
   const perimeter = sides.reduce((s, x) => s + x.length, 0);
-  const hideIdx = Math.floor(Math.random() * sides.length);
+  // U shape: hide inner-top (idx 4) and inner-right (idx 3) or inner-left (idx 5)
+  const hideIndices = [3, 4]; // inner-right vert and inner-top horiz
+  const hideIdx = hideIndices[0];
   const scale = 2;
   const vertices = [
     { x: 0,           y: H*scale },
@@ -300,18 +300,24 @@ export function genRectilinearShape(activityType) {
       activityType: "5A",
     };
   } else if (activityType === "5B") {
+    // Two missing sides - student clicks each and enters length
+    const hideIndices = shapeData.hideIndices || [shapeData.hideIdx];
+    const missingAnswers = hideIndices.map(i => ({ idx: i, length: sides[i].length, dir: sides[i].dir }));
     return {
       type: "rectilinear-5B",
       ...shapeData,
-      answer: missingLen + unit,
-      displayAnswer: `${missingLen} ${unit}`,
-      prompt: "Find the missing side length.",
+      hideIndices,
+      missingAnswers,
+      prompt: "Click each missing side and enter its length.",
       activityType: "5B",
     };
   } else {
+    // 5C: two sides missing, student enters perimeter
+    const hideIndices = shapeData.hideIndices || [shapeData.hideIdx];
     return {
       type: "rectilinear-5C",
       ...shapeData,
+      hideIndices,
       answer: perimeter + unit,
       displayAnswer: `${perimeter} ${unit}`,
       prompt: "Find the perimeter of this shape.",
@@ -337,7 +343,18 @@ export function gradeLesson02Answer(input, question) {
       const correct = (question.correctSideIndices || []).slice().sort().join(",");
       return selected === correct;
     }
-    case "rectilinear-5B":
+    case "rectilinear-5B": {
+      // input is JSON array of {idx, value} or single value
+      try {
+        const answers = JSON.parse(input);
+        return question.missingAnswers.every(ma => {
+          const given = answers.find(a => a.idx === ma.idx);
+          return given && normalizeAnswer(String(given.value) + question.unit) === normalizeAnswer(ma.length + question.unit);
+        });
+      } catch {
+        return false;
+      }
+    }
     case "rectilinear-5C": return gradeRectilinear(input, question);
     default: return false;
   }
