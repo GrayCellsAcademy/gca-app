@@ -240,6 +240,7 @@ function AnswerInput({ question, onSubmit, submitted, selectedSides, onSideClick
     const handleSideSelect = (idx) => {
       if (enteredSides[idx] !== undefined) return; // already entered
       setActiveSideIdx(idx);
+      onSideClick && onSideClick(idx); // tell parent for SVG highlight
       setInput("");
       setTimeout(() => inputRef.current?.focus(), 100);
     };
@@ -249,10 +250,15 @@ function AnswerInput({ question, onSubmit, submitted, selectedSides, onSideClick
       const newEntered = { ...enteredSides, [activeSideIdx]: input.trim() };
       setEnteredSides(newEntered);
       setActiveSideIdx(null);
+      onSideClick && onSideClick(null); // clear SVG highlight
       setInput("");
       // Move to next unentered missing side
       const next = missingAnswers.find(ma => newEntered[ma.idx] === undefined);
-      if (next) { setActiveSideIdx(next.idx); setTimeout(() => inputRef.current?.focus(), 100); }
+      if (next) {
+        setActiveSideIdx(next.idx);
+        onSideClick && onSideClick(next.idx);
+        setTimeout(() => inputRef.current?.focus(), 100);
+      }
     };
 
     // Pass activeSideIdx to parent for SVG highlighting
@@ -493,10 +499,20 @@ function TeacherLesson02({ session, sessionId, uid }) {
                     <TimerBar endsAt={session.timerEndsAt} totalSeconds={session.timerSeconds} onExpired={handleTimerExpired} />
                   </div>
                 )}
-                {session.status === "revealing" && question.displayAnswer && (
+                {session.status === "revealing" && (
                   <div style={{ marginTop: 12, background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.3)", borderRadius: "var(--radius-sm)", padding: "10px 14px" }}>
                     <div style={{ fontSize: 12, color: "var(--text3)", marginBottom: 4 }}>Correct answer</div>
-                    <div style={{ fontSize: 24, fontWeight: 800, color: "var(--green)", fontFamily: "var(--mono)" }}>{question.displayAnswer}</div>
+                    {question.type === "rectilinear-5B" && question.missingAnswers ? (
+                      <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+                        {question.missingAnswers.map((ma, i) => (
+                          <div key={i} style={{ fontSize: 20, fontWeight: 800, color: "var(--green)", fontFamily: "var(--mono)" }}>
+                            Side {i+1}: {ma.length}{question.unit}
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div style={{ fontSize: 24, fontWeight: 800, color: "var(--green)", fontFamily: "var(--mono)" }}>{question.displayAnswer}</div>
+                    )}
                   </div>
                 )}
                 <div style={{ height: 6, background: "var(--surface2)", borderRadius: 99, overflow: "hidden", marginTop: 12 }}>
@@ -552,7 +568,7 @@ function StudentLesson02({ session, sessionId, uid }) {
   const handleSideClick = (idx) => {
     if (question?.type === "rectilinear-5B") {
       setActiveMissingIdx(idx);
-    } else {
+    } else if (idx !== null) {
       setSelectedSides(prev => prev.includes(idx) ? prev.filter(i => i !== idx) : [...prev, idx]);
     }
   };
@@ -607,9 +623,19 @@ function StudentLesson02({ session, sessionId, uid }) {
                 <div style={{ fontSize: 20, fontWeight: 800, color: result.correct ? "var(--green)" : "var(--red)", marginBottom: 6 }}>
                   {result.correct ? "Correct! +" + POINTS + " pts" : "Incorrect"}
                 </div>
-                <div style={{ fontSize: 13, color: "var(--text2)" }}>Your answer: <strong style={{ fontFamily: "var(--mono)" }}>{result.answer}</strong></div>
-                {!result.correct && question?.displayAnswer && (
-                  <div style={{ color: "var(--green)", fontSize: 14, marginTop: 4 }}>Correct: <strong style={{ fontFamily: "var(--mono)" }}>{question.displayAnswer}</strong></div>
+                <div style={{ fontSize: 13, color: "var(--text2)" }}>
+                  Your answer: <strong style={{ fontFamily: "var(--mono)" }}>
+                    {question?.type === "rectilinear-5B" ? (() => { try { return JSON.parse(result.answer).map(a => a.value).join(", "); } catch { return result.answer; } })() : result.answer}
+                  </strong>
+                </div>
+                {!result.correct && (
+                  <div style={{ color: "var(--green)", fontSize: 14, marginTop: 4 }}>
+                    Correct: <strong style={{ fontFamily: "var(--mono)" }}>
+                      {question?.type === "rectilinear-5B" && question.missingAnswers
+                        ? question.missingAnswers.map(ma => ma.length + question.unit).join(", ")
+                        : question?.displayAnswer}
+                    </strong>
+                  </div>
                 )}
               </>
             ) : (
