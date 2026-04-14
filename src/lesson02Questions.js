@@ -344,12 +344,14 @@ export function gradeLesson02Answer(input, question) {
       return selected === correct;
     }
     case "rectilinear-5B": {
-      // input is JSON array of {idx, value} or single value
       try {
         const answers = JSON.parse(input);
         return question.missingAnswers.every(ma => {
           const given = answers.find(a => a.idx === ma.idx);
-          return given && normalizeAnswer(String(given.value) + question.unit) === normalizeAnswer(ma.length + question.unit);
+          if (!given) return false;
+          // Accept just the number or number+unit
+          const givenNum = parseInt(String(given.value).replace(/[^0-9]/g, ""));
+          return givenNum === ma.length;
         });
       } catch {
         return false;

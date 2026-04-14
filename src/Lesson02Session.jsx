@@ -221,14 +221,13 @@ function QuestionDisplay({ question, selectedSides, onSideClick, revealCorrect, 
   }
 }
 
-function AnswerInput({ question, onSubmit, submitted, selectedSides, onSideClick }) {
+function AnswerInput({ question, onSubmit, submitted, selectedSides, onSideClick, activeMissingIdx }) {
   const [input, setInput] = useState("");
-  const [activeSideIdx, setActiveSideIdx] = useState(null);
   const [enteredSides, setEnteredSides] = useState({});
   const inputRef = useRef(null);
 
   useEffect(() => {
-    setInput(""); setActiveSideIdx(null); setEnteredSides({});
+    setInput(""); setEnteredSides({});
     setTimeout(() => inputRef.current?.focus(), 100);
   }, [question?.type, question?.id]);
 
@@ -236,49 +235,39 @@ function AnswerInput({ question, onSubmit, submitted, selectedSides, onSideClick
   if (question?.type === "rectilinear-5B") {
     const missingAnswers = question.missingAnswers || [];
     const allEntered = missingAnswers.every(ma => enteredSides[ma.idx] !== undefined);
-
-    const handleSideSelect = (idx) => {
-      if (enteredSides[idx] !== undefined) return; // already entered
-      setActiveSideIdx(idx);
-      onSideClick && onSideClick(idx); // tell parent for SVG highlight
-      setInput("");
-      setTimeout(() => inputRef.current?.focus(), 100);
-    };
+    // activeMissingIdx is passed from parent (set when SVG ? is clicked)
+    const currentActive = activeMissingIdx;
 
     const handleConfirm = () => {
-      if (activeSideIdx === null || !input.trim()) return;
-      const newEntered = { ...enteredSides, [activeSideIdx]: input.trim() };
+      if (currentActive === null || !input.trim()) return;
+      const newEntered = { ...enteredSides, [currentActive]: input.trim() };
       setEnteredSides(newEntered);
-      setActiveSideIdx(null);
-      onSideClick && onSideClick(null); // clear SVG highlight
       setInput("");
       // Move to next unentered missing side
       const next = missingAnswers.find(ma => newEntered[ma.idx] === undefined);
-      if (next) {
-        setActiveSideIdx(next.idx);
-        onSideClick && onSideClick(next.idx);
-        setTimeout(() => inputRef.current?.focus(), 100);
-      }
+      onSideClick && onSideClick(next ? next.idx : null);
     };
 
-    // Pass activeSideIdx to parent for SVG highlighting
-    if (onSideClick && activeSideIdx !== question.activeMissingIdx) {
-      // handled via question prop
-    }
+    useEffect(() => {
+      if (currentActive !== null) {
+        setInput("");
+        setTimeout(() => inputRef.current?.focus(), 100);
+      }
+    }, [currentActive]);
 
     return (
       <div>
         <div style={{ fontSize: 13, color: "var(--text3)", marginBottom: 8 }}>
-          {activeSideIdx !== null
-            ? "Enter the length for the selected side (include units)"
+          {currentActive !== null
+            ? "Enter the length for the highlighted side (include units)"
             : allEntered ? "All sides entered - ready to submit!"
             : "Click a ? side to select it, then enter its length"}
         </div>
-        {activeSideIdx !== null && (
+        {currentActive !== null && (
           <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
             <input ref={inputRef} value={input} onChange={e => setInput(e.target.value)}
               onKeyDown={e => e.key === "Enter" && handleConfirm()}
-              placeholder="e.g. 35cm" autoFocus
+              placeholder={"e.g. 35" + (question.unit || "")}
               style={{ flex: 1, fontSize: 20, fontFamily: "var(--mono)", padding: "10px 14px" }} />
             <button className="btn btn-primary" onClick={handleConfirm} disabled={!input.trim()}>OK</button>
           </div>
@@ -286,12 +275,12 @@ function AnswerInput({ question, onSubmit, submitted, selectedSides, onSideClick
         {Object.entries(enteredSides).length > 0 && (
           <div style={{ fontSize: 13, color: "var(--text2)", marginBottom: 8 }}>
             {Object.entries(enteredSides).map(([idx, val]) => (
-              <span key={idx} style={{ marginRight: 12 }}>Side {parseInt(idx)+1}: <strong style={{ fontFamily: "var(--mono)" }}>{val}</strong></span>
+              <span key={idx} style={{ marginRight: 12 }}>Side: <strong style={{ fontFamily: "var(--mono)" }}>{val}</strong></span>
             ))}
           </div>
         )}
         <button className="btn btn-primary" style={{ width: "100%" }}
-          onClick={() => onSubmit(JSON.stringify(missingAnswers.map(ma => ({ idx: ma.idx, value: enteredSides[ma.idx]?.replace(/[^0-9.]/g, "") || "" }))))}
+          onClick={() => onSubmit(JSON.stringify(missingAnswers.map(ma => ({ idx: ma.idx, value: enteredSides[ma.idx]?.replace(/[^0-9]/g, "") || "" }))))}
           disabled={submitted || !allEntered}>
           Submit All
         </button>
@@ -652,7 +641,7 @@ function StudentLesson02({ session, sessionId, uid }) {
           </div>
         ) : question ? (
           <div style={{ marginTop: 14 }}>
-            <AnswerInput question={question} onSubmit={handleSubmit} submitted={submitted} selectedSides={selectedSides} onSideClick={handleSideClick} />
+            <AnswerInput question={question} onSubmit={handleSubmit} submitted={submitted} selectedSides={selectedSides} onSideClick={handleSideClick} activeMissingIdx={activeMissingIdx} />
           </div>
         ) : null}
       </div>
