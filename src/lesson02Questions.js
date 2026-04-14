@@ -241,7 +241,7 @@ function genUShape(unit) {
     { x: lw*scale,    y: 0 },
     { x: 0,           y: 0 },
   ];
-  return { shape: "U", W, H, lw, rw, ch, sides, perimeter, hideIdx, vertices, unit };
+  return { shape: "U", W, H, lw, rw, ch, sides, perimeter, hideIdx, hideIndices, vertices, unit };
 }
 
 export function genRectilinearShape(activityType) {
