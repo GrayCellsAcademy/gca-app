@@ -205,7 +205,8 @@ function genTShape(unit) {
   ];
   const perimeter = sides.reduce((s, x) => s + x.length, 0);
   // T shape: hide left-shoulder (idx 6) and right-shoulder (idx 2) - both derivable
-  const hideIndices = [2, 6]; // right-shoulder and left-shoulder
+  // Hide right-shoulder (h, derivable from bottom-stem-left-shoulder) and stem-right (v, = stem-left = sh)
+  const hideIndices = [2, 3];
   const hideIdx = hideIndices[0];
   return { shape: "T", W, H, bh, sh, tw, stemLeft, sides, perimeter, hideIdx, hideIndices, vertices, unit };
 }
