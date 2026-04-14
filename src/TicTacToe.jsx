@@ -125,14 +125,60 @@ function RatingBadge({ rating, games, name, symbol }) {
 }
 
 //  Main Game Component 
+function Countdown({ playerX, playerY, ratingX, ratingY, onDone }) {
+  const [count, setCount] = useState(3);
+  useEffect(() => {
+    if (count === 0) { setTimeout(onDone, 600); return; }
+    const t = setTimeout(() => setCount(c => c - 1), 1000);
+    return () => clearTimeout(t);
+  }, [count]);
+  return (
+    <div style={{ textAlign: "center", padding: "40px 20px" }}>
+      <div style={{ display: "flex", justifyContent: "center", gap: 40, marginBottom: 32, flexWrap: "wrap" }}>
+        <div style={{ background: "var(--surface)", border: "2px solid var(--blue)", borderRadius: "var(--radius)", padding: "16px 24px", minWidth: 120 }}>
+          <div style={{ fontSize: 28, fontWeight: 900, color: "var(--blue)", marginBottom: 4 }}>X</div>
+          <div style={{ fontWeight: 700, fontSize: 16 }}>{playerX?.name}</div>
+          <div style={{ fontSize: 20, fontWeight: 800, fontFamily: "var(--mono)", color: "var(--blue)" }}>{ratingX?.rating || 1200}</div>
+          <div style={{ fontSize: 11, color: "var(--text3)" }}>{ratingX?.games || 0} games</div>
+        </div>
+        <div style={{ fontSize: 48, fontWeight: 900, display: "flex", alignItems: "center", color: "var(--text3)" }}>vs</div>
+        <div style={{ background: "var(--surface)", border: "2px solid var(--red)", borderRadius: "var(--radius)", padding: "16px 24px", minWidth: 120 }}>
+          <div style={{ fontSize: 28, fontWeight: 900, color: "var(--red)", marginBottom: 4 }}>O</div>
+          <div style={{ fontWeight: 700, fontSize: 16 }}>{playerY?.name}</div>
+          <div style={{ fontSize: 20, fontWeight: 800, fontFamily: "var(--mono)", color: "var(--red)" }}>{ratingY?.rating || 1200}</div>
+          <div style={{ fontSize: 11, color: "var(--text3)" }}>{ratingY?.games || 0} games</div>
+        </div>
+      </div>
+      <div style={{ fontSize: count === 0 ? 56 : 80, fontWeight: 900, color: count === 0 ? "var(--green)" : "var(--text)", transition: "all 0.2s" }}>
+        {count === 0 ? "GO!" : count}
+      </div>
+    </div>
+  );
+}
+
 function GameView({ gameId, symbol, user, game, onFinish }) {
   const myUid = user.id;
   const oppSymbol = symbol === "X" ? "O" : "X";
   const myProgress = game.progress?.[myUid] || { qIdx: 0, pendingPlace: false };
   const oppUid = symbol === "X" ? game.players.O?.uid : game.players.X?.uid;
   const oppProgress = oppUid ? (game.progress?.[oppUid] || { qIdx: 0, pendingPlace: false }) : null;
+  const [showCountdown, setShowCountdown] = useState(true);
+  const [ratingsData, setRatingsData] = useState({ X: null, O: null });
 
-  const currentQuestion = myProgress.pendingPlace ? null : (game.questions?.[myProgress.qIdx] || null);
+  useEffect(() => {
+    const loadRatings = async () => {
+      const [rx, ro] = await Promise.all([
+        game.players.X?.uid ? getRating(game.players.X.uid) : Promise.resolve(null),
+        game.players.O?.uid ? getRating(game.players.O.uid) : Promise.resolve(null),
+      ]);
+      setRatingsData({ X: rx, O: ro });
+    };
+    loadRatings();
+  }, []);
+
+  const questions = game.questions || [];
+  const qIdxSafe = questions.length > 0 ? myProgress.qIdx % questions.length : 0;
+  const currentQuestion = myProgress.pendingPlace ? null : (questions[qIdxSafe] || null);
   const canPlace = myProgress.pendingPlace && game.status === "playing";
   const winLine = game.winLine || [];
 
@@ -163,6 +209,18 @@ function GameView({ gameId, symbol, user, game, onFinish }) {
 
   const myName = symbol === "X" ? game.players.X?.name : game.players.O?.name;
   const oppName = symbol === "X" ? game.players.O?.name : game.players.X?.name;
+
+  if (showCountdown && game.status === "playing") {
+    return (
+      <Countdown
+        playerX={game.players.X}
+        playerY={game.players.O}
+        ratingX={ratingsData.X}
+        ratingY={ratingsData.O}
+        onDone={() => setShowCountdown(false)}
+      />
+    );
+  }
 
   return (
     <div style={{ maxWidth: 500, margin: "0 auto" }}>
