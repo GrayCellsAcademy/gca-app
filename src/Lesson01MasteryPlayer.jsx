@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+﻿import { useState, useEffect, useRef } from "react";
 import { saveProgress, getProgress } from "./core/firebase";
 import {
   TOPICS, computeCarries, computeBorrows,
@@ -9,7 +9,7 @@ import {
 export const TOPIC_ID = "lesson01-mastery-v1";
 const STREAK_NEEDED = 2;
 
-// ─── Column Problem Display ───────────────────────────────────────
+// â”€â”€â”€ Column Problem Display â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function ColumnProblem({ problem, showAnswer = false, showWorking = false }) {
   const isAddition = problem.type.startsWith("add");
   const numbers = isAddition ? problem.numbers : [problem.top, problem.bot];
@@ -40,7 +40,7 @@ function ColumnProblem({ problem, showAnswer = false, showWorking = false }) {
             // carries key is col index from left in padded string
             const carryVal = carries[ci];
             return (
-              <div key={ci} style={{ width: cellW, height: 20, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 800, color: "var(--amber)" }}>
+              <div key={ci} style={{ width: cellW, height: 20, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, fontWeight: 800, color: "var(--amber)" }}>
                 {carryVal || ""}
               </div>
             );
@@ -51,8 +51,8 @@ function ColumnProblem({ problem, showAnswer = false, showWorking = false }) {
       {/* Number rows */}
       {padded.map((row, ri) => (
         <div key={ri} style={{ display: "flex", alignItems: "center", gap: 2, marginBottom: 2 }}>
-          <div style={{ width: 28, textAlign: "right", fontSize: 24, color: "var(--text3)", paddingRight: 4 }}>
-            {ri === padded.length - 1 ? (isAddition ? "+" : "−") : ""}
+          <div style={{ width: 28, textAlign: "right", fontSize: 28, color: "var(--text3)", paddingRight: 4 }}>
+            {ri === padded.length - 1 ? (isAddition ? "+" : "âˆ’") : ""}
           </div>
           {row.split("").map((ch, ci) => {
             const borrow = borrowMap[ci];
@@ -61,15 +61,15 @@ function ColumnProblem({ problem, showAnswer = false, showWorking = false }) {
                 {/* Borrow mark above digit */}
                 {showWorking && !isAddition && ri === 0 && borrow && (
                   <div style={{ position: "absolute", top: -2, right: 2, display: "flex", flexDirection: "column", alignItems: "center" }}>
-                    <div style={{ fontSize: 11, color: "var(--red)", textDecoration: "line-through", lineHeight: 1 }}>
+                    <div style={{ fontSize: 20, color: "var(--red)", textDecoration: "line-through", lineHeight: 1 }}>
                       {borrow.original}
                     </div>
-                    <div style={{ fontSize: 11, color: "var(--amber)", fontWeight: 800, lineHeight: 1 }}>
+                    <div style={{ fontSize: 20, color: "var(--amber)", fontWeight: 800, lineHeight: 1 }}>
                       {borrow.newVal}
                     </div>
                   </div>
                 )}
-                <div style={{ fontSize: 26, fontWeight: 700, color: ch === " " ? "transparent" : "var(--text)" }}>
+                <div style={{ fontSize: 28, fontWeight: 700, color: ch === " " ? "transparent" : "var(--text)" }}>
                   {ch === " " ? "0" : ch}
                 </div>
               </div>
@@ -86,7 +86,7 @@ function ColumnProblem({ problem, showAnswer = false, showWorking = false }) {
         <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
           <div style={{ width: 28 }} />
           {String(answer).padStart(maxLen, " ").split("").map((ch, ci) => (
-            <div key={ci} style={{ width: cellW, height: cellH, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, fontWeight: 800, color: ch === " " ? "transparent" : "var(--green)" }}>
+            <div key={ci} style={{ width: cellW, height: cellH, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28, fontWeight: 800, color: ch === " " ? "transparent" : "var(--green)" }}>
               {ch === " " ? "0" : ch}
             </div>
           ))}
@@ -96,11 +96,11 @@ function ColumnProblem({ problem, showAnswer = false, showWorking = false }) {
   );
 }
 
-// ─── Streak Dots ──────────────────────────────────────────────────
+// â”€â”€â”€ Streak Dots â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function StreakDots({ current, needed }) {
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
-      <span style={{ fontSize: 13, color: "var(--text3)" }}>Streak:</span>
+      <span style={{ fontSize: 20, color: "var(--text3)" }}>Streak:</span>
       {Array.from({ length: needed }).map((_, i) => (
         <div key={i} style={{
           width: 13, height: 13, borderRadius: "50%",
@@ -109,12 +109,12 @@ function StreakDots({ current, needed }) {
           transition: "all 0.2s",
         }} />
       ))}
-      <span style={{ fontSize: 13, color: "var(--text3)" }}>{current}/{needed}</span>
+      <span style={{ fontSize: 20, color: "var(--text3)" }}>{current}/{needed}</span>
     </div>
   );
 }
 
-// ─── Main Player ──────────────────────────────────────────────────
+// â”€â”€â”€ Main Player â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export default function Lesson01MasteryPlayer({ user, topic, onHome }) {
   const topicId = topic?.id || TOPIC_ID;
 
@@ -190,7 +190,7 @@ export default function Lesson01MasteryPlayer({ user, topic, onHome }) {
           setStreak(0);
           await saveCurrentProgress(topicIdx, nextSi, 0);
         } else {
-          // Topic complete — move to next topic
+          // Topic complete â€” move to next topic
           const nextTi = topicIdx + 1;
           if (nextTi >= TOPICS.length) {
             // All done!
@@ -209,7 +209,7 @@ export default function Lesson01MasteryPlayer({ user, topic, onHome }) {
         newProblem(topicIdx, subtypeIdx);
       }
     } else {
-      // Wrong — reset streak, back to subtype 0 of current topic
+      // Wrong â€” reset streak, back to subtype 0 of current topic
       setStreak(0);
       setPhase("wrong");
       await saveCurrentProgress(topicIdx, 0, 0);
@@ -231,13 +231,13 @@ export default function Lesson01MasteryPlayer({ user, topic, onHome }) {
   if (phase === "celebration" || topicIdx >= TOPICS.length) return (
     <div style={{ maxWidth: 520, margin: "0 auto", textAlign: "center", animation: "fadeUp 0.4s ease" }}>
       <div className="card">
-        <div style={{ fontSize: 64, marginBottom: 16 }}>🏆</div>
-        <h2 style={{ fontSize: 26, fontWeight: 800, marginBottom: 8 }}>Mastery Complete!</h2>
-        <p style={{ color: "var(--text2)", fontSize: 15, marginBottom: 24 }}>
-          You've mastered all 6 topics — column addition and subtraction with all difficulty levels!
+        <div style={{ fontSize: 64, marginBottom: 16 }}>ðŸ†</div>
+        <h2 style={{ fontSize: 28, fontWeight: 800, marginBottom: 8 }}>Mastery Complete!</h2>
+        <p style={{ color: "var(--text2)", fontSize: 19, marginBottom: 24 }}>
+          You've mastered all 6 topics â€” column addition and subtraction with all difficulty levels!
         </p>
         <button className="btn btn-primary btn-lg" style={{ width: "100%" }} onClick={onHome}>
-          🏆 Back to Home
+          ðŸ† Back to Home
         </button>
       </div>
     </div>
@@ -252,19 +252,19 @@ export default function Lesson01MasteryPlayer({ user, topic, onHome }) {
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16, flexWrap: "wrap", gap: 8 }}>
         <div>
-          <div style={{ fontSize: 12, color: "var(--text3)", marginBottom: 2 }}>
-            Topic {topicIdx + 1} of {TOPICS.length} · {currentTopic.label}
+          <div style={{ fontSize: 19, color: "var(--text3)", marginBottom: 2 }}>
+            Topic {topicIdx + 1} of {TOPICS.length} Â· {currentTopic.label}
           </div>
-          <div style={{ fontSize: 14, fontWeight: 700, color: "var(--blue)" }}>
+          <div style={{ fontSize: 20, fontWeight: 700, color: "var(--blue)" }}>
             {currentSubtype?.label}
           </div>
         </div>
-        <button className="btn btn-ghost btn-sm" onClick={onHome}>← Home</button>
+        <button className="btn btn-ghost btn-sm" onClick={onHome}>â† Home</button>
       </div>
 
       {/* Overall progress bar */}
       <div style={{ marginBottom: 16 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "var(--text3)", marginBottom: 4 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 20, color: "var(--text3)", marginBottom: 4 }}>
           <span>Overall progress</span>
           <span>{completedSubtypes}/{totalSubtypes} subtypes</span>
         </div>
@@ -288,20 +288,20 @@ export default function Lesson01MasteryPlayer({ user, topic, onHome }) {
 
         {phase === "wrong" ? (
           <div style={{ animation: "popIn 0.25s ease" }}>
-            <div style={{ fontSize: 15, fontWeight: 700, color: "#fca5a5", marginBottom: 8, textAlign: "center" }}>
+            <div style={{ fontSize: 19, fontWeight: 700, color: "#fca5a5", marginBottom: 8, textAlign: "center" }}>
               Not quite! Here's the worked solution:
             </div>
-            <div style={{ fontSize: 13, color: "var(--text3)", textAlign: "center", marginBottom: 16 }}>
-              Streak reset — starting back at {currentTopic.subtypes[0].label}
+            <div style={{ fontSize: 20, color: "var(--text3)", textAlign: "center", marginBottom: 16 }}>
+              Streak reset â€” starting back at {currentTopic.subtypes[0].label}
             </div>
-            <button className="btn btn-success" style={{ width: "100%", fontSize: 16, padding: "13px" }}
+            <button className="btn btn-success" style={{ width: "100%", fontSize: 20, padding: "13px" }}
               onClick={handleWrongContinue}>
-              Got it — try again →
+              Got it â€” try again â†’
             </button>
           </div>
         ) : (
           <>
-            <p style={{ textAlign: "center", fontSize: 15, fontWeight: 600, color: "var(--text2)", marginBottom: 14 }}>
+            <p style={{ textAlign: "center", fontSize: 19, fontWeight: 600, color: "var(--text2)", marginBottom: 14 }}>
               What is the answer?
             </p>
             <input
@@ -311,12 +311,12 @@ export default function Lesson01MasteryPlayer({ user, topic, onHome }) {
               onKeyDown={e => e.key === "Enter" && handleSubmit()}
               inputMode="numeric"
               placeholder="?"
-              style={{ textAlign: "center", fontSize: 32, fontFamily: "var(--mono)", fontWeight: 700, padding: "12px", marginBottom: 12 }}
+              style={{ textAlign: "center", fontSize: 34, fontFamily: "var(--mono)", fontWeight: 700, padding: "12px", marginBottom: 12 }}
             />
-            <button className="btn btn-primary" style={{ width: "100%", fontSize: 18, padding: "14px" }}
+            <button className="btn btn-primary" style={{ width: "100%", fontSize: 20, padding: "14px" }}
               onMouseDown={e => { e.preventDefault(); handleSubmit(); }}
               onTouchEnd={e => { e.preventDefault(); handleSubmit(); }}>
-              Submit ✓
+              Submit âœ“
             </button>
           </>
         )}
@@ -329,12 +329,12 @@ export default function Lesson01MasteryPlayer({ user, topic, onHome }) {
           const active = i === topicIdx;
           return (
             <div key={t.id} style={{
-              fontSize: 11, fontWeight: 700, padding: "4px 10px", borderRadius: 99,
+              fontSize: 20, fontWeight: 700, padding: "4px 10px", borderRadius: 99,
               background: done ? "rgba(16,185,129,0.15)" : active ? "rgba(59,130,246,0.15)" : "var(--surface)",
               color: done ? "var(--green)" : active ? "var(--blue)" : "var(--text3)",
               border: `1px solid ${done ? "rgba(16,185,129,0.3)" : active ? "rgba(59,130,246,0.3)" : "var(--border)"}`,
             }}>
-              {done ? "✓ " : active ? "▶ " : ""}{t.icon} {t.id.includes("add") ? "Add" : "Sub"} {i + 1}
+              {done ? "âœ“ " : active ? "â–¶ " : ""}{t.icon} {t.id.includes("add") ? "Add" : "Sub"} {i + 1}
             </div>
           );
         })}
@@ -342,3 +342,4 @@ export default function Lesson01MasteryPlayer({ user, topic, onHome }) {
     </div>
   );
 }
+

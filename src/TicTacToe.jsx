@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+﻿import { useState, useEffect, useRef, useCallback } from "react";
 import {
   createGame, findOrCreateMatch, submitAnswer, placeMark,
   onGameChange, postGameRatings, getRating, getAllRatings,
@@ -48,7 +48,7 @@ function QuestionBox({ question, onCorrect, onWrong, disabled }) {
       animation: shake ? "shake 0.4s ease" : "none",
       textAlign: "center",
     }}>
-      <div style={{ fontSize: 13, color: "var(--text3)", marginBottom: 6 }}>Answer to place your mark:</div>
+      <div style={{ fontSize: 20, color: "var(--text3)", marginBottom: 6 }}>Answer to place your mark:</div>
       <div style={{ fontSize: 36, fontWeight: 900, fontFamily: "var(--mono)", color: "var(--text)", marginBottom: 12 }}>
         {question.a} x {question.b} = ?
       </div>
@@ -61,7 +61,7 @@ function QuestionBox({ question, onCorrect, onWrong, disabled }) {
           disabled={disabled}
           type="number"
           autoFocus
-          style={{ width: 100, fontSize: 24, textAlign: "center", fontFamily: "var(--mono)", padding: "8px" }}
+          style={{ width: 100, fontSize: 28, textAlign: "center", fontFamily: "var(--mono)", padding: "8px" }}
         />
         <button className="btn btn-primary" onClick={handleSubmit} disabled={disabled || !input}>
           OK
@@ -114,12 +114,12 @@ function RatingBadge({ rating, games, name, symbol }) {
       background: "var(--surface)", border: "2px solid " + color,
       borderRadius: "var(--radius)", padding: "10px 16px", minWidth: 100,
     }}>
-      <div style={{ fontSize: 24, fontWeight: 900, color }}>{symbol}</div>
-      <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text)", marginBottom: 2 }}>{name}</div>
-      <div style={{ fontSize: 18, fontWeight: 800, fontFamily: "var(--mono)" }}>
+      <div style={{ fontSize: 28, fontWeight: 900, color }}>{symbol}</div>
+      <div style={{ fontSize: 20, fontWeight: 700, color: "var(--text)", marginBottom: 2 }}>{name}</div>
+      <div style={{ fontSize: 20, fontWeight: 800, fontFamily: "var(--mono)" }}>
         {rating}{ratingLabel(games)}
       </div>
-      <div style={{ fontSize: 11, color: "var(--text3)" }}>{games} games</div>
+      <div style={{ fontSize: 20, color: "var(--text3)" }}>{games} games</div>
     </div>
   );
 }
@@ -137,16 +137,16 @@ function Countdown({ playerX, playerY, ratingX, ratingY, onDone }) {
       <div style={{ display: "flex", justifyContent: "center", gap: 40, marginBottom: 32, flexWrap: "wrap" }}>
         <div style={{ background: "var(--surface)", border: "2px solid var(--blue)", borderRadius: "var(--radius)", padding: "16px 24px", minWidth: 120 }}>
           <div style={{ fontSize: 28, fontWeight: 900, color: "var(--blue)", marginBottom: 4 }}>X</div>
-          <div style={{ fontWeight: 700, fontSize: 16 }}>{playerX?.name}</div>
+          <div style={{ fontWeight: 700, fontSize: 20 }}>{playerX?.name}</div>
           <div style={{ fontSize: 20, fontWeight: 800, fontFamily: "var(--mono)", color: "var(--blue)" }}>{ratingX?.rating || 1200}</div>
-          <div style={{ fontSize: 11, color: "var(--text3)" }}>{ratingX?.games || 0} games</div>
+          <div style={{ fontSize: 20, color: "var(--text3)" }}>{ratingX?.games || 0} games</div>
         </div>
         <div style={{ fontSize: 48, fontWeight: 900, display: "flex", alignItems: "center", color: "var(--text3)" }}>vs</div>
         <div style={{ background: "var(--surface)", border: "2px solid var(--red)", borderRadius: "var(--radius)", padding: "16px 24px", minWidth: 120 }}>
           <div style={{ fontSize: 28, fontWeight: 900, color: "var(--red)", marginBottom: 4 }}>O</div>
-          <div style={{ fontWeight: 700, fontSize: 16 }}>{playerY?.name}</div>
+          <div style={{ fontWeight: 700, fontSize: 20 }}>{playerY?.name}</div>
           <div style={{ fontSize: 20, fontWeight: 800, fontFamily: "var(--mono)", color: "var(--red)" }}>{ratingY?.rating || 1200}</div>
-          <div style={{ fontSize: 11, color: "var(--text3)" }}>{ratingY?.games || 0} games</div>
+          <div style={{ fontSize: 20, color: "var(--text3)" }}>{ratingY?.games || 0} games</div>
         </div>
       </div>
       <div style={{ fontSize: count === 0 ? 56 : 80, fontWeight: 900, color: count === 0 ? "var(--green)" : "var(--text)", transition: "all 0.2s" }}>
@@ -226,11 +226,11 @@ function GameView({ gameId, symbol, user, game, onFinish }) {
     <div style={{ maxWidth: 500, margin: "0 auto" }}>
       {/* Status bar */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, flexWrap: "wrap", gap: 8 }}>
-        <div style={{ fontSize: 13, color: "var(--text3)" }}>
+        <div style={{ fontSize: 20, color: "var(--text3)" }}>
           You are <strong style={{ color: symbol === "X" ? "var(--blue)" : "var(--red)" }}>{symbol}</strong>
         </div>
         {game.status === "playing" && (
-          <div style={{ display: "flex", gap: 12, fontSize: 13 }}>
+          <div style={{ display: "flex", gap: 12, fontSize: 20 }}>
             <span style={{ color: "var(--blue)" }}>X: Q{(game.progress?.[game.players.X?.uid]?.qIdx || 0) + 1}</span>
             <span style={{ color: "var(--red)" }}>O: Q{(game.progress?.[game.players.O?.uid]?.qIdx || 0) + 1}</span>
           </div>
@@ -258,11 +258,11 @@ function GameView({ gameId, symbol, user, game, onFinish }) {
               borderRadius: "var(--radius)", padding: "16px", textAlign: "center",
             }}>
               {cellTakenMsg ? (
-                <div style={{ fontSize: 18, fontWeight: 800, color: "var(--red)" }}>
+                <div style={{ fontSize: 20, fontWeight: 800, color: "var(--red)" }}>
                   That cell was just taken! Pick another cell.
                 </div>
               ) : (
-                <div style={{ fontSize: 18, fontWeight: 800, color: "var(--green)", marginBottom: 4 }}>
+                <div style={{ fontSize: 20, fontWeight: 800, color: "var(--green)", marginBottom: 4 }}>
                   Correct! Click any open cell to place your {symbol}
                 </div>
               )}
@@ -278,7 +278,7 @@ function GameView({ gameId, symbol, user, game, onFinish }) {
 
       {/* Opponent status */}
       {game.status === "playing" && oppProgress && (
-        <div style={{ marginTop: 12, fontSize: 13, color: "var(--text3)", textAlign: "center" }}>
+        <div style={{ marginTop: 12, fontSize: 20, color: "var(--text3)", textAlign: "center" }}>
           {oppProgress.pendingPlace
             ? <span style={{ color: symbol === "X" ? "var(--red)" : "var(--blue)", fontWeight: 700 }}>{oppName} is placing their mark...</span>
             : <span>{oppName} is on question {(oppProgress.qIdx || 0) + 1}</span>
@@ -381,7 +381,7 @@ function ComputerGame({ user, level, onFinish }) {
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
         <div style={{ fontWeight: 700 }}>vs Computer - Level {level}</div>
-        <div style={{ fontSize: 13, color: "var(--text3)" }}>
+        <div style={{ fontSize: 20, color: "var(--text3)" }}>
           Computer answers in ~{(actualDelay / 1000).toFixed(1)}s
         </div>
       </div>
@@ -432,13 +432,13 @@ function Lobby({ user, rating, onStartComputer, onJoinGame }) {
     <div style={{ maxWidth: 480, margin: "0 auto" }}>
       <div className="card" style={{ textAlign: "center", marginBottom: 16 }}>
         <div style={{ fontSize: 28, fontWeight: 900, marginBottom: 4 }}>Math Tic Tac Toe</div>
-        <div style={{ fontSize: 14, color: "var(--text2)", marginBottom: 16 }}>
+        <div style={{ fontSize: 20, color: "var(--text2)", marginBottom: 16 }}>
           Answer multiplication questions to place your marks. Get 3 in a row to win!
         </div>
         <div style={{ fontSize: 22, fontWeight: 800, fontFamily: "var(--mono)", color: "var(--blue)", marginBottom: 4 }}>
           {rating.rating}{ratingLabel(rating.games)}
         </div>
-        <div style={{ fontSize: 13, color: "var(--text3)" }}>
+        <div style={{ fontSize: 20, color: "var(--text3)" }}>
           {rating.games} games - {rating.wins}W {rating.losses}L {rating.ties}T
           {rating.provisional ? " - Provisional" : ""}
         </div>
@@ -446,8 +446,8 @@ function Lobby({ user, rating, onStartComputer, onJoinGame }) {
 
       {waiting ? (
         <div className="card" style={{ textAlign: "center" }}>
-          <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 8 }}>Waiting for opponent...</div>
-          <div style={{ fontSize: 13, color: "var(--text3)", marginBottom: 16 }}>
+          <div style={{ fontSize: 20, fontWeight: 700, marginBottom: 8 }}>Waiting for opponent...</div>
+          <div style={{ fontSize: 20, color: "var(--text3)", marginBottom: 16 }}>
             You are <strong style={{ color: "var(--blue)" }}>X</strong> - Share the site with a friend to play!
           </div>
           <div className="spinner" style={{ margin: "0 auto 16px" }} />
@@ -462,13 +462,13 @@ function Lobby({ user, rating, onStartComputer, onJoinGame }) {
           <div className="card">
             <div style={{ fontWeight: 700, marginBottom: 8 }}>Play vs Computer</div>
             <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
-              <label style={{ fontSize: 13, color: "var(--text2)" }}>Level:</label>
+              <label style={{ fontSize: 20, color: "var(--text2)" }}>Level:</label>
               <input type="range" min={1} max={20} value={computerLevel}
                 onChange={e => setComputerLevel(Number(e.target.value))}
                 style={{ flex: 1 }} />
               <span style={{ fontWeight: 800, minWidth: 30, textAlign: "center" }}>{computerLevel}</span>
             </div>
-            <div style={{ fontSize: 12, color: "var(--text3)", marginBottom: 12 }}>
+            <div style={{ fontSize: 19, color: "var(--text3)", marginBottom: 12 }}>
               Computer answers in ~{(30 * Math.pow(0.9, computerLevel - 1)).toFixed(1)}s
               {rating.maxComputerLevel > 0 && ` - Your best: Level ${rating.maxComputerLevel}`}
             </div>
@@ -492,7 +492,7 @@ function Leaderboard({ currentUid }) {
 
   return (
     <div style={{ maxWidth: 500, margin: "0 auto" }}>
-      <h3 style={{ fontWeight: 800, fontSize: 18, marginBottom: 12 }}>Leaderboard</h3>
+      <h3 style={{ fontWeight: 800, fontSize: 20, marginBottom: 12 }}>Leaderboard</h3>
       <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
         {ratings.map((r, i) => (
           <div key={r.uid} style={{
@@ -501,12 +501,12 @@ function Leaderboard({ currentUid }) {
             border: "1px solid " + (r.uid === currentUid ? "var(--blue)" : "var(--border)"),
             borderRadius: "var(--radius-sm)", padding: "10px 14px",
           }}>
-            <div style={{ width: 28, fontWeight: 800, color: i < 3 ? "var(--amber)" : "var(--text3)", fontSize: 14 }}>
+            <div style={{ width: 28, fontWeight: 800, color: i < 3 ? "var(--amber)" : "var(--text3)", fontSize: 20 }}>
               #{i+1}
             </div>
             <div style={{ flex: 1 }}>
-              <div style={{ fontWeight: 700, fontSize: 14 }}>{r.name || r.uid}</div>
-              <div style={{ fontSize: 11, color: "var(--text3)" }}>
+              <div style={{ fontWeight: 700, fontSize: 20 }}>{r.name || r.uid}</div>
+              <div style={{ fontSize: 20, color: "var(--text3)" }}>
                 {r.games}G - {r.wins}W {r.losses}L {r.ties}T
                 {r.maxComputerLevel > 0 ? " - CPU Lv." + r.maxComputerLevel : ""}
               </div>
@@ -568,8 +568,8 @@ export default function TicTacToe({ user, onHome }) {
               XO
             </div>
             <div>
-              <div style={{ fontWeight: 800, fontSize: 18 }}>Math Tic Tac Toe</div>
-              <div style={{ fontSize: 12, color: "var(--text3)" }}>Multiply to win</div>
+              <div style={{ fontWeight: 800, fontSize: 20 }}>Math Tic Tac Toe</div>
+              <div style={{ fontSize: 19, color: "var(--text3)" }}>Multiply to win</div>
             </div>
           </div>
           <div style={{ display: "flex", gap: 8 }}>
@@ -619,3 +619,4 @@ export default function TicTacToe({ user, onHome }) {
     </div>
   );
 }
+

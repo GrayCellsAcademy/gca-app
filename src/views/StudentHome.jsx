@@ -48,7 +48,7 @@ function TopicRoadmapCard({ topic, progress, assignment, isUnlocked, position, o
         width: 32, height: 32, borderRadius: "50%", flexShrink: 0,
         background: completed ? "var(--green)" : isUnlocked ? "var(--blue)" : "var(--surface2)",
         display: "flex", alignItems: "center", justifyContent: "center",
-        fontSize: 14, fontWeight: 700, color: "#fff",
+        fontSize: 20, fontWeight: 700, color: "#fff",
       }}>{completed ? "" : position}</div>
 
       {/* Icon */}
@@ -61,22 +61,22 @@ function TopicRoadmapCard({ topic, progress, assignment, isUnlocked, position, o
       {/* Info */}
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6, flexWrap: "wrap" }}>
-          <span style={{ fontSize: 16, fontWeight: 800 }}>{topic.title}</span>
-          <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 10px", borderRadius: 99, background: statusBg, color: statusColor }}>
+          <span style={{ fontSize: 20, fontWeight: 800 }}>{topic.title}</span>
+          <span style={{ fontSize: 20, fontWeight: 700, padding: "2px 10px", borderRadius: 99, background: statusBg, color: statusColor }}>
             {statusLabel}
           </span>
         </div>
-        <p style={{ color: "var(--text2)", fontSize: 13, marginBottom: isUnlocked && started ? 10 : 0 }}>
+        <p style={{ color: "var(--text2)", fontSize: 20, marginBottom: isUnlocked && started ? 10 : 0 }}>
           {topic.description}
         </p>
         {assignment?.dueDate && !completed && (
-          <div style={{ fontSize: 12, color: overdue ? "var(--red)" : "var(--text3)", marginTop: 4, marginBottom: 6 }}>
+          <div style={{ fontSize: 19, color: overdue ? "var(--red)" : "var(--text3)", marginTop: 4, marginBottom: 6 }}>
             {overdue ? " Due date passed: " : " Due: "}{assignment.dueDate}
           </div>
         )}
         {isUnlocked && started && (
           <>
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "var(--text3)", marginBottom: 5 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 20, color: "var(--text3)", marginBottom: 5 }}>
               <span>Progress</span><span>{pct}%</span>
             </div>
             <div className="progress-track" style={{ height: 5 }}>
@@ -143,7 +143,7 @@ function ClassView({ cls, userId, onBack, onPlayTopic }) {
         {grade !== null && (
           <div style={{ display: "flex", alignItems: "center", gap: 10, background: "var(--surface)", border: "1px solid var(--border2)", borderRadius: "var(--radius-lg)", padding: "10px 20px" }}>
             <div>
-              <div style={{ fontSize: 11, color: "var(--text3)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em" }}>Current Grade</div>
+              <div style={{ fontSize: 20, color: "var(--text3)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em" }}>Current Grade</div>
               <div style={{ fontSize: 22, fontWeight: 900, color: letterColor }}>{grade}%  {letter}</div>
             </div>
             {categories.length > 0 && (
@@ -154,7 +154,7 @@ function ClassView({ cls, userId, onBack, onPlayTopic }) {
                   const scores = catAssignments.map(a => progress[a.topicId]?.percentComplete ?? 0);
                   const avg = Math.round(scores.reduce((s, v) => s + v, 0) / scores.length);
                   return (
-                    <div key={cat.id} style={{ fontSize: 12, color: "var(--text2)" }}>
+                    <div key={cat.id} style={{ fontSize: 19, color: "var(--text2)" }}>
                       <span style={{ color: "var(--text3)" }}>{cat.name} ({cat.weight}%): </span>
                       <strong>{avg}%</strong>
                     </div>
@@ -171,8 +171,8 @@ function ClassView({ cls, userId, onBack, onPlayTopic }) {
       ) : assignedTopics.length === 0 ? (
         <div className="card" style={{ textAlign: "center", padding: "40px 20px" }}>
           <div style={{ fontSize: 40, marginBottom: 12 }}></div>
-          <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 8 }}>No topics assigned yet</h3>
-          <p style={{ color: "var(--text2)", fontSize: 14 }}>Your teacher hasn't assigned any topics yet. Check back soon!</p>
+          <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 8 }}>No topics assigned yet</h3>
+          <p style={{ color: "var(--text2)", fontSize: 20 }}>Your teacher hasn't assigned any topics yet. Check back soon!</p>
         </div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
@@ -240,8 +240,8 @@ export default function StudentHome({ user, onLogout, onLiveSession, onTicTacToe
         <div style={{ maxWidth: 900, margin: "0 auto" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <div style={{ width: 36, height: 36, borderRadius: 10, background: "linear-gradient(135deg,var(--blue),var(--cyan))", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}></div>
-              <span style={{ fontWeight: 800, fontSize: 18 }}>GCA</span>
+              <div style={{ width: 36, height: 36, borderRadius: 10, background: "linear-gradient(135deg,var(--blue),var(--cyan))", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}></div>
+              <span style={{ fontWeight: 800, fontSize: 20 }}>GCA</span>
             </div>
             <button className="btn btn-ghost btn-sm" onClick={() => {
               window.speechSynthesis?.cancel();
@@ -276,13 +276,13 @@ export default function StudentHome({ user, onLogout, onLiveSession, onTicTacToe
             <div style={{ width: 40, height: 40, borderRadius: 12, background: "linear-gradient(135deg,var(--blue),var(--cyan))", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}></div>
             <div>
               <div style={{ fontWeight: 800, fontSize: 20 }}>GCA</div>
-              <div style={{ color: "var(--text3)", fontSize: 12 }}>Gray Cells Academy</div>
+              <div style={{ color: "var(--text3)", fontSize: 19 }}>Gray Cells Academy</div>
             </div>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <div style={{ textAlign: "right" }}>
-              <div style={{ fontWeight: 700, fontSize: 15 }}>{user.name}</div>
-              <div style={{ color: "var(--text3)", fontSize: 12 }}>Student</div>
+              <div style={{ fontWeight: 700, fontSize: 19 }}>{user.name}</div>
+              <div style={{ color: "var(--text3)", fontSize: 19 }}>Student</div>
             </div>
             <button className="btn btn-ghost btn-sm" onClick={onTicTacToe} style={{ marginRight: 8 }}>Math TTT</button>
               <button className="btn btn-ghost btn-sm" onClick={onLiveSession}> Live Session</button>
@@ -304,7 +304,7 @@ export default function StudentHome({ user, onLogout, onLiveSession, onTicTacToe
               <h1 style={{ fontSize: "clamp(22px,4vw,32px)", fontWeight: 900, letterSpacing: "-0.5px", marginBottom: 6 }}>
                 Hi, {user.name.split(" ")[0]}! 
               </h1>
-              <p style={{ color: "var(--text2)", fontSize: 15 }}>
+              <p style={{ color: "var(--text2)", fontSize: 19 }}>
                 {classes.length > 0 ? "Select a class to see your assignments." : "Join a class to get started."}
               </p>
             </div>
@@ -318,14 +318,14 @@ export default function StudentHome({ user, onLogout, onLiveSession, onTicTacToe
 
                 {/* Classes list */}
                 <div>
-                  <h2 style={{ fontSize: 14, fontWeight: 700, color: "var(--text2)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 16 }}>
+                  <h2 style={{ fontSize: 20, fontWeight: 700, color: "var(--text2)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 16 }}>
                     My Classes
                   </h2>
                   {classes.length === 0 ? (
                     <div className="card" style={{ textAlign: "center", padding: "40px 20px" }}>
                       <div style={{ fontSize: 40, marginBottom: 12 }}></div>
-                      <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 8 }}>Not in any class yet</h3>
-                      <p style={{ color: "var(--text2)", fontSize: 14 }}>Join a class using the form on the right.</p>
+                      <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 8 }}>Not in any class yet</h3>
+                      <p style={{ color: "var(--text2)", fontSize: 20 }}>Join a class using the form on the right.</p>
                     </div>
                   ) : (
                     <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
@@ -339,8 +339,8 @@ export default function StudentHome({ user, onLogout, onLiveSession, onTicTacToe
                           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
                             <div style={{ width: 44, height: 44, borderRadius: 12, flexShrink: 0, background: "rgba(59,130,246,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}></div>
                             <div>
-                              <div style={{ fontSize: 16, fontWeight: 800, marginBottom: 3 }}>{cls.name}</div>
-                              <div style={{ fontSize: 12, color: "var(--text3)" }}>
+                              <div style={{ fontSize: 20, fontWeight: 800, marginBottom: 3 }}>{cls.name}</div>
+                              <div style={{ fontSize: 19, color: "var(--text3)" }}>
                                 {cls.assignedTopics?.length || 0} topic{cls.assignedTopics?.length !== 1 ? "s" : ""} assigned
                               </div>
                             </div>
@@ -348,7 +348,7 @@ export default function StudentHome({ user, onLogout, onLiveSession, onTicTacToe
                           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                             <button className="btn btn-primary btn-sm">Open </button>
                             <button className="btn btn-sm"
-                              style={{ background: "rgba(239,68,68,0.1)", color: "var(--red)", border: "1px solid rgba(239,68,68,0.3)", fontSize: 12, padding: "6px 12px" }}
+                              style={{ background: "rgba(239,68,68,0.1)", color: "var(--red)", border: "1px solid rgba(239,68,68,0.3)", fontSize: 19, padding: "6px 12px" }}
                               onClick={e => { e.stopPropagation(); doLeaveClass(cls.id); }}>
                               Leave
                             </button>
@@ -361,22 +361,22 @@ export default function StudentHome({ user, onLogout, onLiveSession, onTicTacToe
 
                 {/* Sidebar  join class */}
                 <div className="card" style={{ padding: "18px 20px" }}>
-                  <h3 style={{ fontSize: 14, fontWeight: 700, color: "var(--text2)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 14 }}>
+                  <h3 style={{ fontSize: 20, fontWeight: 700, color: "var(--text2)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 14 }}>
                     Join a Class
                   </h3>
-                  <p style={{ fontSize: 13, color: "var(--text3)", marginBottom: 14, lineHeight: 1.6 }}>
+                  <p style={{ fontSize: 20, color: "var(--text3)", marginBottom: 14, lineHeight: 1.6 }}>
                     Ask your teacher for the class name and password.
                   </p>
                   {joinErr && (
-                    <div style={{ fontSize: 12, color: "#fca5a5", marginBottom: 10, background: "rgba(239,68,68,0.1)", padding: "8px 12px", borderRadius: "var(--radius-sm)" }}>
+                    <div style={{ fontSize: 19, color: "#fca5a5", marginBottom: 10, background: "rgba(239,68,68,0.1)", padding: "8px 12px", borderRadius: "var(--radius-sm)" }}>
                       {joinErr}
                     </div>
                   )}
                   <input value={joinClassName} onChange={e => setJoinClassName(e.target.value)}
-                    placeholder="Class name" style={{ fontSize: 13, padding: "9px 12px", marginBottom: 8 }} />
+                    placeholder="Class name" style={{ fontSize: 20, padding: "9px 12px", marginBottom: 8 }} />
                   <input value={joinPass} onChange={e => setJoinPass(e.target.value)}
-                    placeholder="Class password" style={{ fontSize: 13, padding: "9px 12px", marginBottom: 12 }} />
-                  <button className="btn btn-primary" style={{ width: "100%", fontSize: 14 }}
+                    placeholder="Class password" style={{ fontSize: 20, padding: "9px 12px", marginBottom: 12 }} />
+                  <button className="btn btn-primary" style={{ width: "100%", fontSize: 20 }}
                     onClick={doJoinClass} disabled={joinLoading}>
                     {joinLoading ? "Joining" : "Join Class "}
                   </button>
@@ -390,4 +390,5 @@ export default function StudentHome({ user, onLogout, onLiveSession, onTicTacToe
     </div>
   );
 }
+
 

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+﻿import { useState, useEffect, useRef } from "react";
 import { setDoc, doc, updateDoc } from "firebase/firestore";
 import {
   createClassworkSession, joinSession, pushGeneratedQuestion,
@@ -12,7 +12,7 @@ import {
 
 const POINTS_PER_QUESTION = 5;
 
-// ─── Work Display ─────────────────────────────────────────────────
+// â”€â”€â”€ Work Display â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function WorkDisplay({ question }) {
   if (!question) return null;
   const lines = (question.work || "").split('\n');
@@ -20,11 +20,11 @@ function WorkDisplay({ question }) {
   if (question.type === "simplify") {
     return (
       <div style={{ marginTop: 12, background: "rgba(16,185,129,0.08)", border: "1px solid rgba(16,185,129,0.2)", borderRadius: "var(--radius-sm)", padding: "12px 16px" }}>
-        <div style={{ fontSize: 13, color: "var(--text3)", marginBottom: 6 }}>How to simplify:</div>
-        <div style={{ fontFamily: "var(--mono)", fontSize: 18, fontWeight: 700 }}>
-          {question.a}:{question.b} <span style={{ color: "var(--red)" }}>÷ {question.gcf}</span> = <span style={{ color: "var(--green)" }}>{question.answer}</span>
+        <div style={{ fontSize: 20, color: "var(--text3)", marginBottom: 6 }}>How to simplify:</div>
+        <div style={{ fontFamily: "var(--mono)", fontSize: 20, fontWeight: 700 }}>
+          {question.a}:{question.b} <span style={{ color: "var(--red)" }}>Ã· {question.gcf}</span> = <span style={{ color: "var(--green)" }}>{question.answer}</span>
         </div>
-        <div style={{ fontSize: 13, color: "var(--text3)", marginTop: 6 }}>GCF of {question.a} and {question.b} = {question.gcf}</div>
+        <div style={{ fontSize: 20, color: "var(--text3)", marginTop: 6 }}>GCF of {question.a} and {question.b} = {question.gcf}</div>
       </div>
     );
   }
@@ -32,12 +32,12 @@ function WorkDisplay({ question }) {
   if (question.type === "proportion" || question.type === "solve-word") {
     return (
       <div style={{ marginTop: 12, background: "rgba(16,185,129,0.08)", border: "1px solid rgba(16,185,129,0.2)", borderRadius: "var(--radius-sm)", padding: "12px 16px" }}>
-        <div style={{ fontSize: 13, color: "var(--text3)", marginBottom: 6 }}>Solution:</div>
+        <div style={{ fontSize: 20, color: "var(--text3)", marginBottom: 6 }}>Solution:</div>
         {question.type === "solve-word" && (
-          <div style={{ fontSize: 14, color: "var(--blue)", marginBottom: 8, fontWeight: 600 }}>Proportion: {question.proportion}</div>
+          <div style={{ fontSize: 20, color: "var(--blue)", marginBottom: 8, fontWeight: 600 }}>Proportion: {question.proportion}</div>
         )}
         {lines.map((line, i) => (
-          <div key={i} style={{ fontFamily: "var(--mono)", fontSize: 16, fontWeight: i === lines.length - 1 ? 800 : 400, color: i === lines.length - 1 ? "var(--green)" : "var(--text)", marginBottom: 2 }}>
+          <div key={i} style={{ fontFamily: "var(--mono)", fontSize: 20, fontWeight: i === lines.length - 1 ? 800 : 400, color: i === lines.length - 1 ? "var(--green)" : "var(--text)", marginBottom: 2 }}>
             {line}
           </div>
         ))}
@@ -48,9 +48,9 @@ function WorkDisplay({ question }) {
   if (question.type === "algebraic") {
     return (
       <div style={{ marginTop: 12, background: "rgba(16,185,129,0.08)", border: "1px solid rgba(16,185,129,0.2)", borderRadius: "var(--radius-sm)", padding: "12px 16px" }}>
-        <div style={{ fontSize: 13, color: "var(--text3)", marginBottom: 6 }}>Solution:</div>
+        <div style={{ fontSize: 20, color: "var(--text3)", marginBottom: 6 }}>Solution:</div>
         {lines.map((line, i) => (
-          <div key={i} style={{ fontFamily: "var(--mono)", fontSize: 15, fontWeight: i === lines.length - 1 ? 800 : 400, color: i === lines.length - 1 ? "var(--green)" : "var(--text)", marginBottom: 3 }}>
+          <div key={i} style={{ fontFamily: "var(--mono)", fontSize: 19, fontWeight: i === lines.length - 1 ? 800 : 400, color: i === lines.length - 1 ? "var(--green)" : "var(--text)", marginBottom: 3 }}>
             {line}
           </div>
         ))}
@@ -61,8 +61,8 @@ function WorkDisplay({ question }) {
   if (question.type === "write-proportion") {
     return (
       <div style={{ marginTop: 12, background: "rgba(16,185,129,0.08)", border: "1px solid rgba(16,185,129,0.2)", borderRadius: "var(--radius-sm)", padding: "12px 16px" }}>
-        <div style={{ fontSize: 13, color: "var(--text3)", marginBottom: 6 }}>Accepted proportions (examples):</div>
-        <div style={{ fontFamily: "var(--mono)", fontSize: 15, color: "var(--green)", fontWeight: 700 }}>
+        <div style={{ fontSize: 20, color: "var(--text3)", marginBottom: 6 }}>Accepted proportions (examples):</div>
+        <div style={{ fontFamily: "var(--mono)", fontSize: 19, color: "var(--green)", fontWeight: 700 }}>
           {question.correctProportions.slice(0, 4).join("  or  ")}
         </div>
       </div>
@@ -72,7 +72,7 @@ function WorkDisplay({ question }) {
   return null;
 }
 
-// ─── Timer Bar ────────────────────────────────────────────────────
+// â”€â”€â”€ Timer Bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function TimerBar({ endsAt, totalSeconds, onExpired }) {
   const [remaining, setRemaining] = useState(totalSeconds);
   const expiredRef = useRef(false);
@@ -94,9 +94,9 @@ function TimerBar({ endsAt, totalSeconds, onExpired }) {
   const color = remaining <= 5 ? "var(--red)" : remaining <= 10 ? "var(--amber)" : "var(--green)";
   return (
     <div style={{ marginBottom: 16 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: "var(--text3)", marginBottom: 6 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 20, color: "var(--text3)", marginBottom: 6 }}>
         <span>Time remaining</span>
-        <span style={{ fontWeight: 700, color, fontSize: 18 }}>{remaining}s</span>
+        <span style={{ fontWeight: 700, color, fontSize: 20 }}>{remaining}s</span>
       </div>
       <div style={{ height: 8, background: "var(--surface2)", borderRadius: 99, overflow: "hidden" }}>
         <div style={{ height: "100%", width: `${pct}%`, background: color, borderRadius: 99, transition: "width 0.5s linear" }} />
@@ -106,7 +106,7 @@ function TimerBar({ endsAt, totalSeconds, onExpired }) {
 }
 
 
-// ─── Fraction Display ─────────────────────────────────────────────
+// â”€â”€â”€ Fraction Display â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function AlgebraicDisplay({ prompt }) {
   // Parse "a/(bx+c) = d/(ex+f)" into fraction display
   const match = prompt.match(/^(.+)\/\((.+)\)\s*=\s*(.+)\/\((.+)\)$/);
@@ -121,7 +121,7 @@ function AlgebraicDisplay({ prompt }) {
         <div style={numStyle}>{num1}</div>
         <div style={denStyle}>{den1}</div>
       </div>
-      <span style={{ fontSize: 24 }}>=</span>
+      <span style={{ fontSize: 28 }}>=</span>
       <div style={fracStyle}>
         <div style={numStyle}>{num2}</div>
         <div style={denStyle}>{den2}</div>
@@ -130,7 +130,7 @@ function AlgebraicDisplay({ prompt }) {
   );
 }
 
-// ─── Teacher View ─────────────────────────────────────────────────
+// â”€â”€â”€ Teacher View â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function TeacherRatio({ session, sessionId, uid }) {
   const [answers, setAnswers] = useState([]);
   const [timerInput, setTimerInput] = useState(90);
@@ -217,16 +217,16 @@ function TeacherRatio({ session, sessionId, uid }) {
       <div className="card" style={{ marginBottom: 16 }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
           <div>
-            <div style={{ fontSize: 13, color: "var(--text3)", marginBottom: 2 }}>Join Code</div>
+            <div style={{ fontSize: 20, color: "var(--text3)", marginBottom: 2 }}>Join Code</div>
             <div style={{ fontSize: 36, fontWeight: 900, fontFamily: "var(--mono)", color: "var(--blue)", letterSpacing: "0.15em" }}>{session.joinCode}</div>
-            <div style={{ fontSize: 13, color: "var(--text3)", marginTop: 2 }}>{totalStudents} student{totalStudents !== 1 ? "s" : ""} joined</div>
+            <div style={{ fontSize: 20, color: "var(--text3)", marginTop: 2 }}>{totalStudents} student{totalStudents !== 1 ? "s" : ""} joined</div>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <label style={{ fontSize: 13, color: "var(--text2)" }}>Seconds:</label>
+              <label style={{ fontSize: 20, color: "var(--text2)" }}>Seconds:</label>
               <input type="number" min={10} max={300} value={timerInput}
                 onChange={e => setTimerInput(Number(e.target.value))}
-                style={{ width: 70, padding: "6px 10px", fontSize: 14, textAlign: "center" }} />
+                style={{ width: 70, padding: "6px 10px", fontSize: 20, textAlign: "center" }} />
             </div>
             {session.status === "question" && (
               <button className="btn btn-ghost" onClick={handleReveal}>Reveal Answers</button>
@@ -249,7 +249,7 @@ function TeacherRatio({ session, sessionId, uid }) {
       <div style={{ display: "grid", gridTemplateColumns: "280px 1fr", gap: 16, alignItems: "start" }}>
         {/* Left: Topic selector */}
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          <div style={{ fontSize: 12, fontWeight: 700, color: "var(--text3)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 4 }}>
+          <div style={{ fontSize: 19, fontWeight: 700, color: "var(--text3)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 4 }}>
             Topic
           </div>
           {TOPIC_LABELS.map((t, i) => {
@@ -264,10 +264,10 @@ function TeacherRatio({ session, sessionId, uid }) {
                   borderRadius: "var(--radius)", padding: "10px 14px",
                   cursor: "pointer", textAlign: "left", fontFamily: "var(--font)",
                 }}>
-                <div style={{ fontWeight: 700, fontSize: 13, color: isActive ? "var(--blue)" : isDone ? "var(--green)" : "var(--text)" }}>
-                  {isDone ? "✓ " : isActive ? "▶ " : `${i+1}. `}{t.label}
+                <div style={{ fontWeight: 700, fontSize: 20, color: isActive ? "var(--blue)" : isDone ? "var(--green)" : "var(--text)" }}>
+                  {isDone ? "âœ“ " : isActive ? "â–¶ " : `${i+1}. `}{t.label}
                 </div>
-                <div style={{ fontSize: 11, color: "var(--text3)", marginTop: 2 }}>{t.description}</div>
+                <div style={{ fontSize: 20, color: "var(--text3)", marginTop: 2 }}>{t.description}</div>
               </button>
             );
           })}
@@ -279,7 +279,7 @@ function TeacherRatio({ session, sessionId, uid }) {
           </button>
 
           {session.status === "waiting" && (
-            <div style={{ fontSize: 12, color: "var(--text3)", textAlign: "center", marginTop: 8 }}>
+            <div style={{ fontSize: 19, color: "var(--text3)", textAlign: "center", marginTop: 8 }}>
               Select a topic and generate the first question.
             </div>
           )}
@@ -290,12 +290,12 @@ function TeacherRatio({ session, sessionId, uid }) {
           {session.status === "waiting" && (
             <div className="card" style={{ textAlign: "center", padding: "48px 20px" }}>
               <h3 style={{ fontSize: 22, fontWeight: 800, marginBottom: 8 }}>Waiting for students</h3>
-              <p style={{ color: "var(--text2)", fontSize: 15 }}>
+              <p style={{ color: "var(--text2)", fontSize: 19 }}>
                 Code: <strong style={{ color: "var(--blue)", fontFamily: "var(--mono)", fontSize: 20 }}>{session.joinCode}</strong>
               </p>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "center", marginTop: 16 }}>
                 {Object.values(participants).map(p => (
-                  <div key={p.name} style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-sm)", padding: "6px 14px", fontSize: 14, fontWeight: 600 }}>
+                  <div key={p.name} style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-sm)", padding: "6px 14px", fontSize: 20, fontWeight: 600 }}>
                     {p.name}
                   </div>
                 ))}
@@ -306,7 +306,7 @@ function TeacherRatio({ session, sessionId, uid }) {
           {question && (session.status === "question" || session.status === "revealing") && (
             <>
               <div className="card">
-                <div style={{ fontSize: 12, color: "var(--text3)", marginBottom: 8 }}>
+                <div style={{ fontSize: 19, color: "var(--text3)", marginBottom: 8 }}>
                   {TOPIC_LABELS.find(t => t.id === question.type)?.label} - {submittedCount}/{totalStudents} submitted - {correctCount} correct
                 </div>
                 <div style={{ marginBottom: 12 }}>
@@ -321,8 +321,8 @@ function TeacherRatio({ session, sessionId, uid }) {
                 {session.status === "revealing" && (
                   <>
                     <div style={{ background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.3)", borderRadius: "var(--radius-sm)", padding: "10px 14px", marginBottom: 8 }}>
-                      <div style={{ fontSize: 13, color: "var(--text3)", marginBottom: 4 }}>Correct answer</div>
-                      <div style={{ fontSize: 24, fontWeight: 800, color: "var(--green)", fontFamily: "var(--mono)" }}>{question.answer}</div>
+                      <div style={{ fontSize: 20, color: "var(--text3)", marginBottom: 4 }}>Correct answer</div>
+                      <div style={{ fontSize: 28, fontWeight: 800, color: "var(--green)", fontFamily: "var(--mono)" }}>{question.answer}</div>
                     </div>
                     <WorkDisplay question={question} />
                   </>
@@ -333,7 +333,7 @@ function TeacherRatio({ session, sessionId, uid }) {
               </div>
 
               <div className="card">
-                <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 12 }}>Student Answers</h3>
+                <h3 style={{ fontSize: 19, fontWeight: 700, marginBottom: 12 }}>Student Answers</h3>
                 <div style={{ display: "flex", flexDirection: "column", gap: 6, maxHeight: 300, overflowY: "auto" }}>
                   {Object.entries(participants).map(([pUid, p]) => {
                     const ans = answers.find(a => a.uid === pUid);
@@ -345,18 +345,18 @@ function TeacherRatio({ session, sessionId, uid }) {
                         background: "var(--bg2)", borderRadius: "var(--radius-sm)", padding: "8px 12px",
                         border: `1px solid ${hasSubmitted ? (isCorrect ? "rgba(16,185,129,0.3)" : "rgba(239,68,68,0.3)") : "var(--border)"}`,
                       }}>
-                        <span style={{ fontWeight: 600, fontSize: 14 }}>{p.name}</span>
+                        <span style={{ fontWeight: 600, fontSize: 20 }}>{p.name}</span>
                         {hasSubmitted ? (
                           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                             {session.status === "revealing" && (
-                              <span style={{ fontFamily: "var(--mono)", fontSize: 14, color: "var(--text2)" }}>{ans.answer}</span>
+                              <span style={{ fontFamily: "var(--mono)", fontSize: 20, color: "var(--text2)" }}>{ans.answer}</span>
                             )}
                             <span style={{ fontWeight: 700, color: isCorrect ? "var(--green)" : "var(--red)" }}>
                               {isCorrect ? `+${POINTS_PER_QUESTION}` : "X"}
                             </span>
                           </div>
                         ) : (
-                          <span style={{ fontSize: 12, color: "var(--text3)" }}>thinking...</span>
+                          <span style={{ fontSize: 19, color: "var(--text3)" }}>thinking...</span>
                         )}
                       </div>
                     );
@@ -378,7 +378,7 @@ function TeacherRatio({ session, sessionId, uid }) {
   );
 }
 
-// ─── Student View ─────────────────────────────────────────────────
+// â”€â”€â”€ Student View â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function StudentRatio({ session, sessionId, uid }) {
   const [input, setInput] = useState("");
   const [submitted, setSubmitted] = useState(false);
@@ -436,14 +436,14 @@ function StudentRatio({ session, sessionId, uid }) {
 
   if (session.status === "waiting") return (
     <div style={{ textAlign: "center", padding: "60px 20px" }}>
-      <h2 style={{ fontSize: 24, fontWeight: 800, marginBottom: 8 }}>Waiting for the teacher...</h2>
+      <h2 style={{ fontSize: 28, fontWeight: 800, marginBottom: 8 }}>Waiting for the teacher...</h2>
       <p style={{ color: "var(--text2)" }}>Ratios and Proportions session is about to begin!</p>
     </div>
   );
 
   if (session.status === "ended") return (
     <div className="card" style={{ maxWidth: 500, margin: "0 auto", textAlign: "center", padding: "40px 20px" }}>
-      <h2 style={{ fontSize: 24, fontWeight: 800, marginBottom: 8 }}>Session Complete!</h2>
+      <h2 style={{ fontSize: 28, fontWeight: 800, marginBottom: 8 }}>Session Complete!</h2>
       <div style={{ fontSize: 28, fontWeight: 900, color: "var(--blue)" }}>{myScore} pts</div>
     </div>
   );
@@ -451,10 +451,10 @@ function StudentRatio({ session, sessionId, uid }) {
   return (
     <div style={{ maxWidth: 600, margin: "0 auto" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-        <div style={{ fontSize: 13, color: "var(--text3)" }}>
+        <div style={{ fontSize: 20, color: "var(--text3)" }}>
           {question ? (TOPIC_LABELS.find(t => t.id === question.type)?.label || "") : ""}
         </div>
-        <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-sm)", padding: "6px 14px", fontSize: 14, fontWeight: 700 }}>
+        <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-sm)", padding: "6px 14px", fontSize: 20, fontWeight: 700 }}>
           Score: {myScore} pts
         </div>
       </div>
@@ -480,11 +480,11 @@ function StudentRatio({ session, sessionId, uid }) {
                 <div style={{ fontSize: 22, fontWeight: 800, color: result.correct ? "var(--green)" : "var(--red)", marginBottom: 8 }}>
                   {result.correct ? `Correct! +${POINTS_PER_QUESTION} pts` : "Incorrect"}
                 </div>
-                <div style={{ fontSize: 14, color: "var(--text2)", marginBottom: 4 }}>
+                <div style={{ fontSize: 20, color: "var(--text2)", marginBottom: 4 }}>
                   Your answer: <strong style={{ fontFamily: "var(--mono)" }}>{result.answer}</strong>
                 </div>
                 {!result.correct && (
-                  <div style={{ fontSize: 15, color: "var(--green)", marginBottom: 8 }}>
+                  <div style={{ fontSize: 19, color: "var(--green)", marginBottom: 8 }}>
                     Correct: <strong style={{ fontFamily: "var(--mono)" }}>{question?.answer}</strong>
                   </div>
                 )}
@@ -499,8 +499,8 @@ function StudentRatio({ session, sessionId, uid }) {
           </div>
         ) : submitted ? (
           <div style={{ textAlign: "center" }}>
-            <div style={{ fontSize: 16, fontWeight: 700, color: "var(--green)", marginBottom: 4 }}>Submitted!</div>
-            <div style={{ fontSize: 13, color: "var(--text3)" }}>Waiting for teacher to reveal...</div>
+            <div style={{ fontSize: 20, fontWeight: 700, color: "var(--green)", marginBottom: 4 }}>Submitted!</div>
+            <div style={{ fontSize: 20, color: "var(--text3)" }}>Waiting for teacher to reveal...</div>
           </div>
         ) : (
           <>
@@ -512,10 +512,10 @@ function StudentRatio({ session, sessionId, uid }) {
               placeholder={getPlaceholder()}
               style={{ fontSize: 22, fontFamily: "var(--mono)", textAlign: "center", padding: "14px", marginBottom: 8 }}
             />
-            <div style={{ fontSize: 12, color: "var(--text3)", textAlign: "center", marginBottom: 12 }}>
+            <div style={{ fontSize: 19, color: "var(--text3)", textAlign: "center", marginBottom: 12 }}>
               {getFormatHint()}
             </div>
-            <button className="btn btn-primary" style={{ width: "100%", fontSize: 18, padding: "14px" }}
+            <button className="btn btn-primary" style={{ width: "100%", fontSize: 20, padding: "14px" }}
               onMouseDown={e => e.preventDefault()}
               onClick={handleSubmit}
               disabled={!input.trim()}>
@@ -528,7 +528,7 @@ function StudentRatio({ session, sessionId, uid }) {
   );
 }
 
-// ─── Create Session ───────────────────────────────────────────────
+// â”€â”€â”€ Create Session â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function CreateRatioSession({ user, onCreated }) {
   const [classes, setClasses] = useState([]);
   const [selectedClass, setSelectedClass] = useState("");
@@ -552,21 +552,21 @@ function CreateRatioSession({ user, onCreated }) {
     <div style={{ maxWidth: 480, margin: "0 auto" }}>
       <div className="card">
         <h2 style={{ fontSize: 22, fontWeight: 800, marginBottom: 4 }}>Ratios and Proportions Session</h2>
-        <p style={{ color: "var(--text2)", fontSize: 14, marginBottom: 20 }}>
+        <p style={{ color: "var(--text2)", fontSize: 20, marginBottom: 20 }}>
           5 topic types: simplify ratios, solve proportions, algebraic proportions, write proportions from word problems, and solve proportion word problems.
         </p>
         <div style={{ marginBottom: 14 }}>
-          <label style={{ fontSize: 13, fontWeight: 600, color: "var(--text2)", display: "block", marginBottom: 6 }}>Class</label>
-          <select value={selectedClass} onChange={e => setSelectedClass(e.target.value)} style={{ width: "100%", padding: "10px 12px", fontSize: 14 }}>
+          <label style={{ fontSize: 20, fontWeight: 600, color: "var(--text2)", display: "block", marginBottom: 6 }}>Class</label>
+          <select value={selectedClass} onChange={e => setSelectedClass(e.target.value)} style={{ width: "100%", padding: "10px 12px", fontSize: 20 }}>
             <option value="">Select a class...</option>
             {classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
           </select>
         </div>
         <div style={{ marginBottom: 20 }}>
-          <label style={{ fontSize: 13, fontWeight: 600, color: "var(--text2)", display: "block", marginBottom: 6 }}>Default time per question (seconds)</label>
+          <label style={{ fontSize: 20, fontWeight: 600, color: "var(--text2)", display: "block", marginBottom: 6 }}>Default time per question (seconds)</label>
           <input type="number" min={30} max={300} value={timer}
             onChange={e => setTimer(Number(e.target.value))}
-            style={{ width: "100%", padding: "10px 12px", fontSize: 14 }} />
+            style={{ width: "100%", padding: "10px 12px", fontSize: 20 }} />
         </div>
         <button className="btn btn-primary btn-lg" style={{ width: "100%" }}
           onClick={handleCreate} disabled={loading || !selectedClass}>
@@ -577,7 +577,7 @@ function CreateRatioSession({ user, onCreated }) {
   );
 }
 
-// ─── Main Export ──────────────────────────────────────────────────
+// â”€â”€â”€ Main Export â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export default function RatioSession({ user, onHome }) {
   const [view, setView] = useState("create");
   const [sessionId, setSessionId] = useState(null);
@@ -594,10 +594,10 @@ export default function RatioSession({ user, onHome }) {
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 32, flexWrap: "wrap", gap: 12 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <div style={{ width: 40, height: 40, borderRadius: 12, background: "linear-gradient(135deg,var(--blue),var(--cyan))", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 800, color: "#fff" }}>R:P</div>
+            <div style={{ width: 40, height: 40, borderRadius: 12, background: "linear-gradient(135deg,var(--blue),var(--cyan))", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, fontWeight: 800, color: "#fff" }}>R:P</div>
             <div>
               <div style={{ fontWeight: 800, fontSize: 20 }}>GCA</div>
-              <div style={{ color: "var(--text3)", fontSize: 12 }}>Ratios and Proportions</div>
+              <div style={{ color: "var(--text3)", fontSize: 19 }}>Ratios and Proportions</div>
             </div>
           </div>
           <button className="btn btn-ghost btn-sm" onClick={onHome}>Back to Home</button>
@@ -618,3 +618,4 @@ export default function RatioSession({ user, onHome }) {
 }
 
 export { TeacherRatio as RatioTeacherView, StudentRatio as RatioStudentView };
+

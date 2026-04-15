@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+﻿import { useState, useEffect, useRef, useCallback } from "react";
 import { setDoc, doc, updateDoc, increment } from "firebase/firestore";
 import {
   createSession, joinSession, startQuestion, revealQuestion, endSession,
@@ -6,9 +6,9 @@ import {
 } from "./core/firebase";
 import { WORKSHEET_QUESTIONS, TOTAL_POINTS, gradeDecimalAnswer, generateSimilarQuestion } from "./worksheetQuestions";
 
-// ─── Repeating Decimal Input ──────────────────────────────────────
+// â”€â”€â”€ Repeating Decimal Input â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Internal format: "1.[27]" means 1.272727...
-// Display: 1.2̄7̄
+// Display: 1.2Ì„7Ì„
 // Parse: splits on [ to find repeating part
 
 function parseRepeatingInput(val) {
@@ -106,8 +106,8 @@ function RepeatingInput({ value, onChange, onSubmit, disabled }) {
         display: "flex", alignItems: "center", justifyContent: "center",
         minWidth: 200,
       }}>
-        {parsed.display || <span style={{ color: "var(--text3)", fontSize: 18 }}>type your answer</span>}
-        {inBar && <span style={{ color: "var(--blue)", fontSize: 14, marginLeft: 4 }}>|bar|</span>}
+        {parsed.display || <span style={{ color: "var(--text3)", fontSize: 20 }}>type your answer</span>}
+        {inBar && <span style={{ color: "var(--blue)", fontSize: 20, marginLeft: 4 }}>|bar|</span>}
       </div>
 
       {/* Hidden input to capture typing */}
@@ -147,32 +147,32 @@ function RepeatingInput({ value, onChange, onSubmit, disabled }) {
         <button disabled={disabled || inBar}
           onMouseDown={e => e.preventDefault()}
           onClick={handleBar}
-          style={{ padding: "0 14px", height: 44, fontSize: 14, fontWeight: 800,
+          style={{ padding: "0 14px", height: 44, fontSize: 20, fontWeight: 800,
             background: inBar ? "var(--blue)" : "rgba(59,130,246,0.15)",
             border: `2px solid ${inBar ? "var(--blue)" : "rgba(59,130,246,0.4)"}`,
             borderRadius: "var(--radius-sm)", cursor: inBar ? "not-allowed" : "pointer",
             color: inBar ? "#fff" : "var(--blue)" }}>
-          x̄ BAR
+          xÌ„ BAR
         </button>
         <button disabled={disabled}
           onMouseDown={e => e.preventDefault()}
           onClick={handleBackspace}
-          style={{ padding: "0 14px", height: 44, fontSize: 14, fontWeight: 700,
+          style={{ padding: "0 14px", height: 44, fontSize: 20, fontWeight: 700,
             background: "var(--surface)", border: "1px solid var(--border)",
             borderRadius: "var(--radius-sm)", cursor: "pointer", color: "var(--text)" }}>
-          ←
+          â†
         </button>
         <button disabled={disabled}
           onMouseDown={e => e.preventDefault()}
           onClick={handleClear}
-          style={{ padding: "0 14px", height: 44, fontSize: 13, fontWeight: 700,
+          style={{ padding: "0 14px", height: 44, fontSize: 20, fontWeight: 700,
             background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)",
             borderRadius: "var(--radius-sm)", cursor: "pointer", color: "var(--red)" }}>
           CLR
         </button>
       </div>
 
-      <button className="btn btn-primary" style={{ width: "100%", fontSize: 18, padding: "14px" }}
+      <button className="btn btn-primary" style={{ width: "100%", fontSize: 20, padding: "14px" }}
         disabled={disabled || !raw}
         onMouseDown={e => e.preventDefault()}
         onClick={onSubmit}>
@@ -182,7 +182,7 @@ function RepeatingInput({ value, onChange, onSubmit, disabled }) {
   );
 }
 
-// ─── Grade repeating decimal answer ──────────────────────────────
+// â”€â”€â”€ Grade repeating decimal answer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function gradeAnswer(studentRaw, question) {
   if (!studentRaw) return false;
 
@@ -220,7 +220,7 @@ function gradeAnswer(studentRaw, question) {
   return Math.abs(studentNum - correctNum) < 0.0001;
 }
 
-// ─── Timer Bar ────────────────────────────────────────────────────
+// â”€â”€â”€ Timer Bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function TimerBar({ endsAt, totalSeconds, onExpired }) {
   const [remaining, setRemaining] = useState(totalSeconds);
   const expiredRef = useRef(false);
@@ -244,9 +244,9 @@ function TimerBar({ endsAt, totalSeconds, onExpired }) {
   const color = remaining <= 5 ? "var(--red)" : remaining <= 10 ? "var(--amber)" : "var(--green)";
   return (
     <div style={{ marginBottom: 16 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: "var(--text3)", marginBottom: 6 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 20, color: "var(--text3)", marginBottom: 6 }}>
         <span>Time remaining</span>
-        <span style={{ fontWeight: 700, color, fontSize: 18 }}>{remaining}s</span>
+        <span style={{ fontWeight: 700, color, fontSize: 20 }}>{remaining}s</span>
       </div>
       <div style={{ height: 8, background: "var(--surface2)", borderRadius: 99, overflow: "hidden" }}>
         <div style={{ height: "100%", width: `${pct}%`, background: color, borderRadius: 99, transition: "width 0.5s linear" }} />
@@ -255,7 +255,7 @@ function TimerBar({ endsAt, totalSeconds, onExpired }) {
   );
 }
 
-// ─── Leaderboard ──────────────────────────────────────────────────
+// â”€â”€â”€ Leaderboard â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function Leaderboard({ participants, currentUid, isEnded }) {
   const sorted = Object.entries(participants)
     .map(([uid, p]) => ({ uid, ...p }))
@@ -282,9 +282,9 @@ function Leaderboard({ participants, currentUid, isEnded }) {
               </div>
               <div style={{ flex: 1 }}>
                 <div style={{ fontWeight: 700 }}>{p.name}{isMe ? " (you)" : ""}</div>
-                <div style={{ fontSize: 12, color: "var(--text3)" }}>{pct}%</div>
+                <div style={{ fontSize: 19, color: "var(--text3)" }}>{pct}%</div>
               </div>
-              <div style={{ fontWeight: 800, fontSize: 20 }}>{p.totalScore}<span style={{ fontSize: 12, color: "var(--text3)", fontWeight: 400 }}> pts</span></div>
+              <div style={{ fontWeight: 800, fontSize: 20 }}>{p.totalScore}<span style={{ fontSize: 19, color: "var(--text3)", fontWeight: 400 }}> pts</span></div>
             </div>
           );
         })}
@@ -293,7 +293,7 @@ function Leaderboard({ participants, currentUid, isEnded }) {
   );
 }
 
-// ─── Teacher View ─────────────────────────────────────────────────
+// â”€â”€â”€ Teacher View â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function TeacherWorksheet({ session, sessionId, uid }) {
   const [answers, setAnswers] = useState([]);
   const [timerInput, setTimerInput] = useState(90);
@@ -384,16 +384,16 @@ function TeacherWorksheet({ session, sessionId, uid }) {
       <div className="card" style={{ marginBottom: 16 }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
           <div>
-            <div style={{ fontSize: 13, color: "var(--text3)", marginBottom: 2 }}>Join Code</div>
+            <div style={{ fontSize: 20, color: "var(--text3)", marginBottom: 2 }}>Join Code</div>
             <div style={{ fontSize: 36, fontWeight: 900, fontFamily: "var(--mono)", color: "var(--blue)", letterSpacing: "0.15em" }}>{session.joinCode}</div>
-            <div style={{ fontSize: 13, color: "var(--text3)", marginTop: 2 }}>{totalStudents} student{totalStudents !== 1 ? "s" : ""} joined</div>
+            <div style={{ fontSize: 20, color: "var(--text3)", marginTop: 2 }}>{totalStudents} student{totalStudents !== 1 ? "s" : ""} joined</div>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <label style={{ fontSize: 13, color: "var(--text2)" }}>Seconds:</label>
+              <label style={{ fontSize: 20, color: "var(--text2)" }}>Seconds:</label>
               <input type="number" min={10} max={300} value={timerInput}
                 onChange={e => setTimerInput(Number(e.target.value))}
-                style={{ width: 70, padding: "6px 10px", fontSize: 14, textAlign: "center" }} />
+                style={{ width: 70, padding: "6px 10px", fontSize: 20, textAlign: "center" }} />
             </div>
             {session.status === "waiting" && (
               <button className="btn btn-primary" onClick={handleStart} disabled={totalStudents === 0}>Start</button>
@@ -418,15 +418,15 @@ function TeacherWorksheet({ session, sessionId, uid }) {
       {session.status === "waiting" && (
         <div className="card" style={{ textAlign: "center", padding: "48px 20px" }}>
           <h3 style={{ fontSize: 22, fontWeight: 800, marginBottom: 8 }}>Waiting for students</h3>
-          <p style={{ color: "var(--text2)", fontSize: 15 }}>
+          <p style={{ color: "var(--text2)", fontSize: 19 }}>
             Join code: <strong style={{ color: "var(--blue)", fontFamily: "var(--mono)", fontSize: 20 }}>{session.joinCode}</strong>
           </p>
-          <p style={{ color: "var(--text3)", fontSize: 13, marginTop: 8 }}>
+          <p style={{ color: "var(--text3)", fontSize: 20, marginTop: 8 }}>
             {WORKSHEET_QUESTIONS.length} questions - {TOTAL_POINTS} points total
           </p>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "center", marginTop: 16 }}>
             {Object.values(participants).map(p => (
-              <div key={p.name} style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-sm)", padding: "6px 14px", fontSize: 14, fontWeight: 600 }}>
+              <div key={p.name} style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-sm)", padding: "6px 14px", fontSize: 20, fontWeight: 600 }}>
                 {p.name}
               </div>
             ))}
@@ -438,7 +438,7 @@ function TeacherWorksheet({ session, sessionId, uid }) {
       {question && (session.status === "question" || session.status === "revealing") && (
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
           <div className="card">
-            <div style={{ fontSize: 12, color: "var(--text3)", marginBottom: 4 }}>
+            <div style={{ fontSize: 19, color: "var(--text3)", marginBottom: 4 }}>
               Question {(qIdx ?? 0) + 1} of {WORKSHEET_QUESTIONS.length} - {question.section} - {question.sectionTitle}
             </div>
             <div style={{ fontSize: 28, fontWeight: 800, marginBottom: 16, color: "var(--text)" }}>
@@ -453,18 +453,18 @@ function TeacherWorksheet({ session, sessionId, uid }) {
             )}
             {session.status === "revealing" && (
               <div style={{ background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.3)", borderRadius: "var(--radius-sm)", padding: "10px 14px" }}>
-                <div style={{ fontSize: 13, color: "var(--text3)", marginBottom: 4 }}>Correct answer</div>
+                <div style={{ fontSize: 20, color: "var(--text3)", marginBottom: 4 }}>Correct answer</div>
                 <div style={{ fontSize: 28, fontWeight: 800, color: "var(--green)", fontFamily: "var(--mono)" }}>{question.answer}</div>
               </div>
             )}
             <div style={{ height: 6, background: "var(--surface2)", borderRadius: 99, overflow: "hidden", marginTop: 12 }}>
               <div style={{ height: "100%", width: `${totalStudents > 0 ? (submittedCount / totalStudents) * 100 : 0}%`, background: "var(--blue)", borderRadius: 99, transition: "width 0.3s" }} />
             </div>
-            <div style={{ fontSize: 12, color: "var(--text3)", marginTop: 4 }}>{submittedCount}/{totalStudents} submitted - {correctCount} correct</div>
+            <div style={{ fontSize: 19, color: "var(--text3)", marginTop: 4 }}>{submittedCount}/{totalStudents} submitted - {correctCount} correct</div>
           </div>
 
           <div className="card">
-            <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 12 }}>Student Answers</h3>
+            <h3 style={{ fontSize: 19, fontWeight: 700, marginBottom: 12 }}>Student Answers</h3>
             <div style={{ display: "flex", flexDirection: "column", gap: 6, maxHeight: 320, overflowY: "auto" }}>
               {Object.entries(participants).map(([pUid, p]) => {
                 const ans = answers.find(a => a.uid === pUid);
@@ -476,11 +476,11 @@ function TeacherWorksheet({ session, sessionId, uid }) {
                     background: "var(--bg2)", borderRadius: "var(--radius-sm)", padding: "8px 12px",
                     border: `1px solid ${hasSubmitted ? (isCorrect ? "rgba(16,185,129,0.3)" : "rgba(239,68,68,0.3)") : "var(--border)"}`,
                   }}>
-                    <span style={{ fontWeight: 600, fontSize: 14 }}>{p.name}</span>
+                    <span style={{ fontWeight: 600, fontSize: 20 }}>{p.name}</span>
                     {hasSubmitted ? (
                       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                         {session.status === "revealing" && (
-                          <span style={{ fontFamily: "var(--mono)", fontSize: 14, color: "var(--text2)" }}>
+                          <span style={{ fontFamily: "var(--mono)", fontSize: 20, color: "var(--text2)" }}>
                             {parseRepeatingInput(ans.answer).display}
                           </span>
                         )}
@@ -489,7 +489,7 @@ function TeacherWorksheet({ session, sessionId, uid }) {
                         </span>
                       </div>
                     ) : (
-                      <span style={{ fontSize: 12, color: "var(--text3)" }}>thinking...</span>
+                      <span style={{ fontSize: 19, color: "var(--text3)" }}>thinking...</span>
                     )}
                   </div>
                 );
@@ -514,7 +514,7 @@ function TeacherWorksheet({ session, sessionId, uid }) {
   );
 }
 
-// ─── Student View ─────────────────────────────────────────────────
+// â”€â”€â”€ Student View â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function StudentWorksheet({ session, sessionId, uid }) {
   const [inputRaw, setInputRaw] = useState("");
   const [submitted, setSubmitted] = useState(false);
@@ -557,14 +557,14 @@ function StudentWorksheet({ session, sessionId, uid }) {
 
   if (session.status === "waiting") return (
     <div style={{ textAlign: "center", padding: "60px 20px" }}>
-      <h2 style={{ fontSize: 24, fontWeight: 800, marginBottom: 8 }}>Waiting for the teacher...</h2>
+      <h2 style={{ fontSize: 28, fontWeight: 800, marginBottom: 8 }}>Waiting for the teacher...</h2>
       <p style={{ color: "var(--text2)" }}>Get ready - the session is about to begin!</p>
     </div>
   );
 
   if (session.status === "ended") return (
     <div className="card" style={{ maxWidth: 500, margin: "0 auto", textAlign: "center", padding: "40px 20px" }}>
-      <h2 style={{ fontSize: 24, fontWeight: 800, marginBottom: 8 }}>Session Complete!</h2>
+      <h2 style={{ fontSize: 28, fontWeight: 800, marginBottom: 8 }}>Session Complete!</h2>
       <div style={{ fontSize: 28, fontWeight: 900, color: "var(--blue)", marginBottom: 4 }}>
         {myScore} / {TOTAL_POINTS} pts
       </div>
@@ -575,10 +575,10 @@ function StudentWorksheet({ session, sessionId, uid }) {
   return (
     <div style={{ maxWidth: 560, margin: "0 auto" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-        <div style={{ fontSize: 13, color: "var(--text3)" }}>
+        <div style={{ fontSize: 20, color: "var(--text3)" }}>
           Question {(qIdx ?? 0) + 1} of {WORKSHEET_QUESTIONS.length}
         </div>
-        <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-sm)", padding: "6px 14px", fontSize: 14, fontWeight: 700 }}>
+        <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-sm)", padding: "6px 14px", fontSize: 20, fontWeight: 700 }}>
           Score: {myScore} pts
         </div>
       </div>
@@ -590,10 +590,10 @@ function StudentWorksheet({ session, sessionId, uid }) {
 
         {question && (
           <>
-            <div style={{ fontSize: 12, color: "var(--text3)", marginBottom: 8 }}>
+            <div style={{ fontSize: 19, color: "var(--text3)", marginBottom: 8 }}>
               {question.section} - {question.sectionTitle}
             </div>
-            <div style={{ fontSize: 26, fontWeight: 800, marginBottom: 20, color: "var(--text)" }}>
+            <div style={{ fontSize: 28, fontWeight: 800, marginBottom: 20, color: "var(--text)" }}>
               {question.prompt}
             </div>
           </>
@@ -606,11 +606,11 @@ function StudentWorksheet({ session, sessionId, uid }) {
                 <div style={{ fontSize: 22, fontWeight: 800, color: result.correct ? "var(--green)" : "var(--red)", marginBottom: 8 }}>
                   {result.correct ? `Correct! +${question?.points} pts` : "Incorrect"}
                 </div>
-                <div style={{ fontSize: 15, color: "var(--text2)", marginBottom: 4 }}>
+                <div style={{ fontSize: 19, color: "var(--text2)", marginBottom: 4 }}>
                   Your answer: <strong style={{ fontFamily: "var(--mono)" }}>{result.answer}</strong>
                 </div>
                 {!result.correct && (
-                  <div style={{ fontSize: 15, color: "var(--green)" }}>
+                  <div style={{ fontSize: 19, color: "var(--green)" }}>
                     Correct: <strong style={{ fontFamily: "var(--mono)" }}>{question?.answer}</strong>
                   </div>
                 )}
@@ -618,7 +618,7 @@ function StudentWorksheet({ session, sessionId, uid }) {
             ) : (
               <div>
                 <div style={{ color: "var(--text3)", marginBottom: 8 }}>No answer submitted.</div>
-                <div style={{ color: "var(--green)", fontSize: 15 }}>
+                <div style={{ color: "var(--green)", fontSize: 19 }}>
                   Correct: <strong style={{ fontFamily: "var(--mono)" }}>{question?.answer}</strong>
                 </div>
               </div>
@@ -629,8 +629,8 @@ function StudentWorksheet({ session, sessionId, uid }) {
           </div>
         ) : submitted ? (
           <div style={{ textAlign: "center" }}>
-            <div style={{ fontSize: 16, fontWeight: 700, color: "var(--green)", marginBottom: 4 }}>Submitted!</div>
-            <div style={{ fontSize: 13, color: "var(--text3)" }}>Waiting for teacher to reveal...</div>
+            <div style={{ fontSize: 20, fontWeight: 700, color: "var(--green)", marginBottom: 4 }}>Submitted!</div>
+            <div style={{ fontSize: 20, color: "var(--text3)" }}>Waiting for teacher to reveal...</div>
           </div>
         ) : (
           <RepeatingInput
@@ -645,7 +645,7 @@ function StudentWorksheet({ session, sessionId, uid }) {
   );
 }
 
-// ─── Create Session ───────────────────────────────────────────────
+// â”€â”€â”€ Create Session â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function CreateWorksheetSession({ user, onCreated }) {
   const [classes, setClasses] = useState([]);
   const [selectedClass, setSelectedClass] = useState("");
@@ -667,23 +667,23 @@ function CreateWorksheetSession({ user, onCreated }) {
     <div style={{ maxWidth: 480, margin: "0 auto" }}>
       <div className="card">
         <h2 style={{ fontSize: 22, fontWeight: 800, marginBottom: 4 }}>Decimal Operations Worksheet</h2>
-        <p style={{ color: "var(--text2)", fontSize: 14, marginBottom: 20 }}>
+        <p style={{ color: "var(--text2)", fontSize: 20, marginBottom: 20 }}>
           20 questions covering decimal multiplication, fraction-to-decimal conversion, decimal division, and order of operations.
         </p>
         <div style={{ marginBottom: 14 }}>
-          <label style={{ fontSize: 13, fontWeight: 600, color: "var(--text2)", display: "block", marginBottom: 6 }}>Class</label>
-          <select value={selectedClass} onChange={e => setSelectedClass(e.target.value)} style={{ width: "100%", padding: "10px 12px", fontSize: 14 }}>
+          <label style={{ fontSize: 20, fontWeight: 600, color: "var(--text2)", display: "block", marginBottom: 6 }}>Class</label>
+          <select value={selectedClass} onChange={e => setSelectedClass(e.target.value)} style={{ width: "100%", padding: "10px 12px", fontSize: 20 }}>
             <option value="">Select a class...</option>
             {classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
           </select>
         </div>
         <div style={{ marginBottom: 20 }}>
-          <label style={{ fontSize: 13, fontWeight: 600, color: "var(--text2)", display: "block", marginBottom: 6 }}>Default time per question (seconds)</label>
+          <label style={{ fontSize: 20, fontWeight: 600, color: "var(--text2)", display: "block", marginBottom: 6 }}>Default time per question (seconds)</label>
           <input type="number" min={30} max={300} value={timer}
             onChange={e => setTimer(Number(e.target.value))}
-            style={{ width: "100%", padding: "10px 12px", fontSize: 14 }} />
+            style={{ width: "100%", padding: "10px 12px", fontSize: 20 }} />
         </div>
-        <div style={{ background: "var(--bg2)", borderRadius: "var(--radius-sm)", padding: "12px 14px", marginBottom: 20, fontSize: 13, color: "var(--text2)" }}>
+        <div style={{ background: "var(--bg2)", borderRadius: "var(--radius-sm)", padding: "12px 14px", marginBottom: 20, fontSize: 20, color: "var(--text2)" }}>
           <strong>20 questions - {TOTAL_POINTS} points total</strong><br />
           Decimal multiplication - Fraction to decimal - Decimal division - Order of operations
         </div>
@@ -696,7 +696,7 @@ function CreateWorksheetSession({ user, onCreated }) {
   );
 }
 
-// ─── Main Export ──────────────────────────────────────────────────
+// â”€â”€â”€ Main Export â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export default function WorksheetSession({ user, onHome }) {
   const [view, setView] = useState("create");
   const [sessionId, setSessionId] = useState(null);
@@ -713,10 +713,10 @@ export default function WorksheetSession({ user, onHome }) {
       <div style={{ maxWidth: 1100, margin: "0 auto" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 32, flexWrap: "wrap", gap: 12 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <div style={{ width: 40, height: 40, borderRadius: 12, background: "linear-gradient(135deg,var(--blue),var(--cyan))", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, fontWeight: 800, color: "#fff" }}>WS</div>
+            <div style={{ width: 40, height: 40, borderRadius: 12, background: "linear-gradient(135deg,var(--blue),var(--cyan))", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, fontWeight: 800, color: "#fff" }}>WS</div>
             <div>
               <div style={{ fontWeight: 800, fontSize: 20 }}>GCA</div>
-              <div style={{ color: "var(--text3)", fontSize: 12 }}>Decimal Operations Session</div>
+              <div style={{ color: "var(--text3)", fontSize: 19 }}>Decimal Operations Session</div>
             </div>
           </div>
           <button className="btn btn-ghost btn-sm" onClick={onHome}>Back to Home</button>
@@ -737,3 +737,4 @@ export default function WorksheetSession({ user, onHome }) {
 }
 
 export { TeacherWorksheet as WorksheetTeacherView, StudentWorksheet as WorksheetStudentView };
+

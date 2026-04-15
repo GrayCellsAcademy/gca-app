@@ -1,11 +1,11 @@
-import { useState, useEffect, useRef } from "react";
+﻿import { useState, useEffect, useRef } from "react";
 import { saveProgress, getProgress } from "./core/firebase";
 import { genLevel1Problem, genLevel2Problem, genLevel3Problem, getAnswer } from "./columnAddition";
 
 export const COLUMN_ADDITION_TOPIC_ID = "column-addition-v1";
 const TOTAL_LEVELS = 3;
 
-// ─── Speak ────────────────────────────────────────────────────────
+// â”€â”€â”€ Speak â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function speak(text) {
   if (!window.speechSynthesis) return;
   window.speechSynthesis.cancel();
@@ -18,9 +18,9 @@ function speak(text) {
   window.speechSynthesis.speak(utter);
 }
 
-// ─── Visual Column Panel (used in lesson) ─────────────────────────
+// â”€â”€â”€ Visual Column Panel (used in lesson) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // partialAnswer: digits filled in from the right, e.g. [2] means ones=2, tens=blank
-// carryAbove: { colFromRight: digit } — carry digits shown above that column
+// carryAbove: { colFromRight: digit } â€” carry digits shown above that column
 function VisualColumnProblem({ numbers, highlightCol, showAnswer, partialAnswer, carryAbove, label, labelColor }) {
   const maxLen = Math.max(...numbers.map(n => String(n).length));
   const padded = numbers.map(n => String(n).padStart(maxLen, " "));
@@ -45,7 +45,7 @@ function VisualColumnProblem({ numbers, highlightCol, showAnswer, partialAnswer,
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
       {label && (
-        <div style={{ fontSize: 11, fontWeight: 700, color: labelColor || "var(--text3)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4, textAlign: "center" }}>
+        <div style={{ fontSize: 20, fontWeight: 700, color: labelColor || "var(--text3)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4, textAlign: "center" }}>
           {label}
         </div>
       )}
@@ -69,7 +69,7 @@ function VisualColumnProblem({ numbers, highlightCol, showAnswer, partialAnswer,
             const colFromRight = maxLen - 1 - ci;
             const carryDigit = carryAbove?.[colFromRight];
             return (
-              <div key={ci} style={{ width: 34, height: 20, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 800, fontFamily: "var(--mono)", color: "var(--amber)" }}>
+              <div key={ci} style={{ width: 34, height: 20, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, fontWeight: 800, fontFamily: "var(--mono)", color: "var(--amber)" }}>
                 {carryDigit !== undefined ? carryDigit : ""}
               </div>
             );
@@ -105,7 +105,7 @@ function VisualColumnProblem({ numbers, highlightCol, showAnswer, partialAnswer,
               }
               return (
                 <div key={ci} style={{ width: 34, height: 38, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, fontWeight: 700, fontFamily: "var(--mono)", color: display !== "" ? color : "transparent" }}>
-                  {display !== "" ? display : "·"}
+                  {display !== "" ? display : "Â·"}
                 </div>
               );
             })}
@@ -116,39 +116,39 @@ function VisualColumnProblem({ numbers, highlightCol, showAnswer, partialAnswer,
   );
 }
 
-// ─── Lesson Screen ────────────────────────────────────────────────
+// â”€â”€â”€ Lesson Screen â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function LessonScreen({ level, onComplete, isReview }) {
   const examples = { 1: [47, 31], 2: [47, 35], 3: [129, 84, 37] };
   const nums = examples[level];
 
   const titles = {
-    1: "Column Addition — No Carrying",
-    2: "Column Addition — With Carrying",
-    3: "Column Addition — Multiple Numbers",
+    1: "Column Addition â€” No Carrying",
+    2: "Column Addition â€” With Carrying",
+    3: "Column Addition â€” Multiple Numbers",
   };
 
   const voiceTexts = {
-    1: "Welcome to column addition! We line up numbers so that digits with the same place value are in the same column — ones under ones, tens under tens. Then we add each column right to left.",
+    1: "Welcome to column addition! We line up numbers so that digits with the same place value are in the same column â€” ones under ones, tens under tens. Then we add each column right to left.",
     2: "Now we tackle carrying. When a column adds up to 10 or more, write the ones digit in the answer and carry the tens digit to the top of the next column on the left.",
-    3: "Now we add three or more numbers at once. Same process — line up place values, add right to left. Column sums can be larger, so carries might be bigger than 1.",
+    3: "Now we add three or more numbers at once. Same process â€” line up place values, add right to left. Column sums can be larger, so carries might be bigger than 1.",
   };
 
   const panels = {
     1: [
       { label: "The numbers to add", labelColor: "var(--text2)", highlightCol: null, showAnswer: false, partialAnswer: null, carryAbove: null, caption: "We need to add 47 and 31. Line them up so place values match." },
-      { label: "Step 1 — Add the ones", labelColor: "var(--blue)", highlightCol: 0, showAnswer: false, partialAnswer: [8], carryAbove: null, caption: "Ones: 7 + 1 = 8. Write 8 in the answer." },
-      { label: "Step 2 — Add the tens", labelColor: "var(--cyan)", highlightCol: 1, showAnswer: true, partialAnswer: null, carryAbove: null, caption: "Tens: 4 + 3 = 7. Write 7. Final answer: 78." },
+      { label: "Step 1 â€” Add the ones", labelColor: "var(--blue)", highlightCol: 0, showAnswer: false, partialAnswer: [8], carryAbove: null, caption: "Ones: 7 + 1 = 8. Write 8 in the answer." },
+      { label: "Step 2 â€” Add the tens", labelColor: "var(--cyan)", highlightCol: 1, showAnswer: true, partialAnswer: null, carryAbove: null, caption: "Tens: 4 + 3 = 7. Write 7. Final answer: 78." },
     ],
     2: [
       { label: "Set up the problem", labelColor: "var(--text2)", highlightCol: null, showAnswer: false, partialAnswer: null, carryAbove: null, caption: "Line up 47 and 35 by place value." },
-      { label: "Step 1 — Ones: 7+5=12", labelColor: "var(--blue)", highlightCol: 0, showAnswer: false, partialAnswer: [2], carryAbove: { 1: 1 }, caption: "7 + 5 = 12. Write 2. Carry the 1 above the tens column." },
-      { label: "Step 2 — Tens: 1+4+3=8", labelColor: "var(--cyan)", highlightCol: 1, showAnswer: true, partialAnswer: null, carryAbove: { 1: 1 }, caption: "Add the carry! 1 + 4 + 3 = 8. Write 8. Answer: 82." },
+      { label: "Step 1 â€” Ones: 7+5=12", labelColor: "var(--blue)", highlightCol: 0, showAnswer: false, partialAnswer: [2], carryAbove: { 1: 1 }, caption: "7 + 5 = 12. Write 2. Carry the 1 above the tens column." },
+      { label: "Step 2 â€” Tens: 1+4+3=8", labelColor: "var(--cyan)", highlightCol: 1, showAnswer: true, partialAnswer: null, carryAbove: { 1: 1 }, caption: "Add the carry! 1 + 4 + 3 = 8. Write 8. Answer: 82." },
     ],
     3: [
       { label: "Three numbers lined up", labelColor: "var(--text2)", highlightCol: null, showAnswer: false, partialAnswer: null, carryAbove: null, caption: "Line up 129, 84, and 37. Shorter numbers get spaces to fill their place." },
-      { label: "Step 1 — Ones: 9+4+7=20", labelColor: "var(--blue)", highlightCol: 0, showAnswer: false, partialAnswer: [0], carryAbove: { 1: 2 }, caption: "9+4+7=20. Write 0 in ones. Carry 2 to tens." },
-      { label: "Step 2 — Tens: 2+2+8+3=15", labelColor: "var(--cyan)", highlightCol: 1, showAnswer: false, partialAnswer: [5, 0], carryAbove: { 1: 2, 2: 1 }, caption: "Add carry! 2+2+8+3=15. Write 5 in tens. Carry 1 to hundreds." },
-      { label: "Step 3 — Hundreds: 1+1=2", labelColor: "var(--green)", highlightCol: 2, showAnswer: true, partialAnswer: null, carryAbove: { 2: 1 }, caption: "Add carry! 1+1=2. Write 2 in hundreds. Final answer: 250." },
+      { label: "Step 1 â€” Ones: 9+4+7=20", labelColor: "var(--blue)", highlightCol: 0, showAnswer: false, partialAnswer: [0], carryAbove: { 1: 2 }, caption: "9+4+7=20. Write 0 in ones. Carry 2 to tens." },
+      { label: "Step 2 â€” Tens: 2+2+8+3=15", labelColor: "var(--cyan)", highlightCol: 1, showAnswer: false, partialAnswer: [5, 0], carryAbove: { 1: 2, 2: 1 }, caption: "Add carry! 2+2+8+3=15. Write 5 in tens. Carry 1 to hundreds." },
+      { label: "Step 3 â€” Hundreds: 1+1=2", labelColor: "var(--green)", highlightCol: 2, showAnswer: true, partialAnswer: null, carryAbove: { 2: 1 }, caption: "Add carry! 1+1=2. Write 2 in hundreds. Final answer: 250." },
     ],
   };
 
@@ -162,10 +162,10 @@ function LessonScreen({ level, onComplete, isReview }) {
     <div style={{ maxWidth: panelCount === 4 ? 1200 : 960, margin: "0 auto", animation: "fadeUp 0.4s ease" }}>
       <div className="card">
         <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 24 }}>
-          <div style={{ fontSize: 34 }}>📐</div>
+          <div style={{ fontSize: 34 }}>ðŸ“</div>
           <div>
             <h2 style={{ fontSize: 22, fontWeight: 800, marginBottom: 4 }}>{titles[level]}</h2>
-            <p style={{ color: "var(--text2)", fontSize: 14 }}>Level {level} of {TOTAL_LEVELS} — study the steps below</p>
+            <p style={{ color: "var(--text2)", fontSize: 20 }}>Level {level} of {TOTAL_LEVELS} â€” study the steps below</p>
           </div>
         </div>
 
@@ -185,7 +185,7 @@ function LessonScreen({ level, onComplete, isReview }) {
                 label={panel.label}
                 labelColor={panel.labelColor}
               />
-              <p style={{ fontSize: 12, color: panel.labelColor === "var(--text2)" ? "var(--text3)" : panel.labelColor, textAlign: "center", lineHeight: 1.6, margin: 0 }}>
+              <p style={{ fontSize: 19, color: panel.labelColor === "var(--text2)" ? "var(--text3)" : panel.labelColor, textAlign: "center", lineHeight: 1.6, margin: 0 }}>
                 {panel.caption}
               </p>
             </div>
@@ -194,11 +194,11 @@ function LessonScreen({ level, onComplete, isReview }) {
 
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
           <button onClick={() => speak(voiceTexts[level])}
-            style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 16px", borderRadius: 99, border: "1.5px solid var(--blue)", background: "transparent", color: "var(--blue)", fontFamily: "var(--font)", fontWeight: 600, fontSize: 14, cursor: "pointer" }}>
-            🔊 Hear explanation
+            style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 16px", borderRadius: 99, border: "1.5px solid var(--blue)", background: "transparent", color: "var(--blue)", fontFamily: "var(--font)", fontWeight: 600, fontSize: 20, cursor: "pointer" }}>
+            ðŸ”Š Hear explanation
           </button>
           <button className="btn btn-primary btn-lg" onClick={onComplete}>
-            {isReview ? "← Back to Practice" : `Start Level ${level} Practice →`}
+            {isReview ? "â† Back to Practice" : `Start Level ${level} Practice â†’`}
           </button>
         </div>
       </div>
@@ -206,7 +206,7 @@ function LessonScreen({ level, onComplete, isReview }) {
   );
 }
 
-// ─── Practice Screen ──────────────────────────────────────────────
+// â”€â”€â”€ Practice Screen â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function PracticeScreen({ level, onComplete, onReviewLesson, onHome }) {
   const phases = level === 1
     ? [{ digits: 2, target: 2 }, { digits: 3, target: 2 }]
@@ -272,22 +272,22 @@ function PracticeScreen({ level, onComplete, onReviewLesson, onHome }) {
     <div style={{ maxWidth: 520, margin: "0 auto", animation: "fadeUp 0.3s ease" }}>
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16, gap: 8, flexWrap: "wrap" }}>
-        <div style={{ background: "rgba(59,130,246,0.15)", border: "1px solid rgba(59,130,246,0.3)", borderRadius: 99, padding: "5px 14px", fontSize: 14, fontWeight: 700, color: "var(--blue)" }}>
-          Level {level} — {phaseLabel}
+        <div style={{ background: "rgba(59,130,246,0.15)", border: "1px solid rgba(59,130,246,0.3)", borderRadius: 99, padding: "5px 14px", fontSize: 20, fontWeight: 700, color: "var(--blue)" }}>
+          Level {level} â€” {phaseLabel}
         </div>
         <div style={{ display: "flex", gap: 8 }}>
-          <button className="btn btn-ghost btn-sm" style={{ fontSize: 13 }} onClick={() => { window.speechSynthesis?.cancel(); onReviewLesson(); }}>📖 Review Lesson</button>
-          <button className="btn btn-ghost btn-sm" style={{ fontSize: 13 }} onClick={onHome}>← Home</button>
+          <button className="btn btn-ghost btn-sm" style={{ fontSize: 20 }} onClick={() => { window.speechSynthesis?.cancel(); onReviewLesson(); }}>ðŸ“– Review Lesson</button>
+          <button className="btn btn-ghost btn-sm" style={{ fontSize: 20 }} onClick={onHome}>â† Home</button>
         </div>
       </div>
 
       {/* Streak */}
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
-        <span style={{ fontSize: 13, color: "var(--text3)" }}>Streak:</span>
+        <span style={{ fontSize: 20, color: "var(--text3)" }}>Streak:</span>
         {Array.from({ length: phase.target }).map((_, i) => (
           <div key={i} style={{ width: 12, height: 12, borderRadius: "50%", background: i < streak ? "var(--green)" : "var(--surface2)", border: `2px solid ${i < streak ? "var(--green)" : "var(--border2)"}`, transition: "all 0.2s" }} />
         ))}
-        <span style={{ fontSize: 13, color: "var(--text3)", marginLeft: 4 }}>{streak}/{phase.target} correct in a row</span>
+        <span style={{ fontSize: 20, color: "var(--text3)", marginLeft: 4 }}>{streak}/{phase.target} correct in a row</span>
       </div>
 
       <div className="card" style={{ textAlign: "center" }}>
@@ -295,7 +295,7 @@ function PracticeScreen({ level, onComplete, onReviewLesson, onHome }) {
         <div style={{ display: "inline-block", background: "var(--bg2)", borderRadius: "var(--radius)", padding: "18px 24px", marginBottom: 24 }}>
           {padded.map((row, ri) => (
             <div key={ri} style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 2 }}>
-              <div style={{ width: 28, textAlign: "right", fontSize: 24, color: "var(--text3)", fontFamily: "var(--mono)", paddingRight: 4 }}>
+              <div style={{ width: 28, textAlign: "right", fontSize: 28, color: "var(--text3)", fontFamily: "var(--mono)", paddingRight: 4 }}>
                 {ri === padded.length - 1 ? "+" : ""}
               </div>
               {row.split("").map((ch, ci) => (
@@ -310,20 +310,20 @@ function PracticeScreen({ level, onComplete, onReviewLesson, onHome }) {
 
         {wrong !== null ? (
           <div style={{ animation: "popIn 0.25s ease" }}>
-            <div style={{ fontSize: 15, fontWeight: 700, color: "#fca5a5", marginBottom: 8 }}>Not quite!</div>
-            <div style={{ fontSize: 18, color: "var(--text2)", marginBottom: 4 }}>The correct answer is</div>
+            <div style={{ fontSize: 19, fontWeight: 700, color: "#fca5a5", marginBottom: 8 }}>Not quite!</div>
+            <div style={{ fontSize: 20, color: "var(--text2)", marginBottom: 4 }}>The correct answer is</div>
             <div style={{ fontFamily: "var(--mono)", fontSize: 48, fontWeight: 800, color: "var(--green)", marginBottom: 20 }}>
               {wrong}
             </div>
-            <button className="btn btn-success" style={{ width: "100%", fontSize: 16, padding: "13px" }}
+            <button className="btn btn-success" style={{ width: "100%", fontSize: 20, padding: "13px" }}
               onMouseDown={e => { e.preventDefault(); handleWrongNext(); }}
               onTouchEnd={e => { e.preventDefault(); handleWrongNext(); }}>
-              Got it — next problem →
+              Got it â€” next problem â†’
             </button>
           </div>
         ) : (
           <>
-            <p style={{ color: "var(--text2)", fontSize: 16, marginBottom: 14, fontWeight: 600 }}>
+            <p style={{ color: "var(--text2)", fontSize: 20, marginBottom: 14, fontWeight: 600 }}>
               What is the sum?
             </p>
             <input
@@ -333,12 +333,12 @@ function PracticeScreen({ level, onComplete, onReviewLesson, onHome }) {
               onKeyDown={e => e.key === "Enter" && handleSubmit()}
               inputMode="numeric"
               placeholder="?"
-              style={{ textAlign: "center", fontSize: 32, fontFamily: "var(--mono)", fontWeight: 700, padding: "12px", marginBottom: 12 }}
+              style={{ textAlign: "center", fontSize: 34, fontFamily: "var(--mono)", fontWeight: 700, padding: "12px", marginBottom: 12 }}
             />
-            <button className="btn btn-primary" style={{ width: "100%", fontSize: 18, padding: "14px" }}
+            <button className="btn btn-primary" style={{ width: "100%", fontSize: 20, padding: "14px" }}
               onMouseDown={e => { e.preventDefault(); handleSubmit(); }}
               onTouchEnd={e => { e.preventDefault(); handleSubmit(); }}>
-              Submit ✓
+              Submit âœ“
             </button>
           </>
         )}
@@ -347,11 +347,11 @@ function PracticeScreen({ level, onComplete, onReviewLesson, onHome }) {
   );
 }
 
-// ─── Celebration ──────────────────────────────────────────────────
+// â”€â”€â”€ Celebration â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function CelebrationScreen({ level, isLast, onContinue }) {
   const msg = isLast
     ? "Outstanding! You have mastered all three levels of column addition!"
-    : `Level ${level} complete! Great work — on to level ${level + 1}!`;
+    : `Level ${level} complete! Great work â€” on to level ${level + 1}!`;
   useEffect(() => {
     const t = setTimeout(() => speak(msg), 400);
     return () => { clearTimeout(t); window.speechSynthesis?.cancel(); };
@@ -359,22 +359,22 @@ function CelebrationScreen({ level, isLast, onContinue }) {
   return (
     <div style={{ maxWidth: 520, margin: "0 auto", textAlign: "center", animation: "fadeUp 0.4s ease" }}>
       <div className="card">
-        <div style={{ fontSize: 64, marginBottom: 16 }}>{isLast ? "🏆" : "⭐"}</div>
-        <h2 style={{ fontSize: 26, fontWeight: 800, marginBottom: 8 }}>
+        <div style={{ fontSize: 64, marginBottom: 16 }}>{isLast ? "ðŸ†" : "â­"}</div>
+        <h2 style={{ fontSize: 28, fontWeight: 800, marginBottom: 8 }}>
           {isLast ? "Column Addition Mastered!" : `Level ${level} Complete!`}
         </h2>
-        <p style={{ color: "var(--text2)", fontSize: 15, marginBottom: 24 }}>
+        <p style={{ color: "var(--text2)", fontSize: 19, marginBottom: 24 }}>
           {isLast ? "You can now add any multi-digit numbers using column addition." : `Ready for Level ${level + 1}?`}
         </p>
         <button className="btn btn-primary btn-lg" style={{ width: "100%" }} onClick={onContinue}>
-          {isLast ? "🏆 View My Progress" : `Start Level ${level + 1} →`}
+          {isLast ? "ðŸ† View My Progress" : `Start Level ${level + 1} â†’`}
         </button>
       </div>
     </div>
   );
 }
 
-// ─── Main Player ──────────────────────────────────────────────────
+// â”€â”€â”€ Main Player â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export default function ColumnAdditionPlayer({ user, topic, onHome }) {
   const [screen, setScreen] = useState("loading");
   const [currentLevel, setCurrentLevel] = useState(1);
@@ -434,3 +434,4 @@ export default function ColumnAdditionPlayer({ user, topic, onHome }) {
   );
   return null;
 }
+

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import { saveProgress, getProgress } from "./core/firebase";
 import { EC_TOPICS, generateExtraCreditProblem, buildProblemDisplay, gradeAllMissing } from "./extraCredit01";
 
@@ -47,7 +47,7 @@ function MissingDigitProblem({ display, activeCellKey, enteredDigits, phase, onC
     <div style={{ display: "inline-block", background: "var(--bg2)", borderRadius: "var(--radius)", padding: "20px 28px" }}>
       {rows.map((row, ri) => (
         <div key={ri} style={{ display: "flex", alignItems: "center", gap: 2, marginBottom: 4 }}>
-          <div style={{ width: 32, textAlign: "right", fontSize: 24, color: "var(--text3)", paddingRight: 6 }}>
+          <div style={{ width: 32, textAlign: "right", fontSize: 28, color: "var(--text3)", paddingRight: 6 }}>
             {ri === rows.length - 1 ? (isAdd ? "+" : "-") : ""}
           </div>
           {row.map(cell => renderCell(cell))}
@@ -66,7 +66,7 @@ function MissingDigitProblem({ display, activeCellKey, enteredDigits, phase, onC
 function Keypad({ onDigit, disabled }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 6, alignItems: "center" }}>
-      <div style={{ fontSize: 12, color: "var(--text3)", marginBottom: 4 }}>
+      <div style={{ fontSize: 19, color: "var(--text3)", marginBottom: 4 }}>
         Click a digit or press a number key
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 6 }}>
@@ -91,7 +91,7 @@ function Keypad({ onDigit, disabled }) {
 function StreakBar({ streak, needed }) {
   return (
     <div style={{ marginBottom: 16 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: "var(--text3)", marginBottom: 6 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 20, color: "var(--text3)", marginBottom: 6 }}>
         <span>Streak: {streak}/{needed}</span>
         <span>Type {(streak % EC_TOPICS.length) + 1} of 6</span>
       </div>
@@ -236,8 +236,8 @@ export default function ExtraCredit01Player({ user, topic, onHome }) {
     <div style={{ maxWidth: 520, margin: "0 auto", textAlign: "center" }}>
       <div className="card">
         <div style={{ fontSize: 48, marginBottom: 16 }}>*</div>
-        <h2 style={{ fontSize: 26, fontWeight: 800, marginBottom: 8 }}>Extra Credit Complete!</h2>
-        <p style={{ color: "var(--text2)", fontSize: 15, marginBottom: 24 }}>
+        <h2 style={{ fontSize: 28, fontWeight: 800, marginBottom: 8 }}>Extra Credit Complete!</h2>
+        <p style={{ color: "var(--text2)", fontSize: 19, marginBottom: 24 }}>
           You got 6 consecutive missing digit problems correct - one of each type!
         </p>
         <button className="btn btn-primary btn-lg" style={{ width: "100%" }} onClick={onHome}>Back to Home</button>
@@ -259,8 +259,8 @@ export default function ExtraCredit01Player({ user, topic, onHome }) {
     <div style={{ maxWidth: 640, margin: "0 auto" }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
         <div>
-          <div style={{ fontSize: 13, color: "var(--amber)", fontWeight: 700, marginBottom: 2 }}>Extra Credit</div>
-          <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text2)" }}>{currentTopicLabel}</div>
+          <div style={{ fontSize: 20, color: "var(--amber)", fontWeight: 700, marginBottom: 2 }}>Extra Credit</div>
+          <div style={{ fontSize: 20, fontWeight: 700, color: "var(--text2)" }}>{currentTopicLabel}</div>
         </div>
         <button className="btn btn-ghost btn-sm" onClick={onHome}>Back to Home</button>
       </div>
@@ -268,7 +268,7 @@ export default function ExtraCredit01Player({ user, topic, onHome }) {
       <StreakBar streak={streak} needed={STREAK_NEEDED} />
 
       <div className="card">
-        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: "var(--text3)", marginBottom: 16 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 20, color: "var(--text3)", marginBottom: 16 }}>
           <span>Fill in all missing digits ({filledCount}/{totalMissing} filled)</span>
           <span>{totalMissing} blank{totalMissing !== 1 ? "s" : ""} in this problem</span>
         </div>
@@ -294,17 +294,17 @@ export default function ExtraCredit01Player({ user, topic, onHome }) {
           </div>
         ) : phase === "wrong" ? (
           <div style={{ textAlign: "center" }}>
-            <div style={{ fontSize: 16, fontWeight: 700, color: "var(--red)", marginBottom: 4 }}>
+            <div style={{ fontSize: 20, fontWeight: 700, color: "var(--red)", marginBottom: 4 }}>
               Not quite! The correct digits are shown in green above.
             </div>
-            <div style={{ fontSize: 13, color: "var(--text3)", marginBottom: 16 }}>
+            <div style={{ fontSize: 20, color: "var(--text3)", marginBottom: 16 }}>
               Streak reset - back to type 1
             </div>
             <button className="btn btn-primary" onClick={handleWrongContinue}>Try again from the start</button>
           </div>
         ) : (
           <>
-            <div style={{ fontSize: 14, color: "var(--text2)", textAlign: "center", marginBottom: 12 }}>
+            <div style={{ fontSize: 20, color: "var(--text2)", textAlign: "center", marginBottom: 12 }}>
               {filledCount < totalMissing
                 ? "Click any blank to select it, then enter a digit"
                 : "All blanks filled - checking..."}
@@ -314,9 +314,10 @@ export default function ExtraCredit01Player({ user, topic, onHome }) {
         )}
       </div>
 
-      <div style={{ marginTop: 12, fontSize: 12, color: "var(--text3)", textAlign: "center" }}>
+      <div style={{ marginTop: 12, fontSize: 19, color: "var(--text3)", textAlign: "center" }}>
         Click any blank cell or press number keys. Get all 6 types correct in a row to earn extra credit.
       </div>
     </div>
   );
 }
+
