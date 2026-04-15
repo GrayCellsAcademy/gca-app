@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+﻿import { useState, useEffect, useRef } from "react";
 import { saveProgress, getProgress } from "./core/firebase";
 import { genLevel1Problem, genLevel2Problem, genLevel3Problem, getAnswer } from "./columnAddition";
 
@@ -242,8 +242,8 @@ function PracticeScreen({ level, onComplete, onReviewLesson, onHome }) {
   const padded = problem.numbers.map(n => String(n).padStart(maxLen, " "));
   const correctAnswer = getAnswer(problem.numbers);
   const phaseLabel = phase.multi
-    ? `${problem.numbers.length} numbers, ${problem.numbers[0].toString().length} digits each`
-    : `${phase.digits}-digit numbers`;
+  const phaseLabel = phase.multi
+    ? `Level ${level} -- ${problem.numbers.length} numbers, ${problem.numbers[0].toString().length} digits each`
 
   const handleSubmit = () => {
     const val = parseInt(input.trim(), 10);
