@@ -1,4 +1,4 @@
-//  Worksheet Questions  Decimals Session 
+﻿//  Worksheet Questions  Decimals Session 
 // Exact questions from the worksheet, pre-computed answers
 
 export const WORKSHEET_QUESTIONS = [
@@ -238,7 +238,7 @@ export function gradeDecimalAnswer(studentAnswer, question) {
   if (!studentAnswer) return false;
   const cleaned = studentAnswer.trim().toLowerCase()
     .replace(/\s/g, '')
-    .replace(//g, '...');
+    .replace(/[^\x20-\x7E]/g, '');
 
   // Check all accepted answers
   for (const accepted of question.altAnswers) {
