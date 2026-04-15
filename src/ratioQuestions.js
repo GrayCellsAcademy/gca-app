@@ -1,4 +1,4 @@
-//  Ratio & Proportion Question Generators 
+﻿//  Ratio & Proportion Question Generators 
 
 function gcd(a, b) {
   a = Math.abs(a); b = Math.abs(b);
@@ -213,8 +213,8 @@ function getAllEquivalentProportions(a, b, c, d) {
 function normalizeProportionInput(str) {
   return str.toLowerCase()
     .replace(/\s/g, '')
-    .replace(//g, '/')
-    .replace(//g, '*');
+    
+    ;
 }
 
 export function genWriteProportion() {
@@ -393,3 +393,4 @@ export function generateQuestion(type) {
     default: return genSimplifyRatio();
   }
 }
+
