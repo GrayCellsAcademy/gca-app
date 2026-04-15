@@ -1,4 +1,4 @@
-// ─── Topic Registry ───────────────────────────────────────────────
+//  Topic Registry 
 import AdditionTablesPlayer from "./AdditionTablesPlayer";
 import ColumnAdditionPlayer from "./ColumnAdditionPlayer";
 import Lesson01MasteryPlayer from "./Lesson01MasteryPlayer";
@@ -8,10 +8,10 @@ export const TOPICS = {
   "addition-tables-v1": {
     id: "addition-tables-v1",
     title: "Addition Tables",
-    description: "Master single-digit addition mentally and quickly — the foundation of all arithmetic.",
+    description: "Master single-digit addition mentally and quickly  the foundation of all arithmetic.",
     subject: "math",
     gradeLevel: "6+",
-    icon: "➕",
+    icon: "",
     type: "drill",
     status: "published",
     order: 1,
@@ -20,10 +20,10 @@ export const TOPICS = {
   "column-addition-v1": {
     id: "column-addition-v1",
     title: "Column Addition",
-    description: "Learn to add multi-digit numbers using column addition — with and without carrying.",
+    description: "Learn to add multi-digit numbers using column addition  with and without carrying.",
     subject: "math",
     gradeLevel: "6+",
-    icon: "📐",
+    icon: "",
     type: "guided-practice",
     status: "published",
     order: 2,
@@ -32,10 +32,10 @@ export const TOPICS = {
   "lesson01-mastery-v1": {
     id: "lesson01-mastery-v1",
     title: "Column Addition & Subtraction Mastery",
-    description: "Master column addition and subtraction across 6 difficulty levels — no carrying to borrowing from zero.",
+    description: "Master column addition and subtraction across 6 difficulty levels  no carrying to borrowing from zero.",
     subject: "math",
     gradeLevel: "6+",
-    icon: "🔢",
+    icon: "",
     type: "mastery",
     status: "published",
     order: 3,
@@ -47,7 +47,7 @@ export const TOPICS = {
     description: "Find the missing digit in column addition and subtraction problems. Get all 6 types correct in a row.",
     subject: "math",
     gradeLevel: "6+",
-    icon: "⭐",
+    icon: "",
     type: "extra-credit",
     status: "published",
     order: 4,

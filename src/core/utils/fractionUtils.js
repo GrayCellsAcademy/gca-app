@@ -1,4 +1,4 @@
-// ─── Fraction Utilities ───────────────────────────────────────────
+//  Fraction Utilities 
 
 function gcd(a, b) {
   a = Math.abs(a); b = Math.abs(b);

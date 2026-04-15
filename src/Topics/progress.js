@@ -1,4 +1,4 @@
-// ─── Universal Progress Schema ────────────────────────────────────
+//  Universal Progress Schema 
 // Every topic stores progress using this shape in Firestore:
 // {
 //   uid:             string,
@@ -22,7 +22,7 @@ export async function loadTopicProgress(uid, topicId) {
   return await getProgress(uid, topicId);
 }
 
-// Save progress — topic passes its own data, we wrap it
+// Save progress  topic passes its own data, we wrap it
 export async function saveTopicProgress(uid, topicId, {
   completed = false,
   percentComplete = 0,

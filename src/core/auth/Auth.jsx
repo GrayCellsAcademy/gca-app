@@ -57,7 +57,7 @@ export default function Auth({ onAuth }) {
             width:56,height:56,borderRadius:16,
             background:"linear-gradient(135deg,var(--blue),var(--cyan))",
             fontSize:26,marginBottom:14,boxShadow:"0 8px 24px rgba(59,130,246,0.4)"
-          }}>🎓</div>
+          }}></div>
           <h1 style={{fontSize:28,fontWeight:800,letterSpacing:"-0.5px",marginBottom:4}}>
             GCA
           </h1>
@@ -109,10 +109,10 @@ export default function Auth({ onAuth }) {
               <>
                 <div style={{marginTop:4}}>
                   <div style={{fontSize:13,color:"var(--text2)",marginBottom:10,fontWeight:600}}>
-                    I am a…
+                    I am a
                   </div>
                   <div style={{display:"flex",gap:8}}>
-                    {[["student","🎒 Student"],["teacher","📋 Teacher"],["developer","⚙️ Developer"]].map(([r,label])=>(
+                    {[["student"," Student"],["teacher"," Teacher"],["developer"," Developer"]].map(([r,label])=>(
                       <button key={r} onClick={()=>setRole(r)}
                         style={{
                           flex:1,padding:"10px 6px",borderRadius:"var(--radius-sm)",
@@ -138,7 +138,7 @@ export default function Auth({ onAuth }) {
             <button onClick={submit} disabled={working}
               className="btn btn-primary btn-lg"
               style={{marginTop:8,opacity:working?0.7:1,width:"100%"}}>
-              {working ? "Please wait…" : mode==="login" ? "Log In →" : "Create Account →"}
+              {working ? "Please wait" : mode==="login" ? "Log In " : "Create Account "}
             </button>
           </div>
 

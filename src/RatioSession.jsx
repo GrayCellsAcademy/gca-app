@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { setDoc, doc, updateDoc } from "firebase/firestore";
 import {
   createClassworkSession, joinSession, pushGeneratedQuestion,
@@ -12,7 +12,7 @@ import {
 
 const POINTS_PER_QUESTION = 5;
 
-// â”€â”€â”€ Work Display â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+//  Work Display 
 function WorkDisplay({ question }) {
   if (!question) return null;
   const lines = (question.work || "").split('\n');
@@ -22,7 +22,7 @@ function WorkDisplay({ question }) {
       <div style={{ marginTop: 12, background: "rgba(16,185,129,0.08)", border: "1px solid rgba(16,185,129,0.2)", borderRadius: "var(--radius-sm)", padding: "12px 16px" }}>
         <div style={{ fontSize: 20, color: "var(--text3)", marginBottom: 6 }}>How to simplify:</div>
         <div style={{ fontFamily: "var(--mono)", fontSize: 20, fontWeight: 700 }}>
-          {question.a}:{question.b} <span style={{ color: "var(--red)" }}>Ã· {question.gcf}</span> = <span style={{ color: "var(--green)" }}>{question.answer}</span>
+          {question.a}:{question.b} <span style={{ color: "var(--red)" }}> {question.gcf}</span> = <span style={{ color: "var(--green)" }}>{question.answer}</span>
         </div>
         <div style={{ fontSize: 20, color: "var(--text3)", marginTop: 6 }}>GCF of {question.a} and {question.b} = {question.gcf}</div>
       </div>
@@ -72,7 +72,7 @@ function WorkDisplay({ question }) {
   return null;
 }
 
-// â”€â”€â”€ Timer Bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+//  Timer Bar 
 function TimerBar({ endsAt, totalSeconds, onExpired }) {
   const [remaining, setRemaining] = useState(totalSeconds);
   const expiredRef = useRef(false);
@@ -106,7 +106,7 @@ function TimerBar({ endsAt, totalSeconds, onExpired }) {
 }
 
 
-// â”€â”€â”€ Fraction Display â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+//  Fraction Display 
 function AlgebraicDisplay({ prompt }) {
   // Parse "a/(bx+c) = d/(ex+f)" into fraction display
   const match = prompt.match(/^(.+)\/\((.+)\)\s*=\s*(.+)\/\((.+)\)$/);
@@ -130,7 +130,7 @@ function AlgebraicDisplay({ prompt }) {
   );
 }
 
-// â”€â”€â”€ Teacher View â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+//  Teacher View 
 function TeacherRatio({ session, sessionId, uid }) {
   const [answers, setAnswers] = useState([]);
   const [timerInput, setTimerInput] = useState(90);
@@ -265,7 +265,7 @@ function TeacherRatio({ session, sessionId, uid }) {
                   cursor: "pointer", textAlign: "left", fontFamily: "var(--font)",
                 }}>
                 <div style={{ fontWeight: 700, fontSize: 20, color: isActive ? "var(--blue)" : isDone ? "var(--green)" : "var(--text)" }}>
-                  {isDone ? "âœ“ " : isActive ? "â–¶ " : `${i+1}. `}{t.label}
+                  {isDone ? " " : isActive ? " " : `${i+1}. `}{t.label}
                 </div>
                 <div style={{ fontSize: 20, color: "var(--text3)", marginTop: 2 }}>{t.description}</div>
               </button>
@@ -378,7 +378,7 @@ function TeacherRatio({ session, sessionId, uid }) {
   );
 }
 
-// â”€â”€â”€ Student View â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+//  Student View 
 function StudentRatio({ session, sessionId, uid }) {
   const [input, setInput] = useState("");
   const [submitted, setSubmitted] = useState(false);
@@ -528,7 +528,7 @@ function StudentRatio({ session, sessionId, uid }) {
   );
 }
 
-// â”€â”€â”€ Create Session â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+//  Create Session 
 function CreateRatioSession({ user, onCreated }) {
   const [classes, setClasses] = useState([]);
   const [selectedClass, setSelectedClass] = useState("");
@@ -577,7 +577,7 @@ function CreateRatioSession({ user, onCreated }) {
   );
 }
 
-// â”€â”€â”€ Main Export â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+//  Main Export 
 export default function RatioSession({ user, onHome }) {
   const [view, setView] = useState("create");
   const [sessionId, setSessionId] = useState(null);

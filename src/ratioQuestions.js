@@ -1,4 +1,4 @@
-// ─── Ratio & Proportion Question Generators ───────────────────────
+//  Ratio & Proportion Question Generators 
 
 function gcd(a, b) {
   a = Math.abs(a); b = Math.abs(b);
@@ -10,7 +10,7 @@ function randInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-// ── Type 1: Simplify Ratio ────────────────────────────────────────
+//  Type 1: Simplify Ratio 
 export function genSimplifyRatio() {
   while (true) {
     const p = randInt(2, 20);
@@ -30,12 +30,12 @@ export function genSimplifyRatio() {
       a, b,
       answer: `${ansP}:${ansQ}`,
       gcf: g,
-      work: `${a}:${b} ÷ ${g} = ${ansP}:${ansQ}`,
+      work: `${a}:${b}  ${g} = ${ansP}:${ansQ}`,
     };
   }
 }
 
-// ── Type 2: Solve Proportion ──────────────────────────────────────
+//  Type 2: Solve Proportion 
 export function genSolveProportion() {
   while (true) {
     // a:b = c:d, one is unknown x
@@ -52,40 +52,40 @@ export function genSolveProportion() {
     let prompt, answer, work;
 
     if (pos === 0) {
-      // x:b = c:d → xd = bc → x = bc/d
+      // x:b = c:d  xd = bc  x = bc/d
       const ans = (b * c) / d;
       if (!Number.isInteger(ans) || ans < 2 || ans >= 100) continue;
       prompt = `x:${b} = ${c}:${d}`;
       answer = String(ans);
-      work = `${d}x = ${b}×${c}\n${d}x = ${b * c}\nx = ${ans}`;
+      work = `${d}x = ${b}${c}\n${d}x = ${b * c}\nx = ${ans}`;
     } else if (pos === 1) {
-      // a:x = c:d → ad = xc → x = ad/c
+      // a:x = c:d  ad = xc  x = ad/c
       const ans = (a * d) / c;
       if (!Number.isInteger(ans) || ans < 2 || ans >= 100) continue;
       prompt = `${a}:x = ${c}:${d}`;
       answer = String(ans);
-      work = `${a}×${d} = ${c}x\n${a * d} = ${c}x\nx = ${ans}`;
+      work = `${a}${d} = ${c}x\n${a * d} = ${c}x\nx = ${ans}`;
     } else if (pos === 2) {
-      // a:b = x:d → ad = bx → x = ad/b
+      // a:b = x:d  ad = bx  x = ad/b
       const ans = (a * d) / b;
       if (!Number.isInteger(ans) || ans < 2 || ans >= 100) continue;
       prompt = `${a}:${b} = x:${d}`;
       answer = String(ans);
-      work = `${a}×${d} = ${b}x\n${a * d} = ${b}x\nx = ${ans}`;
+      work = `${a}${d} = ${b}x\n${a * d} = ${b}x\nx = ${ans}`;
     } else {
-      // a:b = c:x → ax = bc → x = bc/a
+      // a:b = c:x  ax = bc  x = bc/a
       const ans = (b * c) / a;
       if (!Number.isInteger(ans) || ans < 2 || ans >= 100) continue;
       prompt = `${a}:${b} = ${c}:x`;
       answer = String(ans);
-      work = `${a}x = ${b}×${c}\n${a}x = ${b * c}\nx = ${ans}`;
+      work = `${a}x = ${b}${c}\n${a}x = ${b * c}\nx = ${ans}`;
     }
 
     return { type: "proportion", prompt, answer, work };
   }
 }
 
-// ── Type 3: Algebraic Proportion ─────────────────────────────────
+//  Type 3: Algebraic Proportion 
 // Form: a/(bx+c) = d/(ex+f)
 // Cross multiply: a(ex+f) = d(bx+c)
 // aex + af = dbx + dc
@@ -99,7 +99,7 @@ export function genAlgebraicProportion() {
     const d = randInt(2, 9);
     if (a === d) continue;
 
-    // bx+c and ex+f — keep coefficients small
+    // bx+c and ex+f  keep coefficients small
     const b = randInt(1, 4);
     const c = randInt(1, 9);
     const e = randInt(1, 4);
@@ -161,7 +161,7 @@ export function genAlgebraicProportion() {
   return genAlgebraicProportion(); // retry
 }
 
-// ── Type 4: Write the Proportion (word problems) ─────────────────
+//  Type 4: Write the Proportion (word problems) 
 const WRITE_PROPORTION_TEMPLATES = [
   {
     context: "A recipe uses {a} cups of sugar for every {b} cups of flour. If Mia wants to use {c} cups of flour, how many cups of sugar should she use? Write the proportion.",
@@ -213,8 +213,8 @@ function getAllEquivalentProportions(a, b, c, d) {
 function normalizeProportionInput(str) {
   return str.toLowerCase()
     .replace(/\s/g, '')
-    .replace(/÷/g, '/')
-    .replace(/×/g, '*');
+    .replace(//g, '/')
+    .replace(//g, '*');
 }
 
 export function genWriteProportion() {
@@ -266,7 +266,7 @@ export function gradeWriteProportion(studentInput, question) {
   return false;
 }
 
-// ── Type 5: Solve Word Problem ────────────────────────────────────
+//  Type 5: Solve Word Problem 
 const SOLVE_TEMPLATES = [
   {
     // a km per b hours, how many km in c hours? (c = b*mult, answer = a*mult)
@@ -334,7 +334,7 @@ export function genSolveWordProblem() {
       .replace('{b}', b)
       .replace('{c}', c);
 
-    // Proportion: a:b = x:c  →  bx = ac  →  x = ac/b = a*mult
+    // Proportion: a:b = x:c    bx = ac    x = ac/b = a*mult
     const proportion = `${a}:${b} = x:${c}`;
     const work = `${a}:${b} = x:${c}\n${b}x = ${a}*${c}\n${b}x = ${a * c}\nx = ${answer}`;
 
@@ -349,7 +349,7 @@ export function genSolveWordProblem() {
   }
 }
 
-// ── Grade helpers ─────────────────────────────────────────────────
+//  Grade helpers 
 export function gradeRatioAnswer(studentInput, question) {
   if (!studentInput) return false;
   const s = studentInput.trim().replace(/\s/g, '');

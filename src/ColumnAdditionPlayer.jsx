@@ -1,11 +1,11 @@
-﻿import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { saveProgress, getProgress } from "./core/firebase";
 import { genLevel1Problem, genLevel2Problem, genLevel3Problem, getAnswer } from "./columnAddition";
 
 export const COLUMN_ADDITION_TOPIC_ID = "column-addition-v1";
 const TOTAL_LEVELS = 3;
 
-// â”€â”€â”€ Speak â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+//  Speak 
 function speak(text) {
   if (!window.speechSynthesis) return;
   window.speechSynthesis.cancel();
@@ -18,9 +18,9 @@ function speak(text) {
   window.speechSynthesis.speak(utter);
 }
 
-// â”€â”€â”€ Visual Column Panel (used in lesson) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+//  Visual Column Panel (used in lesson) 
 // partialAnswer: digits filled in from the right, e.g. [2] means ones=2, tens=blank
-// carryAbove: { colFromRight: digit } â€” carry digits shown above that column
+// carryAbove: { colFromRight: digit }  carry digits shown above that column
 function VisualColumnProblem({ numbers, highlightCol, showAnswer, partialAnswer, carryAbove, label, labelColor }) {
   const maxLen = Math.max(...numbers.map(n => String(n).length));
   const padded = numbers.map(n => String(n).padStart(maxLen, " "));
@@ -105,7 +105,7 @@ function VisualColumnProblem({ numbers, highlightCol, showAnswer, partialAnswer,
               }
               return (
                 <div key={ci} style={{ width: 34, height: 38, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, fontWeight: 700, fontFamily: "var(--mono)", color: display !== "" ? color : "transparent" }}>
-                  {display !== "" ? display : "Â·"}
+                  {display !== "" ? display : ""}
                 </div>
               );
             })}
@@ -116,39 +116,39 @@ function VisualColumnProblem({ numbers, highlightCol, showAnswer, partialAnswer,
   );
 }
 
-// â”€â”€â”€ Lesson Screen â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+//  Lesson Screen 
 function LessonScreen({ level, onComplete, isReview }) {
   const examples = { 1: [47, 31], 2: [47, 35], 3: [129, 84, 37] };
   const nums = examples[level];
 
   const titles = {
-    1: "Column Addition â€” No Carrying",
-    2: "Column Addition â€” With Carrying",
-    3: "Column Addition â€” Multiple Numbers",
+    1: "Column Addition  No Carrying",
+    2: "Column Addition  With Carrying",
+    3: "Column Addition  Multiple Numbers",
   };
 
   const voiceTexts = {
-    1: "Welcome to column addition! We line up numbers so that digits with the same place value are in the same column â€” ones under ones, tens under tens. Then we add each column right to left.",
+    1: "Welcome to column addition! We line up numbers so that digits with the same place value are in the same column  ones under ones, tens under tens. Then we add each column right to left.",
     2: "Now we tackle carrying. When a column adds up to 10 or more, write the ones digit in the answer and carry the tens digit to the top of the next column on the left.",
-    3: "Now we add three or more numbers at once. Same process â€” line up place values, add right to left. Column sums can be larger, so carries might be bigger than 1.",
+    3: "Now we add three or more numbers at once. Same process  line up place values, add right to left. Column sums can be larger, so carries might be bigger than 1.",
   };
 
   const panels = {
     1: [
       { label: "The numbers to add", labelColor: "var(--text2)", highlightCol: null, showAnswer: false, partialAnswer: null, carryAbove: null, caption: "We need to add 47 and 31. Line them up so place values match." },
-      { label: "Step 1 â€” Add the ones", labelColor: "var(--blue)", highlightCol: 0, showAnswer: false, partialAnswer: [8], carryAbove: null, caption: "Ones: 7 + 1 = 8. Write 8 in the answer." },
-      { label: "Step 2 â€” Add the tens", labelColor: "var(--cyan)", highlightCol: 1, showAnswer: true, partialAnswer: null, carryAbove: null, caption: "Tens: 4 + 3 = 7. Write 7. Final answer: 78." },
+      { label: "Step 1  Add the ones", labelColor: "var(--blue)", highlightCol: 0, showAnswer: false, partialAnswer: [8], carryAbove: null, caption: "Ones: 7 + 1 = 8. Write 8 in the answer." },
+      { label: "Step 2  Add the tens", labelColor: "var(--cyan)", highlightCol: 1, showAnswer: true, partialAnswer: null, carryAbove: null, caption: "Tens: 4 + 3 = 7. Write 7. Final answer: 78." },
     ],
     2: [
       { label: "Set up the problem", labelColor: "var(--text2)", highlightCol: null, showAnswer: false, partialAnswer: null, carryAbove: null, caption: "Line up 47 and 35 by place value." },
-      { label: "Step 1 â€” Ones: 7+5=12", labelColor: "var(--blue)", highlightCol: 0, showAnswer: false, partialAnswer: [2], carryAbove: { 1: 1 }, caption: "7 + 5 = 12. Write 2. Carry the 1 above the tens column." },
-      { label: "Step 2 â€” Tens: 1+4+3=8", labelColor: "var(--cyan)", highlightCol: 1, showAnswer: true, partialAnswer: null, carryAbove: { 1: 1 }, caption: "Add the carry! 1 + 4 + 3 = 8. Write 8. Answer: 82." },
+      { label: "Step 1  Ones: 7+5=12", labelColor: "var(--blue)", highlightCol: 0, showAnswer: false, partialAnswer: [2], carryAbove: { 1: 1 }, caption: "7 + 5 = 12. Write 2. Carry the 1 above the tens column." },
+      { label: "Step 2  Tens: 1+4+3=8", labelColor: "var(--cyan)", highlightCol: 1, showAnswer: true, partialAnswer: null, carryAbove: { 1: 1 }, caption: "Add the carry! 1 + 4 + 3 = 8. Write 8. Answer: 82." },
     ],
     3: [
       { label: "Three numbers lined up", labelColor: "var(--text2)", highlightCol: null, showAnswer: false, partialAnswer: null, carryAbove: null, caption: "Line up 129, 84, and 37. Shorter numbers get spaces to fill their place." },
-      { label: "Step 1 â€” Ones: 9+4+7=20", labelColor: "var(--blue)", highlightCol: 0, showAnswer: false, partialAnswer: [0], carryAbove: { 1: 2 }, caption: "9+4+7=20. Write 0 in ones. Carry 2 to tens." },
-      { label: "Step 2 â€” Tens: 2+2+8+3=15", labelColor: "var(--cyan)", highlightCol: 1, showAnswer: false, partialAnswer: [5, 0], carryAbove: { 1: 2, 2: 1 }, caption: "Add carry! 2+2+8+3=15. Write 5 in tens. Carry 1 to hundreds." },
-      { label: "Step 3 â€” Hundreds: 1+1=2", labelColor: "var(--green)", highlightCol: 2, showAnswer: true, partialAnswer: null, carryAbove: { 2: 1 }, caption: "Add carry! 1+1=2. Write 2 in hundreds. Final answer: 250." },
+      { label: "Step 1  Ones: 9+4+7=20", labelColor: "var(--blue)", highlightCol: 0, showAnswer: false, partialAnswer: [0], carryAbove: { 1: 2 }, caption: "9+4+7=20. Write 0 in ones. Carry 2 to tens." },
+      { label: "Step 2  Tens: 2+2+8+3=15", labelColor: "var(--cyan)", highlightCol: 1, showAnswer: false, partialAnswer: [5, 0], carryAbove: { 1: 2, 2: 1 }, caption: "Add carry! 2+2+8+3=15. Write 5 in tens. Carry 1 to hundreds." },
+      { label: "Step 3  Hundreds: 1+1=2", labelColor: "var(--green)", highlightCol: 2, showAnswer: true, partialAnswer: null, carryAbove: { 2: 1 }, caption: "Add carry! 1+1=2. Write 2 in hundreds. Final answer: 250." },
     ],
   };
 
@@ -162,10 +162,10 @@ function LessonScreen({ level, onComplete, isReview }) {
     <div style={{ maxWidth: panelCount === 4 ? 1200 : 960, margin: "0 auto", animation: "fadeUp 0.4s ease" }}>
       <div className="card">
         <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 24 }}>
-          <div style={{ fontSize: 34 }}>ðŸ“</div>
+          <div style={{ fontSize: 34 }}></div>
           <div>
             <h2 style={{ fontSize: 22, fontWeight: 800, marginBottom: 4 }}>{titles[level]}</h2>
-            <p style={{ color: "var(--text2)", fontSize: 20 }}>Level {level} of {TOTAL_LEVELS} â€” study the steps below</p>
+            <p style={{ color: "var(--text2)", fontSize: 20 }}>Level {level} of {TOTAL_LEVELS}  study the steps below</p>
           </div>
         </div>
 
@@ -195,10 +195,10 @@ function LessonScreen({ level, onComplete, isReview }) {
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
           <button onClick={() => speak(voiceTexts[level])}
             style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 16px", borderRadius: 99, border: "1.5px solid var(--blue)", background: "transparent", color: "var(--blue)", fontFamily: "var(--font)", fontWeight: 600, fontSize: 20, cursor: "pointer" }}>
-            ðŸ”Š Hear explanation
+             Hear explanation
           </button>
           <button className="btn btn-primary btn-lg" onClick={onComplete}>
-            {isReview ? "â† Back to Practice" : `Start Level ${level} Practice â†’`}
+            {isReview ? " Back to Practice" : `Start Level ${level} Practice `}
           </button>
         </div>
       </div>
@@ -206,7 +206,7 @@ function LessonScreen({ level, onComplete, isReview }) {
   );
 }
 
-// â”€â”€â”€ Practice Screen â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+//  Practice Screen 
 function PracticeScreen({ level, onComplete, onReviewLesson, onHome }) {
   const phases = level === 1
     ? [{ digits: 2, target: 2 }, { digits: 3, target: 2 }]
@@ -273,11 +273,11 @@ function PracticeScreen({ level, onComplete, onReviewLesson, onHome }) {
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16, gap: 8, flexWrap: "wrap" }}>
         <div style={{ background: "rgba(59,130,246,0.15)", border: "1px solid rgba(59,130,246,0.3)", borderRadius: 99, padding: "5px 14px", fontSize: 20, fontWeight: 700, color: "var(--blue)" }}>
-          Level {level} â€” {phaseLabel}
+          Level {level}  {phaseLabel}
         </div>
         <div style={{ display: "flex", gap: 8 }}>
-          <button className="btn btn-ghost btn-sm" style={{ fontSize: 20 }} onClick={() => { window.speechSynthesis?.cancel(); onReviewLesson(); }}>ðŸ“– Review Lesson</button>
-          <button className="btn btn-ghost btn-sm" style={{ fontSize: 20 }} onClick={onHome}>â† Home</button>
+          <button className="btn btn-ghost btn-sm" style={{ fontSize: 20 }} onClick={() => { window.speechSynthesis?.cancel(); onReviewLesson(); }}> Review Lesson</button>
+          <button className="btn btn-ghost btn-sm" style={{ fontSize: 20 }} onClick={onHome}> Home</button>
         </div>
       </div>
 
@@ -318,7 +318,7 @@ function PracticeScreen({ level, onComplete, onReviewLesson, onHome }) {
             <button className="btn btn-success" style={{ width: "100%", fontSize: 20, padding: "13px" }}
               onMouseDown={e => { e.preventDefault(); handleWrongNext(); }}
               onTouchEnd={e => { e.preventDefault(); handleWrongNext(); }}>
-              Got it â€” next problem â†’
+              Got it  next problem 
             </button>
           </div>
         ) : (
@@ -338,7 +338,7 @@ function PracticeScreen({ level, onComplete, onReviewLesson, onHome }) {
             <button className="btn btn-primary" style={{ width: "100%", fontSize: 20, padding: "14px" }}
               onMouseDown={e => { e.preventDefault(); handleSubmit(); }}
               onTouchEnd={e => { e.preventDefault(); handleSubmit(); }}>
-              Submit âœ“
+              Submit 
             </button>
           </>
         )}
@@ -347,11 +347,11 @@ function PracticeScreen({ level, onComplete, onReviewLesson, onHome }) {
   );
 }
 
-// â”€â”€â”€ Celebration â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+//  Celebration 
 function CelebrationScreen({ level, isLast, onContinue }) {
   const msg = isLast
     ? "Outstanding! You have mastered all three levels of column addition!"
-    : `Level ${level} complete! Great work â€” on to level ${level + 1}!`;
+    : `Level ${level} complete! Great work  on to level ${level + 1}!`;
   useEffect(() => {
     const t = setTimeout(() => speak(msg), 400);
     return () => { clearTimeout(t); window.speechSynthesis?.cancel(); };
@@ -359,7 +359,7 @@ function CelebrationScreen({ level, isLast, onContinue }) {
   return (
     <div style={{ maxWidth: 520, margin: "0 auto", textAlign: "center", animation: "fadeUp 0.4s ease" }}>
       <div className="card">
-        <div style={{ fontSize: 64, marginBottom: 16 }}>{isLast ? "ðŸ†" : "â­"}</div>
+        <div style={{ fontSize: 64, marginBottom: 16 }}>{isLast ? "" : ""}</div>
         <h2 style={{ fontSize: 28, fontWeight: 800, marginBottom: 8 }}>
           {isLast ? "Column Addition Mastered!" : `Level ${level} Complete!`}
         </h2>
@@ -367,14 +367,14 @@ function CelebrationScreen({ level, isLast, onContinue }) {
           {isLast ? "You can now add any multi-digit numbers using column addition." : `Ready for Level ${level + 1}?`}
         </p>
         <button className="btn btn-primary btn-lg" style={{ width: "100%" }} onClick={onContinue}>
-          {isLast ? "ðŸ† View My Progress" : `Start Level ${level + 1} â†’`}
+          {isLast ? " View My Progress" : `Start Level ${level + 1} `}
         </button>
       </div>
     </div>
   );
 }
 
-// â”€â”€â”€ Main Player â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+//  Main Player 
 export default function ColumnAdditionPlayer({ user, topic, onHome }) {
   const [screen, setScreen] = useState("loading");
   const [currentLevel, setCurrentLevel] = useState(1);

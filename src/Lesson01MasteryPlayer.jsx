@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { saveProgress, getProgress } from "./core/firebase";
 import {
   TOPICS, computeCarries, computeBorrows,
@@ -9,7 +9,7 @@ import {
 export const TOPIC_ID = "lesson01-mastery-v1";
 const STREAK_NEEDED = 2;
 
-// â”€â”€â”€ Column Problem Display â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+//  Column Problem Display 
 function ColumnProblem({ problem, showAnswer = false, showWorking = false }) {
   const isAddition = problem.type.startsWith("add");
   const numbers = isAddition ? problem.numbers : [problem.top, problem.bot];
@@ -52,7 +52,7 @@ function ColumnProblem({ problem, showAnswer = false, showWorking = false }) {
       {padded.map((row, ri) => (
         <div key={ri} style={{ display: "flex", alignItems: "center", gap: 2, marginBottom: 2 }}>
           <div style={{ width: 28, textAlign: "right", fontSize: 28, color: "var(--text3)", paddingRight: 4 }}>
-            {ri === padded.length - 1 ? (isAddition ? "+" : "âˆ’") : ""}
+            {ri === padded.length - 1 ? (isAddition ? "+" : "") : ""}
           </div>
           {row.split("").map((ch, ci) => {
             const borrow = borrowMap[ci];
@@ -96,7 +96,7 @@ function ColumnProblem({ problem, showAnswer = false, showWorking = false }) {
   );
 }
 
-// â”€â”€â”€ Streak Dots â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+//  Streak Dots 
 function StreakDots({ current, needed }) {
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
@@ -114,7 +114,7 @@ function StreakDots({ current, needed }) {
   );
 }
 
-// â”€â”€â”€ Main Player â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+//  Main Player 
 export default function Lesson01MasteryPlayer({ user, topic, onHome }) {
   const topicId = topic?.id || TOPIC_ID;
 
@@ -190,7 +190,7 @@ export default function Lesson01MasteryPlayer({ user, topic, onHome }) {
           setStreak(0);
           await saveCurrentProgress(topicIdx, nextSi, 0);
         } else {
-          // Topic complete â€” move to next topic
+          // Topic complete  move to next topic
           const nextTi = topicIdx + 1;
           if (nextTi >= TOPICS.length) {
             // All done!
@@ -209,7 +209,7 @@ export default function Lesson01MasteryPlayer({ user, topic, onHome }) {
         newProblem(topicIdx, subtypeIdx);
       }
     } else {
-      // Wrong â€” reset streak, back to subtype 0 of current topic
+      // Wrong  reset streak, back to subtype 0 of current topic
       setStreak(0);
       setPhase("wrong");
       await saveCurrentProgress(topicIdx, 0, 0);
@@ -231,13 +231,13 @@ export default function Lesson01MasteryPlayer({ user, topic, onHome }) {
   if (phase === "celebration" || topicIdx >= TOPICS.length) return (
     <div style={{ maxWidth: 520, margin: "0 auto", textAlign: "center", animation: "fadeUp 0.4s ease" }}>
       <div className="card">
-        <div style={{ fontSize: 64, marginBottom: 16 }}>ðŸ†</div>
+        <div style={{ fontSize: 64, marginBottom: 16 }}></div>
         <h2 style={{ fontSize: 28, fontWeight: 800, marginBottom: 8 }}>Mastery Complete!</h2>
         <p style={{ color: "var(--text2)", fontSize: 19, marginBottom: 24 }}>
-          You've mastered all 6 topics â€” column addition and subtraction with all difficulty levels!
+          You've mastered all 6 topics  column addition and subtraction with all difficulty levels!
         </p>
         <button className="btn btn-primary btn-lg" style={{ width: "100%" }} onClick={onHome}>
-          ðŸ† Back to Home
+           Back to Home
         </button>
       </div>
     </div>
@@ -253,13 +253,13 @@ export default function Lesson01MasteryPlayer({ user, topic, onHome }) {
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16, flexWrap: "wrap", gap: 8 }}>
         <div>
           <div style={{ fontSize: 19, color: "var(--text3)", marginBottom: 2 }}>
-            Topic {topicIdx + 1} of {TOPICS.length} Â· {currentTopic.label}
+            Topic {topicIdx + 1} of {TOPICS.length}  {currentTopic.label}
           </div>
           <div style={{ fontSize: 20, fontWeight: 700, color: "var(--blue)" }}>
             {currentSubtype?.label}
           </div>
         </div>
-        <button className="btn btn-ghost btn-sm" onClick={onHome}>â† Home</button>
+        <button className="btn btn-ghost btn-sm" onClick={onHome}> Home</button>
       </div>
 
       {/* Overall progress bar */}
@@ -292,11 +292,11 @@ export default function Lesson01MasteryPlayer({ user, topic, onHome }) {
               Not quite! Here's the worked solution:
             </div>
             <div style={{ fontSize: 20, color: "var(--text3)", textAlign: "center", marginBottom: 16 }}>
-              Streak reset â€” starting back at {currentTopic.subtypes[0].label}
+              Streak reset  starting back at {currentTopic.subtypes[0].label}
             </div>
             <button className="btn btn-success" style={{ width: "100%", fontSize: 20, padding: "13px" }}
               onClick={handleWrongContinue}>
-              Got it â€” try again â†’
+              Got it  try again 
             </button>
           </div>
         ) : (
@@ -316,7 +316,7 @@ export default function Lesson01MasteryPlayer({ user, topic, onHome }) {
             <button className="btn btn-primary" style={{ width: "100%", fontSize: 20, padding: "14px" }}
               onMouseDown={e => { e.preventDefault(); handleSubmit(); }}
               onTouchEnd={e => { e.preventDefault(); handleSubmit(); }}>
-              Submit âœ“
+              Submit 
             </button>
           </>
         )}
@@ -334,7 +334,7 @@ export default function Lesson01MasteryPlayer({ user, topic, onHome }) {
               color: done ? "var(--green)" : active ? "var(--blue)" : "var(--text3)",
               border: `1px solid ${done ? "rgba(16,185,129,0.3)" : active ? "rgba(59,130,246,0.3)" : "var(--border)"}`,
             }}>
-              {done ? "âœ“ " : active ? "â–¶ " : ""}{t.icon} {t.id.includes("add") ? "Add" : "Sub"} {i + 1}
+              {done ? " " : active ? " " : ""}{t.icon} {t.id.includes("add") ? "Add" : "Sub"} {i + 1}
             </div>
           );
         })}

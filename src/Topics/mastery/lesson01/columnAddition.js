@@ -1,4 +1,4 @@
-// ─── Column Addition — Problem Generation ─────────────────────────
+//  Column Addition  Problem Generation 
 
 // Generate a random integer with exactly `digits` digits
 function randInt(digits) {

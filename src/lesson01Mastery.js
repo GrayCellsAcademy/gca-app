@@ -1,4 +1,4 @@
-// ─── Lesson 1 Mastery — Problem Generation ────────────────────────
+//  Lesson 1 Mastery  Problem Generation 
 
 function randInt(digits) {
   const min = Math.pow(10, digits - 1);
@@ -6,7 +6,7 @@ function randInt(digits) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-// ── Addition: No Carrying ─────────────────────────────────────────
+//  Addition: No Carrying 
 export function genAddNoCarry(aDigits, bDigits) {
   while (true) {
     const a = randInt(aDigits);
@@ -21,7 +21,7 @@ export function genAddNoCarry(aDigits, bDigits) {
   }
 }
 
-// ── Addition: With Carrying ───────────────────────────────────────
+//  Addition: With Carrying 
 export function genAddCarry(aDigits, bDigits) {
   while (true) {
     const a = randInt(aDigits);
@@ -37,7 +37,7 @@ export function genAddCarry(aDigits, bDigits) {
   }
 }
 
-// ── Addition: Multiple Numbers (2d+4d+3d+3d) ─────────────────────
+//  Addition: Multiple Numbers (2d+4d+3d+3d) 
 export function genAddMulti() {
   const a = randInt(2);
   const b = randInt(4);
@@ -46,7 +46,7 @@ export function genAddMulti() {
   return { numbers: [a, b, c, d], answer: a + b + c + d, type: "add-multi" };
 }
 
-// ── Subtraction: No Borrowing ─────────────────────────────────────
+//  Subtraction: No Borrowing 
 export function genSubNoBorow(aDigits, bDigits) {
   while (true) {
     const a = randInt(aDigits);
@@ -62,7 +62,7 @@ export function genSubNoBorow(aDigits, bDigits) {
   }
 }
 
-// ── Subtraction: With Borrowing (not from zero) ───────────────────
+//  Subtraction: With Borrowing (not from zero) 
 export function genSubBorrow(aDigits, bDigits) {
   while (true) {
     const a = randInt(aDigits);
@@ -86,7 +86,7 @@ export function genSubBorrow(aDigits, bDigits) {
   }
 }
 
-// ── Subtraction: Borrowing From Zero ─────────────────────────────
+//  Subtraction: Borrowing From Zero 
 export function genSubBorrowZero(aDigits, bDigits) {
   while (true) {
     const a = randInt(aDigits);
@@ -108,7 +108,7 @@ export function genSubBorrowZero(aDigits, bDigits) {
   }
 }
 
-// ── Compute carry digits for addition ────────────────────────────
+//  Compute carry digits for addition 
 export function computeCarries(numbers) {
   const maxLen = Math.max(...numbers.map(n => String(n).length));
   const padded = numbers.map(n => String(n).padStart(maxLen, "0"));
@@ -122,7 +122,7 @@ export function computeCarries(numbers) {
   return carries; // key = colIndex from LEFT in padded string
 }
 
-// ── Compute borrow marks for subtraction ─────────────────────────
+//  Compute borrow marks for subtraction 
 // Returns array of { colIndex, originalDigit, newDigit, borrowedFrom } per borrow
 export function computeBorrows(top, bot) {
   const maxLen = Math.max(String(top).length, String(bot).length);
@@ -154,12 +154,12 @@ export function computeBorrows(top, bot) {
   return { borrows, workTop };
 }
 
-// ── Topic definitions ─────────────────────────────────────────────
+//  Topic definitions 
 export const TOPICS = [
   {
     id: "add-no-carry",
-    label: "Column Addition — No Carrying",
-    icon: "➕",
+    label: "Column Addition  No Carrying",
+    icon: "",
     subtypes: [
       { label: "2-digit + 2-digit", gen: () => genAddNoCarry(2, 2) },
       { label: "3-digit + 2-digit", gen: () => genAddNoCarry(3, 2) },
@@ -168,8 +168,8 @@ export const TOPICS = [
   },
   {
     id: "add-carry",
-    label: "Column Addition — With Carrying",
-    icon: "➕",
+    label: "Column Addition  With Carrying",
+    icon: "",
     subtypes: [
       { label: "3-digit + 3-digit", gen: () => genAddCarry(3, 3) },
       { label: "4-digit + 3-digit", gen: () => genAddCarry(4, 3) },
@@ -178,40 +178,40 @@ export const TOPICS = [
   },
   {
     id: "add-multi",
-    label: "Column Addition — Multiple Numbers",
-    icon: "➕",
+    label: "Column Addition  Multiple Numbers",
+    icon: "",
     subtypes: [
       { label: "4 numbers mixed digits", gen: () => genAddMulti() },
     ],
   },
   {
     id: "sub-no-borrow",
-    label: "Column Subtraction — No Borrowing",
-    icon: "➖",
+    label: "Column Subtraction  No Borrowing",
+    icon: "",
     subtypes: [
-      { label: "2-digit − 2-digit", gen: () => genSubNoBorow(2, 2) },
-      { label: "3-digit − 2-digit", gen: () => genSubNoBorow(3, 2) },
-      { label: "3-digit − 3-digit", gen: () => genSubNoBorow(3, 3) },
+      { label: "2-digit  2-digit", gen: () => genSubNoBorow(2, 2) },
+      { label: "3-digit  2-digit", gen: () => genSubNoBorow(3, 2) },
+      { label: "3-digit  3-digit", gen: () => genSubNoBorow(3, 3) },
     ],
   },
   {
     id: "sub-borrow",
-    label: "Column Subtraction — With Borrowing",
-    icon: "➖",
+    label: "Column Subtraction  With Borrowing",
+    icon: "",
     subtypes: [
-      { label: "3-digit − 3-digit", gen: () => genSubBorrow(3, 3) },
-      { label: "4-digit − 3-digit", gen: () => genSubBorrow(4, 3) },
-      { label: "4-digit − 4-digit", gen: () => genSubBorrow(4, 4) },
+      { label: "3-digit  3-digit", gen: () => genSubBorrow(3, 3) },
+      { label: "4-digit  3-digit", gen: () => genSubBorrow(4, 3) },
+      { label: "4-digit  4-digit", gen: () => genSubBorrow(4, 4) },
     ],
   },
   {
     id: "sub-borrow-zero",
-    label: "Column Subtraction — Borrowing from Zero",
-    icon: "➖",
+    label: "Column Subtraction  Borrowing from Zero",
+    icon: "",
     subtypes: [
-      { label: "3-digit − 3-digit", gen: () => genSubBorrowZero(3, 3) },
-      { label: "4-digit − 4-digit", gen: () => genSubBorrowZero(4, 4) },
-      { label: "5-digit − 5-digit", gen: () => genSubBorrowZero(5, 5) },
+      { label: "3-digit  3-digit", gen: () => genSubBorrowZero(3, 3) },
+      { label: "4-digit  4-digit", gen: () => genSubBorrowZero(4, 4) },
+      { label: "5-digit  5-digit", gen: () => genSubBorrowZero(5, 5) },
     ],
   },
 ];

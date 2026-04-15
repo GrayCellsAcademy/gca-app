@@ -1,4 +1,4 @@
-// ─── Column Subtraction — Problem Generation ──────────────────────
+//  Column Subtraction  Problem Generation 
 
 function randInt(digits) {
   const min = Math.pow(10, digits - 1);

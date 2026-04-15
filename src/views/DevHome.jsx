@@ -19,7 +19,7 @@ export default function DevHome({ user, onLogout }) {
   useEffect(()=>{ load(); },[]);
 
   const handleDeleteUser = async (uid) => {
-    if (!confirm("Delete this user's data from Firestore? (Auth account stays — delete that separately in Firebase Console)")) return;
+    if (!confirm("Delete this user's data from Firestore? (Auth account stays  delete that separately in Firebase Console)")) return;
     await deleteUser(uid);
     load();
   };
@@ -45,7 +45,7 @@ export default function DevHome({ user, onLogout }) {
               width:40,height:40,borderRadius:12,
               background:"linear-gradient(135deg,var(--purple),var(--blue))",
               display:"flex",alignItems:"center",justifyContent:"center",fontSize:20
-            }}>⚙️</div>
+            }}></div>
             <div>
               <div style={{fontWeight:800,fontSize:20}}>GCA</div>
               <div style={{color:"var(--purple)",fontSize:12,fontWeight:600}}>Developer Console</div>
@@ -88,10 +88,10 @@ export default function DevHome({ user, onLogout }) {
               <div style={{animation:"fadeUp 0.3s ease"}}>
                 <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(200px,1fr))",gap:16,marginBottom:28}}>
                   {[
-                    {label:"Total Users",value:users.length,color:"var(--blue)",icon:"👥"},
-                    {label:"Students",value:students.length,color:"var(--green)",icon:"🎒"},
-                    {label:"Teachers",value:teachers.length,color:"var(--amber)",icon:"📋"},
-                    {label:"Classes",value:classes.length,color:"var(--cyan)",icon:"🏫"},
+                    {label:"Total Users",value:users.length,color:"var(--blue)",icon:""},
+                    {label:"Students",value:students.length,color:"var(--green)",icon:""},
+                    {label:"Teachers",value:teachers.length,color:"var(--amber)",icon:""},
+                    {label:"Classes",value:classes.length,color:"var(--cyan)",icon:""},
                   ].map(stat=>(
                     <div key={stat.label} className="card" style={{
                       borderLeft:`3px solid ${stat.color}`,padding:"18px 20px"
@@ -114,10 +114,10 @@ export default function DevHome({ user, onLogout }) {
                     <div style={{
                       width:36,height:36,borderRadius:10,background:"rgba(59,130,246,0.2)",
                       display:"flex",alignItems:"center",justifyContent:"center",fontSize:18
-                    }}>➕</div>
+                    }}></div>
                     <div style={{flex:1}}>
                       <div style={{fontWeight:700,fontSize:15}}>Addition Tables</div>
-                      <div style={{color:"var(--text2)",fontSize:12}}>Math · Tiers 1–9 · 6+</div>
+                      <div style={{color:"var(--text2)",fontSize:12}}>Math  Tiers 19  6+</div>
                     </div>
                     <span className="badge tag-published">Published</span>
                   </div>

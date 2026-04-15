@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { setDoc, doc, updateDoc, increment } from "firebase/firestore";
 import {
   createClassworkSession, joinSession, pushGeneratedQuestion,
@@ -8,13 +8,13 @@ import {
 import { genLevel1Problem, genLevel2Problem, genLevel3Problem, getAnswer } from "./columnAddition";
 import { genSubtractionProblem } from "./columnSubtraction";
 
-// â”€â”€â”€ Topic Definitions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+//  Topic Definitions 
 const TOPICS = [
   {
     id: "add-no-carry",
     label: "Column Addition",
     sublabel: "No Carrying",
-    icon: "âž•",
+    icon: "",
     color: "#3b82f6",
     group: "addition",
   },
@@ -22,7 +22,7 @@ const TOPICS = [
     id: "add-carry",
     label: "Column Addition",
     sublabel: "With Carrying",
-    icon: "âž•",
+    icon: "",
     color: "#6366f1",
     group: "addition",
   },
@@ -30,7 +30,7 @@ const TOPICS = [
     id: "add-multi",
     label: "Column Addition",
     sublabel: "Multiple Numbers",
-    icon: "âž•",
+    icon: "",
     color: "#8b5cf6",
     group: "addition",
   },
@@ -38,7 +38,7 @@ const TOPICS = [
     id: "sub-no-borrow",
     label: "Column Subtraction",
     sublabel: "No Borrowing",
-    icon: "âž–",
+    icon: "",
     color: "#10b981",
     group: "subtraction",
   },
@@ -46,7 +46,7 @@ const TOPICS = [
     id: "sub-borrow",
     label: "Column Subtraction",
     sublabel: "With Borrowing",
-    icon: "âž–",
+    icon: "",
     color: "#f59e0b",
     group: "subtraction",
   },
@@ -54,13 +54,13 @@ const TOPICS = [
     id: "sub-borrow-zero",
     label: "Column Subtraction",
     sublabel: "Borrowing from Zero",
-    icon: "âž–",
+    icon: "",
     color: "#ef4444",
     group: "subtraction",
   },
 ];
 
-// â”€â”€â”€ Problem Generator â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+//  Problem Generator 
 function generateProblem(topicId) {
   switch (topicId) {
     case "add-no-carry": {
@@ -115,7 +115,7 @@ function generateProblem(topicId) {
   }
 }
 
-// â”€â”€â”€ Column Problem Display â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+//  Column Problem Display 
 function ProblemDisplay({ question, showAnswer = false }) {
   if (!question) return null;
   const isAddition = question.type === "addition";
@@ -128,7 +128,7 @@ function ProblemDisplay({ question, showAnswer = false }) {
       {padded.map((row, ri) => (
         <div key={ri} style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 4 }}>
           <div style={{ width: 28, textAlign: "right", fontSize: 28, color: "var(--text3)", paddingRight: 4 }}>
-            {ri === padded.length - 1 ? (isAddition ? "+" : "âˆ’") : ""}
+            {ri === padded.length - 1 ? (isAddition ? "+" : "") : ""}
           </div>
           {row.split("").map((ch, ci) => (
             <div key={ci} style={{ width: 38, height: 46, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28, fontWeight: 700, color: "var(--text)" }}>
@@ -152,7 +152,7 @@ function ProblemDisplay({ question, showAnswer = false }) {
   );
 }
 
-// â”€â”€â”€ Bar Chart of Answers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+//  Bar Chart of Answers 
 function AnswerBarChart({ answers, correctAnswer, participants }) {
   const totalStudents = Object.keys(participants).length;
   if (!answers.length) return (
@@ -193,7 +193,7 @@ function AnswerBarChart({ answers, correctAnswer, participants }) {
               </div>
             </div>
             <div style={{ width: 40, textAlign: "right", fontSize: 20, color: "var(--text3)" }}>{pct}%</div>
-            {isCorrect && <span style={{ color: "var(--green)", fontSize: 20 }}>âœ“</span>}
+            {isCorrect && <span style={{ color: "var(--green)", fontSize: 20 }}></span>}
           </div>
         );
       })}
@@ -201,7 +201,7 @@ function AnswerBarChart({ answers, correctAnswer, participants }) {
   );
 }
 
-// â”€â”€â”€ Timer Bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+//  Timer Bar 
 function TimerBar({ endsAt, totalSeconds }) {
   const [remaining, setRemaining] = useState(totalSeconds);
   useEffect(() => {
@@ -225,7 +225,7 @@ function TimerBar({ endsAt, totalSeconds }) {
   );
 }
 
-// â”€â”€â”€ Teacher View â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+//  Teacher View 
 function TeacherClasswork({ session, sessionId, uid }) {
   const [answers, setAnswers] = useState([]);
   const [selectedTopic, setSelectedTopic] = useState(null);
@@ -275,7 +275,7 @@ function TeacherClasswork({ session, sessionId, uid }) {
             </div>
             <div style={{ fontSize: 20, color: "var(--text3)", marginTop: 2 }}>
               {totalStudents} student{totalStudents !== 1 ? "s" : ""} joined
-              {session.questionCount > 0 && ` Â· ${session.questionCount} question${session.questionCount !== 1 ? "s" : ""} pushed`}
+              {session.questionCount > 0 && `  ${session.questionCount} question${session.questionCount !== 1 ? "s" : ""} pushed`}
             </div>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
@@ -286,7 +286,7 @@ function TeacherClasswork({ session, sessionId, uid }) {
                 style={{ width: 70, padding: "6px 10px", fontSize: 20, textAlign: "center" }} />
             </div>
             {session.status === "question" && (
-              <button className="btn btn-ghost" onClick={handleReveal}>ðŸ“Š Reveal Answers</button>
+              <button className="btn btn-ghost" onClick={handleReveal}> Reveal Answers</button>
             )}
             <button className="btn btn-ghost" style={{ color: "var(--red)" }} onClick={handleEnd}>End Session</button>
           </div>
@@ -324,7 +324,7 @@ function TeacherClasswork({ session, sessionId, uid }) {
             onClick={handleGenerate}
             disabled={!selectedTopic || generating}
             style={{ marginTop: 8, opacity: !selectedTopic ? 0.5 : 1 }}>
-            {generating ? "Generatingâ€¦" : "âš¡ Generate Question"}
+            {generating ? "Generating" : " Generate Question"}
           </button>
 
           {/* Waiting state */}
@@ -341,7 +341,7 @@ function TeacherClasswork({ session, sessionId, uid }) {
           {/* Waiting */}
           {session.status === "waiting" && (
             <div className="card" style={{ textAlign: "center", padding: "48px 20px" }}>
-              <div style={{ fontSize: 48, marginBottom: 12 }}>â³</div>
+              <div style={{ fontSize: 48, marginBottom: 12 }}></div>
               <h3 style={{ fontSize: 22, fontWeight: 800, marginBottom: 8 }}>Waiting for students</h3>
               <p style={{ color: "var(--text2)", fontSize: 19 }}>
                 Tell students to join with code <strong style={{ color: "var(--blue)", fontFamily: "var(--mono)", fontSize: 20 }}>{session.joinCode}</strong>
@@ -363,10 +363,10 @@ function TeacherClasswork({ session, sessionId, uid }) {
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16, flexWrap: "wrap", gap: 8 }}>
                   <div>
                     <div style={{ fontSize: 19, color: "var(--text3)", marginBottom: 4 }}>
-                      Question #{session.questionCount} Â· {topic?.label} â€” {topic?.sublabel}
+                      Question #{session.questionCount}  {topic?.label}  {topic?.sublabel}
                     </div>
                     <div style={{ fontSize: 20, color: "var(--text2)" }}>
-                      {answers.length}/{totalStudents} submitted Â· {correctCount} correct
+                      {answers.length}/{totalStudents} submitted  {correctCount} correct
                     </div>
                   </div>
                   {session.status === "question" && session.timerEndsAt && (
@@ -386,7 +386,7 @@ function TeacherClasswork({ session, sessionId, uid }) {
                 </div>
               </div>
 
-              {/* Teacher breakdown â€” each student's answer */}
+              {/* Teacher breakdown  each student's answer */}
               <div className="card">
                 <h3 style={{ fontSize: 19, fontWeight: 700, marginBottom: 14 }}>Student Answers</h3>
                 <div style={{ display: "flex", flexDirection: "column", gap: 6, maxHeight: 260, overflowY: "auto" }}>
@@ -404,11 +404,11 @@ function TeacherClasswork({ session, sessionId, uid }) {
                           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                             <span style={{ fontFamily: "var(--mono)", fontSize: 19, color: "var(--text2)" }}>{ans.answer}</span>
                             <span style={{ fontWeight: 700, color: isCorrect ? "var(--green)" : "var(--red)" }}>
-                              {isCorrect ? "âœ“" : "âœ—"}
+                              {isCorrect ? "" : ""}
                             </span>
                           </div>
                         ) : (
-                          <span style={{ fontSize: 19, color: "var(--text3)" }}>thinkingâ€¦</span>
+                          <span style={{ fontSize: 19, color: "var(--text3)" }}>thinking</span>
                         )}
                       </div>
                     );
@@ -418,7 +418,7 @@ function TeacherClasswork({ session, sessionId, uid }) {
             </>
           )}
 
-          {/* Bar chart â€” shown after reveal */}
+          {/* Bar chart  shown after reveal */}
           {session.status === "revealing" && question && (
             <div className="card">
               <h3 style={{ fontSize: 19, fontWeight: 700, marginBottom: 14 }}>Answer Distribution</h3>
@@ -431,16 +431,16 @@ function TeacherClasswork({ session, sessionId, uid }) {
       {/* Session ended */}
       {session.status === "ended" && (
         <div className="card" style={{ textAlign: "center", padding: "40px 20px", marginTop: 16 }}>
-          <div style={{ fontSize: 40, marginBottom: 12 }}>âœ…</div>
+          <div style={{ fontSize: 40, marginBottom: 12 }}></div>
           <h3 style={{ fontSize: 22, fontWeight: 800, marginBottom: 8 }}>Session Complete</h3>
-          <p style={{ color: "var(--text2)" }}>{session.questionCount} questions pushed Â· {totalStudents} students participated</p>
+          <p style={{ color: "var(--text2)" }}>{session.questionCount} questions pushed  {totalStudents} students participated</p>
         </div>
       )}
     </div>
   );
 }
 
-// â”€â”€â”€ Student View â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+//  Student View 
 function StudentClasswork({ session, sessionId, uid }) {
   const [input, setInput] = useState("");
   const [submitted, setSubmitted] = useState(false);
@@ -483,16 +483,16 @@ function StudentClasswork({ session, sessionId, uid }) {
   // Waiting
   if (session.status === "waiting") return (
     <div style={{ textAlign: "center", padding: "60px 20px" }}>
-      <div style={{ fontSize: 48, marginBottom: 16 }}>â³</div>
-      <h2 style={{ fontSize: 28, fontWeight: 800, marginBottom: 8 }}>Waiting for teacherâ€¦</h2>
-      <p style={{ color: "var(--text2)", fontSize: 19 }}>Get ready â€” your teacher will push the first question soon.</p>
+      <div style={{ fontSize: 48, marginBottom: 16 }}></div>
+      <h2 style={{ fontSize: 28, fontWeight: 800, marginBottom: 8 }}>Waiting for teacher</h2>
+      <p style={{ color: "var(--text2)", fontSize: 19 }}>Get ready  your teacher will push the first question soon.</p>
     </div>
   );
 
   // Ended
   if (session.status === "ended") return (
     <div className="card" style={{ maxWidth: 500, margin: "0 auto", textAlign: "center", padding: "40px 20px" }}>
-      <div style={{ fontSize: 48, marginBottom: 12 }}>ðŸŽ‰</div>
+      <div style={{ fontSize: 48, marginBottom: 12 }}></div>
       <h2 style={{ fontSize: 28, fontWeight: 800, marginBottom: 8 }}>Session Complete!</h2>
       <div style={{ fontSize: 28, fontWeight: 900, color: "var(--blue)", marginBottom: 4 }}>
         {myCorrect} / {session.questionCount} correct
@@ -506,7 +506,7 @@ function StudentClasswork({ session, sessionId, uid }) {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
         <div style={{ fontSize: 20, color: "var(--text3)" }}>Question #{session.questionCount}</div>
         <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-sm)", padding: "6px 14px", fontSize: 20, fontWeight: 700 }}>
-          âœ“ {myCorrect} correct
+           {myCorrect} correct
         </div>
       </div>
 
@@ -528,7 +528,7 @@ function StudentClasswork({ session, sessionId, uid }) {
           <div style={{ animation: "fadeUp 0.3s ease" }}>
             {result ? (
               <div style={{ textAlign: "center" }}>
-                <div style={{ fontSize: 48, marginBottom: 8 }}>{result.correct ? "ðŸŽ‰" : "ðŸ˜”"}</div>
+                <div style={{ fontSize: 48, marginBottom: 8 }}>{result.correct ? "" : ""}</div>
                 <div style={{ fontSize: 22, fontWeight: 800, color: result.correct ? "var(--green)" : "var(--red)", marginBottom: 8 }}>
                   {result.correct ? "Correct!" : "Not quite"}
                 </div>
@@ -540,7 +540,7 @@ function StudentClasswork({ session, sessionId, uid }) {
               </div>
             ) : (
               <div style={{ textAlign: "center" }}>
-                <div style={{ fontSize: 34, marginBottom: 8 }}>â°</div>
+                <div style={{ fontSize: 34, marginBottom: 8 }}></div>
                 <div style={{ color: "var(--text3)" }}>You didn't submit.</div>
                 <div style={{ marginTop: 8, color: "var(--green)", fontSize: 19 }}>
                   Answer: <strong style={{ fontFamily: "var(--mono)" }}>{question?.answer}</strong>
@@ -550,9 +550,9 @@ function StudentClasswork({ session, sessionId, uid }) {
           </div>
         ) : submitted ? (
           <div style={{ textAlign: "center", animation: "popIn 0.3s ease" }}>
-            <div style={{ fontSize: 40, marginBottom: 8 }}>âœ…</div>
+            <div style={{ fontSize: 40, marginBottom: 8 }}></div>
             <div style={{ fontSize: 20, fontWeight: 700, color: "var(--green)" }}>Answer submitted!</div>
-            <div style={{ fontSize: 20, color: "var(--text3)", marginTop: 4 }}>Waiting for othersâ€¦</div>
+            <div style={{ fontSize: 20, color: "var(--text3)", marginTop: 4 }}>Waiting for others</div>
           </div>
         ) : (
           <>
@@ -571,7 +571,7 @@ function StudentClasswork({ session, sessionId, uid }) {
             <button className="btn btn-primary" style={{ width: "100%", fontSize: 20, padding: "14px" }}
               onMouseDown={e => { e.preventDefault(); handleSubmit(); }}
               onTouchEnd={e => { e.preventDefault(); handleSubmit(); }}>
-              Submit âœ“
+              Submit 
             </button>
           </>
         )}
@@ -580,7 +580,7 @@ function StudentClasswork({ session, sessionId, uid }) {
   );
 }
 
-// â”€â”€â”€ Create Classwork Session Screen â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+//  Create Classwork Session Screen 
 function CreateClassworkSession({ user, onCreated }) {
   const [classes, setClasses] = useState([]);
   const [selectedClass, setSelectedClass] = useState("");
@@ -601,7 +601,7 @@ function CreateClassworkSession({ user, onCreated }) {
   return (
     <div style={{ maxWidth: 480, margin: "0 auto" }}>
       <div className="card">
-        <div style={{ fontSize: 40, marginBottom: 12 }}>ðŸ“‹</div>
+        <div style={{ fontSize: 40, marginBottom: 12 }}></div>
         <h2 style={{ fontSize: 22, fontWeight: 800, marginBottom: 4 }}>Start a Classwork Session</h2>
         <p style={{ color: "var(--text2)", fontSize: 20, marginBottom: 20 }}>
           Push column addition and subtraction problems to your students in real time.
@@ -609,7 +609,7 @@ function CreateClassworkSession({ user, onCreated }) {
         <div style={{ marginBottom: 14 }}>
           <label style={{ fontSize: 20, fontWeight: 600, color: "var(--text2)", display: "block", marginBottom: 6 }}>Class</label>
           <select value={selectedClass} onChange={e => setSelectedClass(e.target.value)} style={{ width: "100%", padding: "10px 12px", fontSize: 20 }}>
-            <option value="">Select a classâ€¦</option>
+            <option value="">Select a class</option>
             {classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
           </select>
         </div>
@@ -620,18 +620,18 @@ function CreateClassworkSession({ user, onCreated }) {
             style={{ width: "100%", padding: "10px 12px", fontSize: 20 }} />
         </div>
         <div style={{ background: "var(--bg2)", borderRadius: "var(--radius-sm)", padding: "12px 14px", marginBottom: 20, fontSize: 20, color: "var(--text2)" }}>
-          <strong>6 topics available:</strong> Column Addition (no carry, carry, multiple numbers) Â· Column Subtraction (no borrow, borrow, borrow from zero)
+          <strong>6 topics available:</strong> Column Addition (no carry, carry, multiple numbers)  Column Subtraction (no borrow, borrow, borrow from zero)
         </div>
         <button className="btn btn-primary btn-lg" style={{ width: "100%" }}
           onClick={handleCreate} disabled={loading || !selectedClass}>
-          {loading ? "Creatingâ€¦" : "Start Session ðŸš€"}
+          {loading ? "Creating" : "Start Session "}
         </button>
       </div>
     </div>
   );
 }
 
-// â”€â”€â”€ Main ClassworkSession Export â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+//  Main ClassworkSession Export 
 export { TeacherClasswork as ClassworkTeacherView, StudentClasswork as ClassworkStudentView };
 
 export default function ClassworkSession({ user, onHome }) {
@@ -653,13 +653,13 @@ export default function ClassworkSession({ user, onHome }) {
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 32, flexWrap: "wrap", gap: 12 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <div style={{ width: 40, height: 40, borderRadius: 12, background: "linear-gradient(135deg,var(--blue),var(--cyan))", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>ðŸ“‹</div>
+            <div style={{ width: 40, height: 40, borderRadius: 12, background: "linear-gradient(135deg,var(--blue),var(--cyan))", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}></div>
             <div>
               <div style={{ fontWeight: 800, fontSize: 20 }}>GCA</div>
               <div style={{ color: "var(--text3)", fontSize: 19 }}>Classwork Session</div>
             </div>
           </div>
-          <button className="btn btn-ghost btn-sm" onClick={onHome}>â† Home</button>
+          <button className="btn btn-ghost btn-sm" onClick={onHome}> Home</button>
         </div>
 
         {view === "create" && user.role === "teacher" && (

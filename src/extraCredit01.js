@@ -1,10 +1,10 @@
-﻿// â”€â”€â”€ Lesson 1 Extra Credit â€” Missing Digit Problems â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+//  Lesson 1 Extra Credit  Missing Digit Problems 
 import {
   genAddNoCarry, genAddCarry, genAddMulti,
   genSubNoBorow, genSubBorrow, genSubBorrowZero,
 } from "./lesson01Mastery";
 
-// â”€â”€â”€ Core equation checker â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+//  Core equation checker 
 function checkAdd(numbers, answer) {
   return numbers.reduce((s, n) => s + n, 0) === answer;
 }
@@ -12,7 +12,7 @@ function checkSub(top, bot, answer) {
   return top - bot === answer;
 }
 
-// â”€â”€â”€ Represent a problem as arrays of digit slots â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+//  Represent a problem as arrays of digit slots 
 // slot: { value: digit, missing: bool, target: 'num'|'ans'|'top'|'bot', numIdx, posFromRight }
 function problemToSlots(problem) {
   const isAdd = problem.type.startsWith("add");
@@ -55,7 +55,7 @@ function problemToSlots(problem) {
   return { slots, isAdd, numbers: [...numbers], answer, maxLen };
 }
 
-// â”€â”€â”€ Reconstruct numbers from slots â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+//  Reconstruct numbers from slots 
 function slotsToValues(slots, isAdd, origNumbers, origAnswer) {
   if (!origNumbers || origNumbers.length === 0) return { numbers: [], answer: origAnswer };
   const numbers = origNumbers.map((num, ni) => {
@@ -81,7 +81,7 @@ function slotsToValues(slots, isAdd, origNumbers, origAnswer) {
   return { numbers, answer };
 }
 
-// â”€â”€â”€ Check if a set of missing slots has unique solutions â”€â”€â”€â”€â”€â”€â”€â”€â”€
+//  Check if a set of missing slots has unique solutions 
 function hasUniqueSolution(problem, missingSlotIndices, slots) {
   const isAdd = problem.type.startsWith("add");
   const origNums = isAdd
@@ -128,7 +128,7 @@ function hasUniqueSolution(problem, missingSlotIndices, slots) {
   return { unique: validCombos === 1, solution: validCombo };
 }
 
-// â”€â”€â”€ Find maximum set of removable digits â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+//  Find maximum set of removable digits 
 function maximizeRemovals(problem) {
   const { slots, isAdd } = problemToSlots(problem);
   const n = slots.length;
@@ -187,7 +187,7 @@ function maximizeRemovals(problem) {
   return { removals, slots };
 }
 
-// â”€â”€â”€ Generate a missing digit problem â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+//  Generate a missing digit problem 
 export function generateExtraCreditProblem(topicId) {
   let attempts = 0;
   while (attempts < 200) {
@@ -215,7 +215,7 @@ export function generateExtraCreditProblem(topicId) {
   return null;
 }
 
-// â”€â”€â”€ The 6 extra credit topic types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+//  The 6 extra credit topic types 
 export const EC_TOPICS = [
   { id: "add-no-carry",    label: "Addition - No Carrying" },
   { id: "add-carry",       label: "Addition - With Carrying" },
@@ -225,7 +225,7 @@ export const EC_TOPICS = [
   { id: "sub-borrow-zero", label: "Subtraction - Borrowing from Zero" },
 ];
 
-// â”€â”€â”€ Build display rows for rendering â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+//  Build display rows for rendering 
 export function buildProblemDisplay(problem) {
   if (!problem) return null;
   const { removals } = problem;
@@ -293,7 +293,7 @@ export function buildProblemDisplay(problem) {
   return { rows, ansRow, isAdd, maxLen, allMissing };
 }
 
-// â”€â”€â”€ Grade answer for all missing digits â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+//  Grade answer for all missing digits 
 export function gradeAllMissing(enteredDigits, problem) {  // Build full numbers by substituting entered digits into the original problem
   const isAdd = problem.type.startsWith("add");
   const numbers = isAdd

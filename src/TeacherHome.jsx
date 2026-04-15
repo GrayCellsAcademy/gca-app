@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   getTeacherClasses, createClass, getStudentsForClass,
   assignTopicToClass, unassignTopicFromClass, reorderTopics,
@@ -7,14 +7,14 @@ import {
 } from "../core/firebase";
 import { getPublishedTopics, getTopic } from "../registry";
 
-// â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+//  Helpers 
 function uid4() { return Math.random().toString(36).slice(2, 6); }
 
 function weightTotal(categories) {
   return categories.reduce((s, c) => s + (Number(c.weight) || 0), 0);
 }
 
-// â”€â”€â”€ Category Manager â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+//  Category Manager 
 function CategoryManager({ categories, onChange }) {
   const [cats, setCats] = useState(categories);
   const [newName, setNewName] = useState("");
@@ -43,7 +43,7 @@ function CategoryManager({ categories, onChange }) {
           Grade Categories
         </div>
         <div style={{ fontSize: 20, fontWeight: 700, color: totalOk ? "var(--green)" : "var(--red)" }}>
-          Total: {total}% {totalOk ? "âœ“" : "(must equal 100%)"}
+          Total: {total}% {totalOk ? "" : "(must equal 100%)"}
         </div>
       </div>
 
@@ -66,7 +66,7 @@ function CategoryManager({ categories, onChange }) {
               <span style={{ fontSize: 20, color: "var(--text3)" }}>%</span>
             </div>
             <button onClick={() => removeCat(cat.id)}
-              style={{ background: "none", border: "none", color: "var(--red)", cursor: "pointer", fontSize: 20, padding: "0 4px" }}>Ã—</button>
+              style={{ background: "none", border: "none", color: "var(--red)", cursor: "pointer", fontSize: 20, padding: "0 4px" }}></button>
           </div>
         ))}
       </div>
@@ -85,14 +85,14 @@ function CategoryManager({ categories, onChange }) {
   );
 }
 
-// â”€â”€â”€ Assignment Row (in topic list) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+//  Assignment Row (in topic list) 
 function AssignmentRow({ assignment, categories, onUpdate, onRemove }) {
   const topic = getTopic(assignment.topicId);
   if (!topic) return null;
 
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 10, background: "var(--bg2)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "10px 14px" }}>
-      <div style={{ color: "var(--text3)", fontSize: 20, userSelect: "none" }}>â ¿</div>
+      <div style={{ color: "var(--text3)", fontSize: 20, userSelect: "none" }}></div>
       <span style={{ fontSize: 20 }}>{topic.icon}</span>
       <div style={{ flex: 1 }}>
         <div style={{ fontWeight: 700, fontSize: 20 }}>{topic.title}</div>
@@ -125,7 +125,7 @@ function AssignmentRow({ assignment, categories, onUpdate, onRemove }) {
   );
 }
 
-// â”€â”€â”€ Gradebook â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+//  Gradebook 
 function Gradebook({ students, assignments, categories }) {
   const [progress, setProgress] = useState({});
   const [loading, setLoading] = useState(true);
@@ -199,7 +199,7 @@ function Gradebook({ students, assignments, categories }) {
                     <td key={a.topicId} style={{ textAlign: "center" }}>
                       {pct === null ? (
                         <span style={{ color: overdue ? "var(--red)" : "var(--text3)", fontSize: 19 }}>
-                          {overdue ? "Overdue" : "â€”"}
+                          {overdue ? "Overdue" : ""}
                         </span>
                       ) : (
                         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
@@ -215,7 +215,7 @@ function Gradebook({ students, assignments, categories }) {
                   );
                 })}
                 <td style={{ textAlign: "center", fontWeight: 700, fontSize: 19 }}>
-                  {grade !== null ? `${grade}%` : "â€”"}
+                  {grade !== null ? `${grade}%` : ""}
                 </td>
                 <td style={{ textAlign: "center", fontWeight: 800, fontSize: 20, color: letterColor }}>
                   {letter}
@@ -229,7 +229,7 @@ function Gradebook({ students, assignments, categories }) {
   );
 }
 
-// â”€â”€â”€ Class Panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+//  Class Panel 
 function ClassPanel({ cls, onUpdate }) {
   const [expanded, setExpanded] = useState(false);
   const [tab, setTab] = useState("assignments"); // assignments | gradebook
@@ -300,12 +300,12 @@ function ClassPanel({ cls, onUpdate }) {
           <h3 style={{ fontSize: 20, fontWeight: 800, marginBottom: 2 }}>{cls.name}</h3>
           <div style={{ color: "var(--text2)", fontSize: 20 }}>
             Password: <strong style={{ color: "var(--text)" }}>{cls.password}</strong>
-            {" Â· "}{cls.studentIds?.length || 0} student{cls.studentIds?.length !== 1 ? "s" : ""}
-            {" Â· "}{assignments.length} assignment{assignments.length !== 1 ? "s" : ""}
-            {" Â· "}{categories.length} categor{categories.length !== 1 ? "ies" : "y"}
+            {"  "}{cls.studentIds?.length || 0} student{cls.studentIds?.length !== 1 ? "s" : ""}
+            {"  "}{assignments.length} assignment{assignments.length !== 1 ? "s" : ""}
+            {"  "}{categories.length} categor{categories.length !== 1 ? "ies" : "y"}
           </div>
         </div>
-        <div style={{ width: 28, height: 28, borderRadius: "50%", background: "var(--bg2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, color: "var(--text2)", transition: "transform 0.2s", transform: expanded ? "rotate(180deg)" : "none" }}>â–¼</div>
+        <div style={{ width: 28, height: 28, borderRadius: "50%", background: "var(--bg2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, color: "var(--text2)", transition: "transform 0.2s", transform: expanded ? "rotate(180deg)" : "none" }}></div>
       </div>
 
       {expanded && (
@@ -313,7 +313,7 @@ function ClassPanel({ cls, onUpdate }) {
 
           {/* Tab bar */}
           <div style={{ display: "flex", gap: 4, background: "var(--bg2)", borderRadius: "var(--radius)", padding: 4, marginBottom: 20, width: "fit-content" }}>
-            {[["assignments", "ðŸ“‹ Assignments"], ["gradebook", "ðŸ“Š Gradebook"]].map(([id, label]) => (
+            {[["assignments", " Assignments"], ["gradebook", " Gradebook"]].map(([id, label]) => (
               <button key={id} onClick={() => { setTab(id); if (id === "gradebook") loadStudents(); }}
                 style={{ padding: "8px 18px", borderRadius: "var(--radius-sm)", border: "none", background: tab === id ? "var(--blue)" : "transparent", color: tab === id ? "#fff" : "var(--text2)", fontFamily: "var(--font)", fontWeight: 600, fontSize: 20, cursor: "pointer", transition: "all 0.15s" }}>
                 {label}
@@ -329,7 +329,7 @@ function ClassPanel({ cls, onUpdate }) {
                 {catDirty && (
                   <div style={{ marginTop: 12 }}>
                     <button className="btn btn-primary btn-sm" onClick={saveCategoriesToDB} disabled={saving}>
-                      {saving ? "Savingâ€¦" : "Save Categories"}
+                      {saving ? "Saving" : "Save Categories"}
                     </button>
                   </div>
                 )}
@@ -387,7 +387,7 @@ function ClassPanel({ cls, onUpdate }) {
   );
 }
 
-// â”€â”€â”€ Teacher Home â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+//  Teacher Home 
 export default function TeacherHome({ user, onLogout, onLiveSession }) {
   const [classes, setClasses] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -419,7 +419,7 @@ export default function TeacherHome({ user, onLogout, onLiveSession }) {
         {/* Top bar */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 32, flexWrap: "wrap", gap: 12 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <div style={{ width: 40, height: 40, borderRadius: 12, background: "linear-gradient(135deg,var(--blue),var(--cyan))", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>ðŸŽ“</div>
+            <div style={{ width: 40, height: 40, borderRadius: 12, background: "linear-gradient(135deg,var(--blue),var(--cyan))", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}></div>
             <div>
               <div style={{ fontWeight: 800, fontSize: 20 }}>GCA</div>
               <div style={{ color: "var(--text3)", fontSize: 19 }}>Teacher Dashboard</div>
@@ -430,7 +430,7 @@ export default function TeacherHome({ user, onLogout, onLiveSession }) {
               <div style={{ fontWeight: 700, fontSize: 19 }}>{user.name}</div>
               <div style={{ color: "var(--text3)", fontSize: 19 }}>Teacher</div>
             </div>
-            <button className="btn btn-ghost btn-sm" onClick={onLiveSession}>ðŸŽ® Live Session</button>
+            <button className="btn btn-ghost btn-sm" onClick={onLiveSession}> Live Session</button>
             <button className="btn btn-ghost btn-sm" onClick={onLogout}>Log Out</button>
           </div>
         </div>
@@ -459,7 +459,7 @@ export default function TeacherHome({ user, onLogout, onLiveSession }) {
           <div style={{ display: "flex", justifyContent: "center", padding: 60 }}><div className="spinner" /></div>
         ) : classes.length === 0 ? (
           <div className="card" style={{ textAlign: "center", padding: "50px 20px" }}>
-            <div style={{ fontSize: 48, marginBottom: 12 }}>ðŸ«</div>
+            <div style={{ fontSize: 48, marginBottom: 12 }}></div>
             <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 8 }}>No classes yet</h3>
             <p style={{ color: "var(--text2)", fontSize: 20, marginBottom: 20 }}>Create your first class to get started.</p>
             <button className="btn btn-primary btn-lg" onClick={() => setShowCreate(true)}>+ Create Your First Class</button>

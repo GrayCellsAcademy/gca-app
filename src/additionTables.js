@@ -1,4 +1,4 @@
-// ─── Addition Tables Topic Definition ────────────────────────────
+//  Addition Tables Topic Definition 
 // Tiers 1-9: Adding that number to 1-9
 // Each tier: current questions need 3 correct, previous tier questions need 1 correct
 
@@ -8,7 +8,7 @@ export const ADDITION_TOPIC = {
   id: ADDITION_TOPIC_ID,
   title: "Addition Tables",
   subject: "math",
-  description: "Master single-digit addition mentally and quickly — the foundation of all arithmetic.",
+  description: "Master single-digit addition mentally and quickly  the foundation of all arithmetic.",
   gradeLevel: "6+",
   status: "published",
   type: "addition-tables",
@@ -52,13 +52,13 @@ function shuffle(arr) {
   return a;
 }
 
-// ─── Tier colors ─────────────────────────────────────────────────
+//  Tier colors 
 export const TIER_COLORS = {
   1:"#3b82f6",2:"#06b6d4",3:"#10b981",4:"#84cc16",
   5:"#f59e0b",6:"#f97316",7:"#ef4444",8:"#8b5cf6",9:"#ec4899",
 };
 
-// ─── Speech helper ───────────────────────────────────────────────
+//  Speech helper 
 export function speak(text, onEnd) {
   if (!window.speechSynthesis) return;
   window.speechSynthesis.cancel();

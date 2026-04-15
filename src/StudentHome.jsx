@@ -1,9 +1,9 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { getClass, getProgress, leaveClass, joinClass, normalizeAssignments, calculateGrade, gradeToLetter } from "../core/firebase";
 import { getTopic, getPublishedTopics } from "../registry";
 import TopicRouter from "../TopicRouter";
 
-// â”€â”€â”€ Topic Roadmap Card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+//  Topic Roadmap Card 
 function TopicRoadmapCard({ topic, progress, assignment, isUnlocked, position, onClick }) {
   const completed = progress?.completed === true;
   const started = progress?.started === true;
@@ -14,11 +14,11 @@ function TopicRoadmapCard({ topic, progress, assignment, isUnlocked, position, o
 
   let statusLabel, statusColor, statusBg;
   if (completed) {
-    statusLabel = "âœ“ Completed"; statusColor = "#10b981"; statusBg = "rgba(16,185,129,0.15)";
+    statusLabel = " Completed"; statusColor = "#10b981"; statusBg = "rgba(16,185,129,0.15)";
   } else if (!isUnlocked) {
-    statusLabel = "ðŸ”’ Locked"; statusColor = "var(--text3)"; statusBg = "rgba(255,255,255,0.05)";
+    statusLabel = " Locked"; statusColor = "var(--text3)"; statusBg = "rgba(255,255,255,0.05)";
   } else if (notStarted) {
-    statusLabel = overdue ? "âš ï¸ Overdue" : "Not started";
+    statusLabel = overdue ? " Overdue" : "Not started";
     statusColor = overdue ? "var(--red)" : "var(--text2)";
     statusBg = overdue ? "rgba(239,68,68,0.1)" : "rgba(255,255,255,0.08)";
   } else {
@@ -49,7 +49,7 @@ function TopicRoadmapCard({ topic, progress, assignment, isUnlocked, position, o
         background: completed ? "var(--green)" : isUnlocked ? "var(--blue)" : "var(--surface2)",
         display: "flex", alignItems: "center", justifyContent: "center",
         fontSize: 20, fontWeight: 700, color: "#fff",
-      }}>{completed ? "âœ“" : position}</div>
+      }}>{completed ? "" : position}</div>
 
       {/* Icon */}
       <div style={{
@@ -71,7 +71,7 @@ function TopicRoadmapCard({ topic, progress, assignment, isUnlocked, position, o
         </p>
         {assignment?.dueDate && !completed && (
           <div style={{ fontSize: 19, color: overdue ? "var(--red)" : "var(--text3)", marginTop: 4, marginBottom: 6 }}>
-            {overdue ? "âš ï¸ Due date passed: " : "ðŸ“… Due: "}{assignment.dueDate}
+            {overdue ? " Due date passed: " : " Due: "}{assignment.dueDate}
           </div>
         )}
         {isUnlocked && started && (
@@ -92,7 +92,7 @@ function TopicRoadmapCard({ topic, progress, assignment, isUnlocked, position, o
       {isUnlocked && (
         <div style={{ flexShrink: 0 }}>
           <button className={`btn btn-sm ${completed ? "btn-ghost" : "btn-primary"}`}>
-            {completed ? "Review" : notStarted ? "Start â†’" : "Continue â†’"}
+            {completed ? "Review" : notStarted ? "Start " : "Continue "}
           </button>
         </div>
       )}
@@ -100,7 +100,7 @@ function TopicRoadmapCard({ topic, progress, assignment, isUnlocked, position, o
   );
 }
 
-// â”€â”€â”€ Class View â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+//  Class View 
 function ClassView({ cls, userId, onBack, onPlayTopic }) {
   const [progress, setProgress] = useState({});
   const [loading, setLoading] = useState(true);
@@ -137,14 +137,14 @@ function ClassView({ cls, userId, onBack, onPlayTopic }) {
   return (
     <div>
       <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24, flexWrap: "wrap" }}>
-        <button className="btn btn-ghost btn-sm" onClick={onBack}>â† Back</button>
+        <button className="btn btn-ghost btn-sm" onClick={onBack}> Back</button>
         <h2 style={{ fontSize: 22, fontWeight: 800, flex: 1 }}>{cls.name}</h2>
         {/* Grade summary pill */}
         {grade !== null && (
           <div style={{ display: "flex", alignItems: "center", gap: 10, background: "var(--surface)", border: "1px solid var(--border2)", borderRadius: "var(--radius-lg)", padding: "10px 20px" }}>
             <div>
               <div style={{ fontSize: 20, color: "var(--text3)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em" }}>Current Grade</div>
-              <div style={{ fontSize: 22, fontWeight: 900, color: letterColor }}>{grade}% â€” {letter}</div>
+              <div style={{ fontSize: 22, fontWeight: 900, color: letterColor }}>{grade}%  {letter}</div>
             </div>
             {categories.length > 0 && (
               <div style={{ borderLeft: "1px solid var(--border)", paddingLeft: 16, display: "flex", flexDirection: "column", gap: 3 }}>
@@ -170,7 +170,7 @@ function ClassView({ cls, userId, onBack, onPlayTopic }) {
         <div style={{ display: "flex", justifyContent: "center", padding: 40 }}><div className="spinner" /></div>
       ) : assignedTopics.length === 0 ? (
         <div className="card" style={{ textAlign: "center", padding: "40px 20px" }}>
-          <div style={{ fontSize: 40, marginBottom: 12 }}>ðŸ“­</div>
+          <div style={{ fontSize: 40, marginBottom: 12 }}></div>
           <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 8 }}>No topics assigned yet</h3>
           <p style={{ color: "var(--text2)", fontSize: 20 }}>Your teacher hasn't assigned any topics yet. Check back soon!</p>
         </div>
@@ -193,7 +193,7 @@ function ClassView({ cls, userId, onBack, onPlayTopic }) {
   );
 }
 
-// â”€â”€â”€ Main Student Home â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+//  Main Student Home 
 export default function StudentHome({ user, onLogout, onLiveSession }) {
   const [classes, setClasses] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -233,14 +233,14 @@ export default function StudentHome({ user, onLogout, onLiveSession }) {
     await loadClasses();
   };
 
-  // â”€â”€ Playing a topic â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  //  Playing a topic 
   if (screen === "playing" && playingTopicId) {
     return (
       <div style={{ minHeight: "100vh", background: "var(--bg)", padding: "clamp(16px,3vw,32px)" }} className="dot-bg">
         <div style={{ maxWidth: 900, margin: "0 auto" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <div style={{ width: 36, height: 36, borderRadius: 10, background: "linear-gradient(135deg,var(--blue),var(--cyan))", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>ðŸŽ“</div>
+              <div style={{ width: 36, height: 36, borderRadius: 10, background: "linear-gradient(135deg,var(--blue),var(--cyan))", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}></div>
               <span style={{ fontWeight: 800, fontSize: 20 }}>GCA</span>
             </div>
             <button className="btn btn-ghost btn-sm" onClick={() => {
@@ -248,7 +248,7 @@ export default function StudentHome({ user, onLogout, onLiveSession }) {
               setScreen("class");
               setPlayingTopicId(null);
               loadClasses();
-            }}>â† Back to Class</button>
+            }}> Back to Class</button>
           </div>
           {/* TopicRouter picks the right player automatically */}
           <TopicRouter
@@ -273,7 +273,7 @@ export default function StudentHome({ user, onLogout, onLiveSession }) {
         {/* Top bar */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 32, flexWrap: "wrap", gap: 12 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <div style={{ width: 40, height: 40, borderRadius: 12, background: "linear-gradient(135deg,var(--blue),var(--cyan))", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>ðŸŽ“</div>
+            <div style={{ width: 40, height: 40, borderRadius: 12, background: "linear-gradient(135deg,var(--blue),var(--cyan))", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}></div>
             <div>
               <div style={{ fontWeight: 800, fontSize: 20 }}>GCA</div>
               <div style={{ color: "var(--text3)", fontSize: 19 }}>Gray Cells Academy</div>
@@ -284,7 +284,7 @@ export default function StudentHome({ user, onLogout, onLiveSession }) {
               <div style={{ fontWeight: 700, fontSize: 19 }}>{user.name}</div>
               <div style={{ color: "var(--text3)", fontSize: 19 }}>Student</div>
             </div>
-            <button className="btn btn-ghost btn-sm" onClick={onLiveSession}>ðŸŽ® Live Session</button>
+            <button className="btn btn-ghost btn-sm" onClick={onLiveSession}> Live Session</button>
             <button className="btn btn-ghost btn-sm" onClick={onLogout}>Log Out</button>
           </div>
         </div>
@@ -301,7 +301,7 @@ export default function StudentHome({ user, onLogout, onLiveSession }) {
           <>
             <div style={{ marginBottom: 28, animation: "fadeUp 0.35s ease" }}>
               <h1 style={{ fontSize: "clamp(22px,4vw,32px)", fontWeight: 900, letterSpacing: "-0.5px", marginBottom: 6 }}>
-                Hi, {user.name.split(" ")[0]}! ðŸ‘‹
+                Hi, {user.name.split(" ")[0]}! 
               </h1>
               <p style={{ color: "var(--text2)", fontSize: 19 }}>
                 {classes.length > 0 ? "Select a class to see your assignments." : "Join a class to get started."}
@@ -322,7 +322,7 @@ export default function StudentHome({ user, onLogout, onLiveSession }) {
                   </h2>
                   {classes.length === 0 ? (
                     <div className="card" style={{ textAlign: "center", padding: "40px 20px" }}>
-                      <div style={{ fontSize: 40, marginBottom: 12 }}>ðŸ«</div>
+                      <div style={{ fontSize: 40, marginBottom: 12 }}></div>
                       <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 8 }}>Not in any class yet</h3>
                       <p style={{ color: "var(--text2)", fontSize: 20 }}>Join a class using the form on the right.</p>
                     </div>
@@ -336,7 +336,7 @@ export default function StudentHome({ user, onLogout, onLiveSession }) {
                           onMouseLeave={e => e.currentTarget.style.borderColor = "var(--border)"}
                         >
                           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-                            <div style={{ width: 44, height: 44, borderRadius: 12, flexShrink: 0, background: "rgba(59,130,246,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}>ðŸ«</div>
+                            <div style={{ width: 44, height: 44, borderRadius: 12, flexShrink: 0, background: "rgba(59,130,246,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}></div>
                             <div>
                               <div style={{ fontSize: 20, fontWeight: 800, marginBottom: 3 }}>{cls.name}</div>
                               <div style={{ fontSize: 19, color: "var(--text3)" }}>
@@ -345,7 +345,7 @@ export default function StudentHome({ user, onLogout, onLiveSession }) {
                             </div>
                           </div>
                           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                            <button className="btn btn-primary btn-sm">Open â†’</button>
+                            <button className="btn btn-primary btn-sm">Open </button>
                             <button className="btn btn-sm"
                               style={{ background: "rgba(239,68,68,0.1)", color: "var(--red)", border: "1px solid rgba(239,68,68,0.3)", fontSize: 19, padding: "6px 12px" }}
                               onClick={e => { e.stopPropagation(); doLeaveClass(cls.id); }}>
@@ -358,7 +358,7 @@ export default function StudentHome({ user, onLogout, onLiveSession }) {
                   )}
                 </div>
 
-                {/* Sidebar â€” join class */}
+                {/* Sidebar  join class */}
                 <div className="card" style={{ padding: "18px 20px" }}>
                   <h3 style={{ fontSize: 20, fontWeight: 700, color: "var(--text2)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 14 }}>
                     Join a Class
@@ -377,7 +377,7 @@ export default function StudentHome({ user, onLogout, onLiveSession }) {
                     placeholder="Class password" style={{ fontSize: 20, padding: "9px 12px", marginBottom: 12 }} />
                   <button className="btn btn-primary" style={{ width: "100%", fontSize: 20 }}
                     onClick={doJoinClass} disabled={joinLoading}>
-                    {joinLoading ? "Joiningâ€¦" : "Join Class ðŸ«"}
+                    {joinLoading ? "Joining" : "Join Class "}
                   </button>
                 </div>
 

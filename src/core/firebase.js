@@ -37,7 +37,7 @@ const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 
-// ─── Auth ─────────────────────────────────────────────────────────
+//  Auth 
 export const DEV_CODE = "GCA_DEV_2025";
 
 export async function registerUser(email, password, name, role) {
@@ -60,7 +60,7 @@ export async function logoutUser() { await signOut(auth); }
 
 export function onAuthChange(cb) { return onAuthStateChanged(auth, cb); }
 
-// ─── Users ────────────────────────────────────────────────────────
+//  Users 
 export async function getUser(uid) {
   const snap = await getDoc(doc(db, "users", uid));
   return snap.exists() ? snap.data() : null;
@@ -79,7 +79,7 @@ export async function deleteUser(uid) {
   await deleteDoc(doc(db, "users", uid));
 }
 
-// ─── Classes ──────────────────────────────────────────────────────
+//  Classes 
 export async function createClass(name, password, teacherId) {
   const classId = "cls_" + Date.now().toString(36);
   await setDoc(doc(db, "classes", classId), {
@@ -129,12 +129,12 @@ export async function leaveClass(uid, classId) {
   await updateDoc(doc(db, "users", uid), { classIds: arrayRemove(classId) });
 }
 
-// ─── Categories ───────────────────────────────────────────────────
+//  Categories 
 export async function saveCategories(classId, categories) {
   await updateDoc(doc(db, "classes", classId), { categories });
 }
 
-// ─── Assignments ──────────────────────────────────────────────────
+//  Assignments 
 export function normalizeAssignments(assignedTopics) {
   return (assignedTopics || []).map(a =>
     typeof a === "string"
@@ -185,7 +185,7 @@ export async function getStudentsForClass(classId) {
   return students.filter(Boolean);
 }
 
-// ─── Grade Calculation ────────────────────────────────────────────
+//  Grade Calculation 
 export function calculateGrade(assignments, categories, progressMap) {
   if (!categories.length) return null;
   const byCategory = {};
@@ -214,7 +214,7 @@ export function calculateGrade(assignments, categories, progressMap) {
 }
 
 export function gradeToLetter(grade) {
-  if (grade === null) return "—";
+  if (grade === null) return "";
   if (grade >= 90) return "A";
   if (grade >= 80) return "B";
   if (grade >= 70) return "C";
@@ -222,7 +222,7 @@ export function gradeToLetter(grade) {
   return "F";
 }
 
-// ─── Progress ─────────────────────────────────────────────────────
+//  Progress 
 export async function getProgress(uid, topicId) {
   const id = `${uid}_${topicId}`;
   const snap = await getDoc(doc(db, "progress", id));
@@ -248,7 +248,7 @@ export async function getClassProgress(studentIds, topicIds) {
   return results;
 }
 
-// ─── Live Sessions ────────────────────────────────────────────────
+//  Live Sessions 
 export function generateJoinCode() {
   return Math.random().toString(36).slice(2, 7).toUpperCase();
 }

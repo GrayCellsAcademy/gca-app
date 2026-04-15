@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { setDoc, doc, updateDoc, increment } from "firebase/firestore";
 import {
   createSession, joinSession, startQuestion, revealQuestion, endSession,
@@ -6,9 +6,9 @@ import {
 } from "./core/firebase";
 import { WORKSHEET_QUESTIONS, TOTAL_POINTS, gradeDecimalAnswer, generateSimilarQuestion } from "./worksheetQuestions";
 
-// â”€â”€â”€ Repeating Decimal Input â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+//  Repeating Decimal Input 
 // Internal format: "1.[27]" means 1.272727...
-// Display: 1.2Ì„7Ì„
+// Display: 1.27
 // Parse: splits on [ to find repeating part
 
 function parseRepeatingInput(val) {
@@ -152,7 +152,7 @@ function RepeatingInput({ value, onChange, onSubmit, disabled }) {
             border: `2px solid ${inBar ? "var(--blue)" : "rgba(59,130,246,0.4)"}`,
             borderRadius: "var(--radius-sm)", cursor: inBar ? "not-allowed" : "pointer",
             color: inBar ? "#fff" : "var(--blue)" }}>
-          xÌ„ BAR
+          x BAR
         </button>
         <button disabled={disabled}
           onMouseDown={e => e.preventDefault()}
@@ -160,7 +160,7 @@ function RepeatingInput({ value, onChange, onSubmit, disabled }) {
           style={{ padding: "0 14px", height: 44, fontSize: 20, fontWeight: 700,
             background: "var(--surface)", border: "1px solid var(--border)",
             borderRadius: "var(--radius-sm)", cursor: "pointer", color: "var(--text)" }}>
-          â†
+          
         </button>
         <button disabled={disabled}
           onMouseDown={e => e.preventDefault()}
@@ -182,7 +182,7 @@ function RepeatingInput({ value, onChange, onSubmit, disabled }) {
   );
 }
 
-// â”€â”€â”€ Grade repeating decimal answer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+//  Grade repeating decimal answer 
 function gradeAnswer(studentRaw, question) {
   if (!studentRaw) return false;
 
@@ -220,7 +220,7 @@ function gradeAnswer(studentRaw, question) {
   return Math.abs(studentNum - correctNum) < 0.0001;
 }
 
-// â”€â”€â”€ Timer Bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+//  Timer Bar 
 function TimerBar({ endsAt, totalSeconds, onExpired }) {
   const [remaining, setRemaining] = useState(totalSeconds);
   const expiredRef = useRef(false);
@@ -255,7 +255,7 @@ function TimerBar({ endsAt, totalSeconds, onExpired }) {
   );
 }
 
-// â”€â”€â”€ Leaderboard â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+//  Leaderboard 
 function Leaderboard({ participants, currentUid, isEnded }) {
   const sorted = Object.entries(participants)
     .map(([uid, p]) => ({ uid, ...p }))
@@ -293,7 +293,7 @@ function Leaderboard({ participants, currentUid, isEnded }) {
   );
 }
 
-// â”€â”€â”€ Teacher View â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+//  Teacher View 
 function TeacherWorksheet({ session, sessionId, uid }) {
   const [answers, setAnswers] = useState([]);
   const [timerInput, setTimerInput] = useState(90);
@@ -514,7 +514,7 @@ function TeacherWorksheet({ session, sessionId, uid }) {
   );
 }
 
-// â”€â”€â”€ Student View â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+//  Student View 
 function StudentWorksheet({ session, sessionId, uid }) {
   const [inputRaw, setInputRaw] = useState("");
   const [submitted, setSubmitted] = useState(false);
@@ -645,7 +645,7 @@ function StudentWorksheet({ session, sessionId, uid }) {
   );
 }
 
-// â”€â”€â”€ Create Session â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+//  Create Session 
 function CreateWorksheetSession({ user, onCreated }) {
   const [classes, setClasses] = useState([]);
   const [selectedClass, setSelectedClass] = useState("");
@@ -696,7 +696,7 @@ function CreateWorksheetSession({ user, onCreated }) {
   );
 }
 
-// â”€â”€â”€ Main Export â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+//  Main Export 
 export default function WorksheetSession({ user, onHome }) {
   const [view, setView] = useState("create");
   const [sessionId, setSessionId] = useState(null);

@@ -1,14 +1,14 @@
-// ─── Worksheet Questions — Decimals Session ───────────────────────
+//  Worksheet Questions  Decimals Session 
 // Exact questions from the worksheet, pre-computed answers
 
 export const WORKSHEET_QUESTIONS = [
-  // ── Section 1: Decimal Multiplication ────────────────────────────
+  //  Section 1: Decimal Multiplication 
   {
     id: "w1",
     section: "Section 1",
     sectionTitle: "Decimal Multiplication",
-    prompt: "6.38 × 2",
-    hint: "Multiply as whole numbers (638 × 2), then place the decimal",
+    prompt: "6.38  2",
+    hint: "Multiply as whole numbers (638  2), then place the decimal",
     answer: "12.76",
     altAnswers: ["12.76"],
     mode: "decimal",
@@ -18,7 +18,7 @@ export const WORKSHEET_QUESTIONS = [
     id: "w2",
     section: "Section 1",
     sectionTitle: "Decimal Multiplication",
-    prompt: "10.1 × 0.53",
+    prompt: "10.1  0.53",
     hint: "Count total decimal places: 1 + 2 = 3",
     answer: "5.353",
     altAnswers: ["5.353"],
@@ -29,7 +29,7 @@ export const WORKSHEET_QUESTIONS = [
     id: "w3",
     section: "Section 1",
     sectionTitle: "Decimal Multiplication",
-    prompt: "5.8 × 0.62",
+    prompt: "5.8  0.62",
     hint: "Count total decimal places: 1 + 2 = 3",
     answer: "3.596",
     altAnswers: ["3.596"],
@@ -37,13 +37,13 @@ export const WORKSHEET_QUESTIONS = [
     points: 5,
   },
 
-  // ── Section 2: Fraction to Decimal ───────────────────────────────
+  //  Section 2: Fraction to Decimal 
   {
     id: "w4",
     section: "Section 2",
     sectionTitle: "Fraction to Decimal",
     prompt: "Convert 7/2 to a decimal",
-    hint: "Divide 7 ÷ 2",
+    hint: "Divide 7  2",
     answer: "3.5",
     altAnswers: ["3.5", "3.50"],
     mode: "decimal",
@@ -54,7 +54,7 @@ export const WORKSHEET_QUESTIONS = [
     section: "Section 2",
     sectionTitle: "Fraction to Decimal",
     prompt: "Convert 15/4 to a decimal",
-    hint: "Divide 15 ÷ 4",
+    hint: "Divide 15  4",
     answer: "3.75",
     altAnswers: ["3.75"],
     mode: "decimal",
@@ -65,7 +65,7 @@ export const WORKSHEET_QUESTIONS = [
     section: "Section 2",
     sectionTitle: "Fraction to Decimal",
     prompt: "Convert 13/5 to a decimal",
-    hint: "Divide 13 ÷ 5",
+    hint: "Divide 13  5",
     answer: "2.6",
     altAnswers: ["2.6", "2.60"],
     mode: "decimal",
@@ -76,9 +76,9 @@ export const WORKSHEET_QUESTIONS = [
     section: "Section 2",
     sectionTitle: "Fraction to Decimal",
     prompt: "Convert 25/3 to a decimal",
-    hint: "Divide 25 ÷ 3 — this is a repeating decimal",
+    hint: "Divide 25  3  this is a repeating decimal",
     answer: "8.333",
-    altAnswers: ["8.333", "8.3333", "8.33", "8.333...", "8.3...", "8.3̄"],
+    altAnswers: ["8.333", "8.3333", "8.33", "8.333...", "8.3...", "8.3"],
     mode: "decimal-repeating",
     points: 5,
   },
@@ -87,9 +87,9 @@ export const WORKSHEET_QUESTIONS = [
     section: "Section 2",
     sectionTitle: "Fraction to Decimal",
     prompt: "Convert 761/6 to a decimal",
-    hint: "Divide 761 ÷ 6 — this is a repeating decimal",
+    hint: "Divide 761  6  this is a repeating decimal",
     answer: "126.833",
-    altAnswers: ["126.833", "126.8333", "126.83", "126.833...", "126.8̄3̄"],
+    altAnswers: ["126.833", "126.8333", "126.83", "126.833...", "126.83"],
     mode: "decimal-repeating",
     points: 5,
   },
@@ -98,20 +98,20 @@ export const WORKSHEET_QUESTIONS = [
     section: "Section 2",
     sectionTitle: "Fraction to Decimal",
     prompt: "Convert 35/11 to a decimal",
-    hint: "Divide 35 ÷ 11 — this is a repeating decimal",
+    hint: "Divide 35  11  this is a repeating decimal",
     answer: "3.1818",
-    altAnswers: ["3.1818", "3.18", "3.181818", "3.18...", "3.18̄"],
+    altAnswers: ["3.1818", "3.18", "3.181818", "3.18...", "3.18"],
     mode: "decimal-repeating",
     points: 5,
   },
 
-  // ── Section 3: Decimal Division ───────────────────────────────────
+  //  Section 3: Decimal Division 
   {
     id: "w10",
     section: "Section 3",
     sectionTitle: "Decimal Division",
-    prompt: "36 ÷ 0.09",
-    hint: "Multiply both by 100: 3600 ÷ 9",
+    prompt: "36  0.09",
+    hint: "Multiply both by 100: 3600  9",
     answer: "400",
     altAnswers: ["400", "400.0"],
     mode: "decimal",
@@ -121,8 +121,8 @@ export const WORKSHEET_QUESTIONS = [
     id: "w11",
     section: "Section 3",
     sectionTitle: "Decimal Division",
-    prompt: "0.01 ÷ 0.1",
-    hint: "Multiply both by 10: 0.1 ÷ 1",
+    prompt: "0.01  0.1",
+    hint: "Multiply both by 10: 0.1  1",
     answer: "0.1",
     altAnswers: ["0.1", ".1", "0.10"],
     mode: "decimal",
@@ -132,8 +132,8 @@ export const WORKSHEET_QUESTIONS = [
     id: "w12",
     section: "Section 3",
     sectionTitle: "Decimal Division",
-    prompt: "0.048 ÷ 0.6",
-    hint: "Multiply both by 10: 0.48 ÷ 6",
+    prompt: "0.048  0.6",
+    hint: "Multiply both by 10: 0.48  6",
     answer: "0.08",
     altAnswers: ["0.08", ".08", "0.080"],
     mode: "decimal",
@@ -143,7 +143,7 @@ export const WORKSHEET_QUESTIONS = [
     id: "w13",
     section: "Section 3",
     sectionTitle: "Decimal Division",
-    prompt: "0.7 ÷ 5",
+    prompt: "0.7  5",
     hint: "Place decimal point in quotient above dividend's decimal",
     answer: "0.14",
     altAnswers: ["0.14", ".14"],
@@ -154,10 +154,10 @@ export const WORKSHEET_QUESTIONS = [
     id: "w14",
     section: "Section 3",
     sectionTitle: "Decimal Division",
-    prompt: "0.85 ÷ 0.003",
-    hint: "Multiply both by 1000: 850 ÷ 3",
+    prompt: "0.85  0.003",
+    hint: "Multiply both by 1000: 850  3",
     answer: "283.333",
-    altAnswers: ["283.333", "283.3333", "283.33", "283.333...", "283.3̄"],
+    altAnswers: ["283.333", "283.3333", "283.33", "283.333...", "283.3"],
     mode: "decimal-repeating",
     points: 5,
   },
@@ -165,21 +165,21 @@ export const WORKSHEET_QUESTIONS = [
     id: "w15",
     section: "Section 3",
     sectionTitle: "Decimal Division",
-    prompt: "25.2 ÷ 0.6",
-    hint: "Multiply both by 10: 252 ÷ 6",
+    prompt: "25.2  0.6",
+    hint: "Multiply both by 10: 252  6",
     answer: "42",
     altAnswers: ["42", "42.0"],
     mode: "decimal",
     points: 5,
   },
 
-  // ── Section 4: Order of Operations with Decimals ──────────────────
+  //  Section 4: Order of Operations with Decimals 
   {
     id: "w16",
     section: "Section 4",
     sectionTitle: "Order of Operations",
-    prompt: "0.31 + 0.4 · 0.7",
-    hint: "Multiply first: 0.4 × 0.7 = 0.28, then add 0.31",
+    prompt: "0.31 + 0.4  0.7",
+    hint: "Multiply first: 0.4  0.7 = 0.28, then add 0.31",
     answer: "0.59",
     altAnswers: ["0.59", ".59"],
     mode: "decimal",
@@ -189,8 +189,8 @@ export const WORKSHEET_QUESTIONS = [
     id: "w17",
     section: "Section 4",
     sectionTitle: "Order of Operations",
-    prompt: "0.15 + 0.2²",
-    hint: "Power first: 0.2² = 0.04, then add 0.15",
+    prompt: "0.15 + 0.2",
+    hint: "Power first: 0.2 = 0.04, then add 0.15",
     answer: "0.19",
     altAnswers: ["0.19", ".19"],
     mode: "decimal",
@@ -200,8 +200,8 @@ export const WORKSHEET_QUESTIONS = [
     id: "w18",
     section: "Section 4",
     sectionTitle: "Order of Operations",
-    prompt: "(10 ÷ 2.5)³",
-    hint: "Parentheses first: 10 ÷ 2.5 = 4, then 4³",
+    prompt: "(10  2.5)",
+    hint: "Parentheses first: 10  2.5 = 4, then 4",
     answer: "64",
     altAnswers: ["64", "64.0"],
     mode: "decimal",
@@ -211,8 +211,8 @@ export const WORKSHEET_QUESTIONS = [
     id: "w19",
     section: "Section 4",
     sectionTitle: "Order of Operations",
-    prompt: "43.14 ÷ (2 − 1.4)",
-    hint: "Parentheses first: 2 − 1.4 = 0.6, then 43.14 ÷ 0.6",
+    prompt: "43.14  (2  1.4)",
+    hint: "Parentheses first: 2  1.4 = 0.6, then 43.14  0.6",
     answer: "71.9",
     altAnswers: ["71.9", "71.90"],
     mode: "decimal",
@@ -222,8 +222,8 @@ export const WORKSHEET_QUESTIONS = [
     id: "w20",
     section: "Section 4",
     sectionTitle: "Order of Operations",
-    prompt: "0.5² ÷ 4",
-    hint: "Power first: 0.5² = 0.25, then 0.25 ÷ 4",
+    prompt: "0.5  4",
+    hint: "Power first: 0.5 = 0.25, then 0.25  4",
     answer: "0.0625",
     altAnswers: ["0.0625", ".0625"],
     mode: "decimal",
@@ -238,7 +238,7 @@ export function gradeDecimalAnswer(studentAnswer, question) {
   if (!studentAnswer) return false;
   const cleaned = studentAnswer.trim().toLowerCase()
     .replace(/\s/g, '')
-    .replace(/…/g, '...');
+    .replace(//g, '...');
 
   // Check all accepted answers
   for (const accepted of question.altAnswers) {
@@ -268,7 +268,7 @@ export function gradeDecimalAnswer(studentAnswer, question) {
   return false;
 }
 
-// ─── Question Generators (for repeat functionality) ───────────────
+//  Question Generators (for repeat functionality) 
 
 function randDecimal(intDigits, decDigits) {
   const intPart = Math.floor(Math.random() * (Math.pow(10, intDigits) - Math.pow(10, intDigits-1))) + Math.pow(10, intDigits-1);
@@ -286,25 +286,25 @@ export function generateSimilarQuestion(originalQuestion) {
 
   // Section 1: Decimal Multiplication
   if (qNum === 1) {
-    // decimal × whole number
+    // decimal  whole number
     const a = randDecimal(1, 2); // e.g. 6.38
     const b = Math.floor(Math.random() * 8) + 2; // 2-9
     const ans = round(a * b, 2);
-    return { ...originalQuestion, prompt: `${a} × ${b}`, answer: String(ans), altAnswers: [String(ans)] };
+    return { ...originalQuestion, prompt: `${a}  ${b}`, answer: String(ans), altAnswers: [String(ans)] };
   }
   if (qNum === 2) {
-    // decimal × decimal (1dp × 2dp)
+    // decimal  decimal (1dp  2dp)
     const a = randDecimal(2, 1); // e.g. 10.1
     const b = randDecimal(0, 2); // e.g. 0.53
     const ans = round(a * b, 3);
-    return { ...originalQuestion, prompt: `${a} × ${b}`, answer: String(ans), altAnswers: [String(ans)] };
+    return { ...originalQuestion, prompt: `${a}  ${b}`, answer: String(ans), altAnswers: [String(ans)] };
   }
   if (qNum === 3) {
-    // decimal × decimal (1dp × 2dp)
+    // decimal  decimal (1dp  2dp)
     const a = randDecimal(1, 1); // e.g. 5.8
     const b = randDecimal(0, 2); // e.g. 0.62
     const ans = round(a * b, 3);
-    return { ...originalQuestion, prompt: `${a} × ${b}`, answer: String(ans), altAnswers: [String(ans)] };
+    return { ...originalQuestion, prompt: `${a}  ${b}`, answer: String(ans), altAnswers: [String(ans)] };
   }
 
   // Section 2: Fraction to Decimal
@@ -337,94 +337,94 @@ export function generateSimilarQuestion(originalQuestion) {
 
   // Section 3: Decimal Division
   if (qNum === 10) {
-    // whole ÷ 0.0x
+    // whole  0.0x
     const b = (Math.floor(Math.random() * 9) + 1) / 100;
     const quotient = Math.floor(Math.random() * 8) + 2;
     const a = round(b * quotient, 0);
     const ans = round(a / b, 1);
-    return { ...originalQuestion, prompt: `${a} ÷ ${b}`, answer: String(ans), altAnswers: [String(ans)] };
+    return { ...originalQuestion, prompt: `${a}  ${b}`, answer: String(ans), altAnswers: [String(ans)] };
   }
   if (qNum === 11) {
-    // 0.0x ÷ 0.x
+    // 0.0x  0.x
     const b = (Math.floor(Math.random() * 9) + 1) / 10;
     const quotient = (Math.floor(Math.random() * 9) + 1) / 10;
     const a = round(b * quotient, 2);
     const ans = round(a / b, 2);
-    return { ...originalQuestion, prompt: `${a} ÷ ${b}`, answer: String(ans), altAnswers: [String(ans)] };
+    return { ...originalQuestion, prompt: `${a}  ${b}`, answer: String(ans), altAnswers: [String(ans)] };
   }
   if (qNum === 12) {
-    // 0.0xx ÷ 0.x
+    // 0.0xx  0.x
     const b = (Math.floor(Math.random() * 8) + 2) / 10;
     const quotient = (Math.floor(Math.random() * 9) + 1) / 100;
     const a = round(b * quotient, 3);
     const ans = round(a / b, 2);
-    return { ...originalQuestion, prompt: `${a} ÷ ${b}`, answer: String(ans), altAnswers: [String(ans)] };
+    return { ...originalQuestion, prompt: `${a}  ${b}`, answer: String(ans), altAnswers: [String(ans)] };
   }
   if (qNum === 13) {
-    // 0.x ÷ whole
+    // 0.x  whole
     const b = Math.floor(Math.random() * 8) + 2;
     const quotient = (Math.floor(Math.random() * 9) + 1) / 100;
     const a = round(b * quotient, 1);
     const ans = round(a / b, 2);
-    return { ...originalQuestion, prompt: `${a} ÷ ${b}`, answer: String(ans), altAnswers: [String(ans)] };
+    return { ...originalQuestion, prompt: `${a}  ${b}`, answer: String(ans), altAnswers: [String(ans)] };
   }
   if (qNum === 14) {
-    // decimal ÷ 0.00x (repeating result)
+    // decimal  0.00x (repeating result)
     const b = (Math.floor(Math.random() * 6) + 2) / 1000;
     const quotient = Math.floor(Math.random() * 200) + 50;
     const a = round(b * quotient, 2);
     const ans = round(a / b, 2);
-    return { ...originalQuestion, prompt: `${a} ÷ ${b}`, answer: String(ans), altAnswers: [String(ans)], mode: 'decimal-repeating' };
+    return { ...originalQuestion, prompt: `${a}  ${b}`, answer: String(ans), altAnswers: [String(ans)], mode: 'decimal-repeating' };
   }
   if (qNum === 15) {
-    // xx.x ÷ 0.x
+    // xx.x  0.x
     const b = (Math.floor(Math.random() * 8) + 2) / 10;
     const quotient = Math.floor(Math.random() * 60) + 10;
     const a = round(b * quotient, 1);
     const ans = round(a / b, 1);
-    return { ...originalQuestion, prompt: `${a} ÷ ${b}`, answer: String(ans), altAnswers: [String(ans)] };
+    return { ...originalQuestion, prompt: `${a}  ${b}`, answer: String(ans), altAnswers: [String(ans)] };
   }
 
   // Section 4: Order of Operations
   if (qNum === 16) {
-    // a + b × c  (decimals)
+    // a + b  c  (decimals)
     const b = round((Math.floor(Math.random() * 8) + 1) / 10, 1);
     const c = round((Math.floor(Math.random() * 8) + 1) / 10, 1);
     const a = round((Math.floor(Math.random() * 8) + 1) / 100, 2);
     const ans = round(a + b * c, 4);
-    return { ...originalQuestion, prompt: `${a} + ${b} · ${c}`, answer: String(ans), altAnswers: [String(ans)] };
+    return { ...originalQuestion, prompt: `${a} + ${b}  ${c}`, answer: String(ans), altAnswers: [String(ans)] };
   }
   if (qNum === 17) {
-    // a + b²
+    // a + b
     const b = round((Math.floor(Math.random() * 8) + 1) / 10, 1);
     const a = round((Math.floor(Math.random() * 8) + 1) / 100, 2);
     const ans = round(a + b * b, 4);
-    return { ...originalQuestion, prompt: `${a} + ${b}²`, answer: String(ans), altAnswers: [String(ans)] };
+    return { ...originalQuestion, prompt: `${a} + ${b}`, answer: String(ans), altAnswers: [String(ans)] };
   }
   if (qNum === 18) {
-    // (a ÷ b)³
+    // (a  b)
     const b = round((Math.floor(Math.random() * 4) + 1) / 2, 1); // 0.5, 1.0, 1.5, 2.0
     const quotient = Math.floor(Math.random() * 5) + 2;
     const a = round(b * quotient, 1);
     const ans = round(Math.pow(a / b, 3), 2);
-    return { ...originalQuestion, prompt: `(${a} ÷ ${b})³`, answer: String(ans), altAnswers: [String(ans)] };
+    return { ...originalQuestion, prompt: `(${a}  ${b})`, answer: String(ans), altAnswers: [String(ans)] };
   }
   if (qNum === 19) {
-    // a ÷ (b - c)
+    // a  (b - c)
     const c = round((Math.floor(Math.random() * 8) + 1) / 10, 1);
     const b = round(c + (Math.floor(Math.random() * 5) + 1) / 10, 1);
     const diff = round(b - c, 1);
     const quotient = Math.floor(Math.random() * 50) + 10;
     const a = round(diff * quotient, 2);
     const ans = round(a / diff, 2);
-    return { ...originalQuestion, prompt: `${a} ÷ (${b} − ${c})`, answer: String(ans), altAnswers: [String(ans)] };
+    return { ...originalQuestion, prompt: `${a}  (${b}  ${c})`, answer: String(ans), altAnswers: [String(ans)] };
   }
   if (qNum === 20) {
-    // a² ÷ b
+    // a  b
     const a = round((Math.floor(Math.random() * 8) + 1) / 10, 1);
     const b = Math.floor(Math.random() * 8) + 2;
     const ans = round((a * a) / b, 4);
-    return { ...originalQuestion, prompt: `${a}² ÷ ${b}`, answer: String(ans), altAnswers: [String(ans)] };
+    return { ...originalQuestion, prompt: `${a}  ${b}`, answer: String(ans), altAnswers: [String(ans)] };
   }
 
   return originalQuestion;

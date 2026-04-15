@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { onAuthChange, getUser, logoutUser } from "../core/firebase";
 import Auth from "../core/auth/Auth";
 import StudentHome from "../views/StudentHome";
@@ -14,7 +14,7 @@ function Spinner() {
       background:"var(--bg)",flexDirection:"column",gap:16
     }}>
       <div className="spinner" style={{width:40,height:40,borderWidth:4}}/>
-      <div style={{color:"var(--text3)",fontSize:14}}>Loadingâ€¦</div>
+      <div style={{color:"var(--text3)",fontSize:14}}>Loading</div>
     </div>
   );
 }

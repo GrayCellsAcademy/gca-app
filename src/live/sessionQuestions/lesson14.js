@@ -1,13 +1,13 @@
-// ─── Review Session Questions ─────────────────────────────────────
+//  Review Session Questions 
 // Mirrors Test 2 exactly: same question types, same point values
-// Section 1: 2 questions × 4 pts = 8 pts
-// Section 2: 6 questions × 4 pts = 24 pts
-// Section 3: 13 questions × 4 pts = 52 pts
-// Section 4: 2 questions × 8 pts = 16 pts
+// Section 1: 2 questions  4 pts = 8 pts
+// Section 2: 6 questions  4 pts = 24 pts
+// Section 3: 13 questions  4 pts = 52 pts
+// Section 4: 2 questions  8 pts = 16 pts
 // Total: 100 pts
 
 export const REVIEW_QUESTIONS = [
-  // ── Section 1: Equivalent Fractions (4 pts each) ──────────────
+  //  Section 1: Equivalent Fractions (4 pts each) 
   {
     id: "s1q1",
     section: "Section 1",
@@ -31,7 +31,7 @@ export const REVIEW_QUESTIONS = [
     points: 4,
   },
 
-  // ── Section 2: Simplify Fractions (4 pts each) ────────────────
+  //  Section 2: Simplify Fractions (4 pts each) 
   {
     id: "s2q1",
     section: "Section 2",
@@ -99,12 +99,12 @@ export const REVIEW_QUESTIONS = [
     points: 4,
   },
 
-  // ── Section 3: Fraction Operations (4 pts each) ───────────────
+  //  Section 3: Fraction Operations (4 pts each) 
   {
     id: "s3q1",
     section: "Section 3",
     sectionTitle: "Fraction Operations",
-    prompt: "Multiply and simplify: (5/3) × (7/10)",
+    prompt: "Multiply and simplify: (5/3)  (7/10)",
     display: "\\frac{5}{3} \\cdot \\frac{7}{10}",
     hint: "Multiply numerators and denominators, then simplify",
     answer: "7/6",
@@ -115,7 +115,7 @@ export const REVIEW_QUESTIONS = [
     id: "s3q2",
     section: "Section 3",
     sectionTitle: "Fraction Operations",
-    prompt: "Multiply and simplify: (14/15) × (3/2)",
+    prompt: "Multiply and simplify: (14/15)  (3/2)",
     display: "\\frac{14}{15} \\cdot \\frac{3}{2}",
     hint: "Multiply numerators and denominators, then simplify",
     answer: "7/5",
@@ -126,7 +126,7 @@ export const REVIEW_QUESTIONS = [
     id: "s3q3",
     section: "Section 3",
     sectionTitle: "Fraction Operations",
-    prompt: "Divide and simplify: (3/2) ÷ (5/8)",
+    prompt: "Divide and simplify: (3/2)  (5/8)",
     display: "\\frac{3}{2} \\div \\frac{5}{8}",
     hint: "Multiply by the reciprocal of the second fraction",
     answer: "12/5",
@@ -137,7 +137,7 @@ export const REVIEW_QUESTIONS = [
     id: "s3q4",
     section: "Section 3",
     sectionTitle: "Fraction Operations",
-    prompt: "Divide and simplify: (5/3) ÷ (9/4)",
+    prompt: "Divide and simplify: (5/3)  (9/4)",
     display: "\\frac{5}{3} \\div \\frac{9}{4}",
     hint: "Multiply by the reciprocal of the second fraction",
     answer: "20/27",
@@ -148,7 +148,7 @@ export const REVIEW_QUESTIONS = [
     id: "s3q5",
     section: "Section 3",
     sectionTitle: "Fraction Operations",
-    prompt: "Subtract and simplify: (3/5) − (1/3)",
+    prompt: "Subtract and simplify: (3/5)  (1/3)",
     display: "\\frac{3}{5} - \\frac{1}{3}",
     hint: "Find a common denominator first",
     answer: "4/15",
@@ -170,7 +170,7 @@ export const REVIEW_QUESTIONS = [
     id: "s3q7",
     section: "Section 3",
     sectionTitle: "Fraction Operations",
-    prompt: "Subtract and simplify: (3/5) − (3/10)",
+    prompt: "Subtract and simplify: (3/5)  (3/10)",
     display: "\\frac{3}{5} - \\frac{3}{10}",
     hint: "Find a common denominator first",
     answer: "3/10",
@@ -181,7 +181,7 @@ export const REVIEW_QUESTIONS = [
     id: "s3q8",
     section: "Section 3",
     sectionTitle: "Fraction Operations",
-    prompt: "Subtract and simplify: (5/9) − (7/12)",
+    prompt: "Subtract and simplify: (5/9)  (7/12)",
     display: "\\frac{5}{9} - \\frac{7}{12}",
     hint: "Find a common denominator first",
     answer: "-1/36",
@@ -192,7 +192,7 @@ export const REVIEW_QUESTIONS = [
     id: "s3q9",
     section: "Section 3",
     sectionTitle: "Fraction Operations",
-    prompt: "Multiply: 2⁴⁄₅ × 3²⁄₇ (write answer as mixed number)",
+    prompt: "Multiply: 2  3 (write answer as mixed number)",
     display: "2\\frac{4}{5} \\cdot 3\\frac{2}{7}",
     hint: "Convert to improper fractions, multiply, convert back",
     answer: "9 1/5",
@@ -203,7 +203,7 @@ export const REVIEW_QUESTIONS = [
     id: "s3q10",
     section: "Section 3",
     sectionTitle: "Fraction Operations",
-    prompt: "Multiply: (2/3) × 3²⁄₅ (write answer as mixed number)",
+    prompt: "Multiply: (2/3)  3 (write answer as mixed number)",
     display: "\\frac{2}{3} \\cdot 3\\frac{2}{5}",
     hint: "Convert mixed number to improper fraction first",
     answer: "2 4/15",
@@ -214,7 +214,7 @@ export const REVIEW_QUESTIONS = [
     id: "s3q11",
     section: "Section 3",
     sectionTitle: "Fraction Operations",
-    prompt: "Subtract: 9⁹⁄₁₁ − 1⁷⁄₁₁ (write answer as mixed number)",
+    prompt: "Subtract: 9  1 (write answer as mixed number)",
     display: "9\\frac{9}{11} - 1\\frac{7}{11}",
     hint: "Subtract whole numbers and fractions separately",
     answer: "8 2/11",
@@ -225,7 +225,7 @@ export const REVIEW_QUESTIONS = [
     id: "s3q12",
     section: "Section 3",
     sectionTitle: "Fraction Operations",
-    prompt: "Add: 4½ + 7¾ (write answer as mixed number)",
+    prompt: "Add: 4 + 7 (write answer as mixed number)",
     display: "4\\frac{1}{2} + 7\\frac{3}{4}",
     hint: "Find a common denominator for the fractions",
     answer: "12 1/4",
@@ -236,7 +236,7 @@ export const REVIEW_QUESTIONS = [
     id: "s3q13",
     section: "Section 3",
     sectionTitle: "Fraction Operations",
-    prompt: "Subtract: 6¼ − 3⅚ (write answer as mixed number)",
+    prompt: "Subtract: 6  3 (write answer as mixed number)",
     display: "6\\frac{1}{4} - 3\\frac{5}{6}",
     hint: "You may need to borrow from the whole number",
     answer: "2 5/12",
@@ -244,7 +244,7 @@ export const REVIEW_QUESTIONS = [
     points: 4,
   },
 
-  // ── Section 4: Equations (8 pts each) ────────────────────────
+  //  Section 4: Equations (8 pts each) 
   {
     id: "s4q1",
     section: "Section 4",
@@ -260,7 +260,7 @@ export const REVIEW_QUESTIONS = [
     id: "s4q2",
     section: "Section 4",
     sectionTitle: "Solve Equations",
-    prompt: "Solve for y: y/2 = (y/3) − 3",
+    prompt: "Solve for y: y/2 = (y/3)  3",
     display: "\\frac{y}{2} = \\frac{y}{3} - 3",
     hint: "Multiply everything by the LCM of 2 and 3",
     answer: "-18",

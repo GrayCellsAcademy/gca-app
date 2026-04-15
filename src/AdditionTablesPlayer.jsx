@@ -4,7 +4,7 @@ import { saveProgress, getProgress } from "./core/firebase";
 
 const QUESTION_TIME = 15;
 
-// ─── Shared UI ────────────────────────────────────────────────────
+//  Shared UI 
 function CountdownRing({ seconds, total }) {
   const r = 24, circ = 2 * Math.PI * r;
   const pct = seconds / total;
@@ -35,7 +35,7 @@ function SpeakBtn({ text, color="#3b82f6" }) {
         fontFamily:"var(--font)",fontWeight:600,fontSize:13,cursor:"pointer",
         transition:"all 0.2s"
       }}>
-      {playing?"🔊 Playing…":"🔊 Hear instructions"}
+      {playing?" Playing":" Hear instructions"}
     </button>
   );
 }
@@ -50,7 +50,7 @@ function CorrectFlash() {
   );
 }
 
-// ─── Lesson Screen ────────────────────────────────────────────────
+//  Lesson Screen 
 function AdditionVisual() {
   // Shows 3 dots + 2 dots = 5 dots
   const dot = (color) => (
@@ -100,7 +100,7 @@ function AdditionVisual() {
 }
 
 function LessonScreen({ onComplete, isReview }) {
-  const voiceText = "Welcome to Addition Tables! Here is what you are about to do. You are going to memorize every single digit addition fact — from 1 plus 1 all the way to 9 plus 9. That is 81 facts total, and by the end of this course, you will know all of them instantly. Now, why is that worth your time? Think about a problem like this: find two numbers that add up to 14 and multiply to 48. To solve that quickly in your head, you need to know your addition facts cold — no counting, no hesitating. The same is true for long division, fractions, and mental math in everyday life. Every time you have to stop and count on your fingers, it slows you down and uses up brain power you need for the harder part of the problem. Students who have these facts memorized think faster, make fewer errors, and find advanced math much less stressful. So let's build that foundation right now. You will work one number at a time, starting with adding 1s. Each question gives you 15 seconds. Let's go!";
+  const voiceText = "Welcome to Addition Tables! Here is what you are about to do. You are going to memorize every single digit addition fact  from 1 plus 1 all the way to 9 plus 9. That is 81 facts total, and by the end of this course, you will know all of them instantly. Now, why is that worth your time? Think about a problem like this: find two numbers that add up to 14 and multiply to 48. To solve that quickly in your head, you need to know your addition facts cold  no counting, no hesitating. The same is true for long division, fractions, and mental math in everyday life. Every time you have to stop and count on your fingers, it slows you down and uses up brain power you need for the harder part of the problem. Students who have these facts memorized think faster, make fewer errors, and find advanced math much less stressful. So let's build that foundation right now. You will work one number at a time, starting with adding 1s. Each question gives you 15 seconds. Let's go!";
 
   useEffect(()=>{
     return ()=>{ window.speechSynthesis?.cancel(); };
@@ -110,7 +110,7 @@ function LessonScreen({ onComplete, isReview }) {
     <div style={{maxWidth:680,margin:"0 auto",animation:"fadeUp 0.4s ease"}}>
       <div className="card" style={{marginBottom:20}}>
         <div style={{display:"flex",alignItems:"center",gap:14,marginBottom:20}}>
-          <div style={{fontSize:40}}>➕</div>
+          <div style={{fontSize:40}}></div>
           <div>
             <h2 style={{fontSize:24,fontWeight:800,letterSpacing:"-0.3px",marginBottom:4}}>
               Addition Tables
@@ -127,10 +127,10 @@ function LessonScreen({ onComplete, isReview }) {
             borderLeft:"3px solid var(--blue)"
           }}>
             <p style={{fontSize:15,fontWeight:700,color:"var(--blue)",marginBottom:8}}>
-              🎯 What you're about to do
+               What you're about to do
             </p>
             <p style={{fontSize:16,lineHeight:1.75,color:"var(--text)"}}>
-              You are going to <strong>memorize every single-digit addition fact</strong> — from{" "}
+              You are going to <strong>memorize every single-digit addition fact</strong>  from{" "}
               <strong style={{fontFamily:"var(--mono)",color:"var(--cyan)"}}>1+1</strong> all the way to{" "}
               <strong style={{fontFamily:"var(--mono)",color:"var(--cyan)"}}>9+9</strong>.
               That is 81 facts total. By the end, you will know all of them <em>instantly</em>.
@@ -143,10 +143,10 @@ function LessonScreen({ onComplete, isReview }) {
             borderLeft:"3px solid var(--amber)"
           }}>
             <p style={{fontSize:15,fontWeight:700,color:"var(--amber)",marginBottom:8}}>
-              ⚡ Why this is worth your time
+               Why this is worth your time
             </p>
             <p style={{fontSize:15,lineHeight:1.75,color:"var(--text2)",marginBottom:10}}>
-              Think about a problem like: <em>find two numbers that add up to 14 and multiply to 48.</em> To solve that quickly, you need addition facts memorized — no counting, no hesitating.
+              Think about a problem like: <em>find two numbers that add up to 14 and multiply to 48.</em> To solve that quickly, you need addition facts memorized  no counting, no hesitating.
             </p>
             <p style={{fontSize:15,lineHeight:1.75,color:"var(--text2)"}}>
               Every time you stop to count on your fingers, it slows you down and uses up brain power you need for the harder part of the problem. Students who have these facts memorized <strong style={{color:"var(--text)"}}>think faster, make fewer errors, and find algebra much less stressful.</strong>
@@ -159,7 +159,7 @@ function LessonScreen({ onComplete, isReview }) {
             borderLeft:"3px solid var(--cyan)"
           }}>
             <p style={{fontSize:15,fontWeight:700,color:"var(--cyan)",marginBottom:8}}>
-              📖 What addition means
+               What addition means
             </p>
             <p style={{fontSize:15,lineHeight:1.75,color:"var(--text)",marginBottom:12}}>
               Addition means combining two groups to find their total. When you see{" "}
@@ -175,10 +175,10 @@ function LessonScreen({ onComplete, isReview }) {
             border:"1px solid rgba(16,185,129,0.2)"
           }}>
             <p style={{fontSize:15,fontWeight:700,color:"var(--green)",marginBottom:8}}>
-              ✅ Your goal
+               Your goal
             </p>
             <p style={{fontSize:15,lineHeight:1.75,color:"var(--text2)"}}>
-              Work through all 9 tiers — one number at a time — until every fact feels automatic.
+              Work through all 9 tiers  one number at a time  until every fact feels automatic.
               You have <strong style={{color:"var(--amber)"}}>15 seconds</strong> per question.
               Wrong answers stay in the rotation until you get them right.
             </p>
@@ -189,7 +189,7 @@ function LessonScreen({ onComplete, isReview }) {
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginTop:24,flexWrap:"wrap",gap:12}}>
           <SpeakBtn text={voiceText} color="var(--blue)"/>
           <button className="btn btn-primary btn-lg" onClick={onComplete}>
-            {isReview ? "← Back to Practice" : "Start with 1s →"}
+            {isReview ? " Back to Practice" : "Start with 1s "}
           </button>
         </div>
       </div>
@@ -197,7 +197,7 @@ function LessonScreen({ onComplete, isReview }) {
   );
 }
 
-// ─── Tier Intro Screen ────────────────────────────────────────────
+//  Tier Intro Screen 
 function TierIntroScreen({ tierNum, masteredTiers, onStart }) {
   const color = TIER_COLORS[tierNum] || "#3b82f6";
   const msg = `Tier ${tierNum}. Adding ${tierNum} to every number from 1 to 9.${masteredTiers.length>0?` You will also see review questions from the ${masteredTiers.map(t=>`${t}s`).join(", ")} you have already learned. Those only need 1 correct answer each.`:""} New questions need 3 correct answers in a row. You have 15 seconds per question. Let's go!`;
@@ -215,7 +215,7 @@ function TierIntroScreen({ tierNum, masteredTiers, onStart }) {
             width:72,height:72,borderRadius:"50%",
             background:`${color}22`,border:`2px solid ${color}`,
             fontSize:32,marginBottom:16,
-          }}>➕</div>
+          }}></div>
           <h2 style={{fontSize:28,fontWeight:800,marginBottom:6}}>
             Adding {tierNum}s
           </h2>
@@ -265,7 +265,7 @@ function TierIntroScreen({ tierNum, masteredTiers, onStart }) {
           <SpeakBtn text={msg} color={color}/>
           <button className="btn btn-lg" onClick={onStart}
             style={{background:color,color:"#fff"}}>
-            Let's go! →
+            Let's go! 
           </button>
         </div>
       </div>
@@ -273,7 +273,7 @@ function TierIntroScreen({ tierNum, masteredTiers, onStart }) {
   );
 }
 
-// ─── Question Screen ──────────────────────────────────────────────
+//  Question Screen 
 function QuestionScreen({ tierNum, questions, onComplete, onHome, onReviewLesson }) {
   const [qs, setQs] = useState(questions);
   const [idx, setIdx] = useState(0);
@@ -378,12 +378,12 @@ function QuestionScreen({ tierNum, questions, onComplete, onHome, onReviewLesson
           <button className="btn btn-ghost btn-sm"
             style={{fontSize:14,whiteSpace:"nowrap"}}
             onClick={()=>{ clearInterval(timerRef.current); onReviewLesson(); }}>
-            📖 Review Lesson
+             Review Lesson
           </button>
           <button className="btn btn-ghost btn-sm"
             style={{fontSize:14,whiteSpace:"nowrap"}}
             onClick={onHome}>
-            ← Home
+             Home
           </button>
         </div>
       </div>
@@ -427,7 +427,7 @@ function QuestionScreen({ tierNum, questions, onComplete, onHome, onReviewLesson
         {wrong ? (
           <div style={{animation:"popIn 0.25s ease"}}>
             <div style={{fontSize:18,fontWeight:700,color:"#fca5a5",marginBottom:10}}>
-              {wrong.timedOut ? "⏰ Time's up!" : "Not quite!"}
+              {wrong.timedOut ? " Time's up!" : "Not quite!"}
             </div>
             <div style={{
               fontFamily:"var(--mono)",fontSize:"clamp(48px,10vw,72px)",fontWeight:700,
@@ -441,7 +441,7 @@ function QuestionScreen({ tierNum, questions, onComplete, onHome, onReviewLesson
             <button className="btn btn-success" style={{width:"100%",fontSize:18,padding:"16px"}}
               onMouseDown={e=>{e.preventDefault();dismissWrong();}}
               onTouchEnd={e=>{e.preventDefault();dismissWrong();}}>
-              Got it — keep going! →
+              Got it  keep going! 
             </button>
           </div>
         ) : (
@@ -484,7 +484,7 @@ function QuestionScreen({ tierNum, questions, onComplete, onHome, onReviewLesson
               style={{width:"100%",fontSize:20,padding:"16px"}}
               onMouseDown={e=>{e.preventDefault();handleSubmit();}}
               onTouchEnd={e=>{e.preventDefault();handleSubmit();}}>
-              Submit ✓
+              Submit 
             </button>
           </>
         )}
@@ -493,7 +493,7 @@ function QuestionScreen({ tierNum, questions, onComplete, onHome, onReviewLesson
   );
 }
 
-// ─── Celebration Screen ───────────────────────────────────────────
+//  Celebration Screen 
 function CelebrationScreen({ tierNum, isLast, onContinue }) {
   const color = TIER_COLORS[tierNum] || "#3b82f6";
   const nextColor = TIER_COLORS[tierNum+1] || "#3b82f6";
@@ -509,10 +509,10 @@ function CelebrationScreen({ tierNum, isLast, onContinue }) {
     <div style={{maxWidth:520,margin:"0 auto",textAlign:"center",animation:"fadeUp 0.4s ease"}}>
       <div className="card">
         <div style={{fontSize:64,marginBottom:16,animation:"pulse 1.5s ease-in-out infinite"}}>
-          {isLast ? "🏆" : "⭐"}
+          {isLast ? "" : ""}
         </div>
         <h2 style={{fontSize:28,fontWeight:800,marginBottom:8}}>
-          {isLast ? "All Addition Tables Mastered!" : `Adding ${tierNum}s — Done!`}
+          {isLast ? "All Addition Tables Mastered!" : `Adding ${tierNum}s  Done!`}
         </h2>
         <p style={{color:"var(--text2)",fontSize:15,marginBottom:28}}>
           {isLast
@@ -521,14 +521,14 @@ function CelebrationScreen({ tierNum, isLast, onContinue }) {
         </p>
         <button className="btn btn-lg" onClick={onContinue}
           style={{background: isLast?"var(--amber)":nextColor, color:"#fff", width:"100%"}}>
-          {isLast ? "🏆 View My Progress" : `Start Adding ${tierNum+1}s →`}
+          {isLast ? " View My Progress" : `Start Adding ${tierNum+1}s `}
         </button>
       </div>
     </div>
   );
 }
 
-// ─── Main Player ──────────────────────────────────────────────────
+//  Main Player 
 // Now receives `topic` prop from TopicRouter (in addition to user and onHome)
 export default function AdditionTablesPlayer({ user, topic, onHome }) {
   const [screen, setScreen] = useState("loading");
@@ -553,7 +553,7 @@ export default function AdditionTablesPlayer({ user, topic, onHome }) {
         if (mastered.length === 0 && tier === 1) {
           setScreen("lesson");
         } else if (mastered.length === TOTAL_TIERS) {
-          setScreen("completed"); // All done — review mode only
+          setScreen("completed"); // All done  review mode only
         } else {
           setScreen("tier-intro");
         }
@@ -564,7 +564,7 @@ export default function AdditionTablesPlayer({ user, topic, onHome }) {
     load();
   },[]);
 
-  // Save using universal schema — stores topic-specific data inside `data`
+  // Save using universal schema  stores topic-specific data inside `data`
   const saveCurrentProgress = async (tier, mastered) => {
     const completed = mastered.length === TOTAL_TIERS;
     const percentComplete = Math.round((mastered.length / TOTAL_TIERS) * 100);
@@ -647,7 +647,7 @@ export default function AdditionTablesPlayer({ user, topic, onHome }) {
   if (screen === "completed") return (
     <div style={{maxWidth:520,margin:"0 auto",textAlign:"center",animation:"fadeUp 0.4s ease"}}>
       <div className="card">
-        <div style={{fontSize:64,marginBottom:16}}>🏆</div>
+        <div style={{fontSize:64,marginBottom:16}}></div>
         <h2 style={{fontSize:26,fontWeight:800,marginBottom:8}}>Addition Tables Complete!</h2>
         <p style={{color:"var(--text2)",fontSize:15,marginBottom:8}}>
           You have mastered all 9 addition tiers. Great work!
@@ -656,14 +656,14 @@ export default function AdditionTablesPlayer({ user, topic, onHome }) {
           You can review the last tier for practice, but your progress is already saved.
         </p>
         <div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap"}}>
-          <button className="btn btn-ghost" onClick={onHome}>← Back to Home</button>
+          <button className="btn btn-ghost" onClick={onHome}> Back to Home</button>
           <button className="btn btn-primary" onClick={()=>{
             const qs = buildTierQuestions(TOTAL_TIERS, masteredTiers.filter(t=>t!==TOTAL_TIERS));
             setQuestions(qs);
             setCurrentTier(TOTAL_TIERS);
             setScreen("questions");
           }}>
-            🔄 Review Tier 9
+             Review Tier 9
           </button>
         </div>
       </div>
