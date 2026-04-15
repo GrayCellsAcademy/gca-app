@@ -1,9 +1,10 @@
-//  Tic Tac Toe Firebase Functions 
+﻿//  Tic Tac Toe Firebase Functions 
 
 import { db } from "./core/firebase";
 import {
   doc, getDoc, setDoc, updateDoc, onSnapshot,
   collection, query, where, getDocs, arrayUnion, serverTimestamp,
+  runTransaction,
 } from "firebase/firestore";
 
 //  Generate question sequence 
@@ -128,7 +129,6 @@ export function checkWinner(board) {
 }
 
 export async function placeMark(gameId, uid, cellIdx, symbol, currentQIdx) {
-  const { runTransaction } = await import("firebase/firestore");
   let result = null;
   let cellTaken = false;
 
@@ -229,3 +229,4 @@ export function getComputerLevel(rating) {
   const delayMs = Math.round(30000 * Math.pow(0.9, level - 1));
   return { level, delayMs };
 }
+
