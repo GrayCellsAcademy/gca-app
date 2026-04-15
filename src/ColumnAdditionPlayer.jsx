@@ -242,7 +242,7 @@ function PracticeScreen({ level, onComplete, onReviewLesson, onHome }) {
   const padded = problem.numbers.map(n => String(n).padStart(maxLen, " "));
   const correctAnswer = getAnswer(problem.numbers);
   const phaseLabel = phase.multi
-    ? `Level ${level} -- ${problem.numbers.length} numbers, ${problem.numbers[0].toString().length} digits each`
+    ? `${problem.numbers.length} numbers, ${problem.numbers[0].toString().length} digits each`
     : `${phase.digits}-digit numbers`;
 
   const handleSubmit = () => {
