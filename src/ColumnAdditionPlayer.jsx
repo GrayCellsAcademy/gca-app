@@ -273,7 +273,7 @@ function PracticeScreen({ level, onComplete, onReviewLesson, onHome }) {
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16, gap: 8, flexWrap: "wrap" }}>
         <div style={{ background: "rgba(59,130,246,0.15)", border: "1px solid rgba(59,130,246,0.3)", borderRadius: 99, padding: "5px 14px", fontSize: 20, fontWeight: 700, color: "var(--blue)" }}>
-          Level {level}  {phaseLabel}
+          Level {level} &mdash; {phaseLabel}
         </div>
         <div style={{ display: "flex", gap: 8 }}>
           <button className="btn btn-ghost btn-sm" style={{ fontSize: 20 }} onClick={() => { window.speechSynthesis?.cancel(); onReviewLesson(); }}> Review Lesson</button>
