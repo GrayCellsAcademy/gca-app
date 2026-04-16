@@ -89,8 +89,7 @@ export function genRectangleEqualSides() {
     w, h, unit,
     answer: "pairs",
     prompt: `Click the two pairs of equal sides in this rectangle.`,
-    // Correct pairs: [top,bottom] and [left,right]
-    pairs: [[0, 2], [1, 3]], // indices: 0=top,1=right,2=bottom,3=left
+    // Correct pairs: top=bottom=w, left=right=h (all 4 sides selected = correct)
   };
 }
 
