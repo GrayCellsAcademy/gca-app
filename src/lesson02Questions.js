@@ -1,4 +1,4 @@
-// Lesson 2  Geometry Question Generators
+﻿// Lesson 2  Geometry Question Generators
 
 const UNITS = ["cm", "mm", "m", "km", "in", "ft", "yd", "mi"];
 
@@ -77,18 +77,14 @@ export function gradePolygon(input, question) {
   return n === normalizeAnswer(question.answer) || n === normalizeAnswer(question.displayAnswer);
 }
 
-//  Topic 3A: Rectangle Equal Sides 
 // Student identifies which sides are equal (click-based, handled in component)
-export function genRectangleEqualSides() {
   const unit = randUnit();
   const w = randInt(10, 99);
   const h = randInt(10, 99);
   // Rectangle sides: top=w, right=h, bottom=w, left=h
   return {
-    type: "rectangle-equal-sides",
     w, h, unit,
     answer: "pairs",
-    prompt: `Click the two pairs of equal sides in this rectangle.`,
     // Correct pairs: top=bottom=w, left=right=h (all 4 sides selected = correct)
   };
 }
@@ -346,7 +342,6 @@ export function gradeLesson02Answer(input, question) {
     case "polygon": return gradePolygon(input, question);
     case "rectangle-perimeter": return gradeRectangle(input, question);
     case "square-perimeter": return gradeSquare(input, question);
-    case "rectangle-equal-sides": {
       // input is comma-separated selected side indices, correct = 0,1,2,3 (all four sides)
       const sel = input.split(",").map(Number).filter(n => !isNaN(n)).sort().join(",");
       return sel === "0,1,2,3";
@@ -379,7 +374,6 @@ export function gradeLesson02Answer(input, question) {
 export const LESSON02_TOPICS = [
   { id: "1", label: "Line Segments", description: "Segment addition  find total length" },
   { id: "2", label: "Perimeter of Polygons", description: "Irregular polygon, 3-6 sides" },
-  { id: "3A", label: "Rectangles  Equal Sides", description: "Click the two pairs of equal sides" },
   { id: "3B", label: "Rectangles  Perimeter", description: "Find perimeter given two sides" },
   { id: "4", label: "Squares  Perimeter", description: "Find perimeter given one side" },
   { id: "5A", label: "Composite Shapes  Summing Sides", description: "Click sides that sum to highlighted side" },
@@ -391,7 +385,6 @@ export function generateLesson02Question(topicId) {
   switch (topicId) {
     case "1":  return genLineSegments();
     case "2":  return genPolygon();
-    case "3A": return genRectangleEqualSides();
     case "3B": return genRectanglePerimeter();
     case "4":  return genSquarePerimeter();
     case "5A": return genRectilinearShape("5A");
