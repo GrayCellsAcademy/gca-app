@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { setDoc, doc, updateDoc } from "firebase/firestore";
 import {
   createClassworkSession, onSessionChange, onClassworkAnswersChange,
@@ -137,7 +137,7 @@ function SquareSVG({ question }) {
   );
 }
 
-function RectilinearSVG({ question, selectedSides, onSideClick, highlightSideIdx, revealCorrect }) {
+function RectilinearSVG({ question, selectedSides, onSideClick, highlightSideIdx, revealCorrect, revealedAnswers }) {
   const { vertices, sides, unit, hideIdx, hideIndices, activityType, correctSideIndices, activeMissingIdx } = question;
   const hiddenSet = new Set(hideIndices || (hideIdx !== undefined ? [hideIdx] : []));
   if (!vertices) return null;
@@ -174,7 +174,7 @@ function RectilinearSVG({ question, selectedSides, onSideClick, highlightSideIdx
         const lx = m.x + perpX * outDir * 18;
         const ly = m.y + perpY * outDir * 18;
         let strokeColor = "var(--blue)", strokeW = 2.5;
-        if (isHL) { strokeColor = "var(--amber)"; strokeW = 5; }
+        if (isHL) { strokeColor = "#7c3aed"; strokeW = 5; }
         else if (isCorrect) { strokeColor = "var(--green)"; strokeW = 5; }
         else if (isSel) { strokeColor = "var(--green)"; strokeW = 4; }
         return (
@@ -201,7 +201,160 @@ function RectilinearSVG({ question, selectedSides, onSideClick, highlightSideIdx
   );
 }
 
-function QuestionDisplay({ question, selectedSides, onSideClick, revealCorrect, activeMissingIdx }) {
+
+function ColumnAdditionReveal({ numbers, label }) {
+  // Render a column addition or subtraction calculation
+  if (!numbers || numbers.length === 0) return null;
+  const maxLen = Math.max(...numbers.map(n => String(Math.abs(n)).length));
+  const padded = numbers.map(n => String(Math.abs(n)).padStart(maxLen, " "));
+  const total = numbers.reduce((a, b) => a + b, 0);
+  const totalStr = String(Math.abs(total)).padStart(maxLen, " ");
+
+  // Compute carries
+  const carries = Array(maxLen).fill(0);
+  for (let col = maxLen - 1; col >= 0; col--) {
+    let colSum = carries[col] || 0;
+    for (const n of numbers) {
+      const s = String(Math.abs(n)).padStart(maxLen, " ");
+      if (s[col] !== " ") colSum += parseInt(s[col]);
+    }
+    if (col > 0 && colSum >= 10) carries[col - 1] = Math.floor(colSum / 10);
+  }
+
+  const cellW = 28, cellH = 32;
+  const colCount = maxLen;
+
+  return (
+    <div style={{ marginTop: 12, padding: "12px 16px", background: "var(--bg3)", borderRadius: "var(--radius-sm)", border: "1px solid var(--border)", display: "inline-block" }}>
+      {label && <div style={{ fontSize: 13, color: "var(--text3)", marginBottom: 6 }}>{label}</div>}
+      <div style={{ fontFamily: "var(--mono)", display: "inline-block" }}>
+        {/* Carries row */}
+        <div style={{ display: "flex", paddingLeft: 24 }}>
+          {carries.map((c, i) => (
+            <div key={i} style={{ width: cellW, textAlign: "center", fontSize: 13, color: "var(--blue)", fontWeight: 700, minHeight: 16 }}>
+              {c > 0 ? c : ""}
+            </div>
+          ))}
+        </div>
+        {/* Numbers */}
+        {padded.map((row, ri) => (
+          <div key={ri} style={{ display: "flex", alignItems: "center" }}>
+            <div style={{ width: 24, textAlign: "right", fontSize: 16, color: "var(--text3)", paddingRight: 4 }}>
+              {ri === padded.length - 1 ? "+" : ""}
+            </div>
+            {row.split("").map((ch, ci) => (
+              <div key={ci} style={{ width: cellW, height: cellH, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, fontWeight: 700, color: ch === " " ? "transparent" : "var(--text)" }}>
+                {ch === " " ? "0" : ch}
+              </div>
+            ))}
+          </div>
+        ))}
+        {/* Line */}
+        <div style={{ borderTop: "2px solid var(--text)", marginLeft: 24, marginBottom: 4 }} />
+        {/* Total */}
+        <div style={{ display: "flex", paddingLeft: 24 }}>
+          {totalStr.split("").map((ch, ci) => (
+            <div key={ci} style={{ width: cellW, height: cellH, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, fontWeight: 800, color: "var(--green)" }}>
+              {ch === " " ? "" : ch}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function RevealCalculation({ question, revealedAnswers }) {
+  if (!question) return null;
+
+  // Line segments: show column addition of segment lengths
+  if (question.type === "line-segments") {
+    return <ColumnAdditionReveal numbers={question.segments} label={"Total: " + question.displayAnswer} />;
+  }
+
+  // Polygon: show column addition of all sides
+  if (question.type === "polygon") {
+    return <ColumnAdditionReveal numbers={question.lengths} label={"Perimeter: " + question.displayAnswer} />;
+  }
+
+  // Rectangle perimeter: show 2*(w+h) as column addition of w+h+w+h
+  if (question.type === "rectangle-perimeter") {
+    return <ColumnAdditionReveal numbers={[question.w, question.h, question.w, question.h]} label={"Perimeter: " + question.displayAnswer} />;
+  }
+
+  // Rectangle equal sides: label all sides
+  if (question.type === "rectangle-equal-sides") {
+    return (
+      <div style={{ marginTop: 12, fontSize: 16, color: "var(--text2)" }}>
+        Top = Bottom = <strong style={{ color: "var(--blue)", fontFamily: "var(--mono)" }}>{question.w}{question.unit}</strong>
+        {" | "}
+        Left = Right = <strong style={{ color: "var(--blue)", fontFamily: "var(--mono)" }}>{question.h}{question.unit}</strong>
+      </div>
+    );
+  }
+
+  // Square perimeter
+  if (question.type === "square-perimeter") {
+    return <ColumnAdditionReveal numbers={[question.s, question.s, question.s, question.s]} label={"Perimeter: " + question.displayAnswer} />;
+  }
+
+  // Rectilinear 5B: show column addition for each missing side
+  if (question.type === "rectilinear-5B" && question.missingAnswers) {
+    const revealed = revealedAnswers || question.missingAnswers;
+    return (
+      <div style={{ display: "flex", gap: 16, flexWrap: "wrap", marginTop: 12 }}>
+        {revealed.map((ma, i) => {
+          const knownSides = (question.sides || [])
+            .map((s, idx) => ({ ...s, idx }))
+            .filter(s => s.dir === (question.sides[ma.idx]?.dir) && s.idx !== ma.idx)
+            .map(s => s.length);
+          const isLong = ma.length === Math.max(...(question.sides || []).filter(s => s.dir === question.sides[ma.idx]?.dir).map(s => s.length));
+          return (
+            <div key={i}>
+              {isLong
+                ? <ColumnAdditionReveal numbers={knownSides} label={"Missing side = " + ma.length + question.unit} />
+                : <div style={{ padding: "8px 12px", background: "var(--bg3)", borderRadius: "var(--radius-sm)", border: "1px solid var(--border)" }}>
+                    <div style={{ fontSize: 13, color: "var(--text3)", marginBottom: 4 }}>Side {i + 1}</div>
+                    <div style={{ fontSize: 22, fontWeight: 800, color: "var(--green)", fontFamily: "var(--mono)" }}>{ma.length}{question.unit}</div>
+                  </div>
+              }
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
+
+  // Rectilinear 5C: show missing sides + perimeter calculation
+  if (question.type === "rectilinear-5C" && question.hideIndices) {
+    const allSides = question.sides || [];
+    const missingLengths = question.hideIndices.map(i => allSides[i]?.length || 0);
+    return (
+      <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 12 }}>
+        {question.hideIndices.map((hidIdx, i) => {
+          const side = allSides[hidIdx];
+          const sameDirSides = allSides.filter((s, si) => s.dir === side.dir && si !== hidIdx).map(s => s.length);
+          const isLong = side.length === Math.max(...allSides.filter(s => s.dir === side.dir).map(s => s.length));
+          return (
+            <div key={i}>
+              {isLong
+                ? <ColumnAdditionReveal numbers={sameDirSides} label={"Missing side = " + side.length + question.unit} />
+                : <div style={{ fontSize: 16, color: "var(--text2)" }}>
+                    Missing side {i + 1}: <strong style={{ fontFamily: "var(--mono)", color: "var(--green)" }}>{side.length}{question.unit}</strong>
+                  </div>
+              }
+            </div>
+          );
+        })}
+        <ColumnAdditionReveal numbers={allSides.map(s => s.length)} label={"Perimeter: " + question.displayAnswer} />
+      </div>
+    );
+  }
+
+  return null;
+}
+
+function QuestionDisplay({ question, selectedSides, onSideClick, revealCorrect, activeMissingIdx, revealedAnswers }) {
   if (!question) return null;
   switch (question.type) {
     case "line-segments": return <LineSegmentsSVG question={question} />;
@@ -216,7 +369,8 @@ function QuestionDisplay({ question, selectedSides, onSideClick, revealCorrect, 
         question={{ ...question, activeMissingIdx }}
         selectedSides={selectedSides} onSideClick={onSideClick}
         highlightSideIdx={question.type === "rectilinear-5A" ? question.highlightSideIdx : undefined}
-        revealCorrect={revealCorrect} />;
+        revealCorrect={revealCorrect}
+        revealedAnswers={revealedAnswers} />;
     default: return null;
   }
 }
@@ -257,7 +411,7 @@ function AnswerInput({ question, onSubmit, submitted, selectedSides, onSideClick
 
     return (
       <div>
-        <div style={{ fontSize: 20, color: "var(--text3)", marginBottom: 8 }}>
+        <div style={{ fontSize: 13, color: "var(--text3)", marginBottom: 8 }}>
           {currentActive !== null
             ? "Enter the length for the highlighted side (include units)"
             : allEntered ? "All sides entered - ready to submit!"
@@ -273,7 +427,7 @@ function AnswerInput({ question, onSubmit, submitted, selectedSides, onSideClick
           </div>
         )}
         {Object.entries(enteredSides).length > 0 && (
-          <div style={{ fontSize: 20, color: "var(--text2)", marginBottom: 8 }}>
+          <div style={{ fontSize: 13, color: "var(--text2)", marginBottom: 8 }}>
             {Object.entries(enteredSides).map(([idx, val]) => (
               <span key={idx} style={{ marginRight: 12 }}>Side: <strong style={{ fontFamily: "var(--mono)" }}>{val}</strong></span>
             ))}
@@ -292,7 +446,7 @@ function AnswerInput({ question, onSubmit, submitted, selectedSides, onSideClick
   if (isClick) {
     return (
       <div style={{ textAlign: "center" }}>
-        <div style={{ fontSize: 20, color: "var(--text3)", marginBottom: 8 }}>
+        <div style={{ fontSize: 13, color: "var(--text3)", marginBottom: 8 }}>
           {question.type === "rectangle-equal-sides" ? "Click pairs of equal sides. Selected: " + (selectedSides?.length || 0) + "/4" : "Click sides that sum to the highlighted side. Selected: " + (selectedSides?.length || 0)}
         </div>
         <button className="btn btn-primary" style={{ width: "100%" }} onClick={() => onSubmit((selectedSides || []).slice().sort((a, b) => a - b).join(","))} disabled={submitted}>Submit</button>
@@ -302,7 +456,7 @@ function AnswerInput({ question, onSubmit, submitted, selectedSides, onSideClick
 
   return (
     <div>
-      <div style={{ fontSize: 20, color: "var(--text3)", marginBottom: 6 }}>Include units (e.g. 45cm, 120ft)</div>
+      <div style={{ fontSize: 13, color: "var(--text3)", marginBottom: 6 }}>Include units (e.g. 45cm, 120ft)</div>
       <div style={{ display: "flex", gap: 8 }}>
         <input ref={inputRef} value={input} onChange={e => setInput(e.target.value)}
           onKeyDown={e => e.key === "Enter" && onSubmit(input)}
@@ -332,9 +486,9 @@ function TimerBar({ endsAt, totalSeconds, onExpired }) {
   const color = remaining <= 5 ? "var(--red)" : remaining <= 10 ? "var(--amber)" : "var(--green)";
   return (
     <div style={{ marginBottom: 12 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 20, color: "var(--text3)", marginBottom: 4 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: "var(--text3)", marginBottom: 4 }}>
         <span>Time remaining</span>
-        <span style={{ fontWeight: 700, color, fontSize: 20 }}>{remaining}s</span>
+        <span style={{ fontWeight: 700, color, fontSize: 16 }}>{remaining}s</span>
       </div>
       <div style={{ height: 7, background: "var(--surface2)", borderRadius: 99, overflow: "hidden" }}>
         <div style={{ height: "100%", width: pct + "%", background: color, borderRadius: 99, transition: "width 0.5s linear" }} />
@@ -416,16 +570,16 @@ function TeacherLesson02({ session, sessionId, uid }) {
       <div className="card" style={{ marginBottom: 16 }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
           <div>
-            <div style={{ fontSize: 20, color: "var(--text3)", marginBottom: 2 }}>Join Code</div>
+            <div style={{ fontSize: 13, color: "var(--text3)", marginBottom: 2 }}>Join Code</div>
             <div style={{ fontSize: 36, fontWeight: 900, fontFamily: "var(--mono)", color: "var(--blue)", letterSpacing: "0.15em" }}>{session.joinCode}</div>
-            <div style={{ fontSize: 20, color: "var(--text3)" }}>{totalStudents} student{totalStudents !== 1 ? "s" : ""} joined</div>
+            <div style={{ fontSize: 13, color: "var(--text3)" }}>{totalStudents} student{totalStudents !== 1 ? "s" : ""} joined</div>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <label style={{ fontSize: 20, color: "var(--text2)" }}>Seconds:</label>
+              <label style={{ fontSize: 13, color: "var(--text2)" }}>Seconds:</label>
               <input type="number" min={10} max={300} value={timerInput}
                 onChange={e => setTimerInput(Number(e.target.value))}
-                style={{ width: 70, padding: "6px 10px", fontSize: 20, textAlign: "center" }} />
+                style={{ width: 70, padding: "6px 10px", fontSize: 14, textAlign: "center" }} />
             </div>
             {session.status === "question" && <button className="btn btn-ghost" onClick={handleReveal}>Reveal</button>}
             {session.status === "revealing" && (
@@ -445,14 +599,14 @@ function TeacherLesson02({ session, sessionId, uid }) {
 
       <div style={{ display: "grid", gridTemplateColumns: "260px 1fr", gap: 16, alignItems: "start" }}>
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          <div style={{ fontSize: 19, fontWeight: 700, color: "var(--text3)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 4 }}>Topic</div>
+          <div style={{ fontSize: 12, fontWeight: 700, color: "var(--text3)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 4 }}>Topic</div>
           {LESSON02_TOPICS.map((t, i) => {
             const isActive = i === currentTopicIdx;
             const isDone = i < currentTopicIdx;
             return (
               <button key={t.id} onClick={() => setCurrentTopicIdx(i)}
                 style={{ background: isActive ? "rgba(59,130,246,0.15)" : "var(--surface)", border: "2px solid " + (isActive ? "var(--blue)" : isDone ? "rgba(16,185,129,0.3)" : "var(--border)"), borderRadius: "var(--radius)", padding: "8px 12px", cursor: "pointer", textAlign: "left", fontFamily: "var(--font)" }}>
-                <div style={{ fontWeight: 700, fontSize: 19, color: isActive ? "var(--blue)" : isDone ? "var(--green)" : "var(--text)" }}>
+                <div style={{ fontWeight: 700, fontSize: 12, color: isActive ? "var(--blue)" : isDone ? "var(--green)" : "var(--text)" }}>
                   {isDone ? "done " : isActive ? "now " : (i + 1) + ". "}{t.label}
                 </div>
                 <div style={{ fontSize: 10, color: "var(--text3)", marginTop: 2 }}>{t.description}</div>
@@ -466,10 +620,10 @@ function TeacherLesson02({ session, sessionId, uid }) {
           {session.status === "waiting" && (
             <div className="card" style={{ textAlign: "center", padding: "40px 20px" }}>
               <h3 style={{ fontSize: 20, fontWeight: 800, marginBottom: 8 }}>Waiting for students</h3>
-              <p style={{ color: "var(--blue)", fontFamily: "var(--mono)", fontSize: 28, fontWeight: 900 }}>{session.joinCode}</p>
+              <p style={{ color: "var(--blue)", fontFamily: "var(--mono)", fontSize: 24, fontWeight: 900 }}>{session.joinCode}</p>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "center", marginTop: 12 }}>
                 {Object.values(participants).map(p => (
-                  <div key={p.name} style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-sm)", padding: "5px 12px", fontSize: 20, fontWeight: 600 }}>{p.name}</div>
+                  <div key={p.name} style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-sm)", padding: "5px 12px", fontSize: 13, fontWeight: 600 }}>{p.name}</div>
                 ))}
               </div>
             </div>
@@ -478,30 +632,23 @@ function TeacherLesson02({ session, sessionId, uid }) {
           {question && (session.status === "question" || session.status === "revealing") && (
             <>
               <div className="card">
-                <div style={{ fontSize: 19, color: "var(--text3)", marginBottom: 8 }}>
+                <div style={{ fontSize: 12, color: "var(--text3)", marginBottom: 8 }}>
                   {currentTopic.label} - {submittedCount}/{totalStudents} submitted - {correctCount} correct
                 </div>
-                <div style={{ fontSize: 20, fontWeight: 700, color: "var(--text)", marginBottom: 12 }}>{question.prompt}</div>
-                <QuestionDisplay question={question} revealCorrect={session.status === "revealing"} />
+                <div style={{ fontSize: 16, fontWeight: 700, color: "var(--text)", marginBottom: 12 }}>{question.prompt}</div>
+                <QuestionDisplay question={question} revealCorrect={session.status === "revealing"} revealedAnswers={session.status === "revealing" ? question.missingAnswers : null} />
                 {session.status === "question" && session.timerEndsAt && (
                   <div style={{ marginTop: 12 }}>
                     <TimerBar endsAt={session.timerEndsAt} totalSeconds={session.timerSeconds} onExpired={handleTimerExpired} />
                   </div>
                 )}
                 {session.status === "revealing" && (
-                  <div style={{ marginTop: 12, background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.3)", borderRadius: "var(--radius-sm)", padding: "10px 14px" }}>
-                    <div style={{ fontSize: 19, color: "var(--text3)", marginBottom: 4 }}>Correct answer</div>
-                    {question.type === "rectilinear-5B" && question.missingAnswers ? (
-                      <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-                        {question.missingAnswers.map((ma, i) => (
-                          <div key={i} style={{ fontSize: 20, fontWeight: 800, color: "var(--green)", fontFamily: "var(--mono)" }}>
-                            Side {i+1}: {ma.length}{question.unit}
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div style={{ fontSize: 28, fontWeight: 800, color: "var(--green)", fontFamily: "var(--mono)" }}>{question.displayAnswer}</div>
+                  <div style={{ marginTop: 12, background: "rgba(16,185,129,0.06)", border: "1px solid rgba(16,185,129,0.2)", borderRadius: "var(--radius-sm)", padding: "12px 16px" }}>
+                    <div style={{ fontSize: 13, color: "var(--text3)", marginBottom: 6 }}>Correct answer</div>
+                    {question.displayAnswer && question.type !== "rectilinear-5B" && (
+                      <div style={{ fontSize: 22, fontWeight: 800, color: "var(--green)", fontFamily: "var(--mono)", marginBottom: 8 }}>{question.displayAnswer}</div>
                     )}
+                    <RevealCalculation question={question} />
                   </div>
                 )}
                 <div style={{ height: 6, background: "var(--surface2)", borderRadius: 99, overflow: "hidden", marginTop: 12 }}>
@@ -510,7 +657,7 @@ function TeacherLesson02({ session, sessionId, uid }) {
               </div>
 
               <div className="card">
-                <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 10 }}>Student Answers</h3>
+                <h3 style={{ fontSize: 14, fontWeight: 700, marginBottom: 10 }}>Student Answers</h3>
                 <div style={{ display: "flex", flexDirection: "column", gap: 5, maxHeight: 280, overflowY: "auto" }}>
                   {Object.entries(participants).map(([pUid, p]) => {
                     const ans = answers.find(a => a.uid === pUid);
@@ -518,13 +665,13 @@ function TeacherLesson02({ session, sessionId, uid }) {
                     const correct = has && gradeLesson02Answer(ans.answer, question);
                     return (
                       <div key={pUid} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "var(--bg2)", borderRadius: "var(--radius-sm)", padding: "7px 12px", border: "1px solid " + (has ? (correct ? "rgba(16,185,129,0.3)" : "rgba(239,68,68,0.3)") : "var(--border)") }}>
-                        <span style={{ fontWeight: 600, fontSize: 20 }}>{p.name}</span>
+                        <span style={{ fontWeight: 600, fontSize: 13 }}>{p.name}</span>
                         {has ? (
                           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                            {session.status === "revealing" && <span style={{ fontFamily: "var(--mono)", fontSize: 20, color: "var(--text2)" }}>{ans.answer}</span>}
+                            {session.status === "revealing" && <span style={{ fontFamily: "var(--mono)", fontSize: 13, color: "var(--text2)" }}>{ans.answer}</span>}
                             <span style={{ fontWeight: 700, color: correct ? "var(--green)" : "var(--red)" }}>{correct ? "+" + POINTS : "X"}</span>
                           </div>
-                        ) : <span style={{ fontSize: 19, color: "var(--text3)" }}>thinking...</span>}
+                        ) : <span style={{ fontSize: 12, color: "var(--text3)" }}>thinking...</span>}
                       </div>
                     );
                   })}
@@ -585,15 +732,15 @@ function StudentLesson02({ session, sessionId, uid }) {
   if (session.status === "ended") return (
     <div className="card" style={{ maxWidth: 400, margin: "0 auto", textAlign: "center", padding: "32px" }}>
       <h2 style={{ fontSize: 22, fontWeight: 800, marginBottom: 8 }}>Session Complete!</h2>
-      <div style={{ fontSize: 28, fontWeight: 900, color: "var(--blue)" }}>{myScore} pts</div>
+      <div style={{ fontSize: 26, fontWeight: 900, color: "var(--blue)" }}>{myScore} pts</div>
     </div>
   );
 
   return (
     <div style={{ maxWidth: 580, margin: "0 auto" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-        <div style={{ fontSize: 20, color: "var(--text3)" }}>{question ? (LESSON02_TOPICS.find(t => t.id === question.topicId)?.label || "") : ""}</div>
-        <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-sm)", padding: "5px 12px", fontSize: 20, fontWeight: 700 }}>Score: {myScore} pts</div>
+        <div style={{ fontSize: 13, color: "var(--text3)" }}>{question ? (LESSON02_TOPICS.find(t => t.id === question.topicId)?.label || "") : ""}</div>
+        <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-sm)", padding: "5px 12px", fontSize: 13, fontWeight: 700 }}>Score: {myScore} pts</div>
       </div>
       <div className="card" key={question?.id}>
         {session.status === "question" && session.timerEndsAt && !submitted && (
@@ -601,8 +748,8 @@ function StudentLesson02({ session, sessionId, uid }) {
         )}
         {question && (
           <>
-            <div style={{ fontSize: 19, fontWeight: 700, marginBottom: 12, color: "var(--text)" }}>{question.prompt}</div>
-            <QuestionDisplay question={question} selectedSides={selectedSides} onSideClick={handleSideClick} revealCorrect={session.status === "revealing"} activeMissingIdx={activeMissingIdx} />
+            <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 12, color: "var(--text)" }}>{question.prompt}</div>
+            <QuestionDisplay question={question} selectedSides={selectedSides} onSideClick={handleSideClick} revealCorrect={session.status === "revealing"} activeMissingIdx={activeMissingIdx} revealedAnswers={session.status === "revealing" ? question.missingAnswers : null} />
           </>
         )}
         {session.status === "revealing" ? (
@@ -612,32 +759,36 @@ function StudentLesson02({ session, sessionId, uid }) {
                 <div style={{ fontSize: 20, fontWeight: 800, color: result.correct ? "var(--green)" : "var(--red)", marginBottom: 6 }}>
                   {result.correct ? "Correct! +" + POINTS + " pts" : "Incorrect"}
                 </div>
-                <div style={{ fontSize: 20, color: "var(--text2)" }}>
+                <div style={{ fontSize: 13, color: "var(--text2)" }}>
                   Your answer: <strong style={{ fontFamily: "var(--mono)" }}>
                     {question?.type === "rectilinear-5B" ? (() => { try { return JSON.parse(result.answer).map(a => a.value).join(", "); } catch { return result.answer; } })() : result.answer}
                   </strong>
                 </div>
                 {!result.correct && (
-                  <div style={{ color: "var(--green)", fontSize: 20, marginTop: 4 }}>
-                    Correct: <strong style={{ fontFamily: "var(--mono)" }}>
-                      {question?.type === "rectilinear-5B" && question.missingAnswers
-                        ? question.missingAnswers.map(ma => ma.length + question.unit).join(", ")
-                        : question?.displayAnswer}
-                    </strong>
+                  <div style={{ marginTop: 8 }}>
+                    <div style={{ color: "var(--green)", fontSize: 16, marginBottom: 6 }}>
+                      Correct: <strong style={{ fontFamily: "var(--mono)" }}>
+                        {question?.type === "rectilinear-5B" && question.missingAnswers
+                          ? question.missingAnswers.map(ma => ma.length + question.unit).join(", ")
+                          : question?.displayAnswer}
+                      </strong>
+                    </div>
+                    <RevealCalculation question={question} />
                   </div>
                 )}
               </>
             ) : (
               <div>
                 <div style={{ color: "var(--text3)", marginBottom: 4 }}>No answer submitted.</div>
-                {question?.displayAnswer && <div style={{ color: "var(--green)", fontSize: 20 }}>Correct: <strong style={{ fontFamily: "var(--mono)" }}>{question.displayAnswer}</strong></div>}
+                {question?.displayAnswer && <div style={{ color: "var(--green)", fontSize: 16, marginBottom: 8 }}>Correct: <strong style={{ fontFamily: "var(--mono)" }}>{question.displayAnswer}</strong></div>}
+                <RevealCalculation question={question} />
               </div>
             )}
           </div>
         ) : submitted ? (
           <div style={{ textAlign: "center", marginTop: 12 }}>
-            <div style={{ fontSize: 19, fontWeight: 700, color: "var(--green)", marginBottom: 4 }}>Submitted!</div>
-            <div style={{ fontSize: 19, color: "var(--text3)" }}>Waiting for teacher to reveal...</div>
+            <div style={{ fontSize: 15, fontWeight: 700, color: "var(--green)", marginBottom: 4 }}>Submitted!</div>
+            <div style={{ fontSize: 12, color: "var(--text3)" }}>Waiting for teacher to reveal...</div>
           </div>
         ) : question ? (
           <div style={{ marginTop: 14 }}>
@@ -668,17 +819,17 @@ function CreateLesson02Session({ user, onCreated }) {
     <div style={{ maxWidth: 480, margin: "0 auto" }}>
       <div className="card">
         <h2 style={{ fontSize: 20, fontWeight: 800, marginBottom: 4 }}>Lesson 2 - Geometry</h2>
-        <p style={{ color: "var(--text2)", fontSize: 20, marginBottom: 16 }}>Line segments, polygon perimeters, rectangles, squares, and composite rectilinear shapes.</p>
+        <p style={{ color: "var(--text2)", fontSize: 13, marginBottom: 16 }}>Line segments, polygon perimeters, rectangles, squares, and composite rectilinear shapes.</p>
         <div style={{ marginBottom: 12 }}>
-          <label style={{ fontSize: 20, fontWeight: 600, color: "var(--text2)", display: "block", marginBottom: 5 }}>Class</label>
-          <select value={selectedClass} onChange={e => setSelectedClass(e.target.value)} style={{ width: "100%", padding: "10px 12px", fontSize: 20 }}>
+          <label style={{ fontSize: 13, fontWeight: 600, color: "var(--text2)", display: "block", marginBottom: 5 }}>Class</label>
+          <select value={selectedClass} onChange={e => setSelectedClass(e.target.value)} style={{ width: "100%", padding: "10px 12px", fontSize: 14 }}>
             <option value="">Select a class...</option>
             {classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
           </select>
         </div>
         <div style={{ marginBottom: 16 }}>
-          <label style={{ fontSize: 20, fontWeight: 600, color: "var(--text2)", display: "block", marginBottom: 5 }}>Default seconds per question</label>
-          <input type="number" min={30} max={300} value={timer} onChange={e => setTimer(Number(e.target.value))} style={{ width: "100%", padding: "10px 12px", fontSize: 20 }} />
+          <label style={{ fontSize: 13, fontWeight: 600, color: "var(--text2)", display: "block", marginBottom: 5 }}>Default seconds per question</label>
+          <input type="number" min={30} max={300} value={timer} onChange={e => setTimer(Number(e.target.value))} style={{ width: "100%", padding: "10px 12px", fontSize: 14 }} />
         </div>
         <button className="btn btn-primary btn-lg" style={{ width: "100%" }} onClick={handleCreate} disabled={loading || !selectedClass}>
           {loading ? "Creating..." : "Start Session"}
@@ -702,10 +853,10 @@ export default function Lesson02Session({ user, onHome }) {
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24, flexWrap: "wrap", gap: 12 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <div style={{ width: 40, height: 40, borderRadius: 12, background: "linear-gradient(135deg,var(--blue),var(--cyan))", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, fontWeight: 800, color: "#fff" }}>L2</div>
+            <div style={{ width: 40, height: 40, borderRadius: 12, background: "linear-gradient(135deg,var(--blue),var(--cyan))", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 800, color: "#fff" }}>L2</div>
             <div>
-              <div style={{ fontWeight: 800, fontSize: 20 }}>GCA</div>
-              <div style={{ color: "var(--text3)", fontSize: 19 }}>Lesson 2 - Geometry</div>
+              <div style={{ fontWeight: 800, fontSize: 18 }}>GCA</div>
+              <div style={{ color: "var(--text3)", fontSize: 12 }}>Lesson 2 - Geometry</div>
             </div>
           </div>
           <button className="btn btn-ghost btn-sm" onClick={onHome}>Back to Home</button>
@@ -725,4 +876,3 @@ export default function Lesson02Session({ user, onHome }) {
 }
 
 export { TeacherLesson02 as Lesson02TeacherView, StudentLesson02 as Lesson02StudentView };
-

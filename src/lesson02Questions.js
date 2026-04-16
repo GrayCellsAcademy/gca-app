@@ -150,9 +150,12 @@ function genLShape(unit) {
     { length: H,    label: "left",       dir: "v" },
   ];
   const perimeter = sides.reduce((s, x) => s + x.length, 0);
-  // L shape: hide one h and one v side (indices 2,3 = top-right and inner-vert are derivable)
-  const hideIndices = [2, 3]; // top-right (h) and inner-vert (v) are both derivable
-  const hideIdx = hideIndices[0]; // for 5B/5C single hide compat, use first
+  // L shape: randomly hide either the short sides OR the long sides
+  // Short option: hide top-right(2,h) and inner-vert(3,v) - short derivable sides
+  // Long option: hide bottom(0,h) and left(5,v) - long sides derivable as sum of opposites
+  const hideShort = Math.random() < 0.5;
+  const hideIndices = hideShort ? [2, 3] : [0, 5];
+  const hideIdx = hideIndices[0];
   const scale = 2;
   const vertices = [
     { x: 0,            y: H*scale },
@@ -205,8 +208,11 @@ function genTShape(unit) {
   ];
   const perimeter = sides.reduce((s, x) => s + x.length, 0);
   // T shape: hide left-shoulder (idx 6) and right-shoulder (idx 2) - both derivable
-  // Hide right-shoulder (h, derivable from bottom-stem-left-shoulder) and stem-right (v, = stem-left = sh)
-  const hideIndices = [2, 3];
+  // T shape: randomly hide short or long sides
+  // Short: hide right-shoulder(2,h) and stem-right(3,v)
+  // Long: hide bottom(0,h) and right-outer(1,v) - bottom = sum of 3 h-sides, right-outer = left-outer
+  const hideShort = Math.random() < 0.5;
+  const hideIndices = hideShort ? [2, 3] : [0, 1];
   const hideIdx = hideIndices[0];
   return { shape: "T", W, H, bh, sh, tw, stemLeft, sides, perimeter, hideIdx, hideIndices, vertices, unit };
 }
@@ -228,8 +234,11 @@ function genUShape(unit) {
     { length: H,         label: "left",        dir: "v" },
   ];
   const perimeter = sides.reduce((s, x) => s + x.length, 0);
-  // U shape: hide inner-top (idx 4) and inner-right (idx 3) or inner-left (idx 5)
-  const hideIndices = [3, 4]; // inner-right vert and inner-top horiz
+  // U shape: randomly hide short or long sides
+  // Short: hide inner-right(3,v) and inner-top(4,h)
+  // Long: hide bottom(0,h) and right(1,v) - derivable as sum of opposites
+  const hideShort = Math.random() < 0.5;
+  const hideIndices = hideShort ? [3, 4] : [0, 1];
   const hideIdx = hideIndices[0];
   const scale = 2;
   const vertices = [
@@ -338,6 +347,11 @@ export function gradeLesson02Answer(input, question) {
     case "polygon": return gradePolygon(input, question);
     case "rectangle-perimeter": return gradeRectangle(input, question);
     case "square-perimeter": return gradeSquare(input, question);
+    case "rectangle-equal-sides": {
+      // input is comma-separated selected side indices, correct = 0,1,2,3 (all four sides)
+      const sel = input.split(",").map(Number).filter(n => !isNaN(n)).sort().join(",");
+      return sel === "0,1,2,3";
+    }
     case "rectilinear-5A": {
       // input is comma-separated selected side indices
       const selected = input.split(",").map(Number).filter(n => !isNaN(n)).sort().join(",");
