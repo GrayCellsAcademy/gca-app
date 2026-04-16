@@ -463,7 +463,7 @@ function Lobby({ user, rating, onStartComputer, onJoinGame }) {
             <div style={{ fontWeight: 700, marginBottom: 8 }}>Play vs Computer</div>
             <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
               <label style={{ fontSize: 20, color: "var(--text2)" }}>Level:</label>
-              <input type="range" min={1} max={20} value={computerLevel}
+              <input type="range" min={1} max={30} value={computerLevel}
                 onChange={e => setComputerLevel(Number(e.target.value))}
                 style={{ flex: 1 }} />
               <span style={{ fontWeight: 800, minWidth: 30, textAlign: "center" }}>{computerLevel}</span>
@@ -619,4 +619,5 @@ export default function TicTacToe({ user, onHome }) {
     </div>
   );
 }
+
 
