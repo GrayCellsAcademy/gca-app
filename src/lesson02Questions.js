@@ -77,18 +77,6 @@ export function gradePolygon(input, question) {
   return n === normalizeAnswer(question.answer) || n === normalizeAnswer(question.displayAnswer);
 }
 
-// Student identifies which sides are equal (click-based, handled in component)
-  const unit = randUnit();
-  const w = randInt(10, 99);
-  const h = randInt(10, 99);
-  // Rectangle sides: top=w, right=h, bottom=w, left=h
-  return {
-    w, h, unit,
-    answer: "pairs",
-    // Correct pairs: top=bottom=w, left=right=h (all 4 sides selected = correct)
-  };
-}
-
 //  Topic 3B: Rectangle Perimeter 
 export function genRectanglePerimeter() {
   const unit = randUnit();
