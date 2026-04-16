@@ -204,75 +204,93 @@ function RectilinearSVG({ question, selectedSides, onSideClick, highlightSideIdx
 
 function ColumnAdditionReveal({ numbers, label }) {
   if (!numbers || numbers.length === 0) return null;
-  const maxLen = Math.max(...numbers.map(n => String(Math.abs(n)).length));
+  const maxLen = Math.max(...numbers.map(n => String(n).length));
   const total = numbers.reduce((a, b) => a + b, 0);
 
-  // Compute carries column by column from right
-  const carries = Array(maxLen + 1).fill(0);
-  for (let col = 0; col < maxLen; col++) {
-    const rightIdx = maxLen - 1 - col;
-    let colSum = carries[rightIdx + 1] || 0;
+  // Compute carries right to left
+  const carries = Array(maxLen).fill(0);
+  for (let pos = 0; pos < maxLen; pos++) {
+    let colSum = pos > 0 ? carries[pos - 1] : 0;
     for (const n of numbers) {
-      const s = String(Math.abs(n));
-      const digit = s.length > col ? parseInt(s[s.length - 1 - col]) : 0;
-      colSum += digit;
+      const s = String(n);
+      const digitIdx = s.length - 1 - pos;
+      if (digitIdx >= 0) colSum += parseInt(s[digitIdx]);
     }
-    carries[rightIdx] = Math.floor(colSum / 10);
+    carries[pos] = Math.floor(colSum / 10);
+  }
+  // carries[pos] is carry INTO column pos (from right, 0-indexed)
+  // We want carry displayed ABOVE column pos from LEFT
+  // carryAbove[colFromLeft] = carry going into that column
+  const carryAbove = Array(maxLen).fill(0);
+  for (let pos = 0; pos < maxLen - 1; pos++) {
+    carryAbove[maxLen - 2 - pos] = carries[pos];
   }
 
-  const cellW = 32, cellH = 36;
-  const opW = 28;
+  const CW = 28; // cell width
+  const CH = 36; // cell height
+  const OW = 28; // operator column width
+  const totalW = OW + maxLen * CW + 8;
+  const carryH = 20;
+  const lineY = carryH + numbers.length * CH + 6;
+  const totalH = lineY + CH + 8;
 
-  // Get digit at position (0=rightmost) for a number, 0 if not present
-  const getDigit = (n, posFromRight) => {
-    const s = String(Math.abs(n));
-    return posFromRight < s.length ? s[s.length - 1 - posFromRight] : null;
+  const getDigit = (n, colFromLeft) => {
+    const s = String(n);
+    const idx = colFromLeft - (maxLen - s.length);
+    return idx >= 0 && idx < s.length ? s[idx] : null;
   };
 
+  const totalStr = String(total);
+
   return (
-    <div style={{ marginTop: 10, padding: "12px 16px", background: "var(--bg3)", borderRadius: "var(--radius-sm)", border: "1px solid var(--border)", display: "inline-block" }}>
-      {label && <div style={{ fontSize: 14, color: "var(--text3)", marginBottom: 8, fontWeight: 600 }}>{label}</div>}
-      <div style={{ display: "inline-block", fontFamily: "var(--mono)" }}>
-        {/* Carries row */}
-        <div style={{ display: "flex" }}>
-          <div style={{ width: opW }} />
-          {Array.from({ length: maxLen }, (_, i) => (
-            <div key={i} style={{ width: cellW, textAlign: "center", fontSize: 14, color: "var(--blue)", fontWeight: 800, minHeight: 18 }}>
-              {carries[i] > 0 ? carries[i] : ""}
-            </div>
-          ))}
-        </div>
+    <div style={{ marginTop: 10, display: "inline-block" }}>
+      {label && <div style={{ fontSize: 14, color: "var(--text3)", marginBottom: 6, fontWeight: 600 }}>{label}</div>}
+      <svg width={totalW} height={totalH} style={{ display: "block", overflow: "visible" }}>
+        {/* Carry row */}
+        {carryAbove.map((c, ci) => c > 0 && (
+          <text key={"c" + ci}
+            x={OW + ci * CW + CW / 2} y={carryH - 4}
+            textAnchor="middle" fontSize="13" fontWeight="800"
+            fill="var(--blue)" fontFamily="var(--mono)">
+            {c}
+          </text>
+        ))}
         {/* Number rows */}
         {numbers.map((n, ri) => (
-          <div key={ri} style={{ display: "flex", alignItems: "center" }}>
-            <div style={{ width: opW, textAlign: "right", fontSize: 18, color: "var(--text3)", paddingRight: 6 }}>
-              {ri === numbers.length - 1 ? "+" : ""}
-            </div>
+          <g key={"r" + ri}>
+            {ri === numbers.length - 1 && (
+              <text x={OW - 4} y={carryH + ri * CH + CH * 0.68}
+                textAnchor="end" fontSize="20" fill="var(--text3)" fontFamily="var(--mono)">+</text>
+            )}
             {Array.from({ length: maxLen }, (_, ci) => {
-              const d = getDigit(n, maxLen - 1 - ci);
-              return (
-                <div key={ci} style={{ width: cellW, height: cellH, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, fontWeight: 700, color: d ? "var(--text)" : "transparent" }}>
-                  {d || "0"}
-                </div>
-              );
+              const d = getDigit(n, ci);
+              return d ? (
+                <text key={"d" + ci}
+                  x={OW + ci * CW + CW / 2} y={carryH + ri * CH + CH * 0.68}
+                  textAnchor="middle" fontSize="24" fontWeight="700"
+                  fill="var(--text)" fontFamily="var(--mono)">{d}</text>
+              ) : null;
             })}
-          </div>
+          </g>
         ))}
         {/* Line */}
-        <div style={{ borderTop: "2.5px solid var(--text)", marginLeft: opW, marginBottom: 2 }} />
+        <line x1={OW} y1={lineY} x2={OW + maxLen * CW} y2={lineY}
+          stroke="var(--text)" strokeWidth="2.5" />
         {/* Total */}
-        <div style={{ display: "flex" }}>
-          <div style={{ width: opW }} />
-          {String(total).split("").map((ch, ci) => (
-            <div key={ci} style={{ width: cellW, height: cellH, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, fontWeight: 800, color: "var(--green)" }}>
-              {ch}
-            </div>
-          ))}
-        </div>
-      </div>
+        {totalStr.split("").map((ch, ci) => {
+          const colFromLeft = maxLen - totalStr.length + ci;
+          return (
+            <text key={"t" + ci}
+              x={OW + colFromLeft * CW + CW / 2} y={lineY + CH * 0.72}
+              textAnchor="middle" fontSize="24" fontWeight="800"
+              fill="var(--green)" fontFamily="var(--mono)">{ch}</text>
+          );
+        })}
+      </svg>
     </div>
   );
 }
+
 
 function MissingSideCalc({ side, allSides, unit }) {
   // For a missing side, show either addition (if it equals sum of parallel sides)
