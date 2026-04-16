@@ -203,59 +203,69 @@ function RectilinearSVG({ question, selectedSides, onSideClick, highlightSideIdx
 
 
 function ColumnAdditionReveal({ numbers, label }) {
-  // Render a column addition or subtraction calculation
   if (!numbers || numbers.length === 0) return null;
   const maxLen = Math.max(...numbers.map(n => String(Math.abs(n)).length));
-  const padded = numbers.map(n => String(Math.abs(n)).padStart(maxLen, " "));
   const total = numbers.reduce((a, b) => a + b, 0);
-  const totalStr = String(Math.abs(total)).padStart(maxLen, " ");
 
-  // Compute carries
-  const carries = Array(maxLen).fill(0);
-  for (let col = maxLen - 1; col >= 0; col--) {
-    let colSum = carries[col] || 0;
+  // Compute carries column by column from right
+  const carries = Array(maxLen + 1).fill(0);
+  for (let col = 0; col < maxLen; col++) {
+    const rightIdx = maxLen - 1 - col;
+    let colSum = carries[rightIdx + 1] || 0;
     for (const n of numbers) {
-      const s = String(Math.abs(n)).padStart(maxLen, " ");
-      if (s[col] !== " ") colSum += parseInt(s[col]);
+      const s = String(Math.abs(n));
+      const digit = s.length > col ? parseInt(s[s.length - 1 - col]) : 0;
+      colSum += digit;
     }
-    if (col > 0 && colSum >= 10) carries[col - 1] = Math.floor(colSum / 10);
+    carries[rightIdx] = Math.floor(colSum / 10);
   }
 
-  const cellW = 28, cellH = 32;
-  const colCount = maxLen;
+  const cellW = 32, cellH = 36;
+  const opW = 28;
+
+  // Get digit at position (0=rightmost) for a number, 0 if not present
+  const getDigit = (n, posFromRight) => {
+    const s = String(Math.abs(n));
+    return posFromRight < s.length ? s[s.length - 1 - posFromRight] : null;
+  };
 
   return (
-    <div style={{ marginTop: 12, padding: "12px 16px", background: "var(--bg3)", borderRadius: "var(--radius-sm)", border: "1px solid var(--border)", display: "inline-block" }}>
-      {label && <div style={{ fontSize: 13, color: "var(--text3)", marginBottom: 6 }}>{label}</div>}
-      <div style={{ fontFamily: "var(--mono)", display: "inline-block" }}>
+    <div style={{ marginTop: 10, padding: "12px 16px", background: "var(--bg3)", borderRadius: "var(--radius-sm)", border: "1px solid var(--border)", display: "inline-block" }}>
+      {label && <div style={{ fontSize: 14, color: "var(--text3)", marginBottom: 8, fontWeight: 600 }}>{label}</div>}
+      <div style={{ display: "inline-block", fontFamily: "var(--mono)" }}>
         {/* Carries row */}
-        <div style={{ display: "flex", paddingLeft: 24 }}>
-          {carries.map((c, i) => (
-            <div key={i} style={{ width: cellW, textAlign: "center", fontSize: 13, color: "var(--blue)", fontWeight: 700, minHeight: 16 }}>
-              {c > 0 ? c : ""}
+        <div style={{ display: "flex" }}>
+          <div style={{ width: opW }} />
+          {Array.from({ length: maxLen }, (_, i) => (
+            <div key={i} style={{ width: cellW, textAlign: "center", fontSize: 14, color: "var(--blue)", fontWeight: 800, minHeight: 18 }}>
+              {carries[i] > 0 ? carries[i] : ""}
             </div>
           ))}
         </div>
-        {/* Numbers */}
-        {padded.map((row, ri) => (
+        {/* Number rows */}
+        {numbers.map((n, ri) => (
           <div key={ri} style={{ display: "flex", alignItems: "center" }}>
-            <div style={{ width: 24, textAlign: "right", fontSize: 16, color: "var(--text3)", paddingRight: 4 }}>
-              {ri === padded.length - 1 ? "+" : ""}
+            <div style={{ width: opW, textAlign: "right", fontSize: 18, color: "var(--text3)", paddingRight: 6 }}>
+              {ri === numbers.length - 1 ? "+" : ""}
             </div>
-            {row.split("").map((ch, ci) => (
-              <div key={ci} style={{ width: cellW, height: cellH, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, fontWeight: 700, color: ch === " " ? "transparent" : "var(--text)" }}>
-                {ch === " " ? "0" : ch}
-              </div>
-            ))}
+            {Array.from({ length: maxLen }, (_, ci) => {
+              const d = getDigit(n, maxLen - 1 - ci);
+              return (
+                <div key={ci} style={{ width: cellW, height: cellH, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, fontWeight: 700, color: d ? "var(--text)" : "transparent" }}>
+                  {d || "0"}
+                </div>
+              );
+            })}
           </div>
         ))}
         {/* Line */}
-        <div style={{ borderTop: "2px solid var(--text)", marginLeft: 24, marginBottom: 4 }} />
+        <div style={{ borderTop: "2.5px solid var(--text)", marginLeft: opW, marginBottom: 2 }} />
         {/* Total */}
-        <div style={{ display: "flex", paddingLeft: 24 }}>
-          {totalStr.split("").map((ch, ci) => (
-            <div key={ci} style={{ width: cellW, height: cellH, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, fontWeight: 800, color: "var(--green)" }}>
-              {ch === " " ? "" : ch}
+        <div style={{ display: "flex" }}>
+          <div style={{ width: opW }} />
+          {String(total).split("").map((ch, ci) => (
+            <div key={ci} style={{ width: cellW, height: cellH, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, fontWeight: 800, color: "var(--green)" }}>
+              {ch}
             </div>
           ))}
         </div>
@@ -264,93 +274,95 @@ function ColumnAdditionReveal({ numbers, label }) {
   );
 }
 
-function RevealCalculation({ question, revealedAnswers }) {
+function MissingSideCalc({ side, allSides, unit }) {
+  // For a missing side, show either addition (if it equals sum of parallel sides)
+  // or subtraction (if it equals long - other short sides)
+  if (!side || !allSides) return null;
+  const sameDirSides = allSides.filter((s, si) => s.dir === side.dir);
+  const maxLen = Math.max(...sameDirSides.map(s => s.length));
+  const isLong = side.length === maxLen;
+  const otherSameDirSides = sameDirSides.filter(s => s.length !== side.length || s.label !== side.label);
+
+  if (isLong) {
+    // Long side = sum of shorter parallel sides (addition)
+    const nums = otherSameDirSides.map(s => s.length);
+    return <ColumnAdditionReveal numbers={nums} label={"= " + side.length + unit + " (sum of opposite sides)"} />;
+  } else {
+    // Short side = long side - other short sides (subtraction style)
+    const longSide = sameDirSides.find(s => s.length === maxLen);
+    const otherShorts = otherSameDirSides.filter(s => s.length !== maxLen).map(s => s.length);
+    const subtracted = otherShorts.reduce((a, b) => a - b, longSide?.length || 0);
+    return (
+      <div style={{ marginTop: 10, padding: "10px 14px", background: "var(--bg3)", borderRadius: "var(--radius-sm)", border: "1px solid var(--border)", display: "inline-block" }}>
+        <div style={{ fontSize: 14, color: "var(--text3)", marginBottom: 6, fontWeight: 600 }}>
+          {"= " + side.length + unit + " (long side minus other shorts)"}
+        </div>
+        <div style={{ fontFamily: "var(--mono)", fontSize: 20, color: "var(--text)" }}>
+          {longSide?.length}{unit} - {otherShorts.join(" - ")} = <strong style={{ color: "var(--green)" }}>{side.length}{unit}</strong>
+        </div>
+      </div>
+    );
+  }
+}
+
+function RevealCalculation({ question }) {
   if (!question) return null;
 
-  // Line segments: show column addition of segment lengths
   if (question.type === "line-segments") {
     return <ColumnAdditionReveal numbers={question.segments} label={"Total: " + question.displayAnswer} />;
   }
-
-  // Polygon: show column addition of all sides
   if (question.type === "polygon") {
     return <ColumnAdditionReveal numbers={question.lengths} label={"Perimeter: " + question.displayAnswer} />;
   }
-
-  // Rectangle perimeter: show 2*(w+h) as column addition of w+h+w+h
   if (question.type === "rectangle-perimeter") {
-    return <ColumnAdditionReveal numbers={[question.w, question.h, question.w, question.h]} label={"Perimeter: " + question.displayAnswer} />;
+    return <ColumnAdditionReveal numbers={[question.w, question.h, question.w, question.h]} label={"Perimeter = w + h + w + h = " + question.displayAnswer} />;
   }
-
-  // Rectangle equal sides: label all sides
   if (question.type === "rectangle-equal-sides") {
     return (
-      <div style={{ marginTop: 12, fontSize: 16, color: "var(--text2)" }}>
-        Top = Bottom = <strong style={{ color: "var(--blue)", fontFamily: "var(--mono)" }}>{question.w}{question.unit}</strong>
-        {" | "}
-        Left = Right = <strong style={{ color: "var(--blue)", fontFamily: "var(--mono)" }}>{question.h}{question.unit}</strong>
+      <div style={{ marginTop: 12, fontSize: 16, color: "var(--text2)", lineHeight: 2 }}>
+        <div>Top = Bottom = <strong style={{ color: "var(--blue)", fontFamily: "var(--mono)" }}>{question.w} {question.unit}</strong></div>
+        <div>Left = Right = <strong style={{ color: "var(--blue)", fontFamily: "var(--mono)" }}>{question.h} {question.unit}</strong></div>
       </div>
     );
   }
-
-  // Square perimeter
   if (question.type === "square-perimeter") {
-    return <ColumnAdditionReveal numbers={[question.s, question.s, question.s, question.s]} label={"Perimeter: " + question.displayAnswer} />;
+    return <ColumnAdditionReveal numbers={[question.s, question.s, question.s, question.s]} label={"Perimeter = 4 x " + question.s + question.unit + " = " + question.displayAnswer} />;
   }
-
-  // Rectilinear 5B: show column addition for each missing side
-  if (question.type === "rectilinear-5B" && question.missingAnswers) {
-    const revealed = revealedAnswers || question.missingAnswers;
+  if (question.type === "rectilinear-5B" && question.missingAnswers && question.sides) {
     return (
-      <div style={{ display: "flex", gap: 16, flexWrap: "wrap", marginTop: 12 }}>
-        {revealed.map((ma, i) => {
-          const knownSides = (question.sides || [])
-            .map((s, idx) => ({ ...s, idx }))
-            .filter(s => s.dir === (question.sides[ma.idx]?.dir) && s.idx !== ma.idx)
-            .map(s => s.length);
-          const isLong = ma.length === Math.max(...(question.sides || []).filter(s => s.dir === question.sides[ma.idx]?.dir).map(s => s.length));
+      <div style={{ display: "flex", gap: 16, flexWrap: "wrap", marginTop: 8 }}>
+        {question.missingAnswers.map((ma, i) => {
+          const side = { ...question.sides[ma.idx], length: ma.length };
           return (
             <div key={i}>
-              {isLong
-                ? <ColumnAdditionReveal numbers={knownSides} label={"Missing side = " + ma.length + question.unit} />
-                : <div style={{ padding: "8px 12px", background: "var(--bg3)", borderRadius: "var(--radius-sm)", border: "1px solid var(--border)" }}>
-                    <div style={{ fontSize: 13, color: "var(--text3)", marginBottom: 4 }}>Side {i + 1}</div>
-                    <div style={{ fontSize: 22, fontWeight: 800, color: "var(--green)", fontFamily: "var(--mono)" }}>{ma.length}{question.unit}</div>
-                  </div>
-              }
+              <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text3)", marginBottom: 4 }}>Missing side {i + 1}:</div>
+              <MissingSideCalc side={side} allSides={question.sides} unit={question.unit} />
             </div>
           );
         })}
       </div>
     );
   }
-
-  // Rectilinear 5C: show missing sides + perimeter calculation
-  if (question.type === "rectilinear-5C" && question.hideIndices) {
-    const allSides = question.sides || [];
-    const missingLengths = question.hideIndices.map(i => allSides[i]?.length || 0);
+  if (question.type === "rectilinear-5C" && question.hideIndices && question.sides) {
+    const allSides = question.sides;
     return (
-      <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 12 }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 8 }}>
         {question.hideIndices.map((hidIdx, i) => {
           const side = allSides[hidIdx];
-          const sameDirSides = allSides.filter((s, si) => s.dir === side.dir && si !== hidIdx).map(s => s.length);
-          const isLong = side.length === Math.max(...allSides.filter(s => s.dir === side.dir).map(s => s.length));
           return (
             <div key={i}>
-              {isLong
-                ? <ColumnAdditionReveal numbers={sameDirSides} label={"Missing side = " + side.length + question.unit} />
-                : <div style={{ fontSize: 16, color: "var(--text2)" }}>
-                    Missing side {i + 1}: <strong style={{ fontFamily: "var(--mono)", color: "var(--green)" }}>{side.length}{question.unit}</strong>
-                  </div>
-              }
+              <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text3)", marginBottom: 4 }}>Missing side {i + 1}:</div>
+              <MissingSideCalc side={side} allSides={allSides} unit={question.unit} />
             </div>
           );
         })}
-        <ColumnAdditionReveal numbers={allSides.map(s => s.length)} label={"Perimeter: " + question.displayAnswer} />
+        <div>
+          <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text3)", marginBottom: 4 }}>Perimeter (all sides):</div>
+          <ColumnAdditionReveal numbers={allSides.map(s => s.length)} label={"= " + question.displayAnswer} />
+        </div>
       </div>
     );
   }
-
   return null;
 }
 
