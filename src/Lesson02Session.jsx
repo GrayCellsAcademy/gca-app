@@ -335,14 +335,7 @@ function RevealCalculation({ question }) {
   if (question.type === "rectangle-perimeter") {
     return <ColumnAdditionReveal numbers={[question.w, question.h, question.w, question.h]} label={"Perimeter = w + h + w + h = " + question.displayAnswer} />;
   }
-  if (question.type === "rectangle-equal-sides") {
-    return (
-      <div style={{ marginTop: 12, fontSize: 16, color: "var(--text2)", lineHeight: 2 }}>
-        <div>Top = Bottom = <strong style={{ color: "var(--blue)", fontFamily: "var(--mono)" }}>{question.w} {question.unit}</strong></div>
-        <div>Left = Right = <strong style={{ color: "var(--blue)", fontFamily: "var(--mono)" }}>{question.h} {question.unit}</strong></div>
-      </div>
-    );
-  }
+
   if (question.type === "square-perimeter") {
     return <ColumnAdditionReveal numbers={[question.s, question.s, question.s, question.s]} label={"Perimeter = 4 x " + question.s + question.unit + " = " + question.displayAnswer} />;
   }
@@ -389,7 +382,6 @@ function QuestionDisplay({ question, selectedSides, onSideClick, revealCorrect, 
   switch (question.type) {
     case "line-segments": return <LineSegmentsSVG question={question} />;
     case "polygon": return <PolygonSVG question={question} />;
-    case "rectangle-equal-sides": return <RectangleSVG question={question} mode="equal-sides" selectedSides={selectedSides} onSideClick={onSideClick} />;
     case "rectangle-perimeter": return <RectangleSVG question={question} mode="3B" />;
     case "square-perimeter": return <SquareSVG question={question} />;
     case "rectilinear-5A":
@@ -472,12 +464,12 @@ function AnswerInput({ question, onSubmit, submitted, selectedSides, onSideClick
     );
   }
 
-  const isClick = question?.type === "rectangle-equal-sides" || question?.type === "rectilinear-5A";
+  const isClick = question?.type === "rectilinear-5A";
   if (isClick) {
     return (
       <div style={{ textAlign: "center" }}>
         <div style={{ fontSize: 13, color: "var(--text3)", marginBottom: 8 }}>
-          {question.type === "rectangle-equal-sides" ? "Click pairs of equal sides. Selected: " + (selectedSides?.length || 0) + "/4" : "Click sides that sum to the highlighted side. Selected: " + (selectedSides?.length || 0)}
+          {"Click sides that sum to the highlighted side. Selected: " + (selectedSides?.length || 0)}
         </div>
         <button className="btn btn-primary" style={{ width: "100%" }} onClick={() => onSubmit((selectedSides || []).slice().sort((a, b) => a - b).join(","))} disabled={submitted}>Submit</button>
       </div>
