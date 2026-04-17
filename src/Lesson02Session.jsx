@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { setDoc, doc, updateDoc } from "firebase/firestore";
 import {
   createClassworkSession, onSessionChange, onClassworkAnswersChange,
@@ -100,7 +100,7 @@ function RectangleSVG({ question, mode, selectedSides, onSideClick, revealCorrec
     { x1: rx, y1: ry + rh, x2: rx, y2: ry, mx: rx - 38, my: ry + rh / 2, label: h },
   ];
   const showLabel = (i) => mode === "3B" && (i === 0 || i === 1 || revealCorrect);
-  const isRevealed = (i) => revealCorrect && !(i === 0 || i === 1);
+  const isRevealed = (i) => revealCorrect && !(i === 0 || i === 1); // bottom and left are revealed
   return (
     <svg viewBox={"0 0 " + W + " " + H} style={{ width: "100%", maxWidth: 360, display: "block", margin: "0 auto" }}>
       <rect x={rx} y={ry} width={rw} height={rh} stroke="var(--blue)" strokeWidth="2.5" fill="rgba(59,130,246,0.07)" rx="2" />
@@ -126,26 +126,32 @@ function RectangleSVG({ question, mode, selectedSides, onSideClick, revealCorrec
 
 function SquareSVG({ question, revealCorrect }) {
   const { s, unit } = question;
-  const W = 320, H = 300;
-  const sx = 70, sy = 50, sw = 180;
+  const W = 280, H = 280;
+  const sx = 50, sy = 50, sw = 180;
+  // Label positions: top(given), right(revealed), bottom(revealed), left(revealed)
   const labels = [
-    { x: sx + sw/2, y: sy - 16, given: true },
-    { x: sx + sw + 42, y: sy + sw/2 },
-    { x: sx + sw/2, y: sy + sw + 28 },
-    { x: sx - 42, y: sy + sw/2 },
+    { x: sx + sw/2, y: sy - 14, anchor: "middle" },   // top - given
+    { x: sx + sw + 16, y: sy + sw/2, anchor: "start" }, // right - revealed
+    { x: sx + sw/2, y: sy + sw + 20, anchor: "middle" }, // bottom - revealed
+    { x: sx - 16, y: sy + sw/2, anchor: "end" },        // left - revealed
   ];
   return (
-    <svg viewBox={"0 0 " + W + " " + H} style={{ width: "100%", maxWidth: 320, display: "block", margin: "0 auto" }}>
+    <svg viewBox={"0 0 " + W + " " + H} style={{ width: "100%", maxWidth: 280, display: "block", margin: "0 auto" }}>
       <rect x={sx} y={sy} width={sw} height={sw} stroke="var(--blue)" strokeWidth="2.5" fill="rgba(59,130,246,0.07)" />
       <polyline points={(sx+14)+","+sy+" "+(sx+14)+","+(sy+14)+" "+sx+","+(sy+14)} fill="none" stroke="var(--text3)" strokeWidth="1.5" />
       {labels.map((lbl, i) => {
-        if (!lbl.given && !revealCorrect) return null;
+        const isGiven = i === 0;
+        const show = isGiven || revealCorrect;
+        if (!show) return null;
         return (
           <g key={i}>
-            <rect x={lbl.x - 28} y={lbl.y - 13} width={56} height={26} rx={5}
-              fill="var(--bg)" stroke={lbl.given ? "var(--border)" : "var(--green)"} strokeWidth="1.5" />
+            <rect x={lbl.x - (lbl.anchor === "middle" ? 28 : lbl.anchor === "start" ? 0 : 56)}
+              y={lbl.y - 12} width={56} height={24} rx={5}
+              fill="var(--bg)" stroke={isGiven ? "var(--border)" : "var(--green)"} strokeWidth="1" />
             <text x={lbl.x} y={lbl.y + 5} textAnchor="middle" fontSize="13" fontWeight="700"
-              fill={lbl.given ? "var(--text)" : "var(--green)"} fontFamily="var(--mono)">{s} {unit}</text>
+              fill={isGiven ? "var(--text)" : "var(--green)"} fontFamily="var(--mono)">
+              {s} {unit}
+            </text>
           </g>
         );
       })}
@@ -308,31 +314,34 @@ function ColumnAdditionReveal({ numbers, label }) {
 }
 
 
-function MissingSideCalc({ side, allSides, unit }) {
-  // For a missing side, show either addition (if it equals sum of parallel sides)
-  // or subtraction (if it equals long - other short sides)
-  if (!side || !allSides) return null;
-  const sameDirSides = allSides.filter((s, si) => s.dir === side.dir);
+function MissingSideCalc({ sideIdx, allSides, unit }) {
+  if (sideIdx === undefined || !allSides) return null;
+  const side = allSides[sideIdx];
+  if (!side) return null;
+  const sameDirSides = allSides.map((s, i) => ({ ...s, i })).filter(s => s.dir === side.dir);
   const maxLen = Math.max(...sameDirSides.map(s => s.length));
   const isLong = side.length === maxLen;
-  const otherSameDirSides = sameDirSides.filter(s => s.length !== side.length || s.label !== side.label);
+  // Other sides in same direction, excluding the missing one
+  const otherSameDir = sameDirSides.filter(s => s.i !== sideIdx);
 
   if (isLong) {
-    // Long side = sum of shorter parallel sides (addition)
-    const nums = otherSameDirSides.map(s => s.length);
+    // Long side = sum of all shorter parallel sides
+    const nums = otherSameDir.map(s => s.length);
     return <ColumnAdditionReveal numbers={nums} label={"= " + side.length + unit + " (sum of opposite sides)"} />;
   } else {
-    // Short side = long side - other short sides (subtraction style)
-    const longSide = sameDirSides.find(s => s.length === maxLen);
-    const otherShorts = otherSameDirSides.filter(s => s.length !== maxLen).map(s => s.length);
-    const subtracted = otherShorts.reduce((a, b) => a - b, longSide?.length || 0);
+    // Short missing side = long side - sum of other short sides
+    const longSide = otherSameDir.find(s => s.length === maxLen);
+    const otherShorts = otherSameDir.filter(s => s.length !== maxLen);
+    const otherShortNums = otherShorts.map(s => s.length);
+    const longLen = longSide?.length || 0;
+    const check = longLen - otherShortNums.reduce((a, b) => a + b, 0);
     return (
       <div style={{ marginTop: 10, padding: "10px 14px", background: "var(--bg3)", borderRadius: "var(--radius-sm)", border: "1px solid var(--border)", display: "inline-block" }}>
         <div style={{ fontSize: 14, color: "var(--text3)", marginBottom: 6, fontWeight: 600 }}>
           {"= " + side.length + unit + " (long side minus other shorts)"}
         </div>
         <div style={{ fontFamily: "var(--mono)", fontSize: 20, color: "var(--text)" }}>
-          {longSide?.length}{unit} - {otherShorts.join(" - ")} = <strong style={{ color: "var(--green)" }}>{side.length}{unit}</strong>
+          {longLen}{unit}{otherShortNums.map(n => " - " + n).join("")} = <strong style={{ color: "var(--green)" }}>{side.length}{unit}</strong>
         </div>
       </div>
     );
@@ -358,15 +367,12 @@ function RevealCalculation({ question }) {
   if (question.type === "rectilinear-5B" && question.missingAnswers && question.sides) {
     return (
       <div style={{ display: "flex", gap: 16, flexWrap: "wrap", marginTop: 8 }}>
-        {question.missingAnswers.map((ma, i) => {
-          const side = { ...question.sides[ma.idx], length: ma.length };
-          return (
-            <div key={i}>
-              <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text3)", marginBottom: 4 }}>Missing side {i + 1}:</div>
-              <MissingSideCalc side={side} allSides={question.sides} unit={question.unit} />
-            </div>
-          );
-        })}
+        {question.missingAnswers.map((ma, i) => (
+          <div key={i}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text3)", marginBottom: 4 }}>Missing side {i + 1}:</div>
+            <MissingSideCalc sideIdx={ma.idx} allSides={question.sides} unit={question.unit} />
+          </div>
+        ))}
       </div>
     );
   }
@@ -375,11 +381,10 @@ function RevealCalculation({ question }) {
     return (
       <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 8 }}>
         {question.hideIndices.map((hidIdx, i) => {
-          const side = allSides[hidIdx];
           return (
             <div key={i}>
               <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text3)", marginBottom: 4 }}>Missing side {i + 1}:</div>
-              <MissingSideCalc side={side} allSides={allSides} unit={question.unit} />
+              <MissingSideCalc sideIdx={hidIdx} allSides={allSides} unit={question.unit} />
             </div>
           );
         })}
@@ -914,6 +919,3 @@ export default function Lesson02Session({ user, onHome }) {
 }
 
 export { TeacherLesson02 as Lesson02TeacherView, StudentLesson02 as Lesson02StudentView };
-
-
-
