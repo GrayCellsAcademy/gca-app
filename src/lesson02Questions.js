@@ -330,10 +330,6 @@ export function gradeLesson02Answer(input, question) {
     case "polygon": return gradePolygon(input, question);
     case "rectangle-perimeter": return gradeRectangle(input, question);
     case "square-perimeter": return gradeSquare(input, question);
-      // input is comma-separated selected side indices, correct = 0,1,2,3 (all four sides)
-      const sel = input.split(",").map(Number).filter(n => !isNaN(n)).sort().join(",");
-      return sel === "0,1,2,3";
-    }
     case "rectilinear-5A": {
       // input is comma-separated selected side indices
       const selected = input.split(",").map(Number).filter(n => !isNaN(n)).sort().join(",");
