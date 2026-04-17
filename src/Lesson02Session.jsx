@@ -324,11 +324,11 @@ function MissingSideCalc({ sideIdx, allSides, unit, hideIndices }) {
   const hiddenSet = new Set(hideIndices || [sideIdx]);
   const otherSameDir = sameDirSides.filter(s => !hiddenSet.has(s.i));
 
-  // Check congruency against ALL same-dir sides (including hidden ones), just not self
+  // Check if ANY other same-dir side (known or hidden) has the same length -> congruent pair
   const congruentSide = sameDirSides.find(s => s.i !== sideIdx && s.length === side.length);
 
-  if (isLong && congruentSide && hiddenSet.has(congruentSide.i)) {
-    // Both long sides are hidden and equal - show as congruent pair
+  if (congruentSide) {
+    // Congruent pair - equal to opposite side, no calculation needed
     return (
       <div style={{ marginTop: 10, padding: "10px 14px", background: "var(--bg3)", borderRadius: "var(--radius-sm)", border: "1px solid var(--green)", display: "inline-block" }}>
         <div style={{ fontSize: 14, color: "var(--text3)", marginBottom: 4, fontWeight: 600 }}>Equal to opposite side</div>
@@ -336,41 +336,25 @@ function MissingSideCalc({ sideIdx, allSides, unit, hideIndices }) {
       </div>
     );
   } else if (isLong) {
-    // Long side = sum of shorter parallel sides (addition)
+    // Long side = sum of shorter parallel sides (excluding all hidden sides)
     const nums = otherSameDir.map(s => s.length);
     return <ColumnAdditionReveal numbers={nums} label={"= " + side.length + unit + " (sum of opposite sides)"} />;
   } else {
-    // Check if this short side has a congruent pair among visible sides
-    const congruentVisible = otherSameDir.find(s => s.length === side.length);
-    if (congruentVisible) {
-      // Congruent pair - just show the value, no calculation needed
-      return (
-        <div style={{ marginTop: 10, padding: "10px 14px", background: "var(--bg3)", borderRadius: "var(--radius-sm)", border: "1px solid var(--green)", display: "inline-block" }}>
-          <div style={{ fontSize: 14, color: "var(--text3)", marginBottom: 4, fontWeight: 600 }}>
-            Equal to opposite side
-          </div>
-          <div style={{ fontFamily: "var(--mono)", fontSize: 24, fontWeight: 800, color: "var(--green)" }}>
-            {side.length}{unit}
-          </div>
+    // Short side = long side minus other known short sides
+    const longSide = otherSameDir.find(s => s.length === maxLen);
+    const otherShorts = otherSameDir.filter(s => s.length !== maxLen);
+    const otherShortNums = otherShorts.map(s => s.length);
+    const longLen = longSide?.length || 0;
+    return (
+      <div style={{ marginTop: 10, padding: "10px 14px", background: "var(--bg3)", borderRadius: "var(--radius-sm)", border: "1px solid var(--border)", display: "inline-block" }}>
+        <div style={{ fontSize: 14, color: "var(--text3)", marginBottom: 6, fontWeight: 600 }}>
+          {"= " + side.length + unit + " (long side minus other shorts)"}
         </div>
-      );
-    } else {
-      // Short missing side = long side - sum of other short sides
-      const longSide = otherSameDir.find(s => s.length === maxLen);
-      const otherShorts = otherSameDir.filter(s => s.length !== maxLen);
-      const otherShortNums = otherShorts.map(s => s.length);
-      const longLen = longSide?.length || 0;
-      return (
-        <div style={{ marginTop: 10, padding: "10px 14px", background: "var(--bg3)", borderRadius: "var(--radius-sm)", border: "1px solid var(--border)", display: "inline-block" }}>
-          <div style={{ fontSize: 14, color: "var(--text3)", marginBottom: 6, fontWeight: 600 }}>
-            {"= " + side.length + unit + " (long side minus other shorts)"}
-          </div>
-          <div style={{ fontFamily: "var(--mono)", fontSize: 20, color: "var(--text)" }}>
-            {longLen}{unit}{otherShortNums.map(n => " - " + n).join("")} = <strong style={{ color: "var(--green)" }}>{side.length}{unit}</strong>
-          </div>
+        <div style={{ fontFamily: "var(--mono)", fontSize: 20, color: "var(--text)" }}>
+          {longLen}{unit}{otherShortNums.map(n => " - " + n).join("")} = <strong style={{ color: "var(--green)" }}>{side.length}{unit}</strong>
         </div>
-      );
-    }
+      </div>
+    );
   }
 }
 
