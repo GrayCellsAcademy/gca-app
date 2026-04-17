@@ -203,7 +203,7 @@ function RectilinearSVG({ question, selectedSides, onSideClick, highlightSideIdx
           <g key={i} style={{ cursor: activityType === "5A" && !isHL ? "pointer" : "default" }}
             onClick={() => activityType === "5A" && !isHL && onSideClick && onSideClick(i)}>
             <line x1={p.x} y1={p.y} x2={next.x} y2={next.y} stroke={strokeColor} strokeWidth={strokeW} />
-            {showLabels && (!isHidden || activityType === "5B") && (
+            {showLabels && (!isHidden || activityType === "5B" || (activityType === "5C" && revealedAnswers)) && (
               <g style={{ cursor: activityType === "5B" && isHidden ? "pointer" : "default" }}
                 onClick={() => activityType === "5B" && isHidden && onSideClick && onSideClick(i)}>
                 <rect x={lx - 24} y={ly - 12} width={48} height={24} rx={5}
@@ -689,7 +689,7 @@ function TeacherLesson02({ session, sessionId, uid }) {
                   {currentTopic.label} - {submittedCount}/{totalStudents} submitted - {correctCount} correct
                 </div>
                 <div style={{ fontSize: 16, fontWeight: 700, color: "var(--text)", marginBottom: 12 }}>{question.prompt}</div>
-                <QuestionDisplay question={question} revealCorrect={session.status === "revealing"} revealedAnswers={session.status === "revealing" ? question.missingAnswers : null} />
+                <QuestionDisplay question={question} revealCorrect={session.status === "revealing"} revealedAnswers={session.status === "revealing" ? (question.missingAnswers || (question.hideIndices && question.sides ? question.hideIndices.map(i => ({ idx: i, length: question.sides[i]?.length })) : null)) : null} />
                 {session.status === "question" && session.timerEndsAt && (
                   <div style={{ marginTop: 12 }}>
                     <TimerBar endsAt={session.timerEndsAt} totalSeconds={session.timerSeconds} onExpired={handleTimerExpired} />
@@ -802,7 +802,7 @@ function StudentLesson02({ session, sessionId, uid }) {
         {question && (
           <>
             <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 12, color: "var(--text)" }}>{question.prompt}</div>
-            <QuestionDisplay question={question} selectedSides={selectedSides} onSideClick={handleSideClick} revealCorrect={session.status === "revealing"} activeMissingIdx={activeMissingIdx} revealedAnswers={session.status === "revealing" ? question.missingAnswers : null} />
+            <QuestionDisplay question={question} selectedSides={selectedSides} onSideClick={handleSideClick} revealCorrect={session.status === "revealing"} activeMissingIdx={activeMissingIdx} revealedAnswers={session.status === "revealing" ? (question.missingAnswers || (question.hideIndices && question.sides ? question.hideIndices.map(i => ({ idx: i, length: question.sides[i]?.length })) : null)) : null} />
           </>
         )}
         {session.status === "revealing" ? (
