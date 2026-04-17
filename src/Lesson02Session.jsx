@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+﻿import { useState, useEffect, useRef } from "react";
 import { setDoc, doc, updateDoc } from "firebase/firestore";
 import {
   createClassworkSession, onSessionChange, onClassworkAnswersChange,
@@ -100,6 +100,7 @@ function RectangleSVG({ question, mode, selectedSides, onSideClick, revealCorrec
     { x1: rx, y1: ry + rh, x2: rx, y2: ry, mx: rx - 38, my: ry + rh / 2, label: h },
   ];
   const showLabel = (i) => mode === "3B" && (i === 0 || i === 1 || revealCorrect);
+  const isRevealed = (i) => revealCorrect && !(i === 0 || i === 1);
   return (
     <svg viewBox={"0 0 " + W + " " + H} style={{ width: "100%", maxWidth: 360, display: "block", margin: "0 auto" }}>
       <rect x={rx} y={ry} width={rw} height={rh} stroke="var(--blue)" strokeWidth="2.5" fill="rgba(59,130,246,0.07)" rx="2" />
@@ -113,7 +114,7 @@ function RectangleSVG({ question, mode, selectedSides, onSideClick, revealCorrec
             {showLabel(i) && (
               <g>
                 <rect x={s.mx - 28} y={s.my - 12} width={56} height={24} rx={5} fill="var(--bg)" stroke="var(--border)" strokeWidth="1" />
-                <text x={s.mx} y={s.my + 5} textAnchor="middle" fontSize="13" fontWeight="700" fill="var(--text)" fontFamily="var(--mono)">{s.label}{unit}</text>
+                <text x={s.mx} y={s.my + 5} textAnchor="middle" fontSize="13" fontWeight="700" fill={isRevealed(i) ? "var(--green)" : "var(--text)"} fontFamily="var(--mono)">{s.label}{unit}</text>
               </g>
             )}
           </g>
@@ -898,3 +899,4 @@ export default function Lesson02Session({ user, onHome }) {
 }
 
 export { TeacherLesson02 as Lesson02TeacherView, StudentLesson02 as Lesson02StudentView };
+
