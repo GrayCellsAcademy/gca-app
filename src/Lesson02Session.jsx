@@ -324,14 +324,25 @@ function MissingSideCalc({ sideIdx, allSides, unit, hideIndices }) {
   const hiddenSet = new Set(hideIndices || [sideIdx]);
   const otherSameDir = sameDirSides.filter(s => !hiddenSet.has(s.i));
 
-  if (isLong) {
+  // Check congruency against ALL same-dir sides (including hidden ones), just not self
+  const congruentSide = sameDirSides.find(s => s.i !== sideIdx && s.length === side.length);
+
+  if (isLong && congruentSide && hiddenSet.has(congruentSide.i)) {
+    // Both long sides are hidden and equal - show as congruent pair
+    return (
+      <div style={{ marginTop: 10, padding: "10px 14px", background: "var(--bg3)", borderRadius: "var(--radius-sm)", border: "1px solid var(--green)", display: "inline-block" }}>
+        <div style={{ fontSize: 14, color: "var(--text3)", marginBottom: 4, fontWeight: 600 }}>Equal to opposite side</div>
+        <div style={{ fontFamily: "var(--mono)", fontSize: 24, fontWeight: 800, color: "var(--green)" }}>{side.length}{unit}</div>
+      </div>
+    );
+  } else if (isLong) {
     // Long side = sum of shorter parallel sides (addition)
     const nums = otherSameDir.map(s => s.length);
     return <ColumnAdditionReveal numbers={nums} label={"= " + side.length + unit + " (sum of opposite sides)"} />;
   } else {
-    // Check if this short side has a congruent pair (equal length side in same direction)
-    const congruentSide = otherSameDir.find(s => s.length === side.length && s.i !== sideIdx);
-    if (congruentSide) {
+    // Check if this short side has a congruent pair among visible sides
+    const congruentVisible = otherSameDir.find(s => s.length === side.length);
+    if (congruentVisible) {
       // Congruent pair - just show the value, no calculation needed
       return (
         <div style={{ marginTop: 10, padding: "10px 14px", background: "var(--bg3)", borderRadius: "var(--radius-sm)", border: "1px solid var(--green)", display: "inline-block" }}>
