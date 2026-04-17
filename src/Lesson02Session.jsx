@@ -314,14 +314,15 @@ function ColumnAdditionReveal({ numbers, label }) {
 }
 
 
-function MissingSideCalc({ sideIdx, allSides, unit }) {
+function MissingSideCalc({ sideIdx, allSides, unit, hideIndices }) {
   if (sideIdx === undefined || !allSides) return null;
   const side = allSides[sideIdx];
   if (!side) return null;
   const sameDirSides = allSides.map((s, i) => ({ ...s, i })).filter(s => s.dir === side.dir);
   const maxLen = Math.max(...sameDirSides.map(s => s.length));
   const isLong = side.length === maxLen;
-  const otherSameDir = sameDirSides.filter(s => s.i !== sideIdx);
+  const hiddenSet = new Set(hideIndices || [sideIdx]);
+  const otherSameDir = sameDirSides.filter(s => !hiddenSet.has(s.i));
 
   if (isLong) {
     // Long side = sum of shorter parallel sides (addition)
@@ -384,7 +385,7 @@ function RevealCalculation({ question }) {
         {question.missingAnswers.map((ma, i) => (
           <div key={i}>
             <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text3)", marginBottom: 4 }}>Missing side {i + 1}:</div>
-            <MissingSideCalc sideIdx={ma.idx} allSides={question.sides} unit={question.unit} />
+            <MissingSideCalc sideIdx={ma.idx} allSides={question.sides} unit={question.unit} hideIndices={question.hideIndices} />
           </div>
         ))}
       </div>
@@ -398,7 +399,7 @@ function RevealCalculation({ question }) {
           return (
             <div key={i}>
               <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text3)", marginBottom: 4 }}>Missing side {i + 1}:</div>
-              <MissingSideCalc sideIdx={hidIdx} allSides={allSides} unit={question.unit} />
+              <MissingSideCalc sideIdx={hidIdx} allSides={allSides} unit={question.unit} hideIndices={question.hideIndices} />
             </div>
           );
         })}
