@@ -124,16 +124,31 @@ function RectangleSVG({ question, mode, selectedSides, onSideClick, revealCorrec
   );
 }
 
-function SquareSVG({ question }) {
+function SquareSVG({ question, revealCorrect }) {
   const { s, unit } = question;
-  const W = 260, H = 260;
-  const sx = 40, sy = 40, sw = 180;
+  const W = 320, H = 300;
+  const sx = 70, sy = 50, sw = 180;
+  const labels = [
+    { x: sx + sw/2, y: sy - 16, given: true },
+    { x: sx + sw + 42, y: sy + sw/2 },
+    { x: sx + sw/2, y: sy + sw + 28 },
+    { x: sx - 42, y: sy + sw/2 },
+  ];
   return (
-    <svg viewBox={"0 0 " + W + " " + H} style={{ width: "100%", maxWidth: 260, display: "block", margin: "0 auto" }}>
+    <svg viewBox={"0 0 " + W + " " + H} style={{ width: "100%", maxWidth: 320, display: "block", margin: "0 auto" }}>
       <rect x={sx} y={sy} width={sw} height={sw} stroke="var(--blue)" strokeWidth="2.5" fill="rgba(59,130,246,0.07)" />
-      <polyline points={(sx + 14) + "," + sy + " " + (sx + 14) + "," + (sy + 14) + " " + sx + "," + (sy + 14)} fill="none" stroke="var(--text3)" strokeWidth="1.5" />
-      <rect x={sx + sw / 2 - 28} y={sy - 22} width={56} height={24} rx={5} fill="var(--bg)" stroke="var(--border)" strokeWidth="1" />
-      <text x={sx + sw / 2} y={sy - 9} textAnchor="middle" fontSize="14" fontWeight="800" fill="var(--text)" fontFamily="var(--mono)">{s} {unit}</text>
+      <polyline points={(sx+14)+","+sy+" "+(sx+14)+","+(sy+14)+" "+sx+","+(sy+14)} fill="none" stroke="var(--text3)" strokeWidth="1.5" />
+      {labels.map((lbl, i) => {
+        if (!lbl.given && !revealCorrect) return null;
+        return (
+          <g key={i}>
+            <rect x={lbl.x - 28} y={lbl.y - 13} width={56} height={26} rx={5}
+              fill="var(--bg)" stroke={lbl.given ? "var(--border)" : "var(--green)"} strokeWidth="1.5" />
+            <text x={lbl.x} y={lbl.y + 5} textAnchor="middle" fontSize="13" fontWeight="700"
+              fill={lbl.given ? "var(--text)" : "var(--green)"} fontFamily="var(--mono)">{s} {unit}</text>
+          </g>
+        );
+      })}
     </svg>
   );
 }
@@ -384,7 +399,7 @@ function QuestionDisplay({ question, selectedSides, onSideClick, revealCorrect, 
     case "line-segments": return <LineSegmentsSVG question={question} />;
     case "polygon": return <PolygonSVG question={question} />;
     case "rectangle-perimeter": return <RectangleSVG question={question} mode="3B" revealCorrect={revealCorrect} />;
-    case "square-perimeter": return <SquareSVG question={question} />;
+    case "square-perimeter": return <SquareSVG question={question} revealCorrect={revealCorrect} />;
     case "rectilinear-5A":
     case "rectilinear-5B":
     case "rectilinear-5C":
@@ -899,4 +914,6 @@ export default function Lesson02Session({ user, onHome }) {
 }
 
 export { TeacherLesson02 as Lesson02TeacherView, StudentLesson02 as Lesson02StudentView };
+
+
 
