@@ -89,7 +89,7 @@ function PolygonSVG({ question }) {
   );
 }
 
-function RectangleSVG({ question, mode, selectedSides, onSideClick }) {
+function RectangleSVG({ question, mode, selectedSides, onSideClick, revealCorrect }) {
   const { w, h, unit } = question;
   const W = 360, H = 260;
   const rx = 70, ry = 45, rw = 220, rh = 170;
@@ -99,7 +99,7 @@ function RectangleSVG({ question, mode, selectedSides, onSideClick }) {
     { x1: rx + rw, y1: ry + rh, x2: rx, y2: ry + rh, mx: rx + rw / 2, my: ry + rh + 22, label: w },
     { x1: rx, y1: ry + rh, x2: rx, y2: ry, mx: rx - 38, my: ry + rh / 2, label: h },
   ];
-  const showLabel = (i) => mode === "3B" && (i === 0 || i === 1);
+  const showLabel = (i) => mode === "3B" && (i === 0 || i === 1 || revealCorrect);
   return (
     <svg viewBox={"0 0 " + W + " " + H} style={{ width: "100%", maxWidth: 360, display: "block", margin: "0 auto" }}>
       <rect x={rx} y={ry} width={rw} height={rh} stroke="var(--blue)" strokeWidth="2.5" fill="rgba(59,130,246,0.07)" rx="2" />
@@ -382,7 +382,7 @@ function QuestionDisplay({ question, selectedSides, onSideClick, revealCorrect, 
   switch (question.type) {
     case "line-segments": return <LineSegmentsSVG question={question} />;
     case "polygon": return <PolygonSVG question={question} />;
-    case "rectangle-perimeter": return <RectangleSVG question={question} mode="3B" />;
+    case "rectangle-perimeter": return <RectangleSVG question={question} mode="3B" revealCorrect={revealCorrect} />;
     case "square-perimeter": return <SquareSVG question={question} />;
     case "rectilinear-5A":
     case "rectilinear-5B":
