@@ -50,8 +50,8 @@ function LineSegmentsSVG({ question }) {
         const perpY = Math.cos(angle) * 24;
         return (
           <g key={i}>
-            <rect x={m.x + perpX - 32} y={m.y + perpY - 13} width={64} height={26} rx={5} fill="var(--bg2)" stroke="var(--border)" strokeWidth="1" />
-            <text x={m.x + perpX} y={m.y + perpY + 6} textAnchor="middle" fontSize="13" fontWeight="700" fill="var(--text)" fontFamily="var(--mono)">{segments[i]} {unit}</text>
+            <rect x={m.x + perpX - 36} y={m.y + perpY - 14} width={72} height={28} rx={5} fill="var(--bg2)" stroke="var(--border)" strokeWidth="1" />
+            <text x={m.x + perpX} y={m.y + perpY + 7} textAnchor="middle" fontSize="15" fontWeight="700" fill="var(--text)" fontFamily="var(--mono)">{segments[i]} {unit}</text>
           </g>
         );
       })}
@@ -80,8 +80,8 @@ function PolygonSVG({ question }) {
       {sv.map((p, i) => <circle key={i} cx={p.x} cy={p.y} r="4" fill="var(--blue)" />)}
       {mids.map((m, i) => (
         <g key={i}>
-          <rect x={m.x - 28} y={m.y - 12} width={56} height={24} rx={5} fill="var(--bg)" stroke="var(--border)" strokeWidth="1" />
-          <text x={m.x} y={m.y + 5} textAnchor="middle" fontSize="12" fontWeight="700" fill="var(--text)" fontFamily="var(--mono)">{lengths[i]}{unit}</text>
+          <rect x={m.x - 34} y={m.y - 14} width={68} height={28} rx={5} fill="var(--bg)" stroke="var(--border)" strokeWidth="1" />
+          <text x={m.x} y={m.y + 6} textAnchor="middle" fontSize="14" fontWeight="700" fill="var(--text)" fontFamily="var(--mono)">{lengths[i]}{unit}</text>
         </g>
       ))}
       <text x={W / 2} y={H - 8} textAnchor="middle" fontSize="11" fill="var(--text3)" fontStyle="italic">Not drawn to scale</text>
@@ -113,8 +113,8 @@ function RectangleSVG({ question, mode, selectedSides, onSideClick, revealCorrec
             <line x1={s.x1} y1={s.y1} x2={s.x2} y2={s.y2} stroke={isSel ? "var(--green)" : "var(--blue)"} strokeWidth={isSel ? 5 : 2.5} />
             {showLabel(i) && (
               <g>
-                <rect x={s.mx - 28} y={s.my - 12} width={56} height={24} rx={5} fill="var(--bg)" stroke="var(--border)" strokeWidth="1" />
-                <text x={s.mx} y={s.my + 5} textAnchor="middle" fontSize="13" fontWeight="700" fill={isRevealed(i) ? "var(--green)" : "var(--text)"} fontFamily="var(--mono)">{s.label}{unit}</text>
+                <rect x={s.mx - 34} y={s.my - 14} width={68} height={28} rx={5} fill="var(--bg)" stroke="var(--border)" strokeWidth="1" />
+                <text x={s.mx} y={s.my + 7} textAnchor="middle" fontSize="15" fontWeight="700" fill={isRevealed(i) ? "var(--green)" : "var(--text)"} fontFamily="var(--mono)">{s.label}{unit}</text>
               </g>
             )}
           </g>
@@ -206,10 +206,10 @@ function RectilinearSVG({ question, selectedSides, onSideClick, highlightSideIdx
             {showLabels && (!isHidden || activityType === "5B" || (activityType === "5C" && revealedAnswers)) && (
               <g style={{ cursor: activityType === "5B" && isHidden ? "pointer" : "default" }}
                 onClick={() => activityType === "5B" && isHidden && onSideClick && onSideClick(i)}>
-                <rect x={lx - 24} y={ly - 12} width={48} height={24} rx={5}
+                <rect x={lx - 32} y={ly - 14} width={64} height={28} rx={5}
                   fill={isActiveMissing ? "rgba(59,130,246,0.3)" : isHidden ? "rgba(251,191,36,0.15)" : "var(--bg2)"}
                   stroke={isActiveMissing ? "var(--blue)" : isHidden ? "var(--amber)" : "var(--border)"} strokeWidth={isActiveMissing ? 2 : 1} />
-                <text x={lx} y={ly + 5} textAnchor="middle" fontSize="12" fontWeight="700"
+                <text x={lx} y={ly + 6} textAnchor="middle" fontSize="14" fontWeight="700"
                   fill={isActiveMissing ? "var(--blue)" : (isHidden && !revealedAnswers) ? "#7c3aed" : isHidden ? "var(--green)" : "var(--text)"} fontFamily="var(--mono)">
                   {isHidden && !revealedAnswers ? "?" : sides[i]?.length + unit}
                 </text>

@@ -1,10 +1,41 @@
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { setDoc, doc, updateDoc } from "firebase/firestore";
 import {
   createClassworkSession, onSessionChange, onClassworkAnswersChange,
   getTeacherClasses, addToScore, db,
 } from "./core/firebase";
 import { REVIEW_TOPICS, generateReviewQuestion, gradeReviewAnswer } from "./reviewQuestions";
+
+
+// Load KaTeX
+function useKaTeX() {
+  useEffect(() => {
+    if (window.katex) return;
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = "https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css";
+    document.head.appendChild(link);
+    const script = document.createElement("script");
+    script.src = "https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js";
+    document.head.appendChild(script);
+  }, []);
+}
+
+
+// KaTeX for LaTeX rendering
+function KaTeX({ expr }) {
+  const ref = React.useRef(null);
+  useEffect(() => {
+    if (ref.current && window.katex) {
+      try {
+        window.katex.render(expr, ref.current, { throwOnError: false, displayMode: true });
+      } catch (e) {
+        if (ref.current) ref.current.innerText = expr;
+      }
+    }
+  }, [expr]);
+  return <div ref={ref} style={{ textAlign: "center", fontSize: 22, padding: "8px 0" }} />;
+}
 
 const POINTS = 5;
 
@@ -145,11 +176,7 @@ function QuestionDisplay({ question, revealing }) {
         </div>
       );
     case "q7":
-      return (
-        <div style={{ textAlign: "center", fontSize: 24, fontFamily: "var(--mono)", fontWeight: 700, padding: "8px 0" }}>
-          {q.latex}
-        </div>
-      );
+      return <KaTeX expr={q.latex} />;
     case "q8":
       return (
         <div style={{ display: "flex", flexDirection: "column", gap: 12, alignItems: "center" }}>
@@ -935,6 +962,7 @@ function CreateReviewSession({ user, onCreated }) {
 
 //  Main Export 
 export default function ReviewSession({ user, onHome }) {
+  useKaTeX();
   const [view, setView] = useState("create");
   const [sessionId, setSessionId] = useState(null);
   const [session, setSession] = useState(null);
