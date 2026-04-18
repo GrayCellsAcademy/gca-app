@@ -71,6 +71,95 @@ function ColumnDisplay({ a, b, op }) {
 }
 
 //  Square SVG 
+
+function ColumnSubtractWork({ a, b }) {
+  const aStr = String(a), bStr = String(b);
+  const maxLen = Math.max(aStr.length, bStr.length);
+  const aPad = aStr.padStart(maxLen, "0");
+  const bPad = bStr.padStart(maxLen, "0");
+  const CW = 36, CH = 40, OW = 36;
+  const aDigits = aPad.split("").map(Number);
+  const bDigits = bPad.split("").map(Number);
+  const working = [...aDigits];
+  for (let i = maxLen - 1; i >= 0; i--) {
+    if (working[i] < bDigits[i]) {
+      let j = i - 1;
+      while (j >= 0 && working[j] === 0) { working[j] = 9; j--; }
+      if (j >= 0) { working[j]--; working[i] += 10; }
+    }
+  }
+  const result = a - b;
+  const resultStr = String(result).padStart(maxLen, "0");
+  const W = OW + maxLen * CW + 16;
+  return (
+    <svg width={W} height={CH * 3 + 30} style={{ display: "block", margin: "0 auto" }}>
+      {aDigits.map((d, i) => {
+        const changed = working[i] !== d;
+        return (
+          <g key={i}>
+            {changed && (
+              <>
+                <line x1={OW + i * CW + 4} y1={CH * 0.82} x2={OW + i * CW + CW - 4} y2={CH * 0.55}
+                  stroke="var(--red)" strokeWidth="1.5" />
+                <text x={OW + i * CW + CW / 2} y={CH * 0.45} textAnchor="middle"
+                  fontSize="14" fontWeight="700" fill="var(--blue)" fontFamily="var(--mono)">{working[i]}</text>
+              </>
+            )}
+            <text x={OW + i * CW + CW / 2} y={CH * 0.78} textAnchor="middle"
+              fontSize="26" fontWeight="700"
+              fill={changed ? "var(--text3)" : "var(--text)"} fontFamily="var(--mono)">{d}</text>
+          </g>
+        );
+      })}
+      <text x={OW - 6} y={CH + CH * 0.78} textAnchor="end" fontSize="22" fill="var(--text3)" fontFamily="var(--mono)">-</text>
+      {bPad.split("").map((ch, i) => (
+        <text key={i} x={OW + i * CW + CW / 2} y={CH + CH * 0.78} textAnchor="middle"
+          fontSize="26" fontWeight="700" fill="var(--text)" fontFamily="var(--mono)">{ch}</text>
+      ))}
+      <line x1={OW} y1={CH * 2 + 4} x2={OW + maxLen * CW} y2={CH * 2 + 4} stroke="var(--text)" strokeWidth="2" />
+      {resultStr.split("").map((ch, i) => (
+        <text key={i} x={OW + i * CW + CW / 2} y={CH * 2 + CH * 0.78} textAnchor="middle"
+          fontSize="26" fontWeight="800" fill="var(--green)" fontFamily="var(--mono)">{ch}</text>
+      ))}
+    </svg>
+  );
+}
+
+function ColumnMultiplyWork({ a, b }) {
+  const bStr = String(b);
+  const bDigits = bStr.split("").map(Number).reverse();
+  const partials = bDigits.map((d, i) => a * d * Math.pow(10, i));
+  const product = a * b;
+  const productStr = String(product);
+  const maxLen = Math.max(String(a).length + bStr.length, productStr.length) + 1;
+  const CW = 30, CH = 36, OW = 36;
+  const rows = 2 + bDigits.length + (bDigits.length > 1 ? 1 : 0);
+  const W = OW + maxLen * CW + 16;
+  const H = CH * rows + 30;
+  const rowText = (num, row, color) => {
+    const s = String(Math.round(num)).padStart(maxLen, " ");
+    return s.split("").map((ch, i) => ch !== " " ? (
+      <text key={i} x={OW + i * CW + CW / 2} y={CH * row + CH * 0.75} textAnchor="middle"
+        fontSize="22" fontWeight={color === "var(--green)" ? "800" : "700"}
+        fill={color || "var(--text)"} fontFamily="var(--mono)">{ch}</text>
+    ) : null);
+  };
+  return (
+    <svg width={W} height={H} style={{ display: "block", margin: "0 auto" }}>
+      {rowText(a, 0, "var(--text)")}
+      <text x={OW - 6} y={CH + CH * 0.75} textAnchor="end" fontSize="20" fill="var(--text3)" fontFamily="var(--mono)">x</text>
+      {rowText(b, 1, "var(--text)")}
+      <line x1={OW} y1={CH * 2 + 2} x2={OW + maxLen * CW} y2={CH * 2 + 2} stroke="var(--text)" strokeWidth="2" />
+      {partials.map((p, i) => rowText(p, i + 2, "var(--text2)"))}
+      {bDigits.length > 1 && (
+        <line x1={OW} y1={CH * (2 + bDigits.length) + 2} x2={OW + maxLen * CW}
+          y2={CH * (2 + bDigits.length) + 2} stroke="var(--text)" strokeWidth="2" />
+      )}
+      {rowText(product, 2 + bDigits.length, "var(--green)")}
+    </svg>
+  );
+}
+
 function SquareDisplay({ s, unit, showAll }) {
   const W = 240, H = 240, sx = 40, sy = 40, sw = 160;
   return (
