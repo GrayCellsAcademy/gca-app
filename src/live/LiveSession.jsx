@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { setDoc, doc } from "firebase/firestore";
 import {
   createSession, joinSession, startQuestion, revealQuestion, endSession,
@@ -10,6 +10,7 @@ import ClassworkSession, { ClassworkTeacherView, ClassworkStudentView } from "..
 import WorksheetSession, { WorksheetTeacherView, WorksheetStudentView } from "../WorksheetSession";
 import RatioSession, { RatioTeacherView, RatioStudentView } from "../RatioSession";
 import Lesson02Session, { Lesson02TeacherView, Lesson02StudentView } from "../Lesson02Session";
+import ReviewSession, { ReviewTeacherView, ReviewStudentView } from "../ReviewSession";
 
 function ClassworkSessionWrapper({ user, onHome }) {
   return <ClassworkSession user={user} onHome={onHome} />;
@@ -33,11 +34,11 @@ function JoinScreen({ user, onJoined }) {
   return (
     <div style={{ maxWidth: 420, margin: "0 auto", textAlign: "center" }}>
       <div className="card">
-        <h2 style={{ fontSize: 28, fontWeight: 800, marginBottom: 8 }}>Join a Live Session</h2>
-        <p style={{ color: "var(--text2)", fontSize: 20, marginBottom: 20 }}>
+        <h2 style={{ fontSize: 24, fontWeight: 800, marginBottom: 8 }}>Join a Live Session</h2>
+        <p style={{ color: "var(--text2)", fontSize: 14, marginBottom: 20 }}>
           Enter the join code your teacher gives you.
         </p>
-        {err && <div style={{ color: "#fca5a5", fontSize: 20, marginBottom: 10 }}>{err}</div>}
+        {err && <div style={{ color: "#fca5a5", fontSize: 13, marginBottom: 10 }}>{err}</div>}
         <input
           value={code}
           onChange={e => setCode(e.target.value.toUpperCase())}
@@ -76,9 +77,9 @@ function TeacherSession({ session, sessionId, uid }) {
       <div className="card" style={{ marginBottom: 16 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
           <div>
-            <div style={{ fontSize: 20, color: "var(--text3)" }}>Join Code</div>
-            <div style={{ fontSize: 34, fontWeight: 900, fontFamily: "var(--mono)", color: "var(--blue)" }}>{session.joinCode}</div>
-            <div style={{ fontSize: 20, color: "var(--text3)" }}>{totalStudents} students joined</div>
+            <div style={{ fontSize: 13, color: "var(--text3)" }}>Join Code</div>
+            <div style={{ fontSize: 32, fontWeight: 900, fontFamily: "var(--mono)", color: "var(--blue)" }}>{session.joinCode}</div>
+            <div style={{ fontSize: 13, color: "var(--text3)" }}>{totalStudents} students joined</div>
           </div>
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
             {session.status === "waiting" && (
@@ -101,8 +102,8 @@ function TeacherSession({ session, sessionId, uid }) {
       </div>
       {question && (
         <div className="card">
-          <div style={{ fontSize: 20, fontWeight: 700, marginBottom: 12 }}>{question.prompt}</div>
-          <div style={{ fontSize: 20, color: "var(--text3)" }}>{answers.length}/{totalStudents} submitted</div>
+          <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 12 }}>{question.prompt}</div>
+          <div style={{ fontSize: 13, color: "var(--text3)" }}>{answers.length}/{totalStudents} submitted</div>
         </div>
       )}
     </div>
@@ -140,7 +141,7 @@ function StudentSession({ session, sessionId, uid }) {
 
   return (
     <div style={{ maxWidth: 600, margin: "0 auto" }}>
-      <div style={{ textAlign: "right", marginBottom: 12, fontSize: 20, color: "var(--text3)" }}>Score: {myScore} pts</div>
+      <div style={{ textAlign: "right", marginBottom: 12, fontSize: 13, color: "var(--text3)" }}>Score: {myScore} pts</div>
       <div className="card">
         {question && <div style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>{question.prompt}</div>}
         {session.status === "revealing" ? (
@@ -183,6 +184,10 @@ export default function LiveSession({ user, onHome }) {
   if (view === "ratio") {
     return <RatioSession user={user} onHome={() => setView("menu")} />;
   }
+  if (view === "review") {
+    return <ReviewSession user={user} onHome={() => setView("menu")} />;
+  }
+
   if (view === "lesson02") {
     return <Lesson02Session user={user} onHome={() => setView("menu")} />;
   }
@@ -195,10 +200,10 @@ export default function LiveSession({ user, onHome }) {
       <div style={{ maxWidth: 1100, margin: "0 auto" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 32, flexWrap: "wrap", gap: 12 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <div style={{ width: 40, height: 40, borderRadius: 12, background: "linear-gradient(135deg,var(--blue),var(--cyan))", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, fontWeight: 800, color: "#fff" }}>GCA</div>
+            <div style={{ width: 40, height: 40, borderRadius: 12, background: "linear-gradient(135deg,var(--blue),var(--cyan))", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 800, color: "#fff" }}>GCA</div>
             <div>
               <div style={{ fontWeight: 800, fontSize: 20 }}>GCA</div>
-              <div style={{ color: "var(--text3)", fontSize: 19 }}>Live Session</div>
+              <div style={{ color: "var(--text3)", fontSize: 12 }}>Live Session</div>
             </div>
           </div>
           <button className="btn btn-ghost btn-sm" onClick={onHome}>Home</button>
@@ -207,7 +212,7 @@ export default function LiveSession({ user, onHome }) {
         {view === "menu" && (
           <div style={{ maxWidth: 600, margin: "0 auto" }}>
             <h1 style={{ fontSize: "clamp(22px,4vw,32px)", fontWeight: 900, marginBottom: 8 }}>Live Sessions</h1>
-            <p style={{ color: "var(--text2)", fontSize: 19, marginBottom: 28 }}>
+            <p style={{ color: "var(--text2)", fontSize: 15, marginBottom: 28 }}>
               {user.role === "teacher" ? "Choose a session type or join a session." : "Join a session your teacher has started."}
             </p>
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
@@ -215,28 +220,36 @@ export default function LiveSession({ user, onHome }) {
                 <>
                   <div className="card" onClick={() => setView("classwork")}
                     style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 16 }}>
-                    <div style={{ fontSize: 20, fontWeight: 800, color: "var(--blue)", minWidth: 36 }}>C+S</div>
+                    <div style={{ fontSize: 14, fontWeight: 800, color: "var(--blue)", minWidth: 36 }}>C+S</div>
                     <div>
-                      <div style={{ fontWeight: 800, fontSize: 20, marginBottom: 4 }}>(1) Column Addition and Subtraction</div>
-                      <div style={{ color: "var(--text2)", fontSize: 20 }}>Push column addition and subtraction problems one at a time. You control the pace.</div>
+                      <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 4 }}>(1) Column Addition and Subtraction</div>
+                      <div style={{ color: "var(--text2)", fontSize: 13 }}>Push column addition and subtraction problems one at a time. You control the pace.</div>
                     </div>
                   </div>
                   <div className="card" onClick={() => setView("lesson02")}
                     style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 16 }}>
-                    <div style={{ fontSize: 20, fontWeight: 800, color: "var(--blue)", minWidth: 36 }}>L2</div>
+                    <div style={{ fontSize: 14, fontWeight: 800, color: "var(--blue)", minWidth: 36 }}>L2</div>
                     <div>
-                      <div style={{ fontWeight: 800, fontSize: 20, marginBottom: 4 }}>(2) Geometry</div>
-                      <div style={{ color: "var(--text2)", fontSize: 20 }}>Line segments, polygons, rectangles, squares, composite shapes.</div>
+                      <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 4 }}>(2) Geometry</div>
+                      <div style={{ color: "var(--text2)", fontSize: 13 }}>Line segments, polygons, rectangles, squares, composite shapes.</div>
                     </div>
                   </div>
                 </>
               )}
-              <div className="card" onClick={() => setView("join")}
+              <div className="card" onClick={() => setView("review")}
+                    style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 16 }}>
+                    <div style={{ fontSize: 12, fontWeight: 800, color: "var(--blue)", minWidth: 36 }}>REV</div>
+                    <div>
+                      <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 4 }}>Final Exam Review</div>
+                      <div style={{ color: "var(--text2)", fontSize: 13 }}>44 question types covering all course topics.</div>
+                    </div>
+                  </div>
+                  <div className="card" onClick={() => setView("join")}
                 style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 16 }}>
-                <div style={{ fontSize: 20, fontWeight: 800, color: "var(--blue)", minWidth: 36 }}>JOIN</div>
+                <div style={{ fontSize: 14, fontWeight: 800, color: "var(--blue)", minWidth: 36 }}>JOIN</div>
                 <div>
-                  <div style={{ fontWeight: 800, fontSize: 20, marginBottom: 4 }}>Join a Session</div>
-                  <div style={{ color: "var(--text2)", fontSize: 20 }}>Enter a join code to participate in a live session.</div>
+                  <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 4 }}>Join a Session</div>
+                  <div style={{ color: "var(--text2)", fontSize: 13 }}>Enter a join code to participate in a live session.</div>
                 </div>
               </div>
             </div>
@@ -246,6 +259,11 @@ export default function LiveSession({ user, onHome }) {
         {view === "join" && <JoinScreen user={user} onJoined={handleJoined} />}
 
         {view === "session" && session && (() => {
+          if (session.type === "review") {
+            return user.role === "teacher"
+              ? <ReviewTeacherView session={session} sessionId={sessionId} uid={user.id} />
+              : <ReviewStudentView session={session} sessionId={sessionId} uid={user.id} />;
+          }
           if (session.type === "lesson02") {
             return user.role === "teacher"
               ? <Lesson02TeacherView session={session} sessionId={sessionId} uid={user.id} />
@@ -278,6 +296,3 @@ export default function LiveSession({ user, onHome }) {
     </div>
   );
 }
-
-
-
