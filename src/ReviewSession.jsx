@@ -134,92 +134,88 @@ function ColumnSubtractWork({ a, b }) {
 
 function ColumnMultiplyWork({ a, b }) {
   const bStr = String(b);
-  const bDigits = bStr.split("").map(Number).reverse();
+  const bDigits = bStr.split("").map(Number).reverse(); // right to left
   const product = a * b;
-  const productStr = String(product);
-  const maxLen = Math.max(String(a).length + bStr.length, productStr.length) + 2;
-  const CW = 30, CH = 38, OW = 36, CARRY_H = 20;
+  const aStr = String(a);
+  const maxLen = Math.max(aStr.length + bStr.length, String(product).length) + 2;
+  const CW = 30, CH = 38, OW = 36, CARRY_H = 22;
 
-  // Compute carries for each partial product row
-  const getCarries = (multiplicand, digit, shift) => {
-    const partial = multiplicand * digit;
-    const partialStr = String(partial);
-    // carries[col from right] = carry into that column
-    const cols = maxLen;
-    const carries = Array(cols).fill(0);
-    const partialDigits = partialStr.split("").map(Number).reverse();
+  // For each b digit, compute carries above the multiplicand (a)
+  const getMultCarries = (multiplicand, bDigit) => {
+    const aDigitsR = String(multiplicand).split("").map(Number).reverse();
+    const carries = Array(aDigitsR.length + 1).fill(0);
     let carry = 0;
-    for (let pos = 0; pos < partialDigits.length; pos++) {
-      const sum = partialDigits[pos] + carry;
-      carries[pos + shift] = Math.floor(sum / 10);
-      carry = Math.floor(sum / 10);
+    for (let i = 0; i < aDigitsR.length; i++) {
+      const prod = aDigitsR[i] * bDigit + carry;
+      carry = Math.floor(prod / 10);
+      carries[i + 1] = carry; // carry goes above next column to the left
     }
-    return carries;
+    return carries; // indexed from right, carries[i] shows above aDigits[i]
   };
-
-  const allCarries = bDigits.map((d, i) => getCarries(a, d, i));
-
-  // Compute final addition carries
-  const addCarries = Array(maxLen).fill(0);
-  if (bDigits.length > 1) {
-    const partialNums = bDigits.map((d, i) => a * d * Math.pow(10, i));
-    let carry = 0;
-    for (let col = 0; col < maxLen; col++) {
-      let sum = carry;
-      partialNums.forEach(p => {
-        const s = String(Math.round(p)).split("").reverse();
-        if (col < s.length) sum += parseInt(s[col]);
-      });
-      addCarries[maxLen - 1 - col] = Math.floor(sum / 10);
-      carry = Math.floor(sum / 10);
-    }
-  }
 
   const rows = 2 + bDigits.length + (bDigits.length > 1 ? 1 : 0);
   const W = OW + maxLen * CW + 16;
   const H = CARRY_H + CH * rows + 30;
-
   const rowY = (row) => CARRY_H + CH * row + CH * 0.75;
 
-  const rowText = (num, row, color, shift) => {
+  const rowText = (num, row, color) => {
     const s = String(Math.round(num)).padStart(maxLen, " ");
     return s.split("").map((ch, i) => ch !== " " ? (
       <text key={i} x={OW + i * CW + CW / 2} y={rowY(row)} textAnchor="middle"
         fontSize="22" fontWeight={color === "var(--green)" ? "800" : "700"}
-        fill={color || "var(--text)"} fontFamily="var(--mono)">{ch}</text>
+        fill={color} fontFamily="var(--mono)">{ch}</text>
     ) : null);
   };
 
-  const carryRow = (carries, row) =>
-    carries.map((c, i) => c > 0 ? (
-      <text key={i} x={OW + i * CW + CW / 2} y={CARRY_H + CH * row - 4}
-        textAnchor="middle" fontSize="13" fontWeight="800" fill="var(--blue)" fontFamily="var(--mono)">{c}</text>
-    ) : null);
+  // Carries for each partial product shown above the a row (row 0)
+  // They change per b digit being used
+  const [activeCarryRow, setActiveCarryRow] = React.useState(null);
 
   return (
     <svg width={W} height={H} style={{ display: "block", margin: "0 auto" }}>
+      {/* a (multiplicand) */}
       {rowText(a, 0, "var(--text)")}
+      {/* x operator and b (multiplier) */}
       <text x={OW - 6} y={rowY(1)} textAnchor="end" fontSize="20" fill="var(--text3)" fontFamily="var(--mono)">x</text>
       {rowText(b, 1, "var(--text)")}
+      {/* Line after multiplier */}
       <line x1={OW} y1={CARRY_H + CH * 2 + 2} x2={OW + maxLen * CW} y2={CARRY_H + CH * 2 + 2} stroke="var(--text)" strokeWidth="2" />
-      {bDigits.map((d, i) => {
-        const partial = a * d * Math.pow(10, i);
+      {/* Partial products with carries */}
+      {bDigits.map((d, rowIdx) => {
+        const partial = a * d * Math.pow(10, rowIdx);
+        const carries = getMultCarries(a, d);
+        // Position carries above the a row for this partial
+        // aStr has aStr.length digits; rightmost a digit is at col = maxLen-1
+        const aRightCol = maxLen - 1; // rightmost column of a
         return (
-          <g key={i}>
-            {carryRow(allCarries[i], i + 2)}
-            {rowText(partial, i + 2, "var(--text2)")}
+          <g key={rowIdx}>
+            {/* Carries above multiplicand - only show for the last b digit (ones) for clarity */}
+            {rowIdx === 0 && carries.map((c, ci) => {
+              if (c === 0) return null;
+              // ci=1 means carry goes above aDigits[1] (second from right of a)
+              const col = aRightCol - ci;
+              if (col < 0) return null;
+              return (
+                <text key={ci} x={OW + col * CW + CW / 2} y={CARRY_H - 5}
+                  textAnchor="middle" fontSize="13" fontWeight="800"
+                  fill="var(--blue)" fontFamily="var(--mono)">{c}</text>
+              );
+            })}
+            {rowText(partial, rowIdx + 2, "var(--text2)")}
           </g>
         );
       })}
-      {bDigits.length > 1 && (<>
-        {carryRow(addCarries, 2 + bDigits.length)}
-        <line x1={OW} y1={CARRY_H + CH * (2 + bDigits.length) + 2} x2={OW + maxLen * CW}
-          y2={CARRY_H + CH * (2 + bDigits.length) + 2} stroke="var(--text)" strokeWidth="2" />
-      </>)}
+      {/* Final addition line and product */}
+      {bDigits.length > 1 && (
+        <line x1={OW} y1={CARRY_H + CH * (2 + bDigits.length) + 2}
+          x2={OW + maxLen * CW} y2={CARRY_H + CH * (2 + bDigits.length) + 2}
+          stroke="var(--text)" strokeWidth="2" />
+      )}
       {rowText(product, 2 + bDigits.length, "var(--green)")}
     </svg>
   );
 }
+
 
 function SquareDisplay({ s, unit, showAll }) {
   const W = 240, H = 240, sx = 40, sy = 40, sw = 160;
