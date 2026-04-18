@@ -147,9 +147,13 @@ function QuestionDisplay({ question, revealing }) {
 
   switch (q.type) {
     case "q1":
-      return <ColumnDisplay a={q.a} b={q.b} op="-" />;
+      return revealing
+        ? <ColumnSubtractWork a={q.a} b={q.b} />
+        : <ColumnDisplay a={q.a} b={q.b} op="-" />;
     case "q2":
-      return <ColumnDisplay a={q.a} b={q.b} op="x" />;
+      return revealing
+        ? <ColumnMultiplyWork a={q.a} b={q.b} />
+        : <ColumnDisplay a={q.a} b={q.b} op="x" />;
     case "q3":
       return <SquareDisplay s={q.s} unit={q.unit} showAll={revealing} />;
     case "q4":

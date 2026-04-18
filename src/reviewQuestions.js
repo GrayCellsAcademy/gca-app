@@ -25,13 +25,29 @@ function fracStr(n, d) {
 //  Q1: Column Subtraction 
 export function genQ1() {
   let a, b;
+  let attempts = 0;
   do {
     const digits = randInt(3, 4);
     const min = Math.pow(10, digits - 1);
     const max = Math.pow(10, digits) - 1;
     a = randInt(min, max);
     b = randInt(min, max);
-  } while (a <= b);
+    attempts++;
+    // Must have borrowing from zero: minuend has interior 0 digit AND
+    // subtraction requires borrowing (some digit of b > corresponding digit of a)
+    if (a <= b) continue;
+    const aStr = String(a);
+    const hasInteriorZero = aStr.slice(1, -1).includes("0");
+    if (!hasInteriorZero) continue;
+    // Check that borrowing is needed (some column of b digit > a digit before borrowing)
+    const bStr = String(b).padStart(aStr.length, "0");
+    let needsBorrow = false;
+    for (let i = aStr.length - 1; i >= 0; i--) {
+      if (parseInt(bStr[i]) > parseInt(aStr[i])) { needsBorrow = true; break; }
+    }
+    if (!needsBorrow) continue;
+    break;
+  } while (attempts < 2000);
   return {
     type: "q1", topic: 1,
     a, b, answer: String(a - b),
@@ -42,8 +58,11 @@ export function genQ1() {
 
 //  Q2: Column Multiplication 3x2 
 export function genQ2() {
-  const a = randInt(100, 999);
-  const b = randInt(10, 99);
+  let a, b;
+  do {
+    a = randInt(100, 999);
+    b = randInt(10, 99);
+  } while (a % 10 === 0 || b % 10 === 0);
   return {
     type: "q2", topic: 2,
     a, b, answer: String(a * b),
