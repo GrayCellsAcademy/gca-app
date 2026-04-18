@@ -77,7 +77,8 @@ function ColumnSubtractWork({ a, b }) {
   const maxLen = Math.max(aStr.length, bStr.length);
   const aPad = aStr.padStart(maxLen, "0");
   const bPad = bStr.padStart(maxLen, "0");
-  const CW = 36, CH = 40, OW = 36;
+  const CW = 36, CH = 44, OW = 36;
+  const ANNOT_H = 28; // extra space above for annotations
   const aDigits = aPad.split("").map(Number);
   const bDigits = bPad.split("").map(Number);
   const working = [...aDigits];
@@ -91,35 +92,41 @@ function ColumnSubtractWork({ a, b }) {
   const result = a - b;
   const resultStr = String(result).padStart(maxLen, "0");
   const W = OW + maxLen * CW + 16;
+  const H = ANNOT_H + CH * 3 + 20;
+  const topY = ANNOT_H + CH * 0.78; // y for top number row
   return (
-    <svg width={W} height={CH * 3 + 30} style={{ display: "block", margin: "0 auto" }}>
+    <svg width={W} height={H} style={{ display: "block", margin: "0 auto" }}>
       {aDigits.map((d, i) => {
         const changed = working[i] !== d;
+        const cx = OW + i * CW + CW / 2;
         return (
           <g key={i}>
             {changed && (
               <>
-                <line x1={OW + i * CW + 4} y1={CH * 0.82} x2={OW + i * CW + CW - 4} y2={CH * 0.55}
+                {/* Strikethrough original digit */}
+                <line x1={cx - 10} y1={topY - 8} x2={cx + 10} y2={topY - 24}
                   stroke="var(--red)" strokeWidth="1.5" />
-                <text x={OW + i * CW + CW / 2} y={CH * 0.45} textAnchor="middle"
-                  fontSize="14" fontWeight="700" fill="var(--blue)" fontFamily="var(--mono)">{working[i]}</text>
+                {/* New borrowed value above */}
+                <text x={cx} y={ANNOT_H - 6} textAnchor="middle"
+                  fontSize="15" fontWeight="800" fill="var(--blue)" fontFamily="var(--mono)">{working[i]}</text>
               </>
             )}
-            <text x={OW + i * CW + CW / 2} y={CH * 0.78} textAnchor="middle"
-              fontSize="26" fontWeight="700"
+            <text x={cx} y={topY} textAnchor="middle" fontSize="26" fontWeight="700"
               fill={changed ? "var(--text3)" : "var(--text)"} fontFamily="var(--mono)">{d}</text>
           </g>
         );
       })}
-      <text x={OW - 6} y={CH + CH * 0.78} textAnchor="end" fontSize="22" fill="var(--text3)" fontFamily="var(--mono)">-</text>
+      <text x={OW - 6} y={ANNOT_H + CH + CH * 0.78} textAnchor="end"
+        fontSize="22" fill="var(--text3)" fontFamily="var(--mono)">-</text>
       {bPad.split("").map((ch, i) => (
-        <text key={i} x={OW + i * CW + CW / 2} y={CH + CH * 0.78} textAnchor="middle"
-          fontSize="26" fontWeight="700" fill="var(--text)" fontFamily="var(--mono)">{ch}</text>
+        <text key={i} x={OW + i * CW + CW / 2} y={ANNOT_H + CH + CH * 0.78}
+          textAnchor="middle" fontSize="26" fontWeight="700" fill="var(--text)" fontFamily="var(--mono)">{ch}</text>
       ))}
-      <line x1={OW} y1={CH * 2 + 4} x2={OW + maxLen * CW} y2={CH * 2 + 4} stroke="var(--text)" strokeWidth="2" />
+      <line x1={OW} y1={ANNOT_H + CH * 2 + 4} x2={OW + maxLen * CW} y2={ANNOT_H + CH * 2 + 4}
+        stroke="var(--text)" strokeWidth="2" />
       {resultStr.split("").map((ch, i) => (
-        <text key={i} x={OW + i * CW + CW / 2} y={CH * 2 + CH * 0.78} textAnchor="middle"
-          fontSize="26" fontWeight="800" fill="var(--green)" fontFamily="var(--mono)">{ch}</text>
+        <text key={i} x={OW + i * CW + CW / 2} y={ANNOT_H + CH * 2 + CH * 0.78}
+          textAnchor="middle" fontSize="26" fontWeight="800" fill="var(--green)" fontFamily="var(--mono)">{ch}</text>
       ))}
     </svg>
   );
@@ -128,33 +135,87 @@ function ColumnSubtractWork({ a, b }) {
 function ColumnMultiplyWork({ a, b }) {
   const bStr = String(b);
   const bDigits = bStr.split("").map(Number).reverse();
-  const partials = bDigits.map((d, i) => a * d * Math.pow(10, i));
   const product = a * b;
   const productStr = String(product);
-  const maxLen = Math.max(String(a).length + bStr.length, productStr.length) + 1;
-  const CW = 30, CH = 36, OW = 36;
+  const maxLen = Math.max(String(a).length + bStr.length, productStr.length) + 2;
+  const CW = 30, CH = 38, OW = 36, CARRY_H = 20;
+
+  // Compute carries for each partial product row
+  const getCarries = (multiplicand, digit, shift) => {
+    const partial = multiplicand * digit;
+    const partialStr = String(partial);
+    // carries[col from right] = carry into that column
+    const cols = maxLen;
+    const carries = Array(cols).fill(0);
+    const partialDigits = partialStr.split("").map(Number).reverse();
+    let carry = 0;
+    for (let pos = 0; pos < partialDigits.length; pos++) {
+      const sum = partialDigits[pos] + carry;
+      carries[pos + shift] = Math.floor(sum / 10);
+      carry = Math.floor(sum / 10);
+    }
+    return carries;
+  };
+
+  const allCarries = bDigits.map((d, i) => getCarries(a, d, i));
+
+  // Compute final addition carries
+  const addCarries = Array(maxLen).fill(0);
+  if (bDigits.length > 1) {
+    const partialNums = bDigits.map((d, i) => a * d * Math.pow(10, i));
+    let carry = 0;
+    for (let col = 0; col < maxLen; col++) {
+      let sum = carry;
+      partialNums.forEach(p => {
+        const s = String(Math.round(p)).split("").reverse();
+        if (col < s.length) sum += parseInt(s[col]);
+      });
+      addCarries[maxLen - 1 - col] = Math.floor(sum / 10);
+      carry = Math.floor(sum / 10);
+    }
+  }
+
   const rows = 2 + bDigits.length + (bDigits.length > 1 ? 1 : 0);
   const W = OW + maxLen * CW + 16;
-  const H = CH * rows + 30;
-  const rowText = (num, row, color) => {
+  const H = CARRY_H + CH * rows + 30;
+
+  const rowY = (row) => CARRY_H + CH * row + CH * 0.75;
+
+  const rowText = (num, row, color, shift) => {
     const s = String(Math.round(num)).padStart(maxLen, " ");
     return s.split("").map((ch, i) => ch !== " " ? (
-      <text key={i} x={OW + i * CW + CW / 2} y={CH * row + CH * 0.75} textAnchor="middle"
+      <text key={i} x={OW + i * CW + CW / 2} y={rowY(row)} textAnchor="middle"
         fontSize="22" fontWeight={color === "var(--green)" ? "800" : "700"}
         fill={color || "var(--text)"} fontFamily="var(--mono)">{ch}</text>
     ) : null);
   };
+
+  const carryRow = (carries, row) =>
+    carries.map((c, i) => c > 0 ? (
+      <text key={i} x={OW + i * CW + CW / 2} y={CARRY_H + CH * row - 4}
+        textAnchor="middle" fontSize="13" fontWeight="800" fill="var(--blue)" fontFamily="var(--mono)">{c}</text>
+    ) : null);
+
   return (
     <svg width={W} height={H} style={{ display: "block", margin: "0 auto" }}>
       {rowText(a, 0, "var(--text)")}
-      <text x={OW - 6} y={CH + CH * 0.75} textAnchor="end" fontSize="20" fill="var(--text3)" fontFamily="var(--mono)">x</text>
+      <text x={OW - 6} y={rowY(1)} textAnchor="end" fontSize="20" fill="var(--text3)" fontFamily="var(--mono)">x</text>
       {rowText(b, 1, "var(--text)")}
-      <line x1={OW} y1={CH * 2 + 2} x2={OW + maxLen * CW} y2={CH * 2 + 2} stroke="var(--text)" strokeWidth="2" />
-      {partials.map((p, i) => rowText(p, i + 2, "var(--text2)"))}
-      {bDigits.length > 1 && (
-        <line x1={OW} y1={CH * (2 + bDigits.length) + 2} x2={OW + maxLen * CW}
-          y2={CH * (2 + bDigits.length) + 2} stroke="var(--text)" strokeWidth="2" />
-      )}
+      <line x1={OW} y1={CARRY_H + CH * 2 + 2} x2={OW + maxLen * CW} y2={CARRY_H + CH * 2 + 2} stroke="var(--text)" strokeWidth="2" />
+      {bDigits.map((d, i) => {
+        const partial = a * d * Math.pow(10, i);
+        return (
+          <g key={i}>
+            {carryRow(allCarries[i], i + 2)}
+            {rowText(partial, i + 2, "var(--text2)")}
+          </g>
+        );
+      })}
+      {bDigits.length > 1 && (<>
+        {carryRow(addCarries, 2 + bDigits.length)}
+        <line x1={OW} y1={CARRY_H + CH * (2 + bDigits.length) + 2} x2={OW + maxLen * CW}
+          y2={CARRY_H + CH * (2 + bDigits.length) + 2} stroke="var(--text)" strokeWidth="2" />
+      </>)}
       {rowText(product, 2 + bDigits.length, "var(--green)")}
     </svg>
   );
