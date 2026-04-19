@@ -180,22 +180,33 @@ function ColumnMultiplyWork({ a, b }) {
       {rowText(b, 1, "var(--text)")}
       {/* Line after multiplier */}
       <line x1={OW} y1={CARRY_H + CH * 2 + 2} x2={OW + maxLen * CW} y2={CARRY_H + CH * 2 + 2} stroke="var(--text)" strokeWidth="2" />
-      {/* Partial products with carries - one carry row per b digit */}
+      {/* Partial products with carries above each partial row */}
       {bDigits.map((d, rowIdx) => {
         const partial = a * d * Math.pow(10, rowIdx);
-        const carries = getMultCarries(a, d);
-        const aRightCol = maxLen - 1;
-        // Carries float just above the partial product row
-        const carryY = CARRY_H + CH * (rowIdx + 2) - CH * 0.88;
+        // Compute digit-by-digit carries for a * d
+        const aDigitsR = String(a).split("").map(Number).reverse();
+        const digitCarries = []; // carry produced AFTER each column (goes left)
+        let carry = 0;
+        for (let i = 0; i < aDigitsR.length; i++) {
+          const prod = aDigitsR[i] * d + carry;
+          carry = Math.floor(prod / 10);
+          digitCarries.push(carry); // carry[i] goes above aDigit[i+1]
+        }
+        // In the SVG, partial product digits are right-aligned to maxLen
+        // The rightmost digit of the partial is at column (maxLen - 1 - rowIdx)
+        const partialRightCol = maxLen - 1 - rowIdx;
+        // carry from aDigit[i] goes above aDigit[i+1], i.e. one column to the left
+        // In partial product columns: carry[i] displays at partialRightCol - (i+1)
+        const carryY = CARRY_H + CH * (rowIdx + 2) - CH * 0.82;
         return (
           <g key={rowIdx}>
-            {carries.map((c, ci) => {
+            {digitCarries.map((c, ci) => {
               if (c === 0) return null;
-              const col = aRightCol - ci - rowIdx; // shift left by rowIdx for alignment
+              const col = partialRightCol - (ci + 1);
               if (col < 0 || col >= maxLen) return null;
               return (
                 <text key={ci} x={OW + col * CW + CW / 2} y={carryY}
-                  textAnchor="middle" fontSize="13" fontWeight="800"
+                  textAnchor="middle" fontSize="12" fontWeight="800"
                   fill="var(--blue)" fontFamily="var(--mono)">{c}</text>
               );
             })}
