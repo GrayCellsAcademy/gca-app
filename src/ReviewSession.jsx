@@ -153,8 +153,8 @@ function ColumnMultiplyWork({ a, b }) {
     const carryStripH = CARRY_H * bDigitsR.length + 4;
     return carryStripH + CH * r + CH * 0.75;
   };
-  // Carries always appear above the multiplicand (row 0), one strip per partial
-  const carryY = (partialIdx) => rowY(0) - CARRY_H - 2 + partialIdx * (CARRY_H + 2);
+  // Carries stack above the multiplicand: ones carries closest, tens carries above
+  const carryY = (partialIdx) => rowY(0) - (partialIdx + 1) * (CARRY_H + 4);
 
   const rowText = (num, r, color) => {
     const s = String(Math.round(Math.abs(num))).padStart(maxLen, " ");
