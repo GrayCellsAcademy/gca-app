@@ -319,6 +319,20 @@ function NumberLine({ value, filled, shadeRight, onClick, interactive }) {
 }
 
 //  Question Display 
+
+function UnitSpan({ unit }) {
+  if (!unit) return null;
+  if (unit.includes("^2")) {
+    const base = unit.replace("^2", "");
+    return <span style={{ fontFamily: "var(--mono)" }}>{base}<sup>2</sup></span>;
+  }
+  if (unit.includes("^3")) {
+    const base = unit.replace("^3", "");
+    return <span style={{ fontFamily: "var(--mono)" }}>{base}<sup>3</sup></span>;
+  }
+  return <span style={{ fontFamily: "var(--mono)" }}>{unit}</span>;
+}
+
 function QuestionDisplay({ question, revealing }) {
   if (!question) return null;
   const q = question;
@@ -631,7 +645,7 @@ function AnswerInput({ question, onSubmit, submitted }) {
         <div style={{ display: "flex", gap: 8, marginBottom: 10, flexWrap: "wrap" }}>
           {q.unitChoices.map(u => (
             <button key={u} className={"btn btn-sm " + (selectedUnit === u ? "btn-primary" : "btn-ghost")}
-              onClick={() => setSelectedUnit(u)} disabled={submitted}>{u}</button>
+              onClick={() => setSelectedUnit(u)} disabled={submitted}><UnitSpan unit={u} /></button>
           ))}
         </div>
         <button className="btn btn-primary" style={{ width: "100%" }} onClick={handleSubmit}
@@ -986,7 +1000,9 @@ function TeacherReview({ session, sessionId, uid }) {
                 {session.status === "revealing" && (
                   <div style={{ marginTop: 12, background: "rgba(16,185,129,0.06)", border: "1px solid rgba(16,185,129,0.2)", borderRadius: "var(--radius-sm)", padding: "10px 14px" }}>
                     <div style={{ fontSize: 12, color: "var(--text3)", marginBottom: 4 }}>Correct answer</div>
-                    <div style={{ fontSize: 20, fontWeight: 800, color: "var(--green)", fontFamily: "var(--mono)" }}>{question.answer}</div>
+                    <div style={{ fontSize: 20, fontWeight: 800, color: "var(--green)" }}>
+                      {question.answerNum || question.answer} {question.answerUnit ? <UnitSpan unit={question.answerUnit} /> : ""}
+                    </div>
                   </div>
                 )}
                 <div style={{ height: 6, background: "var(--surface2)", borderRadius: 99, overflow: "hidden", marginTop: 12 }}>
@@ -1090,14 +1106,14 @@ function StudentReview({ session, sessionId, uid }) {
                 </div>
                 {!result.correct && question?.answer && (
                   <div style={{ color: "var(--green)", fontSize: 16, marginTop: 4 }}>
-                    Correct: <strong style={{ fontFamily: "var(--mono)" }}>{question.answer}</strong>
+                    Correct: <strong>{question.answerNum || question.answer}{question.answerUnit ? <> <UnitSpan unit={question.answerUnit} /></> : ""}</strong>
                   </div>
                 )}
               </>
             ) : (
               <div>
                 <div style={{ color: "var(--text3)", marginBottom: 4 }}>No answer submitted.</div>
-                {question?.answer && <div style={{ color: "var(--green)", fontSize: 16 }}>Correct: <strong style={{ fontFamily: "var(--mono)" }}>{question.answer}</strong></div>}
+                {question?.answer && <div style={{ color: "var(--green)", fontSize: 16 }}>Correct: <strong>{question.answerNum || question.answer}{question.answerUnit ? <> <UnitSpan unit={question.answerUnit} /></> : ""}</strong></div>}
               </div>
             )}
           </div>
