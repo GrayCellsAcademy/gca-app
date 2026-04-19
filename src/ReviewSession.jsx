@@ -144,16 +144,17 @@ function ColumnMultiplyWork({ a, b }) {
   const CARRY_H = 16; // height of carry strip per row
   const totalRows = 2 + bDigitsR.length + (bDigitsR.length > 1 ? 1 : 0);
   const W = OW + maxLen * CW + 16;
-  const H = CH * totalRows + CARRY_H * bDigitsR.length + 20;
+  const carryStripH = CARRY_H * bDigitsR.length + 4;
+  const H = carryStripH + CH * totalRows + 20;
 
   // y position of row r (0=multiplicand, 1=multiplier, 2+=partials, last=product)
   const rowY = (r) => {
-    if (r <= 1) return CH * r + CH * 0.75;
-    // rows 2+ each have a carry strip above them
-    const partialIdx = r - 2;
-    return CH * r + CARRY_H * partialIdx + CH * 0.75;
+    // All rows shift down by carryStripH to make room above for carry marks
+    const carryStripH = CARRY_H * bDigitsR.length + 4;
+    return carryStripH + CH * r + CH * 0.75;
   };
-  const carryY = (partialIdx) => CH * (partialIdx + 2) + CARRY_H * partialIdx + 4;
+  // Carries always appear above the multiplicand (row 0), one strip per partial
+  const carryY = (partialIdx) => rowY(0) - CARRY_H - 2 + partialIdx * (CARRY_H + 2);
 
   const rowText = (num, r, color) => {
     const s = String(Math.round(Math.abs(num))).padStart(maxLen, " ");
