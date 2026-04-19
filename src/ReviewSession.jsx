@@ -194,15 +194,12 @@ function ColumnMultiplyWork({ a, b }) {
         }
         // In the SVG, partial product digits are right-aligned to maxLen
         // The rightmost digit of the partial is at column (maxLen - 1 - rowIdx)
-        const partialRightCol = maxLen - 1 - rowIdx;
-        // carry from aDigit[i] goes above aDigit[i+1], i.e. one column to the left
-        // In partial product columns: carry[i] displays at partialRightCol - (i+1)
         const carryY = CARRY_H + CH * (rowIdx + 2) - CH * 0.82;
         return (
           <g key={rowIdx}>
             {digitCarries.map((c, ci) => {
               if (c === 0) return null;
-              const col = partialRightCol - (ci + 1);
+              const col = maxLen - 2 - rowIdx - ci;
               if (col < 0 || col >= maxLen) return null;
               return (
                 <text key={ci} x={OW + col * CW + CW / 2} y={carryY}
