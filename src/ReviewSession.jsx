@@ -1001,8 +1001,9 @@ function TeacherReview({ session, sessionId, uid }) {
                 {session.status === "revealing" && (
                   <div style={{ marginTop: 12, background: "rgba(16,185,129,0.06)", border: "1px solid rgba(16,185,129,0.2)", borderRadius: "var(--radius-sm)", padding: "10px 14px" }}>
                     <div style={{ fontSize: 12, color: "var(--text3)", marginBottom: 4 }}>Correct answer</div>
-                    <div style={{ fontSize: 20, fontWeight: 800, color: "var(--green)" }}>
-                      {question.answerNum || question.answer} {question.answerUnit ? <UnitSpan unit={question.answerUnit} /> : ""}
+                    <div style={{ fontSize: 20, fontWeight: 800, color: "var(--green)", fontFamily: "var(--mono)" }}>
+                      {question.displayAnswer || question.answerNum || question.answer}
+                      {question.answerUnit ? <> <UnitSpan unit={question.answerUnit} /></> : ""}
                     </div>
                   </div>
                 )}
@@ -1107,14 +1108,14 @@ function StudentReview({ session, sessionId, uid }) {
                 </div>
                 {!result.correct && question?.answer && (
                   <div style={{ color: "var(--green)", fontSize: 16, marginTop: 4 }}>
-                    Correct: <strong>{question.answerNum || question.answer}{question.answerUnit ? <> <UnitSpan unit={question.answerUnit} /></> : ""}</strong>
+                    Correct: <strong>{question.displayAnswer || question.answerNum || question.answer}{question.answerUnit ? <> <UnitSpan unit={question.answerUnit} /></> : ""}</strong>
                   </div>
                 )}
               </>
             ) : (
               <div>
                 <div style={{ color: "var(--text3)", marginBottom: 4 }}>No answer submitted.</div>
-                {question?.answer && <div style={{ color: "var(--green)", fontSize: 16 }}>Correct: <strong>{question.answerNum || question.answer}{question.answerUnit ? <> <UnitSpan unit={question.answerUnit} /></> : ""}</strong></div>}
+                {question?.answer && <div style={{ color: "var(--green)", fontSize: 16 }}>Correct: <strong>{question.displayAnswer || question.answerNum || question.answer}{question.answerUnit ? <> <UnitSpan unit={question.answerUnit} /></> : ""}</strong></div>}
               </div>
             )}
           </div>

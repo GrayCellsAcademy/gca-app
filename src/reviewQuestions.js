@@ -125,20 +125,22 @@ export function genQ5() {
   const a = randInt(2, 9);
   let b;
   do { b = randInt(2, 9); } while (b === a);
-  // styles: "fraction" or "symbol" (division sign)
-  const styles = ["fraction", "symbol"];
-  const style1 = randChoice(styles);
+  const style1 = Math.random() < 0.5 ? "fraction" : "symbol";
   const style2 = style1 === "fraction" ? "symbol" : "fraction";
-  // Randomly assign which problem is 0/n and which is n/0
-  const prob1IsZeroNum = Math.random() < 0.5;
+  // Independently pick type for each: 0/n (answer=0) or n/0 (answer=undefined)
+  const types = ["zero-num", "zero-den"];
+  const type1 = randChoice(types);
+  const type2 = randChoice(types);
+  const makeProb = (type, n, style) => type === "zero-num"
+    ? { num: 0, den: n, style, answer: "0" }
+    : { num: n, den: 0, style, answer: "undefined" };
+  const prob1 = makeProb(type1, a, style1);
+  const prob2 = makeProb(type2, b, style2);
   return {
     type: "q5", topic: 5,
-    prob1: prob1IsZeroNum
-      ? { num: 0, den: a, style: style1, answer: "0" }
-      : { num: a, den: 0, style: style1, answer: "undefined" },
-    prob2: prob1IsZeroNum
-      ? { num: b, den: 0, style: style2, answer: "undefined" }
-      : { num: 0, den: b, style: style2, answer: "0" },
+    prob1, prob2,
+    answer: JSON.stringify({ ans1: prob1.answer, ans2: prob2.answer }),
+    displayAnswer: "Expr 1: " + prob1.answer + ", Expr 2: " + prob2.answer,
     prompt: "Evaluate each expression. Enter a number or press UNDEFINED."
   };
 }
@@ -1190,7 +1192,14 @@ export function gradeReviewAnswer(input, question) {
         const parsed = JSON.parse(input);
         return norm(parsed.ans1) === norm(question.prob1.answer) &&
                norm(parsed.ans2) === norm(question.prob2.answer);
-      } catch { return false; }
+      } catch {
+        // fallback: try parsing answer field directly
+        try {
+          const ans = JSON.parse(question.answer);
+          const inp = JSON.parse(input);
+          return norm(inp.ans1) === norm(ans.ans1) && norm(inp.ans2) === norm(ans.ans2);
+        } catch { return false; }
+      }
     }
     case "q8": {
       try {
