@@ -180,23 +180,21 @@ function ColumnMultiplyWork({ a, b }) {
       {rowText(b, 1, "var(--text)")}
       {/* Line after multiplier */}
       <line x1={OW} y1={CARRY_H + CH * 2 + 2} x2={OW + maxLen * CW} y2={CARRY_H + CH * 2 + 2} stroke="var(--text)" strokeWidth="2" />
-      {/* Partial products with carries */}
+      {/* Partial products with carries - one carry row per b digit */}
       {bDigits.map((d, rowIdx) => {
         const partial = a * d * Math.pow(10, rowIdx);
         const carries = getMultCarries(a, d);
-        // Position carries above the a row for this partial
-        // aStr has aStr.length digits; rightmost a digit is at col = maxLen-1
-        const aRightCol = maxLen - 1; // rightmost column of a
+        const aRightCol = maxLen - 1;
+        // Carries float just above the partial product row
+        const carryY = CARRY_H + CH * (rowIdx + 2) - CH * 0.88;
         return (
           <g key={rowIdx}>
-            {/* Carries above multiplicand - only show for the last b digit (ones) for clarity */}
-            {rowIdx === 0 && carries.map((c, ci) => {
+            {carries.map((c, ci) => {
               if (c === 0) return null;
-              // ci=1 means carry goes above aDigits[1] (second from right of a)
-              const col = aRightCol - ci;
-              if (col < 0) return null;
+              const col = aRightCol - ci - rowIdx; // shift left by rowIdx for alignment
+              if (col < 0 || col >= maxLen) return null;
               return (
-                <text key={ci} x={OW + col * CW + CW / 2} y={CARRY_H - 5}
+                <text key={ci} x={OW + col * CW + CW / 2} y={carryY}
                   textAnchor="middle" fontSize="13" fontWeight="800"
                   fill="var(--blue)" fontFamily="var(--mono)">{c}</text>
               );
