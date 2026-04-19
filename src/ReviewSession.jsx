@@ -78,7 +78,7 @@ function ColumnSubtractWork({ a, b }) {
   const aPad = aStr.padStart(maxLen, "0");
   const bPad = bStr.padStart(maxLen, "0");
   const CW = 36, CH = 44, OW = 36;
-  const ANNOT_H = 28; // extra space above for annotations
+  const ANNOT_H = 34; // extra space above for annotations
   const aDigits = aPad.split("").map(Number);
   const bDigits = bPad.split("").map(Number);
   const working = [...aDigits];
@@ -107,8 +107,8 @@ function ColumnSubtractWork({ a, b }) {
                 <line x1={cx - 10} y1={topY - 8} x2={cx + 10} y2={topY - 24}
                   stroke="var(--red)" strokeWidth="1.5" />
                 {/* New borrowed value above */}
-                <text x={cx} y={ANNOT_H - 6} textAnchor="middle"
-                  fontSize="15" fontWeight="800" fill="var(--blue)" fontFamily="var(--mono)">{working[i]}</text>
+                <text x={cx} y={ANNOT_H - 4} textAnchor="middle"
+                  fontSize="22" fontWeight="800" fill="var(--blue)" fontFamily="var(--mono)">{working[i]}</text>
               </>
             )}
             <text x={cx} y={topY} textAnchor="middle" fontSize="26" fontWeight="700"
@@ -141,7 +141,7 @@ function ColumnMultiplyWork({ a, b }) {
   const CW = 30, CH = 38, OW = 36;
   // Each partial product row gets its own carry strip above it
   // Carries for row r appear between row r+1 and row r+2 in the SVG grid
-  const CARRY_H = 16; // height of carry strip per row
+  const CARRY_H = 24; // height of carry strip per row
   const totalRows = 2 + bDigitsR.length + (bDigitsR.length > 1 ? 1 : 0);
   const W = OW + maxLen * CW + 16;
   const carryStripH = CARRY_H * bDigitsR.length + 4;
@@ -186,14 +186,14 @@ function ColumnMultiplyWork({ a, b }) {
         for (let i = 0; i < aDigitsR.length; i++) {
           const prod = aDigitsR[i] * d + carry;
           carry = Math.floor(prod / 10);
-          carries.push({ col: maxLen - 2 - i, val: carry });
+          carries.push({ col: maxLen - 2 - i - partialIdx, val: carry });
         }
         const cy = carryY(partialIdx);
         return (
           <g key={partialIdx}>
             {carries.map((c, ci) => c.val > 0 && c.col >= 0 ? (
               <text key={ci} x={OW + c.col * CW + CW / 2} y={cy}
-                textAnchor="middle" fontSize="12" fontWeight="800"
+                textAnchor="middle" fontSize="20" fontWeight="800"
                 fill="var(--blue)" fontFamily="var(--mono)">{c.val}</text>
             ) : null)}
             {rowText(partial, partialIdx + 2, "var(--text2)")}
