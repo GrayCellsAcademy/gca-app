@@ -134,90 +134,75 @@ function ColumnSubtractWork({ a, b }) {
 
 function ColumnMultiplyWork({ a, b }) {
   const bStr = String(b);
-  const bDigits = bStr.split("").map(Number).reverse(); // right to left
-  const product = a * b;
   const aStr = String(a);
+  const bDigitsR = bStr.split("").map(Number).reverse(); // right to left
+  const product = a * b;
   const maxLen = Math.max(aStr.length + bStr.length, String(product).length) + 2;
-  const CW = 30, CH = 38, OW = 36, CARRY_H = 22;
-
-  // For each b digit, compute carries above the multiplicand (a)
-  const getMultCarries = (multiplicand, bDigit) => {
-    const aDigitsR = String(multiplicand).split("").map(Number).reverse();
-    const carries = Array(aDigitsR.length + 1).fill(0);
-    let carry = 0;
-    for (let i = 0; i < aDigitsR.length; i++) {
-      const prod = aDigitsR[i] * bDigit + carry;
-      carry = Math.floor(prod / 10);
-      carries[i + 1] = carry; // carry goes above next column to the left
-    }
-    return carries; // indexed from right, carries[i] shows above aDigits[i]
-  };
-
-  const rows = 2 + bDigits.length + (bDigits.length > 1 ? 1 : 0);
+  const CW = 30, CH = 38, OW = 36;
+  // Each partial product row gets its own carry strip above it
+  // Carries for row r appear between row r+1 and row r+2 in the SVG grid
+  const CARRY_H = 16; // height of carry strip per row
+  const totalRows = 2 + bDigitsR.length + (bDigitsR.length > 1 ? 1 : 0);
   const W = OW + maxLen * CW + 16;
-  const H = CARRY_H + CH * rows + 30;
-  const rowY = (row) => CARRY_H + CH * row + CH * 0.75;
+  const H = CH * totalRows + CARRY_H * bDigitsR.length + 20;
 
-  const rowText = (num, row, color) => {
-    const s = String(Math.round(num)).padStart(maxLen, " ");
+  // y position of row r (0=multiplicand, 1=multiplier, 2+=partials, last=product)
+  const rowY = (r) => {
+    if (r <= 1) return CH * r + CH * 0.75;
+    // rows 2+ each have a carry strip above them
+    const partialIdx = r - 2;
+    return CH * r + CARRY_H * partialIdx + CH * 0.75;
+  };
+  const carryY = (partialIdx) => CH * (partialIdx + 2) + CARRY_H * partialIdx + 4;
+
+  const rowText = (num, r, color) => {
+    const s = String(Math.round(Math.abs(num))).padStart(maxLen, " ");
     return s.split("").map((ch, i) => ch !== " " ? (
-      <text key={i} x={OW + i * CW + CW / 2} y={rowY(row)} textAnchor="middle"
+      <text key={i} x={OW + i * CW + CW / 2} y={rowY(r)} textAnchor="middle"
         fontSize="22" fontWeight={color === "var(--green)" ? "800" : "700"}
         fill={color} fontFamily="var(--mono)">{ch}</text>
     ) : null);
   };
 
-  // Carries for each partial product shown above the a row (row 0)
-  // They change per b digit being used
-  const [activeCarryRow, setActiveCarryRow] = React.useState(null);
+  // Line y positions
+  const line1Y = rowY(1) + CH * 0.28;
+  const lastPartialRow = 1 + bDigitsR.length;
+  const line2Y = rowY(lastPartialRow) + CH * 0.28;
+  const productRow = lastPartialRow + (bDigitsR.length > 1 ? 1 : 0);
 
   return (
     <svg width={W} height={H} style={{ display: "block", margin: "0 auto" }}>
-      {/* a (multiplicand) */}
       {rowText(a, 0, "var(--text)")}
-      {/* x operator and b (multiplier) */}
       <text x={OW - 6} y={rowY(1)} textAnchor="end" fontSize="20" fill="var(--text3)" fontFamily="var(--mono)">x</text>
       {rowText(b, 1, "var(--text)")}
-      {/* Line after multiplier */}
-      <line x1={OW} y1={CARRY_H + CH * 2 + 2} x2={OW + maxLen * CW} y2={CARRY_H + CH * 2 + 2} stroke="var(--text)" strokeWidth="2" />
-      {/* Partial products with carries above each partial row */}
-      {bDigits.map((d, rowIdx) => {
-        const partial = a * d * Math.pow(10, rowIdx);
-        // Compute digit-by-digit carries for a * d
-        const aDigitsR = String(a).split("").map(Number).reverse();
-        const digitCarries = []; // carry produced AFTER each column (goes left)
+      <line x1={OW} y1={line1Y} x2={OW + maxLen * CW} y2={line1Y} stroke="var(--text)" strokeWidth="2" />
+      {bDigitsR.map((d, partialIdx) => {
+        const partial = a * d * Math.pow(10, partialIdx);
+        // Compute carries: col = maxLen-2-i always (relative to multiplicand)
+        const aDigitsR = aStr.split("").map(Number).reverse();
         let carry = 0;
+        const carries = [];
         for (let i = 0; i < aDigitsR.length; i++) {
           const prod = aDigitsR[i] * d + carry;
           carry = Math.floor(prod / 10);
-          digitCarries.push(carry); // carry[i] goes above aDigit[i+1]
+          carries.push({ col: maxLen - 2 - i, val: carry });
         }
-        // In the SVG, partial product digits are right-aligned to maxLen
-        // The rightmost digit of the partial is at column (maxLen - 1 - rowIdx)
-        const carryY = CARRY_H + CH * (rowIdx + 2) - CH * 0.82;
+        const cy = carryY(partialIdx);
         return (
-          <g key={rowIdx}>
-            {digitCarries.map((c, ci) => {
-              if (c === 0) return null;
-              const col = maxLen - 2 - rowIdx - ci;
-              if (col < 0 || col >= maxLen) return null;
-              return (
-                <text key={ci} x={OW + col * CW + CW / 2} y={carryY}
-                  textAnchor="middle" fontSize="12" fontWeight="800"
-                  fill="var(--blue)" fontFamily="var(--mono)">{c}</text>
-              );
-            })}
-            {rowText(partial, rowIdx + 2, "var(--text2)")}
+          <g key={partialIdx}>
+            {carries.map((c, ci) => c.val > 0 && c.col >= 0 ? (
+              <text key={ci} x={OW + c.col * CW + CW / 2} y={cy}
+                textAnchor="middle" fontSize="12" fontWeight="800"
+                fill="var(--blue)" fontFamily="var(--mono)">{c.val}</text>
+            ) : null)}
+            {rowText(partial, partialIdx + 2, "var(--text2)")}
           </g>
         );
       })}
-      {/* Final addition line and product */}
-      {bDigits.length > 1 && (
-        <line x1={OW} y1={CARRY_H + CH * (2 + bDigits.length) + 2}
-          x2={OW + maxLen * CW} y2={CARRY_H + CH * (2 + bDigits.length) + 2}
-          stroke="var(--text)" strokeWidth="2" />
+      {bDigitsR.length > 1 && (
+        <line x1={OW} y1={line2Y} x2={OW + maxLen * CW} y2={line2Y} stroke="var(--text)" strokeWidth="2" />
       )}
-      {rowText(product, 2 + bDigits.length, "var(--green)")}
+      {rowText(product, productRow, "var(--green)")}
     </svg>
   );
 }
