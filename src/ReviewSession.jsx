@@ -374,7 +374,7 @@ function QuestionDisplay({ question, revealing }) {
               <div style={{ fontSize: 13, color: "var(--text3)", marginBottom: 8, fontWeight: 600 }}>Expression {i+1}</div>
               {p.style === "fraction"
                 ? <KaTeX expr={"\\dfrac{" + p.num + "}{" + p.den + "}"} />
-                : <div style={{ fontSize: 36, fontFamily: "var(--mono)", fontWeight: 700 }}>{p.num}  {p.den}</div>
+                : <KaTeX expr={String(p.num) + " \\div " + String(p.den)} />
               }
             </div>
           ))}

@@ -123,13 +123,22 @@ export function genQ4() {
 //  Q5: Division with Zero 
 export function genQ5() {
   const a = randInt(2, 9);
-  const zeroDivStyle = Math.random() < 0.5 ? "symbol" : "fraction";
-  const divByZeroStyle = zeroDivStyle === "symbol" ? "fraction" : "symbol";
+  let b;
+  do { b = randInt(2, 9); } while (b === a);
+  // styles: "fraction" or "symbol" (division sign)
+  const styles = ["fraction", "symbol"];
+  const style1 = randChoice(styles);
+  const style2 = style1 === "fraction" ? "symbol" : "fraction";
+  // Randomly assign which problem is 0/n and which is n/0
+  const prob1IsZeroNum = Math.random() < 0.5;
   return {
     type: "q5", topic: 5,
-    a,
-    prob1: { num: 0, den: a, style: zeroDivStyle, answer: "0" },
-    prob2: { num: a, den: 0, style: divByZeroStyle, answer: "undefined" },
+    prob1: prob1IsZeroNum
+      ? { num: 0, den: a, style: style1, answer: "0" }
+      : { num: a, den: 0, style: style1, answer: "undefined" },
+    prob2: prob1IsZeroNum
+      ? { num: b, den: 0, style: style2, answer: "undefined" }
+      : { num: 0, den: b, style: style2, answer: "0" },
     prompt: "Evaluate each expression. Enter a number or press UNDEFINED."
   };
 }
