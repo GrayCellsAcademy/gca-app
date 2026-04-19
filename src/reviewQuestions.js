@@ -164,6 +164,8 @@ export function genQ6() {
   return {
     type: "q6", topic: 6,
     dividend, divisor, quotient, remainder,
+    answer: JSON.stringify({ quotient, remainder }),
+    displayAnswer: quotient + " remainder " + remainder,
     prompt: "Find the quotient and remainder.",
     display: { type: "long-division", dividend, divisor }
   };

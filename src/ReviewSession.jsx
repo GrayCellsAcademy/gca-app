@@ -333,6 +333,90 @@ function UnitSpan({ unit }) {
   return <span style={{ fontFamily: "var(--mono)" }}>{unit}</span>;
 }
 
+
+function LongDivisionWork({ dividend, divisor, quotient, remainder }) {
+  const qStr = String(quotient);
+  const dvStr = String(dividend);
+  const CW = 34, CH = 44, OW = 48;
+  const steps = [];
+  let current = 0;
+  for (let i = 0; i < qStr.length; i++) {
+    current = current * 10 + parseInt(dvStr[i]);
+    const q = parseInt(qStr[i]);
+    const sub = q * divisor;
+    const diff = current - sub;
+    steps.push({ bring: dvStr[i], current, q, sub, diff, pos: i });
+    current = diff;
+  }
+  const maxWidth = Math.max(dvStr.length, qStr.length) + 2;
+  const W = OW + maxWidth * CW + 40;
+  const H = CH * (steps.length * 2 + 2) + 20;
+  const numX = (numStr, rightCol) => {
+    const s = String(numStr);
+    return s.split("").map((ch, i) => ({
+      ch, x: OW + (rightCol - s.length + 1 + i) * CW + CW / 2
+    }));
+  };
+  return (
+    <div style={{ overflowX: "auto", marginTop: 12 }}>
+      <svg width={W} height={H} style={{ display: "block", margin: "0 auto", minWidth: W }}>
+        {/* Divisor */}
+        <text x={OW - 8} y={CH * 0.78} textAnchor="end" fontSize="24" fontWeight="700"
+          fill="var(--text)" fontFamily="var(--mono)">{divisor}</text>
+        {/* Division bracket */}
+        <line x1={OW} y1={CH * 0.3} x2={OW} y2={CH} stroke="var(--text)" strokeWidth="2" />
+        <line x1={OW} y1={CH * 0.3} x2={OW + dvStr.length * CW + 8} y2={CH * 0.3}
+          stroke="var(--text)" strokeWidth="2" />
+        {/* Dividend */}
+        {dvStr.split("").map((ch, i) => (
+          <text key={i} x={OW + i * CW + CW / 2} y={CH * 0.78} textAnchor="middle"
+            fontSize="24" fontWeight="700" fill="var(--text)" fontFamily="var(--mono)">{ch}</text>
+        ))}
+        {/* Quotient above bracket */}
+        {qStr.split("").map((ch, i) => (
+          <text key={i} x={OW + i * CW + CW / 2} y={CH * 0.18} textAnchor="middle"
+            fontSize="24" fontWeight="800" fill="var(--green)" fontFamily="var(--mono)">{ch}</text>
+        ))}
+        {/* Steps */}
+        {steps.map((step, si) => {
+          const rowY = CH + si * CH * 2;
+          const rightCol = si; // subtracted number aligns under used digits
+          const subDigits = numX(step.sub, si);
+          const diffDigits = numX(step.diff === 0 ? "0" : step.diff, si + (step.diff === 0 ? 0 : 0));
+          return (
+            <g key={si}>
+              {/* Subtracted value */}
+              {subDigits.map((d, di) => (
+                <text key={di} x={d.x} y={rowY + CH * 0.78} textAnchor="middle"
+                  fontSize="22" fontWeight="700" fill="var(--text2)" fontFamily="var(--mono)">{d.ch}</text>
+              ))}
+              <line x1={OW + Math.max(0, si - String(step.sub).length + 1) * CW - 4}
+                y1={rowY + CH - 4}
+                x2={OW + (si + 1) * CW + 4} y2={rowY + CH - 4}
+                stroke="var(--text)" strokeWidth="1.5" />
+              {/* Difference / remainder */}
+              {si === steps.length - 1 ? (
+                <text x={OW + si * CW + CW / 2} y={rowY + CH * 1.78} textAnchor="middle"
+                  fontSize="22" fontWeight="800" fill="var(--blue)" fontFamily="var(--mono)">{step.diff}</text>
+              ) : (
+                diffDigits.map((d, di) => (
+                  <text key={di} x={d.x} y={rowY + CH * 1.78} textAnchor="middle"
+                    fontSize="22" fontWeight="700" fill="var(--text)" fontFamily="var(--mono)">{d.ch}</text>
+                ))
+              )}
+            </g>
+          );
+        })}
+        {/* Remainder label */}
+        {remainder > 0 && (
+          <text x={OW + qStr.length * CW + 12} y={CH + (steps.length * 2 - 1) * CH * 0.93 + CH * 0.78}
+            fontSize="14" fill="var(--text3)" fontFamily="var(--mono)">R{remainder}</text>
+        )}
+      </svg>
+    </div>
+  );
+}
+
 function QuestionDisplay({ question, revealing }) {
   if (!question) return null;
   const q = question;
@@ -382,8 +466,10 @@ function QuestionDisplay({ question, revealing }) {
       );
     case "q6":
       return (
-        <div style={{ textAlign: "center", fontSize: 28, fontFamily: "var(--mono)", fontWeight: 700 }}>
-          {q.dividend} / {q.divisor}
+        <div>
+          <KaTeX expr={String(q.dividend) + " \\div " + String(q.divisor)} />
+          {revealing && <LongDivisionWork dividend={q.dividend} divisor={q.divisor}
+            quotient={q.quotient} remainder={q.remainder} />}
         </div>
       );
     case "q7":
