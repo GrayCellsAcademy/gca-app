@@ -97,6 +97,8 @@ export function genQ4() {
       type: "q4", topic: 4,
       shape: "square", s, unit,
       answerNum: s * s, answerUnit: unit + "^2",
+      answer: (s * s) + " " + unit + "^2",
+      displayAnswer: (s * s) + " " + unit + "^2",
       prompt: "Find the area of this square.",
       display: { type: "square-area", s, unit },
       unitChoices: [unit, unit + "^2", unit + "^3"]
@@ -109,6 +111,8 @@ export function genQ4() {
       type: "q4", topic: 4,
       shape: "rect", w, h, unit,
       answerNum: w * h, answerUnit: unit + "^2",
+      answer: (w * h) + " " + unit + "^2",
+      displayAnswer: (w * h) + " " + unit + "^2",
       prompt: "Find the area of this rectangle.",
       display: { type: "rect-area", w, h, unit },
       unitChoices: [unit, unit + "^2", unit + "^3"]

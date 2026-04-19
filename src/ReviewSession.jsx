@@ -72,6 +72,46 @@ function ColumnDisplay({ a, b, op }) {
 
 //  Square SVG 
 
+function ColumnAdditionReveal({ numbers, label }) {
+  if (!numbers || numbers.length === 0) return null;
+  const maxLen = Math.max(...numbers.map(n => String(n).length));
+  const total = numbers.reduce((a, b) => a + b, 0);
+  // Carries
+  const carries = Array(maxLen).fill(0);
+  for (let pos = 0; pos < maxLen; pos++) {
+    let sum = pos > 0 ? carries[pos-1] : 0;
+    numbers.forEach(n => {
+      const s = String(n); const idx = s.length - 1 - pos;
+      if (idx >= 0) sum += parseInt(s[idx]);
+    });
+    carries[pos] = Math.floor(sum / 10);
+  }
+  const carryAbove = Array(maxLen).fill(0);
+  for (let pos = 0; pos < maxLen - 1; pos++) carryAbove[maxLen-2-pos] = carries[pos];
+  const CW = 32, CH = 38, OW = 36;
+  const W = OW + maxLen * CW + 16;
+  const H = CH * (numbers.length + 1) + 30;
+  const getD = (n, col) => { const s = String(n); const idx = col-(maxLen-s.length); return (idx>=0&&idx<s.length)?s[idx]:null; };
+  return (
+    <div style={{ marginTop: 10, display: "inline-block" }}>
+      {label && <div style={{ fontSize: 14, color: "var(--text3)", marginBottom: 4, fontWeight: 600 }}>{label}</div>}
+      <svg width={W} height={H} style={{ display: "block" }}>
+        {carryAbove.map((c, i) => c > 0 && (
+          <text key={i} x={OW+i*CW+CW/2} y={18} textAnchor="middle" fontSize="14" fontWeight="800" fill="var(--blue)" fontFamily="var(--mono)">{c}</text>
+        ))}
+        {numbers.map((n, ri) => (
+          <g key={ri}>
+            {ri === numbers.length-1 && <text x={OW-4} y={24+ri*CH+CH*0.68} textAnchor="end" fontSize="18" fill="var(--text3)" fontFamily="var(--mono)">+</text>}
+            {Array.from({length:maxLen},(_,ci)=>{const d=getD(n,ci);return d?(<text key={ci} x={OW+ci*CW+CW/2} y={24+ri*CH+CH*0.68} textAnchor="middle" fontSize="24" fontWeight="700" fill="var(--text)" fontFamily="var(--mono)">{d}</text>):null;})}
+          </g>
+        ))}
+        <line x1={OW} y1={24+numbers.length*CH+2} x2={OW+maxLen*CW} y2={24+numbers.length*CH+2} stroke="var(--text)" strokeWidth="2"/>
+        {String(total).split("").map((ch,ci)=>{const col=maxLen-String(total).length+ci;return(<text key={ci} x={OW+col*CW+CW/2} y={24+numbers.length*CH+CH*0.72} textAnchor="middle" fontSize="24" fontWeight="800" fill="var(--green)" fontFamily="var(--mono)">{ch}</text>);})}
+      </svg>
+    </div>
+  );
+}
+
 function ColumnSubtractWork({ a, b }) {
   const aStr = String(a), bStr = String(b);
   const maxLen = Math.max(aStr.length, bStr.length);
@@ -293,11 +333,25 @@ function QuestionDisplay({ question, revealing }) {
         ? <ColumnMultiplyWork a={q.a} b={q.b} />
         : <ColumnDisplay a={q.a} b={q.b} op="x" />;
     case "q3":
-      return <SquareDisplay s={q.s} unit={q.unit} showAll={revealing} />;
+      return (
+        <div>
+          <SquareDisplay s={q.s} unit={q.unit} showAll={revealing} />
+          {revealing && <ColumnAdditionReveal numbers={[q.s, q.s, q.s, q.s]} label={"Perimeter = " + q.s*4 + " " + q.unit} />}
+        </div>
+      );
     case "q4":
-      return q.shape === "square"
-        ? <SquareDisplay s={q.s} unit={q.unit} showAll={revealing} />
-        : <RectDisplay w={q.w} h={q.h} unit={q.unit} showAll={revealing} />;
+      return (
+        <div>
+          {q.shape === "square"
+            ? <SquareDisplay s={q.s} unit={q.unit} showAll={revealing} />
+            : <RectDisplay w={q.w} h={q.h} unit={q.unit} showAll={revealing} />}
+          {revealing && (
+            q.shape === "square"
+              ? <ColumnMultiplyWork a={q.s} b={q.s} />
+              : <ColumnMultiplyWork a={q.w} b={q.h} />
+          )}
+        </div>
+      );
     case "q5":
       return (
         <div style={{ display: "flex", gap: 32, justifyContent: "center", flexWrap: "wrap" }}>
