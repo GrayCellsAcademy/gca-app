@@ -210,15 +210,15 @@ function ColumnMultiplyWork({ a, b }) {
 
 
 function SquareDisplay({ s, unit, showAll }) {
-  const W = 240, H = 240, sx = 40, sy = 40, sw = 160;
+  const W = 340, H = 280, sx = 70, sy = 50, sw = 160;
   return (
-    <svg viewBox={"0 0 " + W + " " + H} style={{ width: 240, display: "block", margin: "0 auto" }}>
+    <svg viewBox={"0 0 " + W + " " + H} style={{ width: "100%", maxWidth: 340, display: "block", margin: "0 auto" }}>
       <rect x={sx} y={sy} width={sw} height={sw} stroke="var(--blue)" strokeWidth="2.5" fill="rgba(59,130,246,0.07)" />
-      <text x={sx + sw / 2} y={sy - 10} textAnchor="middle" fontSize="16" fontWeight="700" fill="var(--text)" fontFamily="var(--mono)">{s} {unit}</text>
+      <text x={sx + sw / 2} y={sy - 12} textAnchor="middle" fontSize="16" fontWeight="700" fill="var(--text)" fontFamily="var(--mono)">{s} {unit}</text>
       {showAll && (<>
-        <text x={sx + sw + 14} y={sy + sw / 2 + 6} textAnchor="start" fontSize="16" fontWeight="700" fill="var(--green)" fontFamily="var(--mono)">{s} {unit}</text>
-        <text x={sx + sw / 2} y={sy + sw + 22} textAnchor="middle" fontSize="16" fontWeight="700" fill="var(--green)" fontFamily="var(--mono)">{s} {unit}</text>
-        <text x={sx - 14} y={sy + sw / 2 + 6} textAnchor="end" fontSize="16" fontWeight="700" fill="var(--green)" fontFamily="var(--mono)">{s} {unit}</text>
+        <text x={sx + sw + 16} y={sy + sw / 2 + 6} textAnchor="start" fontSize="16" fontWeight="700" fill="var(--green)" fontFamily="var(--mono)">{s} {unit}</text>
+        <text x={sx + sw / 2} y={sy + sw + 24} textAnchor="middle" fontSize="16" fontWeight="700" fill="var(--green)" fontFamily="var(--mono)">{s} {unit}</text>
+        <text x={sx - 16} y={sy + sw / 2 + 6} textAnchor="end" fontSize="16" fontWeight="700" fill="var(--green)" fontFamily="var(--mono)">{s} {unit}</text>
       </>)}
     </svg>
   );
@@ -226,15 +226,15 @@ function SquareDisplay({ s, unit, showAll }) {
 
 //  Rectangle SVG 
 function RectDisplay({ w, h, unit, showAll }) {
-  const W = 280, H = 220, rx = 40, ry = 30, rw = 200, rh = 160;
+  const W = 380, H = 240, rx = 70, ry = 36, rw = 200, rh = 160;
   return (
-    <svg viewBox={"0 0 " + W + " " + H} style={{ width: 280, display: "block", margin: "0 auto" }}>
+    <svg viewBox={"0 0 " + W + " " + H} style={{ width: "100%", maxWidth: 380, display: "block", margin: "0 auto" }}>
       <rect x={rx} y={ry} width={rw} height={rh} stroke="var(--blue)" strokeWidth="2.5" fill="rgba(59,130,246,0.07)" />
-      <text x={rx + rw / 2} y={ry - 10} textAnchor="middle" fontSize="15" fontWeight="700" fill="var(--text)" fontFamily="var(--mono)">{w} {unit}</text>
-      <text x={rx + rw + 12} y={ry + rh / 2 + 6} textAnchor="start" fontSize="15" fontWeight="700" fill="var(--text)" fontFamily="var(--mono)">{h} {unit}</text>
+      <text x={rx + rw / 2} y={ry - 12} textAnchor="middle" fontSize="16" fontWeight="700" fill="var(--text)" fontFamily="var(--mono)">{w} {unit}</text>
+      <text x={rx + rw + 14} y={ry + rh / 2 + 6} textAnchor="start" fontSize="16" fontWeight="700" fill="var(--text)" fontFamily="var(--mono)">{h} {unit}</text>
       {showAll && (<>
-        <text x={rx + rw / 2} y={ry + rh + 20} textAnchor="middle" fontSize="15" fontWeight="700" fill="var(--green)" fontFamily="var(--mono)">{w} {unit}</text>
-        <text x={rx - 12} y={ry + rh / 2 + 6} textAnchor="end" fontSize="15" fontWeight="700" fill="var(--green)" fontFamily="var(--mono)">{h} {unit}</text>
+        <text x={rx + rw / 2} y={ry + rh + 22} textAnchor="middle" fontSize="16" fontWeight="700" fill="var(--green)" fontFamily="var(--mono)">{w} {unit}</text>
+        <text x={rx - 14} y={ry + rh / 2 + 6} textAnchor="end" fontSize="16" fontWeight="700" fill="var(--green)" fontFamily="var(--mono)">{h} {unit}</text>
       </>)}
     </svg>
   );
