@@ -368,12 +368,13 @@ function QuestionDisplay({ question, revealing }) {
       );
     case "q5":
       return (
-        <div style={{ display: "flex", gap: 32, justifyContent: "center", flexWrap: "wrap" }}>
+        <div style={{ display: "flex", gap: 60, justifyContent: "center", alignItems: "center", flexWrap: "wrap", padding: "10px 0" }}>
           {[q.prob1, q.prob2].map((p, i) => (
-            <div key={i} style={{ textAlign: "center" }}>
+            <div key={i} style={{ textAlign: "center", minWidth: 120 }}>
+              <div style={{ fontSize: 13, color: "var(--text3)", marginBottom: 8, fontWeight: 600 }}>Expression {i+1}</div>
               {p.style === "fraction"
-                ? <Frac n={p.num} d={p.den} large />
-                : <div style={{ fontSize: 32, fontFamily: "var(--mono)", fontWeight: 700 }}>{p.num} / {p.den}</div>
+                ? <KaTeX expr={"\\dfrac{" + p.num + "}{" + p.den + "}"} />
+                : <div style={{ fontSize: 36, fontFamily: "var(--mono)", fontWeight: 700 }}>{p.num}  {p.den}</div>
               }
             </div>
           ))}
@@ -606,7 +607,7 @@ function AnswerInput({ question, onSubmit, submitted }) {
               <div style={{ fontSize: 13, color: "var(--text3)", marginBottom: 4 }}>Problem {i + 1}</div>
               <input style={inputStyle} value={i === 0 ? input : input2}
                 onChange={e => i === 0 ? setInput(e.target.value) : setInput2(e.target.value)}
-                placeholder="0 or undefined" disabled={submitted} ref={i === 0 ? ref : null} />
+                placeholder="Enter answer" disabled={submitted} ref={i === 0 ? ref : null} />
               <button className="btn btn-ghost btn-sm" style={btnStyle}
                 onClick={() => i === 0 ? setInput("undefined") : setInput2("undefined")}>
                 UNDEFINED
