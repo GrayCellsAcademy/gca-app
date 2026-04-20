@@ -525,14 +525,14 @@ function QuestionDisplay({ question, revealing }) {
       );
     }
     case "q11": {
-      // Convert expr to LaTeX - negative coefficients shown as (-n)
-      const toLaTeX11 = (expr) => {
-        // Replace terms like -3x with (-3)x for clarity
-        return expr
-          .replace(/(-\d+)([a-z])/g, "($1)$2")
-          .replace(/\*/g, "\\cdot ");
-      };
-      return <KaTeX expr={toLaTeX11(q.expr)} />;
+      // Build LaTeX from terms: wrap negative non-first terms as whole (-4x)
+      const terms11 = q.expr.split(" + ").map((t, i) => {
+        const trimmed = t.trim();
+        // If term starts with negative and is not the first term, wrap whole term
+        if (i > 0 && trimmed.startsWith("-")) return "(" + trimmed + ")";
+        return trimmed;
+      });
+      return <KaTeX expr={terms11.join(" + ")} />;
     }
     case "q12": {
       const toLatex12 = (p) => {
@@ -566,7 +566,7 @@ function QuestionDisplay({ question, revealing }) {
       };
       return (
         <div style={{ textAlign: "center" }}>
-          <div style={{ fontSize: 14, color: "var(--text2)", marginBottom: 8 }}>Given: {q.given}</div>
+          <div style={{ fontSize: 18, color: "var(--text2)", marginBottom: 12, fontWeight: 600 }}>Given: {q.given}</div>
           <KaTeX expr={toLaTeX14(q.expr)} />
         </div>
       );
