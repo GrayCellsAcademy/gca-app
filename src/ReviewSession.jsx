@@ -514,7 +514,7 @@ function QuestionDisplay({ question, revealing }) {
         }
       };
       return (
-        <div style={{ display: "flex", gap: 48, justifyContent: "center", flexWrap: "wrap", alignItems: "center" }}>
+        <div style={{ display: "flex", gap: 80, justifyContent: "center", flexWrap: "wrap", alignItems: "center" }}>
           {[q.prob1, q.prob2].map((p, i) => (
             <div key={i} style={{ textAlign: "center" }}>
               <div style={{ fontSize: 13, color: "var(--text3)", marginBottom: 6, fontWeight: 600 }}>Problem {i+1}</div>
@@ -526,14 +526,23 @@ function QuestionDisplay({ question, revealing }) {
     }
     case "q11":
       return <div style={{ fontSize: 28, fontFamily: "var(--mono)", fontWeight: 700, textAlign: "center" }}>{q.expr}</div>;
-    case "q12":
+    case "q12": {
+      const toLatex12 = (p) => {
+        if (p.form === "neg-base") return "(-" + p.a + ")^{" + p.n + "}";
+        if (p.form === "neg-neg-base") return "-(-" + p.a + ")^{" + p.n + "}";
+        return "-(" + p.a + "^{" + p.n + "})";
+      };
       return (
-        <div style={{ display: "flex", gap: 32, justifyContent: "center", flexWrap: "wrap" }}>
+        <div style={{ display: "flex", gap: 80, justifyContent: "center", flexWrap: "wrap", alignItems: "center" }}>
           {[q.prob1, q.prob2].map((p, i) => (
-            <div key={i} style={{ fontSize: 28, fontFamily: "var(--mono)", fontWeight: 700 }}>{p.expr}</div>
+            <div key={i} style={{ textAlign: "center" }}>
+              <div style={{ fontSize: 13, color: "var(--text3)", marginBottom: 6, fontWeight: 600 }}>Problem {i+1}</div>
+              <KaTeX expr={toLatex12(p)} />
+            </div>
           ))}
         </div>
       );
+    }
     case "q13":
       return <div style={{ fontSize: 24, fontFamily: "var(--mono)", fontWeight: 700, textAlign: "center" }}>{q.expr}</div>;
     case "q14": case "q15":

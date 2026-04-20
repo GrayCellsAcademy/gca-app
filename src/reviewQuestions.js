@@ -311,10 +311,12 @@ export function genQ12() {
   const f1 = randChoice(forms);
   let f2;
   do { f2 = randChoice(forms); } while (f2 === f1);
+  const p1 = makeNegPow(f1), p2 = makeNegPow(f2);
   return {
     type: "q12", topic: 12,
-    prob1: makeNegPow(f1),
-    prob2: makeNegPow(f2),
+    prob1: p1, prob2: p2,
+    answer: JSON.stringify({ ans1: p1.answer, ans2: p2.answer }),
+    displayAnswer: "Expr 1: " + p1.answer + ",  Expr 2: " + p2.answer,
     prompt: "Evaluate each expression."
   };
 }
