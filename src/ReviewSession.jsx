@@ -337,61 +337,43 @@ function UnitSpan({ unit }) {
 function LongDivisionWork({ dividend, divisor, quotient, remainder }) {
   const dvStr = String(dividend);
   const nDigits = dvStr.length;
-  const CW = 34, CH = 46, OW = 56, HEADER = 52;
+  const CW = 34, CH = 48, OW = 56, HEADER = 54;
 
-  // Compute steps - each step i uses dividend digit at position i
+  // Standard long division: group digits until working >= divisor
   const steps = [];
   let current = 0;
-  for (let i = 0; i < nDigits; i++) {
+  let i = 0;
+  while (i < nDigits) {
     current = current * 10 + parseInt(dvStr[i]);
+    if (current < divisor && steps.length === 0 && i < nDigits - 1) {
+      i++; continue; // keep grouping initial digits
+    }
     const q = Math.floor(current / divisor);
     const sub = q * divisor;
     const diff = current - sub;
-    steps.push({ i, current, q, sub, diff, skip: q === 0 && sub === 0 });
+    steps.push({ rightCol: i, current, q, sub, diff });
     current = diff;
+    i++;
   }
 
-  // Filter to only steps that produce visible subtraction work (q > 0)
-  // But always show the last step
-  const visibleSteps = steps.filter((s, idx) => s.sub > 0 || idx === steps.length - 1);
+  // Quotient: right-align digits over their rightCol
+  // Build quotient display: for each step, place q digit at rightCol
+  const qDigits = steps.map(s => ({ col: s.rightCol, digit: String(s.q) }));
 
   const W = OW + nDigits * CW + 60;
-  // Height: header + dividend row + each visible step gets 2 rows
-  const H = HEADER + CH + visibleSteps.length * 2 * CH + 20;
-
-  // x-center for dividend column col (0=leftmost)
+  const H = HEADER + CH + steps.length * 2 * CH + 20;
   const cx = (col) => OW + col * CW + CW / 2;
 
-  // Right-align number so its LAST digit sits at column rightCol
   const renderNum = (num, rightCol, y, color, size) => {
     const s = String(num);
     return s.split("").map((ch, ki) => {
       const col = rightCol - s.length + 1 + ki;
       return (
         <text key={ki} x={cx(col)} y={y} textAnchor="middle"
-          fontSize={size || 22} fontWeight="700" fill={color} fontFamily="var(--mono)">{ch}</text>
+          fontSize={size} fontWeight="700" fill={color} fontFamily="var(--mono)">{ch}</text>
       );
     });
   };
-
-  // Build the visible layout rows
-  // For each visible step: sub row, line, diff row
-  // sub and diff both right-align to column step.i
-  let rows = [];
-  visibleSteps.forEach((step, vi) => {
-    const baseY = HEADER + CH + vi * 2 * CH;
-    const subY = baseY + CH * 0.78;
-    const lineY = baseY + CH + 2;
-    const diffY = baseY + CH + CH * 0.78;
-    // Line spans from leftmost digit of sub to column step.i
-    const subLen = String(step.sub || 0).length;
-    const lineLeft = cx(Math.max(0, step.i - subLen + 1)) - CW * 0.4;
-    const lineRight = cx(step.i) + CW * 0.4;
-    rows.push({ step, vi, subY, lineY, diffY, lineLeft, lineRight });
-  });
-
-  // Quotient string: same length as dvStr, with leading zeros as spaces
-  const qFull = String(quotient).padStart(nDigits, " ");
 
   return (
     <div style={{ overflowX: "auto", marginTop: 16 }}>
@@ -399,40 +381,53 @@ function LongDivisionWork({ dividend, divisor, quotient, remainder }) {
         {/* Divisor */}
         <text x={OW - 10} y={HEADER + CH * 0.78} textAnchor="end"
           fontSize="26" fontWeight="700" fill="var(--text)" fontFamily="var(--mono)">{divisor}</text>
-        {/* Division bracket */}
+        {/* Bracket */}
         <line x1={OW - 2} y1={HEADER + CH * 0.18} x2={OW - 2} y2={HEADER + CH}
           stroke="var(--text)" strokeWidth="2.5" />
         <line x1={OW - 2} y1={HEADER + CH * 0.18} x2={OW + nDigits * CW + 4} y2={HEADER + CH * 0.18}
           stroke="var(--text)" strokeWidth="2.5" />
         {/* Dividend */}
-        {dvStr.split("").map((ch, i) => (
-          <text key={i} x={cx(i)} y={HEADER + CH * 0.78} textAnchor="middle"
+        {dvStr.split("").map((ch, ci) => (
+          <text key={ci} x={cx(ci)} y={HEADER + CH * 0.78} textAnchor="middle"
             fontSize="26" fontWeight="700" fill="var(--text)" fontFamily="var(--mono)">{ch}</text>
         ))}
-        {/* Quotient above bracket - align each digit over its dividend column */}
-        {qFull.split("").map((ch, i) => ch !== " " ? (
-          <text key={i} x={cx(i)} y={HEADER - 10} textAnchor="middle"
-            fontSize="26" fontWeight="800" fill="var(--green)" fontFamily="var(--mono)">{ch}</text>
-        ) : null)}
-        {/* Step rows */}
-        {rows.map(({ step, vi, subY, lineY, diffY, lineLeft, lineRight }) => (
-          <g key={vi}>
-            {/* Subtracted value - right-align to step.i */}
-            {step.sub > 0 && renderNum(step.sub, step.i, subY, "var(--text)", 22)}
-            {/* Underline */}
-            <line x1={lineLeft} y1={lineY} x2={lineRight} y2={lineY}
-              stroke="var(--text)" strokeWidth="1.5" />
-            {/* Difference - right-align to step.i, blue if last */}
-            {vi === rows.length - 1
-              ? renderNum(step.diff, step.i, diffY, "var(--blue)", 22)
-              : renderNum(step.diff, step.i, diffY, "var(--text)", 22)
-            }
-          </g>
+        {/* Quotient digits above bracket, each over its rightCol */}
+        {qDigits.map((qd, qi) => (
+          <text key={qi} x={cx(qd.col)} y={HEADER - 10} textAnchor="middle"
+            fontSize="26" fontWeight="800" fill="var(--green)" fontFamily="var(--mono)">{qd.digit}</text>
         ))}
-        {/* Remainder label */}
+        {/* Steps: each produces working number, subtraction, line, difference */}
+        {steps.map((step, si) => {
+          const baseY = HEADER + CH + si * 2 * CH;
+          const workY = baseY + CH * 0.78;
+          const subY  = baseY + CH * 0.78;  // sub on same row as work for first step
+          const lineY = baseY + CH + 2;
+          const diffY = baseY + CH + CH * 0.78;
+          const isLast = si === steps.length - 1;
+          // working number shown only if different from prev diff or first visible step
+          const showWork = si > 0 && step.current >= 10;
+          const subLen = String(step.sub || 0).length;
+          const lineLeft  = cx(Math.max(0, step.rightCol - Math.max(subLen, String(step.current).length) + 1)) - 4;
+          const lineRight = cx(step.rightCol) + CW * 0.4;
+          return (
+            <g key={si}>
+              {/* Show working number if it spans >1 col (brought down) */}
+              {showWork && renderNum(step.current, step.rightCol, workY - CH, "var(--text3)", 20)}
+              {/* Subtracted value */}
+              {step.sub > 0 && renderNum(step.sub, step.rightCol, subY, "var(--text)", 22)}
+              {/* Line */}
+              <line x1={lineLeft} y1={lineY} x2={lineRight} y2={lineY}
+                stroke="var(--text)" strokeWidth="1.5" />
+              {/* Difference */}
+              {renderNum(step.diff, step.rightCol, diffY,
+                isLast ? "var(--blue)" : "var(--text)", 22)}
+            </g>
+          );
+        })}
+        {/* R label */}
         {remainder > 0 && (
-          <text x={OW + nDigits * CW + 12}
-            y={HEADER + CH + (rows.length * 2 - 1) * CH + CH * 0.78}
+          <text x={OW + nDigits * CW + 10}
+            y={HEADER + CH + (steps.length * 2 - 1) * CH + CH * 0.78}
             fontSize="15" fontWeight="700" fill="var(--blue)" fontFamily="var(--mono)">R{remainder}</text>
         )}
       </svg>
