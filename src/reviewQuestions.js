@@ -248,6 +248,8 @@ export function genQ9() {
     type: "q9", topic: 9,
     prob1: { a: a1, b: b1, answer: String(a1 + b1) },
     prob2: { a: a2, b: b2, answer: String(a2 + b2) },
+    answer: JSON.stringify({ ans1: String(a1+b1), ans2: String(a2+b2) }),
+    displayAnswer: "Expr 1: " + (a1+b1) + ",  Expr 2: " + (a2+b2),
     prompt: "Find each sum."
   };
 }
@@ -262,9 +264,12 @@ export function genQ10() {
   const f1 = randChoice(forms);
   let f2;
   do { f2 = randChoice(forms); } while (f2 === f1);
+  const p1 = f1(), p2 = f2();
   return {
     type: "q10", topic: 10,
-    prob1: f1(), prob2: f2(),
+    prob1: p1, prob2: p2,
+    answer: JSON.stringify({ ans1: p1.answer, ans2: p2.answer }),
+    displayAnswer: "Expr 1: " + p1.answer + ",  Expr 2: " + p2.answer,
     prompt: "Find each difference."
   };
 }

@@ -503,16 +503,27 @@ function QuestionDisplay({ question, revealing }) {
           ))}
         </div>
       );
-    case "q9": case "q10":
+    case "q9": case "q10": {
+      const makeExpr = (p) => {
+        if (q.type === "q9") {
+          // addition: a + (b) where b is negative
+          return p.a + (p.b >= 0 ? " + " + p.b : " + (" + p.b + ")");
+        } else {
+          // subtraction: a - b, showing negative numbers in parens
+          return (p.a < 0 ? "(" + p.a + ")" : String(p.a)) + " - " + (p.b < 0 ? "(" + p.b + ")" : String(p.b));
+        }
+      };
       return (
-        <div style={{ display: "flex", gap: 32, justifyContent: "center", flexWrap: "wrap" }}>
+        <div style={{ display: "flex", gap: 48, justifyContent: "center", flexWrap: "wrap", alignItems: "center" }}>
           {[q.prob1, q.prob2].map((p, i) => (
-            <div key={i} style={{ fontSize: 24, fontFamily: "var(--mono)", fontWeight: 700, textAlign: "center" }}>
-              {p.a} {q.type === "q9" ? "+" : "-"} ({p.b})
+            <div key={i} style={{ textAlign: "center" }}>
+              <div style={{ fontSize: 13, color: "var(--text3)", marginBottom: 6, fontWeight: 600 }}>Problem {i+1}</div>
+              <KaTeX expr={makeExpr(p)} />
             </div>
           ))}
         </div>
       );
+    }
     case "q11":
       return <div style={{ fontSize: 28, fontFamily: "var(--mono)", fontWeight: 700, textAlign: "center" }}>{q.expr}</div>;
     case "q12":
