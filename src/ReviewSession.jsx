@@ -524,8 +524,16 @@ function QuestionDisplay({ question, revealing }) {
         </div>
       );
     }
-    case "q11":
-      return <div style={{ fontSize: 28, fontFamily: "var(--mono)", fontWeight: 700, textAlign: "center" }}>{q.expr}</div>;
+    case "q11": {
+      // Convert expr to LaTeX - negative coefficients shown as (-n)
+      const toLaTeX11 = (expr) => {
+        // Replace terms like -3x with (-3)x for clarity
+        return expr
+          .replace(/(-\d+)([a-z])/g, "($1)$2")
+          .replace(/\*/g, "\\cdot ");
+      };
+      return <KaTeX expr={toLaTeX11(q.expr)} />;
+    }
     case "q12": {
       const toLatex12 = (p) => {
         if (p.form === "neg-base") return "(-" + p.a + ")^{" + p.n + "}";
@@ -548,13 +556,21 @@ function QuestionDisplay({ question, revealing }) {
       const factors13 = q.exponents.map(e => e === 1 ? q.variable : q.variable + "^{" + e + "}");
       return <KaTeX expr={factors13.join(" \\cdot ")} />;
     }
-    case "q14": case "q15":
+    case "q14": case "q15": {
+      // Convert expr to LaTeX
+      const toLaTeX14 = (expr) => {
+        return expr
+          .replace(/(\d+)([a-z])/g, "$1$2")  // keep as is, KaTeX handles
+          .replace(/\//g, "\\div ")
+          .replace(/(-\d+)/g, "($1)");        // wrap negatives in parens
+      };
       return (
         <div style={{ textAlign: "center" }}>
           <div style={{ fontSize: 14, color: "var(--text2)", marginBottom: 8 }}>Given: {q.given}</div>
-          <div style={{ fontSize: 28, fontFamily: "var(--mono)", fontWeight: 700 }}>{q.expr}</div>
+          <KaTeX expr={toLaTeX14(q.expr)} />
         </div>
       );
+    }
     case "q16": case "q17":
       return <div style={{ fontSize: 28, fontFamily: "var(--mono)", fontWeight: 700, textAlign: "center" }}>{q.expr}</div>;
     case "q18": case "q19": case "q20": case "q21": case "q22": case "q24":
@@ -1129,10 +1145,14 @@ function TeacherReview({ session, sessionId, uid }) {
                 {session.status === "revealing" && (
                   <div style={{ marginTop: 12, background: "rgba(16,185,129,0.06)", border: "1px solid rgba(16,185,129,0.2)", borderRadius: "var(--radius-sm)", padding: "10px 14px" }}>
                     <div style={{ fontSize: 12, color: "var(--text3)", marginBottom: 4 }}>Correct answer</div>
-                    <div style={{ fontSize: 20, fontWeight: 800, color: "var(--green)", fontFamily: "var(--mono)" }}>
-                      {question.displayAnswer || question.answerNum || question.answer}
-                      {question.answerUnit ? <> <UnitSpan unit={question.answerUnit} /></> : ""}
-                    </div>
+                    {question.type === "q13" ? (
+                      <KaTeX expr={question.variable + "^{" + question.total + "}"} />
+                    ) : (
+                      <div style={{ fontSize: 20, fontWeight: 800, color: "var(--green)", fontFamily: "var(--mono)" }}>
+                        {question.displayAnswer || question.answerNum || question.answer}
+                        {question.answerUnit ? <> <UnitSpan unit={question.answerUnit} /></> : ""}
+                      </div>
+                    )}
                   </div>
                 )}
                 <div style={{ height: 6, background: "var(--surface2)", borderRadius: 99, overflow: "hidden", marginTop: 12 }}>
@@ -1236,14 +1256,22 @@ function StudentReview({ session, sessionId, uid }) {
                 </div>
                 {!result.correct && question?.answer && (
                   <div style={{ color: "var(--green)", fontSize: 16, marginTop: 4 }}>
-                    Correct: <strong>{question.displayAnswer || question.answerNum || question.answer}{question.answerUnit ? <> <UnitSpan unit={question.answerUnit} /></> : ""}</strong>
+                    {question.type === "q13"
+                      ? <span>Correct: <KaTeX expr={question.variable + "^{" + question.total + "}"} /></span>
+                      : <strong>{question.displayAnswer || question.answerNum || question.answer}{question.answerUnit ? <> <UnitSpan unit={question.answerUnit} /></> : ""}</strong>
+                    }
                   </div>
                 )}
               </>
             ) : (
               <div>
                 <div style={{ color: "var(--text3)", marginBottom: 4 }}>No answer submitted.</div>
-                {question?.answer && <div style={{ color: "var(--green)", fontSize: 16 }}>Correct: <strong>{question.displayAnswer || question.answerNum || question.answer}{question.answerUnit ? <> <UnitSpan unit={question.answerUnit} /></> : ""}</strong></div>}
+                {question?.answer && <div style={{ color: "var(--green)", fontSize: 16 }}>
+                    {question.type === "q13"
+                      ? <span>Correct: <KaTeX expr={question.variable + "^{" + question.total + "}"} /></span>
+                      : <strong>{question.displayAnswer || question.answerNum || question.answer}{question.answerUnit ? <> <UnitSpan unit={question.answerUnit} /></> : ""}</strong>
+                    }
+                  </div>}
               </div>
             )}
           </div>
