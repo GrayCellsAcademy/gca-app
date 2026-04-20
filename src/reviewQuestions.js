@@ -350,6 +350,7 @@ export function genQ13() {
     variable: v, exponents: shuffled, total,
     expr: factors.join(" * "),
     answer: v + "^" + total,
+    displayAnswer: v + "^" + total,
     prompt: "Simplify the expression."
   };
 }

@@ -514,7 +514,7 @@ function QuestionDisplay({ question, revealing }) {
         }
       };
       return (
-        <div style={{ display: "flex", gap: 80, justifyContent: "center", flexWrap: "wrap", alignItems: "center" }}>
+        <div style={{ display: "flex", gap: 120, justifyContent: "center", flexWrap: "wrap", alignItems: "center" }}>
           {[q.prob1, q.prob2].map((p, i) => (
             <div key={i} style={{ textAlign: "center" }}>
               <div style={{ fontSize: 13, color: "var(--text3)", marginBottom: 6, fontWeight: 600 }}>Problem {i+1}</div>
@@ -533,7 +533,7 @@ function QuestionDisplay({ question, revealing }) {
         return "-(" + p.a + "^{" + p.n + "})";
       };
       return (
-        <div style={{ display: "flex", gap: 80, justifyContent: "center", flexWrap: "wrap", alignItems: "center" }}>
+        <div style={{ display: "flex", gap: 120, justifyContent: "center", flexWrap: "wrap", alignItems: "center" }}>
           {[q.prob1, q.prob2].map((p, i) => (
             <div key={i} style={{ textAlign: "center" }}>
               <div style={{ fontSize: 13, color: "var(--text3)", marginBottom: 6, fontWeight: 600 }}>Problem {i+1}</div>
@@ -543,8 +543,11 @@ function QuestionDisplay({ question, revealing }) {
         </div>
       );
     }
-    case "q13":
-      return <div style={{ fontSize: 24, fontFamily: "var(--mono)", fontWeight: 700, textAlign: "center" }}>{q.expr}</div>;
+    case "q13": {
+      // Build LaTeX: x^2 \cdot x \cdot x^3
+      const factors13 = q.exponents.map(e => e === 1 ? q.variable : q.variable + "^{" + e + "}");
+      return <KaTeX expr={factors13.join(" \\cdot ")} />;
+    }
     case "q14": case "q15":
       return (
         <div style={{ textAlign: "center" }}>
