@@ -573,10 +573,19 @@ function QuestionDisplay({ question, revealing }) {
     }
     case "q16": case "q17":
       return <div style={{ fontSize: 28, fontFamily: "var(--mono)", fontWeight: 700, textAlign: "center" }}>{q.expr}</div>;
-    case "q18": case "q24":
+    case "q18":
       return (
         <div style={{ textAlign: "center" }}>
           <div style={{ fontSize: 26, fontFamily: "var(--mono)", fontWeight: 700 }}>{q.expr}</div>
+        </div>
+      );
+    case "q24":
+      return (
+        <div style={{ textAlign: "center" }}>
+          {q.latex
+            ? <KaTeX expr={q.latex} />
+            : <div style={{ fontSize: 26, fontFamily: "var(--mono)", fontWeight: 700 }}>{q.expr}</div>
+          }
         </div>
       );
     case "q19": case "q20": case "q21": case "q22":
@@ -882,19 +891,27 @@ function AnswerInput({ question, onSubmit, submitted }) {
 
   if (q.type === "q24") {
     const ops24 = ["<", ">", "<=", ">="];
+    const opSymbol = { "<": "<", ">": ">", "<=": "\u2264", ">=": "\u2265" };
     return (
       <div>
-        <div style={{ fontSize: 13, color: "var(--text3)", marginBottom: 6 }}>x</div>
-        <div style={{ display: "flex", gap: 8, marginBottom: 10, flexWrap: "wrap" }}>
+        <div style={{ display: "flex", gap: 8, marginBottom: 12, flexWrap: "wrap", justifyContent: "center" }}>
           {ops24.map(op => (
-            <button key={op} className={"btn btn-sm " + (selectedOp === op ? "btn-primary" : "btn-ghost")}
-              onClick={() => setSelectedOp(op)} disabled={submitted}>{op}</button>
+            <button key={op}
+              className={"btn btn-sm " + (selectedOp === op ? "btn-primary" : "btn-ghost")}
+              style={{ minWidth: 52, fontSize: 22, fontWeight: 700 }}
+              onClick={() => setSelectedOp(op)}
+              disabled={submitted}>
+              {opSymbol[op]}
+            </button>
           ))}
         </div>
+        <div style={{ textAlign: "center", fontSize: 20, fontFamily: "var(--mono)", fontWeight: 700, marginBottom: 8, color: "var(--text2)" }}>
+          x {selectedOp ? opSymbol[selectedOp] : <span style={{ color: "var(--text3)" }}>?</span>} {input || <span style={{ color: "var(--text3)" }}>___</span>}
+        </div>
         <input style={inputStyle} value={input} onChange={e => setInput(e.target.value)} ref={ref}
-          placeholder="value" disabled={submitted} />
+          placeholder="value (e.g. 3/2)" disabled={submitted} />
         <button className="btn btn-primary" style={{ width: "100%", marginTop: 8 }} onClick={handleSubmit}
-          disabled={submitted || !input || !selectedOp}>Submit</button>
+          disabled={submitted || !input.trim() || !selectedOp}>Submit</button>
       </div>
     );
   }

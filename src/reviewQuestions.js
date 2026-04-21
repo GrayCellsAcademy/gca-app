@@ -603,12 +603,17 @@ export function genQ24() {
     ? a + "x" + bOp + " " + op + " " + c
     : b + (a > 0 ? " + " : " + ") + a + "x " + op + " " + c;
   const [n, d] = simplifyFrac(c - b, a);
+  const opLatex = { "<": "<", ">": ">", "<=": "\\leq", ">=": "\\geq" };
+  const latex = leftFirst
+    ? a + "x" + bOp + " " + opLatex[op] + " " + c
+    : b + (a > 0 ? " + " : " + ") + a + "x " + opLatex[op] + " " + c;
   return {
     type: "q24", topic: 24,
-    a, b, c, op, expr,
+    a, b, c, op, expr, latex,
     answerOp: flipped,
     answerVal: fracStr(n, d),
-    answer: "x " + flipped + " " + fracStr(n, d),
+    answer: flipped + " " + fracStr(n, d),
+    displayAnswer: "x " + { "<": "<", ">": ">", "<=": "\u2264", ">=": "\u2265" }[flipped] + " " + fracStr(n, d),
     prompt: "Solve the inequality."
   };
 }
