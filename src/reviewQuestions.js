@@ -431,8 +431,9 @@ export function genQ16() {
     expr = aStr + "(" + inner + ")";
     latex = aStr + "(" + inner + ")";
   } else {
-    expr = "(" + inner + ")" + aStr;
-    latex = "(" + inner + ")" + aStr;
+    const aRight = (a < -1) ? "(" + a + ")" : aStr;
+    expr = "(" + inner + ")" + aRight;
+    latex = "(" + inner + ")" + aRight;
   }
   const ab = op === "+" ? a * b : -a * b;
   const avStr = a === -1 ? "-" + v : a + v;
@@ -516,26 +517,23 @@ export function genQ19() {
 
 //  Q20: Two-Step Equation 
 export function genQ20() {
-  const v = "x";
   const isFrac = Math.random() < 0.5;
-  const a = isFrac ? randInt(2, 9) : randInt(2, 9);
+  const a = randInt(2, 9);
   const b = randInt(-15, 15) || 1;
   const c = randInt(-20, 20) || 1;
-  let x, expr, latex;
   const bPart = b >= 0 ? " + " + b : " - " + Math.abs(b);
-  const bLatex = b >= 0 ? " + " + b : " - " + Math.abs(b);
+  let x, expr, latex;
   if (isFrac) {
-    const op = Math.random() < 0.5 ? "+" : "-";
-    x = op === "+" ? (c - b) * a : (c + b) * a;
-    expr = "x/" + a + (op === "+" ? " + " + b : " - " + Math.abs(b)) + " = " + c;
-    latex = "\\dfrac{x}{" + a + "}" + bLatex + " = " + c;
+    // x/a + b = c  =>  x = (c - b) * a
+    x = (c - b) * a;
+    expr = "x/" + a + bPart + " = " + c;
+    latex = "\\dfrac{x}{" + a + "}" + bPart + " = " + c;
   } else {
-    const op = Math.random() < 0.5 ? "+" : "-";
-    const numX = op === "+" ? c - b : c + b;
-    const [n, d] = simplifyFrac(numX, a);
+    // ax + b = c  =>  x = (c - b) / a
+    const [n, d] = simplifyFrac(c - b, a);
     x = fracStr(n, d);
-    expr = a + "x" + (op === "+" ? " + " + b : " - " + Math.abs(b)) + " = " + c;
-    latex = a + "x" + bLatex + " = " + c;
+    expr = a + "x" + bPart + " = " + c;
+    latex = a + "x" + bPart + " = " + c;
   }
   return {
     type: "q20", topic: 20, isFrac, a, b, c, expr, latex,
