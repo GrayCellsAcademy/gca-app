@@ -290,9 +290,7 @@ export function genQ11() {
   if (has3) {
     const c3 = randInt(-9, 9) || 1;
     const order = Math.random() < 0.5;
-    const t1 = termStr(c1, v1), t3 = termStr(c3, v2), t2 = termStr(c2, v1);
     if (order) {
-      expr = addTerms(t1, termStr(c3, v2)) + addTerms(t1 + " + " + termStr(c3, v2), termStr(c2, v1));
       expr = joinTerms([termStr(c1, v1), termStr(c3, v2), termStr(c2, v1)]);
     } else {
       expr = joinTerms([termStr(c1, v1), termStr(c2, v1), termStr(c3, v2)]);
