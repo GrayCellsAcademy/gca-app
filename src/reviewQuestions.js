@@ -623,17 +623,19 @@ export function genQ26() {
   const v = randChoice(["x", "y", "n", "a"]);
   let n, m;
   do { n = randInt(1, 8); m = randInt(1, 8); } while (n === m);
-  let answer;
+  let answer, displayAnswer;
   if (n > m) {
     answer = v + "^" + (n - m);
+    displayAnswer = v + "^" + (n - m);
   } else {
     answer = "1/" + v + "^" + (m - n);
+    displayAnswer = "1/" + v + "^" + (m - n);
   }
   return {
     type: "q26", topic: 26,
     v, n, m,
     expr: v + "^" + n + "/" + v + "^" + m,
-    answer,
+    answer, displayAnswer,
     prompt: "Simplify the expression."
   };
 }
@@ -945,10 +947,13 @@ function ratio(a, b) { const g = gcd(a, b); return (a/g) + ":" + (b/g); }
 export function genQ38() {
   const ctx = randChoice(RATIO_CONTEXTS);
   const a = randInt(3, 12), b = randInt(3, 12);
+  const ansa = ctx.ansa(a, b), ansb = ctx.ansb(a, b);
   return {
     type: "q38", topic: 38,
     story: ctx.story(a, b), qa: ctx.qa, qb: ctx.qb,
-    ansa: ctx.ansa(a, b), ansb: ctx.ansb(a, b),
+    ansa, ansb,
+    answer: JSON.stringify({ ansa, ansb }),
+    displayAnswer: "(a) " + ansa + "  (b) " + ansb,
     prompt: ctx.story(a, b)
   };
 }

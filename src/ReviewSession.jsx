@@ -633,9 +633,19 @@ function QuestionDisplay({ question, revealing }) {
     case "q34":
       return <div style={{ fontSize: 22, fontFamily: "var(--mono)", fontWeight: 700, textAlign: "center" }}>{q.expr}</div>;
     case "q35":
-      return <ColumnDisplay a={q.a} b={q.b} op="-" />;
+      return (
+        <div style={{ fontFamily: "var(--mono)", fontWeight: 700, fontSize: 28, textAlign: "center", lineHeight: 1.7 }}>
+          <div>{q.a}</div>
+          <div style={{ borderTop: "2px solid var(--text)", paddingTop: 4, color: "var(--text3)", fontSize: 22 }}>- {q.b}</div>
+        </div>
+      );
     case "q36":
-      return <ColumnDisplay a={q.a} b={q.b} op="x" />;
+      return (
+        <div style={{ fontFamily: "var(--mono)", fontWeight: 700, fontSize: 28, textAlign: "center", lineHeight: 1.7 }}>
+          <div>{q.a}</div>
+          <div style={{ borderTop: "2px solid var(--text)", paddingTop: 4, color: "var(--text3)", fontSize: 22 }}>x {q.b}</div>
+        </div>
+      );
     case "q37":
       return (
         <div style={{ fontSize: 28, fontFamily: "var(--mono)", fontWeight: 700, textAlign: "center" }}>
@@ -1147,6 +1157,10 @@ function TeacherReview({ session, sessionId, uid }) {
                     <div style={{ fontSize: 12, color: "var(--text3)", marginBottom: 4 }}>Correct answer</div>
                     {question.type === "q13" ? (
                       <KaTeX expr={question.variable + "^{" + question.total + "}"} />
+                    ) : question.type === "q26" ? (
+                      <KaTeX expr={question.n > question.m
+                        ? question.v + "^{" + (question.n - question.m) + "}"
+                        : "\\dfrac{1}{" + question.v + "^{" + (question.m - question.n) + "}}"} />
                     ) : (
                       <div style={{ fontSize: 20, fontWeight: 800, color: "var(--green)", fontFamily: "var(--mono)" }}>
                         {question.displayAnswer || question.answerNum || question.answer}
@@ -1258,6 +1272,8 @@ function StudentReview({ session, sessionId, uid }) {
                   <div style={{ color: "var(--green)", fontSize: 16, marginTop: 4 }}>
                     {question.type === "q13"
                       ? <span>Correct: <KaTeX expr={question.variable + "^{" + question.total + "}"} /></span>
+                      : question.type === "q26"
+                      ? <span>Correct: <KaTeX expr={question.n > question.m ? question.v + "^{" + (question.n - question.m) + "}" : "\\dfrac{1}{" + question.v + "^{" + (question.m - question.n) + "}}"} /></span>
                       : <strong>{question.displayAnswer || question.answerNum || question.answer}{question.answerUnit ? <> <UnitSpan unit={question.answerUnit} /></> : ""}</strong>
                     }
                   </div>
@@ -1269,6 +1285,8 @@ function StudentReview({ session, sessionId, uid }) {
                 {question?.answer && <div style={{ color: "var(--green)", fontSize: 16 }}>
                     {question.type === "q13"
                       ? <span>Correct: <KaTeX expr={question.variable + "^{" + question.total + "}"} /></span>
+                      : question.type === "q26"
+                      ? <span>Correct: <KaTeX expr={question.n > question.m ? question.v + "^{" + (question.n - question.m) + "}" : "\\dfrac{1}{" + question.v + "^{" + (question.m - question.n) + "}}"} /></span>
                       : <strong>{question.displayAnswer || question.answerNum || question.answer}{question.answerUnit ? <> <UnitSpan unit={question.answerUnit} /></> : ""}</strong>
                     }
                   </div>}
