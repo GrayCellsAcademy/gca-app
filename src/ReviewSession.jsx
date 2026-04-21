@@ -37,6 +37,8 @@ function KaTeX({ expr }) {
   return <div ref={ref} style={{ textAlign: "center", fontSize: 22, padding: "8px 0" }} />;
 }
 
+const POINTS = 5;
+
 function fracToLatex(s) {
   if (!s) return s;
   const mixed = String(s).match(/^(-?\d+)\s+(\d+)\/(\d+)$/);
