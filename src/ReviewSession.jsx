@@ -573,13 +573,19 @@ function QuestionDisplay({ question, revealing }) {
     }
     case "q16": case "q17":
       return <div style={{ fontSize: 28, fontFamily: "var(--mono)", fontWeight: 700, textAlign: "center" }}>{q.expr}</div>;
-    case "q18": case "q19": case "q20": case "q21": case "q22": case "q24":
+    case "q18": case "q24":
+      return (
+        <div style={{ textAlign: "center" }}>
+          <div style={{ fontSize: 26, fontFamily: "var(--mono)", fontWeight: 700 }}>{q.expr}</div>
+        </div>
+      );
+    case "q19": case "q20": case "q21": case "q22":
       return (
         <div style={{ textAlign: "center" }}>
           {(q.type === "q20" || q.type === "q21" || q.type === "q22") && (
             <div style={{ fontSize: 13, color: "var(--text3)", marginBottom: 6 }}>Give answer as a fraction if needed</div>
           )}
-          <div style={{ fontSize: 26, fontFamily: "var(--mono)", fontWeight: 700 }}>{q.expr}</div>
+          <KaTeX expr={q.latex || q.expr} />
         </div>
       );
     case "q23":

@@ -481,15 +481,17 @@ export function genQ19() {
   const isMul = Math.random() < 0.5;
   const a = randInt(-9, 9) || 2;
   const x = randInt(-15, 15) || 1;
-  let expr;
+  let expr, latex;
   if (isMul) {
     const b = a * x;
     expr = a + v + " = " + b;
+    latex = a + "x = " + b;
   } else {
     const b = a * x;
     expr = "x/" + a + " = " + b;
+    latex = "\\dfrac{x}{" + a + "} = " + b;
   }
-  return { type: "q19", topic: 19, isMul, a, expr, answer: String(x), prompt: "Solve for x." };
+  return { type: "q19", topic: 19, isMul, a, expr, latex, answer: String(x), prompt: "Solve for x." };
 }
 
 //  Q20: Two-Step Equation 
@@ -499,22 +501,24 @@ export function genQ20() {
   const a = isFrac ? randInt(2, 9) : randInt(2, 9);
   const b = randInt(-15, 15) || 1;
   const c = randInt(-20, 20) || 1;
-  let x, expr;
+  let x, expr, latex;
+  const bPart = b >= 0 ? " + " + b : " - " + Math.abs(b);
+  const bLatex = b >= 0 ? " + " + b : " - " + Math.abs(b);
   if (isFrac) {
-    // x/a +/- b = c => x = (c-b)*a or (c+b)*a
     const op = Math.random() < 0.5 ? "+" : "-";
     x = op === "+" ? (c - b) * a : (c + b) * a;
     expr = "x/" + a + (op === "+" ? " + " + b : " - " + Math.abs(b)) + " = " + c;
+    latex = "\\dfrac{x}{" + a + "}" + bLatex + " = " + c;
   } else {
     const op = Math.random() < 0.5 ? "+" : "-";
-    // ax +/- b = c => x = (c -/+ b)/a
     const numX = op === "+" ? c - b : c + b;
     const [n, d] = simplifyFrac(numX, a);
     x = fracStr(n, d);
     expr = a + "x" + (op === "+" ? " + " + b : " - " + Math.abs(b)) + " = " + c;
+    latex = a + "x" + bLatex + " = " + c;
   }
   return {
-    type: "q20", topic: 20, isFrac, a, b, c, expr,
+    type: "q20", topic: 20, isFrac, a, b, c, expr, latex,
     answer: String(x),
     prompt: "Solve for x. Give answer as fraction if needed.",
   };
@@ -530,10 +534,13 @@ export function genQ21() {
   if (combined === 0) return genQ21();
   const numX = op1 === "+" ? rhs - b : rhs + b;
   const [n, d] = simplifyFrac(numX, combined);
-  const expr = a + "x" + (op1 === "+" ? " + " + b : " - " + Math.abs(b))
+  const bPart = op1 === "+" ? " + " + b : " - " + Math.abs(b);
+  const expr = a + "x" + bPart
+    + (op2 === "+" ? " + " : " - ") + c2 + "x = " + rhs;
+  const latex = a + "x" + bPart
     + (op2 === "+" ? " + " : " - ") + c2 + "x = " + rhs;
   return {
-    type: "q21", topic: 21, expr,
+    type: "q21", topic: 21, expr, latex,
     answer: fracStr(n, d),
     prompt: "Combine like terms and solve for x. Give answer as fraction if needed."
   };
@@ -551,9 +558,11 @@ export function genQ22() {
   const rhs = d - a * b;
   const [n, den] = simplifyFrac(rhs, coeff);
   const op = b >= 0 ? "+" : "-";
-  const expr = a + "(x " + op + " " + Math.abs(b) + ") = " + c + "x + " + d;
+  const dPart = d >= 0 ? " + " + d : " - " + Math.abs(d);
+  const expr = a + "(x " + op + " " + Math.abs(b) + ") = " + c + "x" + dPart;
+  const latex = a + "(x " + op + " " + Math.abs(b) + ") = " + c + "x" + dPart;
   return {
-    type: "q22", topic: 22, a, b, c, d, expr,
+    type: "q22", topic: 22, a, b, c, d, expr, latex,
     answer: fracStr(n, den),
     prompt: "Solve for x. Give answer as fraction if needed."
   };
@@ -623,19 +632,17 @@ export function genQ26() {
   const v = randChoice(["x", "y", "n", "a"]);
   let n, m;
   do { n = randInt(1, 8); m = randInt(1, 8); } while (n === m);
-  let answer, displayAnswer;
+  let answer;
   if (n > m) {
     answer = v + "^" + (n - m);
-    displayAnswer = v + "^" + (n - m);
   } else {
     answer = "1/" + v + "^" + (m - n);
-    displayAnswer = "1/" + v + "^" + (m - n);
   }
   return {
     type: "q26", topic: 26,
     v, n, m,
     expr: v + "^" + n + "/" + v + "^" + m,
-    answer, displayAnswer,
+    answer,
     prompt: "Simplify the expression."
   };
 }
@@ -947,13 +954,10 @@ function ratio(a, b) { const g = gcd(a, b); return (a/g) + ":" + (b/g); }
 export function genQ38() {
   const ctx = randChoice(RATIO_CONTEXTS);
   const a = randInt(3, 12), b = randInt(3, 12);
-  const ansa = ctx.ansa(a, b), ansb = ctx.ansb(a, b);
   return {
     type: "q38", topic: 38,
     story: ctx.story(a, b), qa: ctx.qa, qb: ctx.qb,
-    ansa, ansb,
-    answer: JSON.stringify({ ansa, ansb }),
-    displayAnswer: "(a) " + ansa + "  (b) " + ansb,
+    ansa: ctx.ansa(a, b), ansb: ctx.ansb(a, b),
     prompt: ctx.story(a, b)
   };
 }
