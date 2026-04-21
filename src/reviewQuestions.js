@@ -420,24 +420,30 @@ export function genQ15() {
 export function genQ16() {
   let a;
   do { a = randInt(-9, 9); } while (a === 0 || a === 1);
-  const b = randInt(-9, 9) || 1;
+  const b = randInt(2, 9);
   const v = randChoice(["x", "y", "n"]);
   const op = Math.random() < 0.5 ? "+" : "-";
   const leftSide = Math.random() < 0.5;
   const aStr = a === -1 ? "-" : String(a);
-  let expr;
+  const inner = v + (op === "+" ? " + " : " - ") + b;
+  let expr, latex;
   if (leftSide) {
-    expr = aStr + "(" + v + (op === "+" ? " + " : " - ") + Math.abs(b) + ")";
+    expr = aStr + "(" + inner + ")";
+    latex = aStr + "(" + inner + ")";
   } else {
-    expr = "(" + v + (op === "+" ? " + " : " - ") + Math.abs(b) + ")" + aStr;
+    expr = "(" + inner + ")" + aStr;
+    latex = "(" + inner + ")" + aStr;
   }
   const ab = op === "+" ? a * b : -a * b;
-  const answerStr = (a === -1 ? "-" : a) + v + (ab >= 0 ? " + " : " - ") + Math.abs(ab);
+  const avStr = a === -1 ? "-" + v : a + v;
+  const answerStr = avStr + (ab >= 0 ? " + " : " - ") + Math.abs(ab);
+  const answerLatex = avStr + (ab >= 0 ? " + " : " - ") + Math.abs(ab);
   return {
     type: "q16", topic: 16,
-    a, b, op, v, expr,
-    answer: (a === -1 ? "-" : a) + v + (ab >= 0 ? "+" : "-") + Math.abs(ab),
+    a, b, op, v, expr, latex,
+    answer: avStr + (ab >= 0 ? "+" : "-") + Math.abs(ab),
     displayAnswer: answerStr,
+    answerLatex,
     prompt: "Use the distributive property to simplify."
   };
 }
@@ -1221,10 +1227,9 @@ export function gradeReviewAnswer(input, question) {
       return norm(input) === norm(question.answer);
 
     case "q11": {
-      // Split input into terms (split on + and -), normalize each, sort, compare
       const splitTerms = s => {
         const raw = String(s).trim().replace(/\s*-\s*/g, " -").replace(/\s*\+\s*/g, " +").trim();
-        return raw.split(/\s+/).map(t => norm(t)).sort();
+        return raw.split(/\s+/).filter(Boolean).map(t => norm(t)).sort();
       };
       const correctTerms = question.answerTerms
         ? question.answerTerms.map(t => norm(t)).sort()

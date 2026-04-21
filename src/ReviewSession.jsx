@@ -582,7 +582,16 @@ function QuestionDisplay({ question, revealing }) {
         </div>
       );
     }
-    case "q16": case "q17":
+    case "q16":
+      return (
+        <div style={{ textAlign: "center" }}>
+          {q.latex
+            ? <KaTeX expr={q.latex} />
+            : <div style={{ fontSize: 28, fontFamily: "var(--mono)", fontWeight: 700 }}>{q.expr}</div>
+          }
+        </div>
+      );
+    case "q17":
       return <div style={{ fontSize: 28, fontFamily: "var(--mono)", fontWeight: 700, textAlign: "center" }}>{q.expr}</div>;
     case "q18":
       return (
@@ -1221,7 +1230,9 @@ function TeacherReview({ session, sessionId, uid }) {
                       let ans = null;
                       try { ans = typeof question.answer === "object" ? question.answer : JSON.parse(question.answer); } catch {}
                       return ans ? <NumberLine value={ans.val} filled={ans.filled} shadeRight={ans.shadeRight} interactive={false} /> : null;
-                    })() : ["q25","q27","q28","q29","q30","q31","q32","q33","q34"].includes(question.type) ? (
+                    })() : question.type === "q16" ? (
+                      <KaTeX expr={question.answerLatex || question.displayAnswer || question.answer} />
+                    ) : ["q25","q27","q28","q29","q30","q31","q32","q33","q34"].includes(question.type) ? (
                       <KaTeX expr={fracToLatex(question.displayAnswer || question.answer)} />
                     ) : (
                       <div style={{ fontSize: 20, fontWeight: 800, color: "var(--green)", fontFamily: "var(--mono)" }}>
@@ -1349,6 +1360,8 @@ function StudentReview({ session, sessionId, uid }) {
                       ? <span>Correct: <KaTeX expr={question.variable + "^{" + question.total + "}"} /></span>
                       : question.type === "q26"
                       ? <span>Correct: <KaTeX expr={question.n > question.m ? question.v + "^{" + (question.n - question.m) + "}" : "\\dfrac{1}{" + question.v + "^{" + (question.m - question.n) + "}}"} /></span>
+                      : question.type === "q16"
+                      ? <span>Correct: <KaTeX expr={question.answerLatex || question.displayAnswer || question.answer} /></span>
                       : ["q25","q27","q28","q29","q30","q31","q32","q33","q34"].includes(question.type)
                       ? <span>Correct: <KaTeX expr={fracToLatex(question.displayAnswer || question.answer)} /></span>
                       : <strong>{question.displayAnswer || question.answerNum || question.answer}{question.answerUnit ? <> <UnitSpan unit={question.answerUnit} /></> : ""}</strong>
@@ -1364,6 +1377,8 @@ function StudentReview({ session, sessionId, uid }) {
                       ? <span>Correct: <KaTeX expr={question.variable + "^{" + question.total + "}"} /></span>
                       : question.type === "q26"
                       ? <span>Correct: <KaTeX expr={question.n > question.m ? question.v + "^{" + (question.n - question.m) + "}" : "\\dfrac{1}{" + question.v + "^{" + (question.m - question.n) + "}}"} /></span>
+                      : question.type === "q16"
+                      ? <span>Correct: <KaTeX expr={question.answerLatex || question.displayAnswer || question.answer} /></span>
                       : ["q25","q27","q28","q29","q30","q31","q32","q33","q34"].includes(question.type)
                       ? <span>Correct: <KaTeX expr={fracToLatex(question.displayAnswer || question.answer)} /></span>
                       : <strong>{question.displayAnswer || question.answerNum || question.answer}{question.answerUnit ? <> <UnitSpan unit={question.answerUnit} /></> : ""}</strong>
