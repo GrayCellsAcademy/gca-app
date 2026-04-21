@@ -406,7 +406,8 @@ export function genQ15() {
 
 //  Q16: Distributive Property 
 export function genQ16() {
-  const a = randInt(-9, 9) || 2;
+  let a;
+  do { a = randInt(-9, 9); } while (Math.abs(a) <= 1);
   const b = randInt(-9, 9) || 1;
   const v = randChoice(["x", "y", "n"]);
   const op = Math.random() < 0.5 ? "+" : "-";

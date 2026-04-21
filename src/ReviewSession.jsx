@@ -590,11 +590,7 @@ function QuestionDisplay({ question, revealing }) {
       );
     case "q23":
       return (
-        <div>
-          <div style={{ fontSize: 24, fontFamily: "var(--mono)", fontWeight: 700, textAlign: "center", marginBottom: 12 }}>{q.expr}</div>
-          <NumberLine value={revealing ? q.answer.val : null} filled={revealing ? q.answer.filled : false}
-            shadeRight={revealing ? q.answer.shadeRight : null} interactive={false} />
-        </div>
+        <div style={{ fontSize: 24, fontFamily: "var(--mono)", fontWeight: 700, textAlign: "center", marginBottom: 4 }}>{q.expr}</div>
       );
     case "q25":
       return <div style={{ textAlign: "center" }}><Frac n={q.n} d={q.d} large /></div>;
@@ -1269,7 +1265,19 @@ function StudentReview({ session, sessionId, uid }) {
         )}
         {session.status === "revealing" ? (
           <div style={{ textAlign: "center", marginTop: 12 }}>
-            {result ? (
+            {question?.type === "q23" && (() => {
+              let ans = null;
+              try { ans = typeof question.answer === "object" ? question.answer : JSON.parse(question.answer); } catch {}
+              return (
+                <div>
+                  <div style={{ fontSize: 15, fontWeight: 700, color: result?.correct ? "var(--green)" : result ? "var(--red)" : "var(--text3)", marginBottom: 8 }}>
+                    {result ? (result.correct ? "Correct! +" + POINTS + " pts" : "Incorrect") : "No answer submitted."}
+                  </div>
+                  {ans && <NumberLine value={ans.val} filled={ans.filled} shadeRight={ans.shadeRight} interactive={false} />}
+                </div>
+              );
+            })()}
+            {question?.type !== "q23" && (result ? (
               <>
                 <div style={{ fontSize: 20, fontWeight: 800, color: result.correct ? "var(--green)" : "var(--red)", marginBottom: 6 }}>
                   {result.correct ? "Correct! +" + POINTS + " pts" : "Incorrect"}
@@ -1297,7 +1305,7 @@ function StudentReview({ session, sessionId, uid }) {
                     }
                   </div>}
               </div>
-            )}
+            ))}
           </div>
         ) : submitted ? (
           <div style={{ textAlign: "center", marginTop: 12 }}>
