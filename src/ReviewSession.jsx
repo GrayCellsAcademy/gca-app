@@ -673,16 +673,26 @@ function QuestionDisplay({ question, revealing }) {
       );
     case "q35":
       return (
-        <div style={{ fontFamily: "var(--mono)", fontWeight: 700, fontSize: 28, textAlign: "center", lineHeight: 1.7 }}>
-          <div>{q.a}</div>
-          <div style={{ borderTop: "2px solid var(--text)", paddingTop: 4, color: "var(--text3)", fontSize: 22 }}>- {q.b}</div>
+        <div style={{ display: "flex", justifyContent: "center" }}>
+          <div style={{ fontFamily: "var(--mono)", fontWeight: 700, fontSize: 32, textAlign: "right", lineHeight: 1.6, minWidth: 120 }}>
+            <div>{q.a}</div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ fontSize: 24 }}>-</span>
+              <span style={{ borderTop: "2px solid var(--text)", paddingTop: 4, flex: 1, textAlign: "right" }}>{q.b}</span>
+            </div>
+          </div>
         </div>
       );
     case "q36":
       return (
-        <div style={{ fontFamily: "var(--mono)", fontWeight: 700, fontSize: 28, textAlign: "center", lineHeight: 1.7 }}>
-          <div>{q.a}</div>
-          <div style={{ borderTop: "2px solid var(--text)", paddingTop: 4, color: "var(--text3)", fontSize: 22 }}>x {q.b}</div>
+        <div style={{ display: "flex", justifyContent: "center" }}>
+          <div style={{ fontFamily: "var(--mono)", fontWeight: 700, fontSize: 32, textAlign: "right", lineHeight: 1.6, minWidth: 120 }}>
+            <div>{q.a}</div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ fontSize: 24 }}>&times;</span>
+              <span style={{ borderTop: "2px solid var(--text)", paddingTop: 4, flex: 1, textAlign: "right" }}>{q.b}</span>
+            </div>
+          </div>
         </div>
       );
     case "q37":
@@ -823,7 +833,7 @@ function AnswerInput({ question, onSubmit, submitted }) {
         ans = JSON.stringify({ ansa: input, ansb: input2 });
         break;
       case "q39":
-        ans = input + " " + q.unit;
+        ans = input;
         break;
       case "q43": case "q44":
         ans = JSON.stringify({ num: input, unit: selectedUnit });
@@ -1014,7 +1024,6 @@ function AnswerInput({ question, onSubmit, submitted }) {
       <div>
         <input style={inputStyle} value={input} onChange={e => setInput(e.target.value)} ref={ref}
           placeholder={"Enter number of " + q.unit} disabled={submitted} />
-        <div style={{ fontSize: 13, color: "var(--text3)", marginBottom: 8 }}>Unit: {q.unit}</div>
         <button className="btn btn-primary" style={{ width: "100%" }} onClick={handleSubmit}
           disabled={submitted || !input}>Submit</button>
       </div>
@@ -1259,7 +1268,7 @@ function TeacherReview({ session, sessionId, uid }) {
                 <div style={{ fontSize: 12, color: "var(--text3)", marginBottom: 6 }}>
                   Q{currentTopic.id}: {currentTopic.label} - {submittedCount}/{totalStudents} submitted - {correctCount} correct
                 </div>
-                <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 12 }}>{question.prompt}</div>
+                {!["q38","q39"].includes(question.type) && <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 12 }}>{question.prompt}</div>}
                 <QuestionDisplay question={question} revealing={session.status === "revealing"} />
                 {session.status === "question" && session.timerEndsAt && (
                   <div style={{ marginTop: 12 }}>
@@ -1382,7 +1391,7 @@ function StudentReview({ session, sessionId, uid }) {
         )}
         {question && (
           <>
-            <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 12 }}>{question.prompt}</div>
+            {!["q38","q39"].includes(question.type) && <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 12 }}>{question.prompt}</div>}
             <QuestionDisplay question={question} revealing={session.status === "revealing"} />
           </>
         )}

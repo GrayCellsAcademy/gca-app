@@ -742,12 +742,13 @@ export function genQ30() {
   let answerStr;
   if (ad === 1) {
     answerStr = sign + an;
-  } else if (Math.abs(an) > ad) {
-    const whole = Math.floor(Math.abs(an) / ad);
-    const rem = Math.abs(an) % ad;
-    answerStr = sign + (rem === 0 ? whole : whole + " " + rem + "/" + ad);
+  } else if (an > ad) {
+    const whole = Math.floor(an / ad);
+    const rem = an % ad;
+    answerStr = sign + (rem === 0 ? String(whole) : whole + " " + rem + "/" + ad);
   } else {
-    answerStr = sign + an + "/" + ad;
+    // proper fraction - retry so answer is always a mixed number with whole > 0
+    return genQ30();
   }
   return {
     type: "q30", topic: 30,
@@ -931,7 +932,7 @@ export function genQ37() {
   return {
     type: "q37", topic: 37,
     dividend: String(dividend), divisor: String(divisor),
-    latex: "\\dfrac{" + dividend + "}{" + divisor + "}",
+    latex: dividend + " \\div " + divisor,
     answer: String(result),
     prompt: "Find the quotient."
   };
