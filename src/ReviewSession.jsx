@@ -636,7 +636,11 @@ function QuestionDisplay({ question, revealing }) {
       );
     case "q29": {
       const [n1, d1, n2, d2] = q.nums;
-      const frac = (n, d) => n === null || n === undefined ? "?" : "\\dfrac{" + n + "}{" + d + "}";
+      const frac = (n, d) => {
+        if (n === null || n === undefined) return "\\dfrac{?}{" + d + "}";
+        if (d === null || d === undefined) return "\\dfrac{" + n + "}{?}";
+        return "\\dfrac{" + n + "}{" + d + "}";
+      };
       return (
         <div style={{ textAlign: "center" }}>
           <KaTeX expr={frac(n1, d1) + " = " + frac(n2, d2)} />

@@ -423,7 +423,7 @@ export function genQ16() {
   const b = randInt(2, 9);
   const v = randChoice(["x", "y", "n"]);
   const op = Math.random() < 0.5 ? "+" : "-";
-  const leftSide = Math.random() < 0.5;
+  const leftSide = (a === -1) ? true : Math.random() < 0.5;
   const aStr = a === -1 ? "-" : String(a);
   const inner = v + (op === "+" ? " + " : " - ") + b;
   let expr, latex;
@@ -546,17 +546,15 @@ export function genQ20() {
 export function genQ21() {
   const a = randInt(2, 9), c2 = randInt(2, 9);
   const b = randInt(-15, 15) || 1, rhs = randInt(-20, 20) || 1;
-  const op1 = Math.random() < 0.5 ? "+" : "-";
-  const op2 = Math.random() < 0.5 ? "+" : "-";
-  const combined = op2 === "+" ? a + c2 : a - c2;
+  const sub2 = Math.random() < 0.5;
+  const combined = sub2 ? a - c2 : a + c2;
   if (combined === 0) return genQ21();
-  const numX = op1 === "+" ? rhs - b : rhs + b;
+  const numX = rhs - b;
   const [n, d] = simplifyFrac(numX, combined);
-  const bPart = op1 === "+" ? " + " + b : " - " + Math.abs(b);
-  const expr = a + "x" + bPart
-    + (op2 === "+" ? " + " : " - ") + c2 + "x = " + rhs;
-  const latex = a + "x" + bPart
-    + (op2 === "+" ? " + " : " - ") + c2 + "x = " + rhs;
+  const bPart = b >= 0 ? " + " + b : " - " + Math.abs(b);
+  const c2Part = sub2 ? " - " : " + ";
+  const expr = a + "x" + bPart + c2Part + c2 + "x = " + rhs;
+  const latex = a + "x" + bPart + c2Part + c2 + "x = " + rhs;
   return {
     type: "q21", topic: 21, expr, latex,
     answer: fracStr(n, d),
