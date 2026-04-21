@@ -1011,6 +1011,7 @@ function TimerBar({ endsAt, totalSeconds, onExpired }) {
 
 //  Teacher View 
 function TeacherReview({ session, sessionId, uid }) {
+  useKaTeX();
   const [answers, setAnswers] = useState([]);
   const [timerInput, setTimerInput] = useState(90);
   const [currentTopicIdx, setCurrentTopicIdx] = useState(0);
@@ -1214,6 +1215,7 @@ function TeacherReview({ session, sessionId, uid }) {
 
 //  Student View 
 function StudentReview({ session, sessionId, uid }) {
+  useKaTeX();
   const [submitted, setSubmitted] = useState(false);
   const [result, setResult] = useState(null);
   const [lastQId, setLastQId] = useState(null);
