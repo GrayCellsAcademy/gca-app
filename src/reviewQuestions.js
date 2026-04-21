@@ -799,16 +799,18 @@ export function genQ31() {
 export function genQ32() {
   const d = randInt(2, 9);
   const op = Math.random() < 0.5 ? "+" : "-";
-  let w1, f1n, w2, f2n;
+  let w1, f1n, w2, f2n, rw, rfn;
   do {
     w1 = randInt(1, 10); f1n = randInt(1, d - 1);
     w2 = randInt(1, 10); f2n = randInt(1, d - 1);
+    rw = op === "+" ? w1 + w2 : w1 - w2;
+    rfn = op === "+" ? f1n + f2n : f1n - f2n;
   } while (
+    (w1 === w2 && f1n === f2n) ||
     (op === "+" && f1n + f2n >= d) ||
-    (op === "-" && (w1 < w2 || (w1 === w2 && f1n < f2n) || f1n < f2n))
+    (op === "-" && (w1 <= w2 || f1n < f2n)) ||
+    rw < 2
   );
-  const rw = op === "+" ? w1 + w2 : w1 - w2;
-  const rfn = op === "+" ? f1n + f2n : f1n - f2n;
   const answer = rw + " " + rfn + "/" + d;
   return {
     type: "q32", topic: 32,
@@ -872,6 +874,8 @@ export function genQ34() {
     expr = "x/" + a + " + " + b + "/" + c + " = x/" + d;
     latex = "\\dfrac{x}{" + a + "} + \\dfrac{" + b + "}{" + c + "} = \\dfrac{x}{" + d + "}";
   }
+  const ansNum = parseFloat(answer);
+  if (!isNaN(ansNum) && ansNum <= 1) return genQ34();
   return { type: "q34", topic: 34, form, expr, latex, answer, prompt: "Solve for x. Give answer as fraction if needed." };
 }
 
@@ -1001,12 +1005,15 @@ const PROPORTION_CONTEXTS = [
 ];
 export function genQ39() {
   const ctx = randChoice(PROPORTION_CONTEXTS);
-  const b = randInt(5, 15);
-  const unitRate = randInt(10, 30);
-  const a = unitRate * b;
-  // answer must be between b+1 and 2b-1 (so c is between a and 2a), and whole number
-  const answer = randInt(b + 1, 2 * b - 1);
-  const c = answer * unitRate;
+  let a, b, c, answer;
+  do {
+    b = randInt(3, 9);
+    const unitRate = randInt(11, 19);
+    a = unitRate * b;
+    // answer between b+1 and 2b-1, whole number
+    answer = randInt(b + 1, 2 * b - 1);
+    c = answer * unitRate;
+  } while (c % 10 === 0);
   return {
     type: "q39", topic: 39,
     story: ctx.template(a, b, c), unit: ctx.unit,

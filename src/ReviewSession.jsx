@@ -673,26 +673,14 @@ function QuestionDisplay({ question, revealing }) {
       );
     case "q35":
       return (
-        <div style={{ display: "flex", justifyContent: "center" }}>
-          <div style={{ fontFamily: "var(--mono)", fontWeight: 700, fontSize: 32, textAlign: "right", lineHeight: 1.6, minWidth: 120 }}>
-            <div>{q.a}</div>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span style={{ fontSize: 24 }}>-</span>
-              <span style={{ borderTop: "2px solid var(--text)", paddingTop: 4, flex: 1, textAlign: "right" }}>{q.b}</span>
-            </div>
-          </div>
+        <div style={{ textAlign: "center" }}>
+          <KaTeX expr={q.a + " - " + q.b} />
         </div>
       );
     case "q36":
       return (
-        <div style={{ display: "flex", justifyContent: "center" }}>
-          <div style={{ fontFamily: "var(--mono)", fontWeight: 700, fontSize: 32, textAlign: "right", lineHeight: 1.6, minWidth: 120 }}>
-            <div>{q.a}</div>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span style={{ fontSize: 24 }}>&times;</span>
-              <span style={{ borderTop: "2px solid var(--text)", paddingTop: 4, flex: 1, textAlign: "right" }}>{q.b}</span>
-            </div>
-          </div>
+        <div style={{ textAlign: "center" }}>
+          <KaTeX expr={q.a + " \\times " + q.b} />
         </div>
       );
     case "q37":
