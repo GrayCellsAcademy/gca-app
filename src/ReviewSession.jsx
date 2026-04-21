@@ -1058,43 +1058,60 @@ function TeacherReview({ session, sessionId, uid }) {
     return () => unsub();
   }, [question?.id]);
 
+  const [genError, setGenError] = useState("");
+
   const handleGenerate = async () => {
-    const q = generateReviewQuestion(currentTopic.id);
-    q.id = "q_" + Date.now().toString(36);
-    q.points = POINTS;
-    revealedRef.current = false;
-    setAnswers([]);
-    await updateDoc(doc(db, "sessions", sessionId), {
-      status: "question", currentQuestion: q,
-      timerSeconds: timerInput, timerEndsAt: Date.now() + timerInput * 1000,
-      questionCount: (session.questionCount || 0) + 1,
-    });
+    setGenError("");
+    try {
+      const q = generateReviewQuestion(currentTopic.id);
+      if (!q) { setGenError("Generator returned null for topic " + currentTopic.id); return; }
+      q.id = "q_" + Date.now().toString(36);
+      q.points = POINTS;
+      // Sanitize: Firestore rejects undefined values
+      const clean = JSON.parse(JSON.stringify(q));
+      revealedRef.current = false;
+      setAnswers([]);
+      await updateDoc(doc(db, "sessions", sessionId), {
+        status: "question", currentQuestion: clean,
+        timerSeconds: timerInput, timerEndsAt: Date.now() + timerInput * 1000,
+        questionCount: (session.questionCount || 0) + 1,
+      });
+    } catch (e) {
+      console.error("handleGenerate error:", e);
+      setGenError(e.message || String(e));
+    }
   };
 
   const handleReveal = async () => {
     if (revealedRef.current) return;
     revealedRef.current = true;
-    for (const ans of answers) {
-      if (ans.answer !== undefined && gradeReviewAnswer(ans.answer, question)) {
-        await addToScore(sessionId, ans.uid, POINTS);
+    try {
+      for (const ans of answers) {
+        if (ans.answer !== undefined && gradeReviewAnswer(ans.answer, question)) {
+          await addToScore(sessionId, ans.uid, POINTS);
+        }
       }
-    }
-    await updateDoc(doc(db, "sessions", sessionId), { status: "revealing" });
+      await updateDoc(doc(db, "sessions", sessionId), { status: "revealing" });
+    } catch (e) { console.error("handleReveal error:", e); setGenError(e.message || String(e)); }
   };
 
   const handleNextTopic = async () => {
-    const nextIdx = Math.min(currentTopicIdx + 1, REVIEW_TOPICS.length - 1);
-    setCurrentTopicIdx(nextIdx);
-    const q = generateReviewQuestion(REVIEW_TOPICS[nextIdx].id);
-    q.id = "q_" + Date.now().toString(36);
-    q.points = POINTS;
-    revealedRef.current = false;
-    setAnswers([]);
-    await updateDoc(doc(db, "sessions", sessionId), {
-      status: "question", currentQuestion: q,
-      timerSeconds: timerInput, timerEndsAt: Date.now() + timerInput * 1000,
-      questionCount: (session.questionCount || 0) + 1,
-    });
+    setGenError("");
+    try {
+      const nextIdx = Math.min(currentTopicIdx + 1, REVIEW_TOPICS.length - 1);
+      setCurrentTopicIdx(nextIdx);
+      const q = generateReviewQuestion(REVIEW_TOPICS[nextIdx].id);
+      q.id = "q_" + Date.now().toString(36);
+      q.points = POINTS;
+      const clean = JSON.parse(JSON.stringify(q));
+      revealedRef.current = false;
+      setAnswers([]);
+      await updateDoc(doc(db, "sessions", sessionId), {
+        status: "question", currentQuestion: clean,
+        timerSeconds: timerInput, timerEndsAt: Date.now() + timerInput * 1000,
+        questionCount: (session.questionCount || 0) + 1,
+      });
+    } catch (e) { console.error("handleNextTopic error:", e); setGenError(e.message || String(e)); }
   };
 
   const handleEnd = async () => {
@@ -1153,6 +1170,7 @@ function TeacherReview({ session, sessionId, uid }) {
               );
             })}
           </div>
+          {genError && <div style={{ color: "var(--red)", fontSize: 12, marginTop: 4, wordBreak: "break-all" }}>{genError}</div>}
           <button className="btn btn-primary" style={{ marginTop: 8, fontSize: 14 }}
             onClick={handleGenerate} disabled={session.status === "question"}>
             Generate Q{currentTopic.id}
