@@ -1208,7 +1208,7 @@ export function gradeReviewAnswer(input, question) {
   const norm = s => String(s).trim().toLowerCase().replace(/\s+/g, "");
 
   switch (question.type) {
-    case "q1": case "q2": case "q3": case "q6":
+    case "q1": case "q2": case "q3":
     case "q7": case "q11": case "q13": case "q16":
     case "q17": case "q18": case "q19": case "q20":
     case "q21": case "q22": case "q24": case "q25":
@@ -1218,10 +1218,18 @@ export function gradeReviewAnswer(input, question) {
     case "q39": case "q40": case "q41": case "q42":
       return norm(input) === norm(question.answer);
 
+    case "q6": {
+      try {
+        const parsed = JSON.parse(input);
+        return norm(String(parsed.quotient)) === norm(String(question.quotient)) &&
+               norm(String(parsed.remainder)) === norm(String(question.remainder));
+      } catch { return false; }
+    }
+
     case "q4": {
       try {
         const parsed = JSON.parse(input);
-        return String(parsed.num) === String(question.answerNum) &&
+        return norm(String(parsed.num)) === norm(String(question.answerNum)) &&
                norm(parsed.unit) === norm(question.answerUnit);
       } catch { return false; }
     }
