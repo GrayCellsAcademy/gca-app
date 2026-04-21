@@ -535,14 +535,15 @@ function QuestionDisplay({ question, revealing }) {
       );
     }
     case "q11": {
-      // Build LaTeX from terms: wrap negative non-first terms as whole (-4x)
-      const terms11 = q.expr.split(" + ").map((t, i) => {
-        const trimmed = t.trim();
-        // If term starts with negative and is not the first term, wrap whole term
-        if (i > 0 && trimmed.startsWith("-")) return "(" + trimmed + ")";
-        return trimmed;
-      });
-      return <KaTeX expr={terms11.join(" + ")} />;
+      // Parse terms handling both + and - separators, build KaTeX
+      const raw11 = q.expr.trim().replace(/\s*-\s*/g, " -").replace(/\s*\+\s*/g, " +");
+      const terms11 = raw11.split(/\s+/).filter(Boolean);
+      const latex11 = terms11.reduce((acc, t) => {
+        if (acc === "") return t;
+        if (t.startsWith("-")) return acc + " - " + t.slice(1);
+        return acc + " + " + (t.startsWith("+") ? t.slice(1) : t);
+      }, "");
+      return <KaTeX expr={latex11} />;
     }
     case "q12": {
       const toLatex12 = (p) => {

@@ -187,9 +187,9 @@ export function genQ7() {
     const e = randInt(2, 4), f = randInt(2, 9);
     const num = a * (b - c) + d;
     const den = e * e + f;
-    if (den === 0 || num % den !== 0) return genQ7();
+    if (den <= 0 || num % den !== 0) return genQ7();
     answer = num / den;
-    if (Math.abs(answer) > 20) return genQ7();
+    if (answer <= 0 || Math.abs(answer) > 20) return genQ7();
     latex = "\\frac{" + a + "(" + b + "-" + c + ")+" + d + "}{" + e + "^2+" + f + "}";
     expr = a + "*(" + b + "-" + c + ")+" + d + "/" + "(" + e + "**2+" + f + ")";
   } else if (form === "inline-sq") {
@@ -197,7 +197,7 @@ export function genQ7() {
     const a = randInt(50, 99), b = randInt(2, 4), c = randInt(4, 9), d = randInt(2, c - 1);
     const n = randInt(2, 3);
     answer = a - b * Math.pow(c - d, 2) + Math.pow(2, n);
-    if (Math.abs(answer) > 100 || !Number.isInteger(answer)) return genQ7();
+    if (answer <= 0 || Math.abs(answer) > 100 || !Number.isInteger(answer)) return genQ7();
     latex = a + "-" + b + "(" + c + "-" + d + ")^2+" + "2^" + n;
     expr = a + "-" + b + "*Math.pow(" + (c - d) + ",2)+Math.pow(2," + n + ")";
   } else if (form === "frac-sq") {
@@ -207,14 +207,14 @@ export function genQ7() {
     const den = c * d - e;
     if (den <= 0 || num % den !== 0) return genQ7();
     answer = num / den;
-    if (Math.abs(answer) > 20) return genQ7();
+    if (answer <= 0 || Math.abs(answer) > 20) return genQ7();
     latex = "\\frac{(" + a + "+" + b + ")^2}{" + c + "\\cdot" + d + "-" + e + "}";
     expr = "Math.pow(" + (a + b) + ",2)/(" + c + "*" + d + "-" + e + ")";
   } else {
     // a^2 - (b + c * d^2)
     const a = randInt(5, 9), b = randInt(2, 9), c = randInt(2, 5), d = randInt(2, 4);
     answer = a * a - (b + c * d * d);
-    if (Math.abs(answer) > 60 || !Number.isInteger(answer)) return genQ7();
+    if (answer <= 0 || !Number.isInteger(answer)) return genQ7();
     latex = a + "^2-(" + b + "+" + c + "\\cdot" + d + "^2)";
     expr = a + "**2-(" + b + "+" + c + "*" + d + "**2)";
   }
@@ -295,12 +295,14 @@ export function genQ11() {
     } else {
       expr = joinTerms([termStr(c1, v1), termStr(c2, v1), termStr(c3, v2)]);
     }
-    answer = joinTerms([termStr(combined, v1), termStr(c3, v2)]);
+    const t1 = termStr(combined, v1), t2 = termStr(c3, v2);
+    answer = joinTerms([t1, t2]);
+    return { type: "q11", topic: 11, expr, answer, answerTerms: [t1, t2], prompt: "Combine like terms." };
   } else {
     expr = joinTerms([termStr(c1, v1), termStr(c2, v1)]);
     answer = termStr(combined, v1);
+    return { type: "q11", topic: 11, expr, answer, answerTerms: [answer], prompt: "Combine like terms." };
   }
-  return { type: "q11", topic: 11, expr, answer, prompt: "Combine like terms." };
 }
 function joinTerms(terms) {
   return terms.reduce((acc, t) => {
@@ -1209,7 +1211,7 @@ export function gradeReviewAnswer(input, question) {
 
   switch (question.type) {
     case "q1": case "q2": case "q3":
-    case "q7": case "q11": case "q13": case "q16":
+    case "q7": case "q13": case "q16":
     case "q17": case "q18": case "q19": case "q20":
     case "q21": case "q22": case "q24": case "q25":
     case "q26": case "q27": case "q28": case "q29":
@@ -1217,6 +1219,18 @@ export function gradeReviewAnswer(input, question) {
     case "q34": case "q35": case "q36": case "q37":
     case "q39": case "q40": case "q41": case "q42":
       return norm(input) === norm(question.answer);
+
+    case "q11": {
+      // Split input into terms (split on + and -), normalize each, sort, compare
+      const splitTerms = s => {
+        const raw = String(s).trim().replace(/\s*-\s*/g, " -").replace(/\s*\+\s*/g, " +").trim();
+        return raw.split(/\s+/).map(t => norm(t)).sort();
+      };
+      const correctTerms = question.answerTerms
+        ? question.answerTerms.map(t => norm(t)).sort()
+        : splitTerms(question.answer);
+      return JSON.stringify(splitTerms(input)) === JSON.stringify(correctTerms);
+    }
 
     case "q6": {
       try {
