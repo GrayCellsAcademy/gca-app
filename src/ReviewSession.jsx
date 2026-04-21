@@ -585,7 +585,10 @@ function QuestionDisplay({ question, revealing }) {
           {(q.type === "q20" || q.type === "q21" || q.type === "q22") && (
             <div style={{ fontSize: 13, color: "var(--text3)", marginBottom: 6 }}>Give answer as a fraction if needed</div>
           )}
-          <KaTeX expr={q.latex || q.expr} />
+          {q.latex
+            ? <KaTeX expr={q.latex} />
+            : <div style={{ fontSize: 26, fontFamily: "var(--mono)", fontWeight: 700 }}>{q.expr}</div>
+          }
         </div>
       );
     case "q23":
@@ -1163,7 +1166,11 @@ function TeacherReview({ session, sessionId, uid }) {
                       <KaTeX expr={question.n > question.m
                         ? question.v + "^{" + (question.n - question.m) + "}"
                         : "\\dfrac{1}{" + question.v + "^{" + (question.m - question.n) + "}}"} />
-                    ) : (
+                    ) : question.type === "q23" ? (() => {
+                      let ans = null;
+                      try { ans = typeof question.answer === "object" ? question.answer : JSON.parse(question.answer); } catch {}
+                      return ans ? <NumberLine value={ans.val} filled={ans.filled} shadeRight={ans.shadeRight} interactive={false} /> : null;
+                    })() : (
                       <div style={{ fontSize: 20, fontWeight: 800, color: "var(--green)", fontFamily: "var(--mono)" }}>
                         {question.displayAnswer || question.answerNum || question.answer}
                         {question.answerUnit ? <> <UnitSpan unit={question.answerUnit} /></> : ""}

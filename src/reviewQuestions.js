@@ -407,23 +407,24 @@ export function genQ15() {
 //  Q16: Distributive Property 
 export function genQ16() {
   let a;
-  do { a = randInt(-9, 9); } while (Math.abs(a) <= 1);
+  do { a = randInt(-9, 9); } while (a === 0 || a === 1);
   const b = randInt(-9, 9) || 1;
   const v = randChoice(["x", "y", "n"]);
   const op = Math.random() < 0.5 ? "+" : "-";
   const leftSide = Math.random() < 0.5;
+  const aStr = a === -1 ? "-" : String(a);
   let expr;
   if (leftSide) {
-    expr = a + "(" + v + (op === "+" ? " + " : " - ") + Math.abs(b) + ")";
+    expr = aStr + "(" + v + (op === "+" ? " + " : " - ") + Math.abs(b) + ")";
   } else {
-    expr = "(" + v + (op === "+" ? " + " : " - ") + Math.abs(b) + ")" + a;
+    expr = "(" + v + (op === "+" ? " + " : " - ") + Math.abs(b) + ")" + aStr;
   }
   const ab = op === "+" ? a * b : -a * b;
-  const answerStr = a + v + (ab >= 0 ? " + " : " - ") + Math.abs(ab);
+  const answerStr = (a === -1 ? "-" : a) + v + (ab >= 0 ? " + " : " - ") + Math.abs(ab);
   return {
     type: "q16", topic: 16,
     a, b, op, v, expr,
-    answer: a + v + (ab >= 0 ? "+" : "-") + Math.abs(ab),
+    answer: (a === -1 ? "-" : a) + v + (ab >= 0 ? "+" : "-") + Math.abs(ab),
     displayAnswer: answerStr,
     prompt: "Use the distributive property to simplify."
   };
