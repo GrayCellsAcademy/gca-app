@@ -655,7 +655,7 @@ function QuestionDisplay({ question, revealing }) {
       );
     case "q31": case "q32": case "q33": {
       const op31 = q.type === "q31" ? "\\times" : (q.op === "+" ? "+" : "-");
-      const m1 = q.mixed1, m2 = q.mixed2;
+      const m1 = fracToLatex(q.mixed1), m2 = fracToLatex(q.mixed2);
       return (
         <div style={{ textAlign: "center" }}>
           <KaTeX expr={m1 + " " + op31 + " " + m2} />
@@ -732,6 +732,50 @@ function QuestionDisplay({ question, revealing }) {
 }
 
 //  Answer Input 
+function MixedNumberInput({ submitted, onSubmit }) {
+  const [whole, setWhole] = useState("");
+  const [num, setNum] = useState("");
+  const [den, setDen] = useState("");
+  const buildAnswer = () => {
+    const w = whole.trim(), n = num.trim(), d = den.trim();
+    if (w && n && d) return w + " " + n + "/" + d;
+    if (!w && n && d) return n + "/" + d;
+    if (w && !n && !d) return w;
+    return "";
+  };
+  const answer = buildAnswer();
+  const fieldStyle = { fontSize: 20, fontFamily: "var(--mono)", textAlign: "center", padding: "10px 6px", width: 64, borderRadius: 8, border: "1.5px solid var(--border)", background: "var(--input)", color: "var(--text)" };
+  return (
+    <div>
+      <div style={{ fontSize: 13, color: "var(--text3)", marginBottom: 10 }}>
+        Enter as a mixed number. Leave whole blank if answer is a fraction only.
+      </div>
+      <div style={{ display: "flex", alignItems: "center", gap: 12, justifyContent: "center", marginBottom: 12 }}>
+        <input style={fieldStyle} value={whole} onChange={e => setWhole(e.target.value)}
+          placeholder="W" disabled={submitted} />
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
+          <input style={fieldStyle} value={num} onChange={e => setNum(e.target.value)}
+            placeholder="N" disabled={submitted} />
+          <div style={{ width: 64, height: 2, background: "var(--text)", borderRadius: 1 }} />
+          <input style={fieldStyle} value={den} onChange={e => setDen(e.target.value)}
+            placeholder="D" disabled={submitted} />
+        </div>
+      </div>
+      {answer ? (
+        <div style={{ textAlign: "center", marginBottom: 8 }}>
+          <KaTeX expr={fracToLatex(answer)} />
+        </div>
+      ) : (
+        <div style={{ textAlign: "center", fontSize: 13, color: "var(--text3)", marginBottom: 8 }}>
+          Fill in fields above
+        </div>
+      )}
+      <button className="btn btn-primary" style={{ width: "100%" }}
+        onClick={() => onSubmit(answer)} disabled={submitted || !answer}>Submit</button>
+    </div>
+  );
+}
+
 function AnswerInput({ question, onSubmit, submitted }) {
   const [input, setInput] = useState("");
   const [input2, setInput2] = useState("");
@@ -1006,7 +1050,10 @@ function AnswerInput({ question, onSubmit, submitted }) {
     );
   }
 
-  // Default: single text input
+  if (["q30","q31","q32","q33"].includes(q.type)) {
+    return <MixedNumberInput submitted={submitted} onSubmit={onSubmit} />;
+  }
+
   return (
     <div>
       {(q.type === "q20" || q.type === "q21" || q.type === "q22" || q.type === "q34") && (
