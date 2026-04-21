@@ -37,7 +37,16 @@ function KaTeX({ expr }) {
   return <div ref={ref} style={{ textAlign: "center", fontSize: 22, padding: "8px 0" }} />;
 }
 
-const POINTS = 5;
+function fracToLatex(s) {
+  if (!s) return s;
+  const mixed = String(s).match(/^(-?\d+)\s+(\d+)\/(\d+)$/);
+  if (mixed) return mixed[1] + "\\dfrac{" + mixed[2] + "}{" + mixed[3] + "}";
+  const frac = String(s).match(/^(-?\d+)\/(\d+)$/);
+  if (frac) return "\\dfrac{" + frac[1] + "}{" + frac[2] + "}";
+  return String(s);
+}
+
+
 
 //  Fraction Display 
 function Frac({ n, d, large }) {
@@ -296,7 +305,6 @@ function NumberLine({ value, filled, shadeRight, onClick, interactive }) {
       } : null}>
       <line x1={10} y1={y} x2={W - 10} y2={y} stroke="var(--text)" strokeWidth="2" />
       <polygon points={(W - 10) + "," + y + " " + (W - 18) + "," + (y - 5) + " " + (W - 18) + "," + (y + 5)} fill="var(--text)" />
-      <polygon points={"10," + y + " 18," + (y - 5) + " 18," + (y + 5)} fill="var(--text)" />
       {Array.from({ length: max - min + 1 }, (_, i) => {
         const v = min + i;
         const x = xOf(v);
@@ -605,47 +613,48 @@ function QuestionDisplay({ question, revealing }) {
         <div style={{ fontSize: 24, fontFamily: "var(--mono)", fontWeight: 700, textAlign: "center", marginBottom: 4 }}>{q.expr}</div>
       );
     case "q25":
-      return <div style={{ textAlign: "center" }}><Frac n={q.n} d={q.d} large /></div>;
+      return <div style={{ textAlign: "center" }}><KaTeX expr={"\\dfrac{" + q.n + "}{" + q.d + "}"} /></div>;
     case "q26":
-      return <div style={{ fontSize: 26, fontFamily: "var(--mono)", fontWeight: 700, textAlign: "center" }}>{q.expr}</div>;
+      return <div style={{ textAlign: "center" }}><KaTeX expr={"\\dfrac{" + q.v + "^{" + q.n + "}}{" + q.v + "^{" + q.m + "}}"} /></div>;
     case "q27": case "q28":
       return (
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 16, flexWrap: "wrap" }}>
-          <Frac n={q.n1} d={q.d1} large />
-          <span style={{ fontSize: 28, fontWeight: 700 }}>{q.type === "q27" ? "x" : "/"}</span>
-          <Frac n={q.n2} d={q.d2} large />
+        <div style={{ textAlign: "center" }}>
+          <KaTeX expr={"\\dfrac{" + q.n1 + "}{" + q.d1 + "} " + (q.type === "q27" ? "\\times" : "\\div") + " \\dfrac{" + q.n2 + "}{" + q.d2 + "}"} />
         </div>
       );
     case "q29": {
       const [n1, d1, n2, d2] = q.nums;
+      const frac = (n, d) => n === null || n === undefined ? "?" : "\\dfrac{" + n + "}{" + d + "}";
       return (
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 16 }}>
-          <Frac n={n1 ?? "?"} d={d1 ?? "?"} large />
-          <span style={{ fontSize: 28, fontWeight: 700 }}>=</span>
-          <Frac n={n2 ?? "?"} d={d2 ?? "?"} large />
+        <div style={{ textAlign: "center" }}>
+          <KaTeX expr={frac(n1, d1) + " = " + frac(n2, d2)} />
         </div>
       );
     }
     case "q30":
       return (
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 16, flexWrap: "wrap" }}>
-          <Frac n={q.n1} d={q.d1} large />
-          <span style={{ fontSize: 28, fontWeight: 700 }}>{q.op}</span>
-          <Frac n={q.n2} d={q.d2} large />
+        <div style={{ textAlign: "center" }}>
+          <KaTeX expr={"\\dfrac{" + q.n1 + "}{" + q.d1 + "} " + (q.op === "+" ? "+" : "-") + " \\dfrac{" + q.n2 + "}{" + q.d2 + "}"} />
         </div>
       );
-    case "q31": case "q32": case "q33":
+    case "q31": case "q32": case "q33": {
+      const op31 = q.type === "q31" ? "\\times" : (q.op === "+" ? "+" : "-");
+      const m1 = q.mixed1, m2 = q.mixed2;
       return (
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 16, flexWrap: "wrap" }}>
-          <span style={{ fontSize: 24, fontFamily: "var(--mono)", fontWeight: 700 }}>{q.mixed1}</span>
-          <span style={{ fontSize: 28, fontWeight: 700 }}>
-            {q.type === "q31" ? "x" : q.op === "+" ? "+" : "-"}
-          </span>
-          <span style={{ fontSize: 24, fontFamily: "var(--mono)", fontWeight: 700 }}>{q.mixed2}</span>
+        <div style={{ textAlign: "center" }}>
+          <KaTeX expr={m1 + " " + op31 + " " + m2} />
         </div>
       );
+    }
     case "q34":
-      return <div style={{ fontSize: 22, fontFamily: "var(--mono)", fontWeight: 700, textAlign: "center" }}>{q.expr}</div>;
+      return (
+        <div style={{ textAlign: "center" }}>
+          {q.latex
+            ? <KaTeX expr={q.latex} />
+            : <div style={{ fontSize: 22, fontFamily: "var(--mono)", fontWeight: 700 }}>{q.expr}</div>
+          }
+        </div>
+      );
     case "q35":
       return (
         <div style={{ fontFamily: "var(--mono)", fontWeight: 700, fontSize: 28, textAlign: "center", lineHeight: 1.7 }}>
@@ -662,8 +671,11 @@ function QuestionDisplay({ question, revealing }) {
       );
     case "q37":
       return (
-        <div style={{ fontSize: 28, fontFamily: "var(--mono)", fontWeight: 700, textAlign: "center" }}>
-          {q.dividend} / {q.divisor}
+        <div style={{ textAlign: "center" }}>
+          {q.latex
+            ? <KaTeX expr={q.latex} />
+            : <div style={{ fontSize: 28, fontFamily: "var(--mono)", fontWeight: 700 }}>{q.dividend} / {q.divisor}</div>
+          }
         </div>
       );
     case "q38":
@@ -1188,7 +1200,9 @@ function TeacherReview({ session, sessionId, uid }) {
                       let ans = null;
                       try { ans = typeof question.answer === "object" ? question.answer : JSON.parse(question.answer); } catch {}
                       return ans ? <NumberLine value={ans.val} filled={ans.filled} shadeRight={ans.shadeRight} interactive={false} /> : null;
-                    })() : (
+                    })() : ["q25","q27","q28","q29","q30","q31","q32","q33","q34"].includes(question.type) ? (
+                      <KaTeX expr={fracToLatex(question.displayAnswer || question.answer)} />
+                    ) : (
                       <div style={{ fontSize: 20, fontWeight: 800, color: "var(--green)", fontFamily: "var(--mono)" }}>
                         {question.displayAnswer || question.answerNum || question.answer}
                         {question.answerUnit ? <> <UnitSpan unit={question.answerUnit} /></> : ""}
@@ -1314,6 +1328,8 @@ function StudentReview({ session, sessionId, uid }) {
                       ? <span>Correct: <KaTeX expr={question.variable + "^{" + question.total + "}"} /></span>
                       : question.type === "q26"
                       ? <span>Correct: <KaTeX expr={question.n > question.m ? question.v + "^{" + (question.n - question.m) + "}" : "\\dfrac{1}{" + question.v + "^{" + (question.m - question.n) + "}}"} /></span>
+                      : ["q25","q27","q28","q29","q30","q31","q32","q33","q34"].includes(question.type)
+                      ? <span>Correct: <KaTeX expr={fracToLatex(question.displayAnswer || question.answer)} /></span>
                       : <strong>{question.displayAnswer || question.answerNum || question.answer}{question.answerUnit ? <> <UnitSpan unit={question.answerUnit} /></> : ""}</strong>
                     }
                   </div>
@@ -1327,6 +1343,8 @@ function StudentReview({ session, sessionId, uid }) {
                       ? <span>Correct: <KaTeX expr={question.variable + "^{" + question.total + "}"} /></span>
                       : question.type === "q26"
                       ? <span>Correct: <KaTeX expr={question.n > question.m ? question.v + "^{" + (question.n - question.m) + "}" : "\\dfrac{1}{" + question.v + "^{" + (question.m - question.n) + "}}"} /></span>
+                      : ["q25","q27","q28","q29","q30","q31","q32","q33","q34"].includes(question.type)
+                      ? <span>Correct: <KaTeX expr={fracToLatex(question.displayAnswer || question.answer)} /></span>
                       : <strong>{question.displayAnswer || question.answerNum || question.answer}{question.answerUnit ? <> <UnitSpan unit={question.answerUnit} /></> : ""}</strong>
                     }
                   </div>}

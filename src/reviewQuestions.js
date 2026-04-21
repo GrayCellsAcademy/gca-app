@@ -18,6 +18,9 @@ function simplifyFrac(n, d) {
   return [n / g, d / g];
 }
 function fracStr(n, d) {
+  if (d < 0) { n = -n; d = -d; }
+  const g = gcd(Math.abs(n), Math.abs(d));
+  n = n / g; d = d / g;
   if (d === 1) return String(n);
   return n + "/" + d;
 }
@@ -287,17 +290,26 @@ export function genQ11() {
   if (has3) {
     const c3 = randInt(-9, 9) || 1;
     const order = Math.random() < 0.5;
+    const t1 = termStr(c1, v1), t3 = termStr(c3, v2), t2 = termStr(c2, v1);
     if (order) {
-      expr = termStr(c1, v1) + " + " + termStr(c3, v2) + " + " + termStr(c2, v1);
+      expr = addTerms(t1, termStr(c3, v2)) + addTerms(t1 + " + " + termStr(c3, v2), termStr(c2, v1));
+      expr = joinTerms([termStr(c1, v1), termStr(c3, v2), termStr(c2, v1)]);
     } else {
-      expr = termStr(c1, v1) + " + " + termStr(c2, v1) + " + " + termStr(c3, v2);
+      expr = joinTerms([termStr(c1, v1), termStr(c2, v1), termStr(c3, v2)]);
     }
-    answer = termStr(combined, v1) + " + " + termStr(c3, v2);
+    answer = joinTerms([termStr(combined, v1), termStr(c3, v2)]);
   } else {
-    expr = termStr(c1, v1) + " + " + termStr(c2, v1);
+    expr = joinTerms([termStr(c1, v1), termStr(c2, v1)]);
     answer = termStr(combined, v1);
   }
   return { type: "q11", topic: 11, expr, answer, prompt: "Combine like terms." };
+}
+function joinTerms(terms) {
+  return terms.reduce((acc, t) => {
+    if (acc === "") return t;
+    if (t.startsWith("-")) return acc + " - " + t.slice(1);
+    return acc + " + " + t;
+  }, "");
 }
 function termStr(c, v) {
   if (c === 1) return v;
@@ -595,25 +607,21 @@ export function genQ24() {
   const a = -randInt(2, 9);
   const b = randInt(-15, 15);
   const c = randInt(-20, 20);
-  const x = (c - b) / a;
   const flipped = flipMap[op];
   const bOp = b >= 0 ? " + " + b : " - " + Math.abs(b);
-  const leftFirst = Math.random() < 0.5;
-  const expr = leftFirst
-    ? a + "x" + bOp + " " + op + " " + c
-    : b + (a > 0 ? " + " : " + ") + a + "x " + op + " " + c;
+  const expr = a + "x" + bOp + " " + op + " " + c;
   const [n, d] = simplifyFrac(c - b, a);
   const opLatex = { "<": "<", ">": ">", "<=": "\\leq", ">=": "\\geq" };
-  const latex = leftFirst
-    ? a + "x" + bOp + " " + opLatex[op] + " " + c
-    : b + (a > 0 ? " + " : " + ") + a + "x " + opLatex[op] + " " + c;
+  const latex = a + "x" + bOp + " " + opLatex[op] + " " + c;
+  const opSymbol = { "<": "<", ">": ">", "<=": "\u2264", ">=": "\u2265" };
+  const ansVal = fracStr(n, d);
   return {
     type: "q24", topic: 24,
     a, b, c, op, expr, latex,
     answerOp: flipped,
-    answerVal: fracStr(n, d),
-    answer: flipped + " " + fracStr(n, d),
-    displayAnswer: "x " + { "<": "<", ">": ">", "<=": "\u2264", ">=": "\u2265" }[flipped] + " " + fracStr(n, d),
+    answerVal: ansVal,
+    answer: flipped + " " + ansVal,
+    displayAnswer: "x " + opSymbol[flipped] + " " + ansVal,
     prompt: "Solve the inequality."
   };
 }
@@ -832,22 +840,23 @@ export function genQ33() {
 export function genQ34() {
   const forms = ["var-both", "var-const", "frac-const"];
   const form = randChoice(forms);
-  let expr, answer;
+  let expr, latex, answer;
   if (form === "var-both") {
     const a = randInt(2, 9), b = randInt(2, 9), c = randInt(2, 9);
     if (a === b || b === c || a === c) return genQ34();
     expr = "x/" + a + " + x/" + b + " = x/" + c;
+    latex = "\\dfrac{x}{" + a + "} + \\dfrac{x}{" + b + "} = \\dfrac{x}{" + c + "}";
     answer = "0";
   } else if (form === "var-const") {
     const a = randInt(2, 9), b = randInt(2, 9), c = randInt(1, 20);
     const op = Math.random() < 0.5 ? "+" : "-";
-    // x/a +/- c = x/b => x(1/a - 1/b) = +/- c
     const L = lcm(a, b);
     const coeffN = op === "+" ? L / a - L / b : -(L / a) + L / b;
     if (coeffN === 0) return genQ34();
     const [n, d] = simplifyFrac(op === "+" ? c * L : -c * L, coeffN);
     answer = fracStr(n, d);
     expr = "x/" + a + (op === "+" ? " + " : " - ") + c + " = x/" + b;
+    latex = "\\dfrac{x}{" + a + "}" + (op === "+" ? " + " : " - ") + c + " = \\dfrac{x}{" + b + "}";
   } else {
     const a = randInt(2, 9), b = randInt(2, 9), c = randInt(2, 9), d = randInt(1, 9);
     if (a === c) return genQ34();
@@ -858,8 +867,9 @@ export function genQ34() {
     const [n, den] = simplifyFrac(Math.round(rhs * L), coeffN);
     answer = fracStr(n, den);
     expr = "x/" + a + " + " + b + "/" + c + " = x/" + d;
+    latex = "\\dfrac{x}{" + a + "} + \\dfrac{" + b + "}{" + c + "} = \\dfrac{x}{" + d + "}";
   }
-  return { type: "q34", topic: 34, form, expr, answer, prompt: "Solve for x. Give answer as fraction if needed." };
+  return { type: "q34", topic: 34, form, expr, latex, answer, prompt: "Solve for x. Give answer as fraction if needed." };
 }
 
 //  Q35: Decimal Subtraction 
@@ -919,6 +929,7 @@ export function genQ37() {
   return {
     type: "q37", topic: 37,
     dividend: String(dividend), divisor: String(divisor),
+    latex: "\\dfrac{" + dividend + "}{" + divisor + "}",
     answer: String(result),
     prompt: "Find the quotient."
   };
@@ -961,10 +972,13 @@ function ratio(a, b) { const g = gcd(a, b); return (a/g) + ":" + (b/g); }
 export function genQ38() {
   const ctx = randChoice(RATIO_CONTEXTS);
   const a = randInt(3, 12), b = randInt(3, 12);
+  const ansa = ctx.ansa(a, b), ansb = ctx.ansb(a, b);
   return {
     type: "q38", topic: 38,
     story: ctx.story(a, b), qa: ctx.qa, qb: ctx.qb,
-    ansa: ctx.ansa(a, b), ansb: ctx.ansb(a, b),
+    ansa, ansb,
+    answer: JSON.stringify({ ansa, ansb }),
+    displayAnswer: "(a) " + ansa + "   (b) " + ansb,
     prompt: ctx.story(a, b)
   };
 }
@@ -987,9 +1001,9 @@ export function genQ39() {
   const b = randInt(5, 15);
   const unitRate = randInt(10, 30);
   const a = unitRate * b;
-  const d = randInt(2, 8);
-  const c = unitRate * d * b;
-  const answer = d * b;
+  // answer must be between b+1 and 2b-1 (so c is between a and 2a), and whole number
+  const answer = randInt(b + 1, 2 * b - 1);
+  const c = answer * unitRate;
   return {
     type: "q39", topic: 39,
     story: ctx.template(a, b, c), unit: ctx.unit,
