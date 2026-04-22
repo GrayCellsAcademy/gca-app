@@ -3,6 +3,7 @@ import AdditionTablesPlayer from "./AdditionTablesPlayer";
 import ColumnAdditionPlayer from "./ColumnAdditionPlayer";
 import Lesson01MasteryPlayer from "./Lesson01MasteryPlayer";
 import ExtraCredit01Player from "./ExtraCredit01Player";
+import ReviewHomework from "./ReviewHomework";
 
 export const TOPICS = {
   "addition-tables-v1": {
@@ -52,6 +53,18 @@ export const TOPICS = {
     status: "published",
     order: 4,
     Player: ExtraCredit01Player,
+  },
+  "review-homework-v1": {
+    id: "review-homework-v1",
+    title: "Final Exam Review",
+    description: "Practice all 44 final exam topics at your own pace. No grade - just build your streak on each question type.",
+    subject: "math",
+    gradeLevel: "6+",
+    icon: "",
+    type: "homework",
+    status: "published",
+    order: 5,
+    Player: ReviewHomework,
   },
 };
 
