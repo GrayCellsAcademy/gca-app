@@ -7,6 +7,7 @@ import {
 export const LESSON02_MASTERY_TOPIC_ID = "lesson02-mastery-v1";
 
 // - Subtraction table config -
+const SUB_START = 2; // Smallest number we can subtract from (2-1=1, no negatives)
 const SUB_TIMER = 10;      // seconds per question
 const SUB_CORRECT_NEEDED = 2;  // correct to pass current number
 const SUB_REVIEW_NEEDED = 1;   // correct to pass review questions
@@ -423,7 +424,9 @@ function SubtractionDrill({ subData, onComplete, onSaveProgress }) {
   const [requiredExtra, setRequiredExtra] = useState({}); // { `${a}-${b}`: extraNeeded }
   const timerRef = useRef(null);
 
-  const currentQ = questions[qIdx];
+  const currentQ = questions[qIdx] || questions[0];
+
+  if (!currentQ) return <div style={{ display: "flex", justifyContent: "center", padding: 40 }}><div className="spinner" /></div>;
 
   useEffect(() => {
     startTimer();
@@ -502,11 +505,11 @@ function SubtractionDrill({ subData, onComplete, onSaveProgress }) {
     } else {
       const newData = { currentNum: nextNum, masteredNums: newMastered };
       await onSaveProgress({ phase: "subtraction", subtractionData: newData, masteryData: { activityIdx: 0, streak: 0 } });
-      setQuestions(buildSubQuestions(nextNum, newMastered));
+      const newQs = buildSubQuestions(nextNum, newMastered);
+      setQuestions(newQs);
       setQIdx(0);
       setShowCorrect(null);
       setRequiredExtra({});
-      startTimer();
     }
   };
 
@@ -735,7 +738,7 @@ export default function Lesson02MasteryPlayer({ user, topic, onHome }) {
   const topicId = topic?.id || LESSON02_MASTERY_TOPIC_ID;
   const [loading, setLoading] = useState(true);
   const [phase, setPhase] = useState("subtraction"); // subtraction | mastery | complete
-  const [subData, setSubData] = useState({ currentNum: 1, masteredNums: [] });
+  const [subData, setSubData] = useState({ currentNum: SUB_START, masteredNums: [] });
   const [masteryData, setMasteryData] = useState({ activityIdx: 0, streak: 0 });
 
   useEffect(() => {
@@ -744,7 +747,7 @@ export default function Lesson02MasteryPlayer({ user, topic, onHome }) {
       if (prog?.data) {
         const { phase: p, subtractionData, masteryData: md } = prog.data;
         if (p) setPhase(p);
-        if (subtractionData) setSubData(subtractionData);
+        if (subtractionData) setSubData({ currentNum: Math.max(SUB_START, subtractionData.currentNum || SUB_START), masteredNums: subtractionData.masteredNums || [] });
         if (md) setMasteryData(md);
       }
       setLoading(false);
