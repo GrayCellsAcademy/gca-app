@@ -36,19 +36,19 @@ function shuffle(arr) {
 }
 
 function buildSubQuestions(num, masteredNums) {
-  // Current: num - 1 through num - min(num-1, 9), no negatives
-  const current = [];
-  for (let b = 1; b < num; b++) {
-    current.push({ a: num, b, answer: num - b, streakNeeded: SUB_CORRECT_NEEDED, streak: 0, isCurrent: true });
-  }
-  // Review: all mastered nums, 1 correct needed
-  const review = masteredNums.flatMap(mn => {
-    const arr = [];
-    for (let b = 1; b < mn; b++) {
-      arr.push({ a: mn, b, answer: mn - b, streakNeeded: SUB_REVIEW_NEEDED, streak: 0, isCurrent: false });
-    }
-    return arr;
-  });
+  // Current tier: num - 1 through num - (num-1), no negatives
+  // Same as addition: a=num fixed, b=1 through num-1
+  const current = Array.from({ length: num - 1 }, (_, i) => ({
+    a: num, b: i + 1, answer: num - (i + 1),
+    streakNeeded: SUB_CORRECT_NEEDED, streak: 0, isCurrent: true,
+  }));
+  // Review: previously mastered numbers, 1 correct needed
+  const review = masteredNums.flatMap(mn =>
+    Array.from({ length: mn - 1 }, (_, i) => ({
+      a: mn, b: i + 1, answer: mn - (i + 1),
+      streakNeeded: SUB_REVIEW_NEEDED, streak: 0, isCurrent: false,
+    }))
+  );
   return shuffle([...current, ...review]);
 }
 
@@ -420,79 +420,64 @@ function SubtractionDrill({ subData, onComplete, onSaveProgress }) {
   const [questions, setQuestions] = useState(() => buildSubQuestions(currentNum, masteredNums));
   const [qIdx, setQIdx] = useState(0);
   const [timeLeft, setTimeLeft] = useState(SUB_TIMER);
-  const [showCorrect, setShowCorrect] = useState(null); // null | number (correct answer)
-  const [requiredExtra, setRequiredExtra] = useState({}); // { `${a}-${b}`: extraNeeded }
+  const [showCorrect, setShowCorrect] = useState(null);
   const timerRef = useRef(null);
 
-  const currentQ = questions[qIdx] || questions[0];
-
-  if (!currentQ) return <div style={{ display: "flex", justifyContent: "center", padding: 40 }}><div className="spinner" /></div>;
+  const currentQ = questions[qIdx % questions.length] || questions[0];
 
   useEffect(() => {
+    if (!currentQ) return;
     startTimer();
     return () => clearInterval(timerRef.current);
-  }, [qIdx]);
+  }, [qIdx, questions.length]);
+
+  if (!currentQ) return <div style={{ display: "flex", justifyContent: "center", padding: 40 }}><div className="spinner" /></div>;
 
   const startTimer = () => {
     clearInterval(timerRef.current);
     setTimeLeft(SUB_TIMER);
     timerRef.current = setInterval(() => {
       setTimeLeft(t => {
-        if (t <= 1) { clearInterval(timerRef.current); handleTimeout(); return 0; }
+        if (t <= 1) { clearInterval(timerRef.current); handleWrong(); return 0; }
         return t - 1;
       });
     }, 1000);
   };
 
-  const handleTimeout = () => {
-    // Treat as wrong
-    handleAnswer(null);
-  };
+  const allDone = (qs) => qs.every(q => q.streak >= q.streakNeeded);
 
   const handleAnswer = (val) => {
     clearInterval(timerRef.current);
     if (val === currentQ.answer) {
-      // Correct
-      const updated = [...questions];
-      updated[qIdx] = { ...currentQ, streak: currentQ.streak + 1 };
-      // Check if this question is mastered
-      const key = currentQ.a + "-" + currentQ.b;
-      const needed = currentQ.streakNeeded + (requiredExtra[key] || 0);
-      if (updated[qIdx].streak >= needed) {
-        // Remove from pool
-        const remaining = updated.filter((_, i) => i !== qIdx);
-        if (remaining.length === 0) {
-          // All done for this number
-          advanceNum();
-        } else {
-          setQuestions(remaining);
-          setQIdx(0);
-          setShowCorrect(null);
-          startTimer();
-        }
+      const updated = questions.map((q, i) =>
+        i === (qIdx % questions.length) ? { ...q, streak: q.streak + 1 } : q
+      );
+      setQuestions(updated);
+      setShowCorrect(null);
+      if (allDone(updated)) {
+        advanceNum();
       } else {
-        setQuestions(updated);
-        setShowCorrect(null);
-        nextQuestion(updated);
+        setQIdx(i => i + 1);
       }
     } else {
-      // Wrong - show answer, increase required for this question
-      setShowCorrect(currentQ.answer);
-      const key = currentQ.a + "-" + currentQ.b;
-      setRequiredExtra(prev => ({ ...prev, [key]: (prev[key] || 0) + 1 }));
-      const updated = [...questions];
-      updated[qIdx] = { ...currentQ, streak: 0 };
-      setQuestions(updated);
+      handleWrong();
     }
+  };
+
+  const handleWrong = () => {
+    clearInterval(timerRef.current);
+    const updated = questions.map((q, i) =>
+      i === (qIdx % questions.length)
+        ? { ...q, streak: 0, streakNeeded: q.streakNeeded + 1 }
+        : q
+    );
+    setQuestions(updated);
+    setShowCorrect(currentQ.answer);
   };
 
   const handleWrongContinue = () => {
     setShowCorrect(null);
-    nextQuestion(questions);
-  };
-
-  const nextQuestion = (qs) => {
-    setQIdx(i => (i + 1) % qs.length);
+    setQIdx(i => i + 1);
     startTimer();
   };
 
@@ -509,15 +494,11 @@ function SubtractionDrill({ subData, onComplete, onSaveProgress }) {
       setQuestions(newQs);
       setQIdx(0);
       setShowCorrect(null);
-      setRequiredExtra({});
     }
   };
 
   const totalQ = questions.length;
-  const doneQ = questions.filter(q => {
-    const key = q.a + "-" + q.b;
-    return q.streak >= q.streakNeeded + (requiredExtra[key] || 0);
-  }).length;
+  const doneQ = questions.filter(q => q.streak >= q.streakNeeded).length;
 
   return (
     <div style={{ maxWidth: 520, margin: "0 auto" }}>
@@ -542,20 +523,24 @@ function SubtractionDrill({ subData, onComplete, onSaveProgress }) {
       </div>
 
       <div className="card" style={{ textAlign: "center" }}>
-        {/* Question */}
         <div style={{ fontFamily: "var(--mono)", fontSize: 52, fontWeight: 900, color: "var(--text)", marginBottom: 24, letterSpacing: "-1px" }}>
           {currentQ.a} - {currentQ.b} = ?
         </div>
 
-        {currentQ.isCurrent ? null : (
+        {!currentQ.isCurrent && (
           <div style={{ fontSize: 11, color: "var(--text3)", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.06em" }}>Review</div>
         )}
 
+        {/* Streak dots for this question */}
+        <div style={{ display: "flex", gap: 6, justifyContent: "center", marginBottom: 16 }}>
+          {Array.from({ length: currentQ.streakNeeded }).map((_, i) => (
+            <div key={i} style={{ width: 12, height: 12, borderRadius: "50%", background: i < currentQ.streak ? "var(--green)" : "var(--surface2)", border: "2px solid " + (i < currentQ.streak ? "var(--green)" : "var(--border2)"), transition: "all 0.2s" }} />
+          ))}
+        </div>
+
         {showCorrect !== null ? (
           <div style={{ animation: "popIn 0.25s ease" }}>
-            <div style={{ fontSize: 17, fontWeight: 700, color: "var(--red)", marginBottom: 8 }}>
-              {showCorrect === 0 && currentQ.answer === 0 ? "Time's up!" : "Not quite!"}
-            </div>
+            <div style={{ fontSize: 17, fontWeight: 700, color: "var(--red)", marginBottom: 8 }}>Not quite!</div>
             <div style={{ fontSize: 15, color: "var(--text2)", marginBottom: 6 }}>The answer is</div>
             <div style={{ fontFamily: "var(--mono)", fontSize: 48, fontWeight: 900, color: "var(--green)", marginBottom: 20 }}>
               {currentQ.answer}
@@ -573,8 +558,8 @@ function SubtractionDrill({ subData, onComplete, onSaveProgress }) {
 
       {/* Tier roadmap */}
       <div style={{ marginTop: 14, display: "flex", gap: 5, flexWrap: "wrap" }}>
-        {Array.from({ length: TOTAL_NUMS }, (_, i) => {
-          const n = i + 1;
+        {Array.from({ length: TOTAL_NUMS - 1 }, (_, i) => {
+          const n = i + SUB_START;
           const done = masteredNums.includes(n);
           const active = n === currentNum;
           return (
