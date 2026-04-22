@@ -307,6 +307,14 @@ function GeoAnswerInput({ question, onSubmit, submitted, selectedSides, onSideCl
     setTimeout(() => inputRef.current?.focus(), 100);
   }, [question?.type]);
 
+  // For 5B: refocus when active missing side changes
+  useEffect(() => {
+    if (question?.type === "rectilinear-5B" && activeMissingIdx !== null) {
+      setInput("");
+      setTimeout(() => inputRef.current?.focus(), 100);
+    }
+  }, [activeMissingIdx, question?.type]);
+
   if (question?.type === "rectilinear-5B") {
     const missingAnswers = question.missingAnswers || [];
     const allEntered = missingAnswers.every(ma => enteredSides[ma.idx] !== undefined);
@@ -318,9 +326,6 @@ function GeoAnswerInput({ question, onSubmit, submitted, selectedSides, onSideCl
       const next = missingAnswers.find(ma => newEntered[ma.idx] === undefined);
       setActiveMissingIdx(next ? next.idx : null);
     };
-    useEffect(() => {
-      if (activeMissingIdx !== null) { setInput(""); setTimeout(() => inputRef.current?.focus(), 100); }
-    }, [activeMissingIdx]);
     return (
       <div>
         <div style={{ fontSize: 13, color: "var(--text3)", marginBottom: 8 }}>
