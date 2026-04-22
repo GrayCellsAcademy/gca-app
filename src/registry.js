@@ -4,6 +4,7 @@ import ColumnAdditionPlayer from "./ColumnAdditionPlayer";
 import Lesson01MasteryPlayer from "./Lesson01MasteryPlayer";
 import ExtraCredit01Player from "./ExtraCredit01Player";
 import ReviewHomework from "./ReviewHomework";
+import Lesson02MasteryPlayer from "./Lesson02MasteryPlayer";
 
 export const TOPICS = {
   "addition-tables-v1": {
@@ -65,6 +66,18 @@ export const TOPICS = {
     status: "published",
     order: 5,
     Player: ReviewHomework,
+  },
+  "lesson02-mastery-v1": {
+    id: "lesson02-mastery-v1",
+    title: "Geometry Mastery",
+    description: "Subtraction tables (mental math) + 7 geometry mastery activities: segments, polygons, rectangles, squares, and composite shapes.",
+    subject: "math",
+    gradeLevel: "6+",
+    icon: "",
+    type: "mastery",
+    status: "published",
+    order: 6,
+    Player: Lesson02MasteryPlayer,
   },
 };
 
