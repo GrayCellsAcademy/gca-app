@@ -123,11 +123,7 @@ function ClassView({ cls, userId, onBack, onPlayTopic }) {
 
   const assignedTopics = assignments.map(a => ({ assignment: a, topic: getTopic(a.topicId) })).filter(t => t.topic);
 
-  const isTopicUnlocked = (idx) => {
-    if (idx === 0) return true;
-    const prev = assignedTopics[idx - 1];
-    return progress[prev?.assignment.topicId]?.completed === true;
-  };
+  const isTopicUnlocked = (idx) => true;
 
   // Calculate student's overall grade
   const grade = calculateGrade(assignments, categories, progress);
