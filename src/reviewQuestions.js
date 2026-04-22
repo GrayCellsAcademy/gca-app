@@ -992,28 +992,28 @@ export function genQ38() {
 
 //  Q39: Proportion Word Problems 
 const PROPORTION_CONTEXTS = [
-  { template: (a, b, c) => "Karen earned $" + a + " in " + b + " hours. At the same rate, how many hours to earn $" + c + "?", unit: "hours" },
-  { template: (a, b, c) => "A car travels " + a + " miles in " + b + " hours. How many hours to travel " + c + " miles?", unit: "hours" },
-  { template: (a, b, c) => a + " kg of apples cost $" + b + ". How many kg can you buy for $" + c + "?", unit: "kg" },
-  { template: (a, b, c) => "A machine makes " + a + " parts in " + b + " minutes. How many minutes for " + c + " parts?", unit: "minutes" },
-  { template: (a, b, c) => "A recipe uses " + a + "g of flour for " + b + " cookies. How many cookies with " + c + "g?", unit: "cookies" },
-  { template: (a, b, c) => a + " workers build " + b + " houses in a week. How many weeks for " + c + " houses?", unit: "weeks" },
-  { template: (a, b, c) => "A printer prints " + a + " pages in " + b + " minutes. How many minutes for " + c + " pages?", unit: "minutes" },
-  { template: (a, b, c) => a + " liters of gas cost $" + b + ". How many liters for $" + c + "?", unit: "liters" },
-  { template: (a, b, c) => "A train travels " + a + " km in " + b + " hours. How many hours for " + c + " km?", unit: "hours" },
-  { template: (a, b, c) => a + " books cost $" + b + ". How many books for $" + c + "?", unit: "books" },
+  { template: (a, b, c) => "Karen earns $" + b + " in " + a + " hours. How much will she earn in " + c + " hours?", unit: "dollars" },
+  { template: (a, b, c) => "A car travels " + a + " miles in " + b + " hours. How many miles in " + c + " hours?", unit: "miles" },
+  { template: (a, b, c) => a + " kg of apples cost $" + b + ". How much do " + c + " kg cost?", unit: "dollars" },
+  { template: (a, b, c) => "A machine makes " + a + " parts in " + b + " minutes. How many parts in " + c + " minutes?", unit: "parts" },
+  { template: (a, b, c) => "A recipe uses " + b + "g of flour for " + a + " cookies. How much flour for " + c + " cookies?", unit: "grams" },
+  { template: (a, b, c) => a + " workers build " + b + " houses in a week. How many houses can " + c + " workers build?", unit: "houses" },
+  { template: (a, b, c) => "A printer prints " + a + " pages in " + b + " minutes. How many pages in " + c + " minutes?", unit: "pages" },
+  { template: (a, b, c) => a + " liters of gas cost $" + b + ". How much do " + c + " liters cost?", unit: "dollars" },
+  { template: (a, b, c) => "A train travels " + a + " km in " + b + " hours. How many km in " + c + " hours?", unit: "km" },
+  { template: (a, b, c) => a + " books cost $" + b + ". How much do " + c + " books cost?", unit: "dollars" },
 ];
 export function genQ39() {
   const ctx = randChoice(PROPORTION_CONTEXTS);
   let a, b, c, answer;
   do {
-    b = randInt(3, 9);
+    a = randInt(3, 9);
     const unitRate = randInt(11, 19);
-    a = unitRate * b;
-    // answer between b+1 and 2b-1, whole number
-    answer = randInt(b + 1, 2 * b - 1);
-    c = answer * unitRate;
-  } while (c % 10 === 0);
+    b = unitRate * a;
+    // c is a larger quantity of same type as a, answer = c * unitRate
+    c = randInt(a + 1, 2 * a - 1);
+    answer = c * unitRate;
+  } while (answer % 10 === 0);
   return {
     type: "q39", topic: 39,
     story: ctx.template(a, b, c), unit: ctx.unit,

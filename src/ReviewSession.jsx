@@ -1256,7 +1256,7 @@ function TeacherReview({ session, sessionId, uid }) {
                 <div style={{ fontSize: 12, color: "var(--text3)", marginBottom: 6 }}>
                   Q{currentTopic.id}: {currentTopic.label} - {submittedCount}/{totalStudents} submitted - {correctCount} correct
                 </div>
-                {!["q38","q39"].includes(question.type) && <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 12 }}>{question.prompt}</div>}
+                {!["q38","q39","q43","q44"].includes(question.type) && <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 12 }}>{question.prompt}</div>}
                 <QuestionDisplay question={question} revealing={session.status === "revealing"} />
                 {session.status === "question" && session.timerEndsAt && (
                   <div style={{ marginTop: 12 }}>
@@ -1379,7 +1379,7 @@ function StudentReview({ session, sessionId, uid }) {
         )}
         {question && (
           <>
-            {!["q38","q39"].includes(question.type) && <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 12 }}>{question.prompt}</div>}
+            {!["q38","q39","q43","q44"].includes(question.type) && <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 12 }}>{question.prompt}</div>}
             <QuestionDisplay question={question} revealing={session.status === "revealing"} />
           </>
         )}
