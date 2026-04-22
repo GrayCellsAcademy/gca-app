@@ -498,17 +498,19 @@ export function genQ18() {
 
 //  Q19: One-Step Equation (Mul/Div) 
 export function genQ19() {
-  const v = "x";
   const isMul = Math.random() < 0.5;
   const a = randInt(-9, 9) || 2;
-  const x = randInt(-15, 15) || 1;
-  let expr, latex;
+  let expr, latex, x;
   if (isMul) {
+    // ax = b  =>  x = b/a, pick x as integer
+    x = randInt(-15, 15) || 1;
     const b = a * x;
-    expr = a + v + " = " + b;
+    expr = a + "x = " + b;
     latex = a + "x = " + b;
   } else {
-    const b = a * x;
+    // x/a = b  =>  x = a*b, pick b as integer so x = a*b is always exact
+    const b = randInt(-15, 15) || 1;
+    x = a * b;
     expr = "x/" + a + " = " + b;
     latex = "\\dfrac{x}{" + a + "} = " + b;
   }
