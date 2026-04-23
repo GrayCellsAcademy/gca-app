@@ -774,6 +774,108 @@ function MixedNumberInput({ submitted, onSubmit }) {
   );
 }
 
+// Repeating Decimal Input - for Q37
+// Produces answer in "whole.nonRep|rep" format, e.g. "2.3|6" means 2.3666...
+// If no repeating part, just "2.3"
+function RepeatingDecimalInput({ onSubmit, submitted }) {
+  const [nonRep, setNonRep] = useState("");   // e.g. "2.3"
+  const [rep, setRep] = useState("");          // e.g. "6"
+  const [repMode, setRepMode] = useState(false); // true = repeating bar active
+  const nonRepRef = useRef(null);
+  const repRef = useRef(null);
+
+  useEffect(() => {
+    setNonRep(""); setRep(""); setRepMode(false);
+    setTimeout(() => nonRepRef.current?.focus(), 100);
+  }, []);
+
+  useEffect(() => {
+    if (repMode) setTimeout(() => repRef.current?.focus(), 80);
+    else setTimeout(() => nonRepRef.current?.focus(), 80);
+  }, [repMode]);
+
+  const handleSubmit = () => {
+    if (!nonRep.trim()) return;
+    const ans = repMode && rep.trim() ? nonRep.trim() + "|" + rep.trim() : nonRep.trim();
+    onSubmit(ans);
+  };
+
+  return (
+    <div>
+      <div style={{ fontSize: 13, color: "var(--text3)", marginBottom: 8 }}>
+        Enter the decimal answer. If it repeats, press the repeating bar button first.
+      </div>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10, flexWrap: "wrap" }}>
+        {/* Non-repeating part */}
+        <input
+          ref={nonRepRef}
+          value={nonRep}
+          onChange={e => setNonRep(e.target.value)}
+          onKeyDown={e => e.key === "Enter" && !repMode && handleSubmit()}
+          disabled={submitted}
+          placeholder="e.g. 0.3"
+          inputMode="decimal"
+          style={{ width: 120, textAlign: "center", fontSize: 22, fontFamily: "var(--mono)", fontWeight: 700, padding: "10px" }}
+        />
+
+        {/* Repeating bar toggle button */}
+        <button
+          onClick={() => setRepMode(m => !m)}
+          disabled={submitted}
+          style={{
+            padding: "10px 14px", borderRadius: "var(--radius-sm)", border: "2px solid " + (repMode ? "var(--blue)" : "var(--border2)"),
+            background: repMode ? "rgba(59,130,246,0.12)" : "var(--surface2)",
+            color: repMode ? "var(--blue)" : "var(--text2)",
+            fontFamily: "var(--font)", fontWeight: 700, fontSize: 14, cursor: "pointer",
+            transition: "all 0.15s", whiteSpace: "nowrap",
+          }}>
+          {repMode ? "Repeating ON" : "+ Repeating"}
+        </button>
+
+        {/* Repeating part field - only shown when repMode active */}
+        {repMode && (
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
+            {/* Overline bar */}
+            <div style={{
+              height: 3, background: "var(--blue)", borderRadius: 2,
+              width: Math.max(40, rep.length * 14 + 20),
+              transition: "width 0.1s",
+            }} />
+            <input
+              ref={repRef}
+              value={rep}
+              onChange={e => setRep(e.target.value.replace(/\D/g, ""))}
+              onKeyDown={e => e.key === "Enter" && handleSubmit()}
+              disabled={submitted}
+              placeholder="rep"
+              inputMode="numeric"
+              style={{ width: Math.max(60, rep.length * 14 + 20), textAlign: "center", fontSize: 22, fontFamily: "var(--mono)", fontWeight: 700, padding: "10px", transition: "width 0.1s" }}
+            />
+          </div>
+        )}
+      </div>
+
+      {/* Live preview */}
+      {nonRep && (
+        <div style={{ fontSize: 13, color: "var(--text3)", marginBottom: 10 }}>
+          Answer: <strong style={{ fontFamily: "var(--mono)", color: "var(--text)" }}>
+            {nonRep}
+            {repMode && rep && (
+              <span style={{ textDecoration: "overline" }}>{rep}</span>
+            )}
+            {repMode && rep && "..."}
+          </strong>
+        </div>
+      )}
+
+      <button className="btn btn-primary" style={{ width: "100%" }}
+        onClick={handleSubmit} disabled={submitted || !nonRep.trim()}>
+        Submit
+      </button>
+    </div>
+  );
+}
+
 function AnswerInput({ question, onSubmit, submitted }) {
   const [input, setInput] = useState("");
   const [input2, setInput2] = useState("");
@@ -836,6 +938,10 @@ function AnswerInput({ question, onSubmit, submitted }) {
   const btnStyle = { marginRight: 6, marginBottom: 6 };
 
   // Multi-input types
+  if (q.type === "q37") {
+    return <RepeatingDecimalInput onSubmit={onSubmit} submitted={submitted} />;
+  }
+
   if (q.type === "q5") {
     return (
       <div>
@@ -1527,4 +1633,4 @@ export default function ReviewSession({ user, onHome }) {
     </div>
   );
 }
-export { TeacherReview as ReviewTeacherView, StudentReview as ReviewStudentView, QuestionDisplay, AnswerInput, MixedNumberInput, fracToLatex, KaTeX, useKaTeX, NumberLine, UnitSpan };
+export { TeacherReview as ReviewTeacherView, StudentReview as ReviewStudentView, QuestionDisplay, AnswerInput, MixedNumberInput, RepeatingDecimalInput, fracToLatex, KaTeX, useKaTeX, NumberLine, UnitSpan };

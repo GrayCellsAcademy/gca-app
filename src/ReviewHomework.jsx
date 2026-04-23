@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { saveProgress, getProgress } from "./core/firebase";
 import { REVIEW_TOPICS, generateReviewQuestion, gradeReviewAnswer } from "./reviewQuestions";
 import {
-  QuestionDisplay, AnswerInput, MixedNumberInput,
+  QuestionDisplay, AnswerInput, MixedNumberInput, RepeatingDecimalInput,
   fracToLatex, KaTeX, useKaTeX, NumberLine, UnitSpan,
 } from "./ReviewSession";
 
@@ -222,7 +222,10 @@ function QuestionPanel({ topicId, streak, onStreakChange, onBack }) {
           </div>
         ) : (
           <div style={{ marginTop: 14 }}>
-            <AnswerInput question={question} onSubmit={handleSubmit} submitted={submitted} />
+            {question.type === "q37"
+              ? <RepeatingDecimalInput onSubmit={handleSubmit} submitted={submitted} />
+              : <AnswerInput question={question} onSubmit={handleSubmit} submitted={submitted} />
+            }
           </div>
         )}
       </div>

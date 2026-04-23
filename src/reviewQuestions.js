@@ -926,21 +926,65 @@ export function genQ36() {
 }
 
 //  Q37: Decimal Division 
+function decimalDivision(dividendInt, divisorInt) {
+  // Long division to find exact decimal representation
+  // Returns { whole, nonRep, rep } where answer = whole.nonRepreprepre...
+  // e.g. 1/3 => { whole:0, nonRep:"", rep:"3" }
+  // e.g. 1/6 => { whole:0, nonRep:"1", rep:"6" }
+  // e.g. 1/4 => { whole:0, nonRep:"25", rep:"" }
+  let quotient = Math.floor(dividendInt / divisorInt);
+  let remainder = dividendInt % divisorInt;
+  if (remainder === 0) return { whole: quotient, nonRep: "", rep: "" };
+  const digits = [];
+  const remainderMap = {};
+  let repStart = -1;
+  while (remainder !== 0) {
+    if (remainderMap[remainder] !== undefined) { repStart = remainderMap[remainder]; break; }
+    remainderMap[remainder] = digits.length;
+    remainder *= 10;
+    digits.push(Math.floor(remainder / divisorInt));
+    remainder = remainder % divisorInt;
+  }
+  if (repStart === -1) {
+    return { whole: quotient, nonRep: digits.join(""), rep: "" };
+  } else {
+    return { whole: quotient, nonRep: digits.slice(0, repStart).join(""), rep: digits.slice(repStart).join("") };
+  }
+}
+
 export function genQ37() {
-  const n = randInt(1, 9);
-  const exp = randInt(1, 3);
-  const divisor = n / Math.pow(10, exp);
-  const places = randInt(1, 2);
-  const scale = Math.pow(10, places);
-  const dividendInt = randInt(100, 999);
-  const dividend = dividendInt / scale;
-  const result = Math.round((dividend / divisor) * 10000) / 10000;
+  // Pick a simple division that produces an interesting result
+  // dividendInt / divisorInt where result is between 0.1 and 99
+  let dividendInt, divisorInt, result;
+  let attempts = 0;
+  do {
+    // Mix terminating and repeating: use divisors that sometimes repeat
+    const divisors = [2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 15];
+    divisorInt = divisors[Math.floor(Math.random() * divisors.length)];
+    dividendInt = randInt(1, divisorInt * 20);
+    // Avoid trivial cases
+    if (dividendInt % divisorInt === 0) { attempts++; continue; }
+    result = decimalDivision(dividendInt, divisorInt);
+    // Keep non-repeating part short
+    if (result.nonRep.length > 3 || result.rep.length > 3) { attempts++; continue; }
+    break;
+  } while (attempts < 200);
+
+  const wholeStr = result.whole > 0 ? String(result.whole) + "." : "0.";
+  const displayAnswer = wholeStr + result.nonRep + (result.rep ? result.rep + "..." : "");
+  // Store answer as "whole.nonRep|rep" or "whole.nonRep" if terminating
+  const answerCode = (result.whole + "." + result.nonRep + (result.rep ? "|" + result.rep : ""))
+    .replace(/^(\d+)\.$/, "$1"); // clean up "3." -> "3" for whole numbers
+
   return {
     type: "q37", topic: 37,
-    dividend: String(dividend), divisor: String(divisor),
-    latex: dividend + " \\div " + divisor,
-    answer: String(result),
-    prompt: "Find the quotient."
+    dividendInt, divisorInt,
+    dividend: String(dividendInt), divisor: String(divisorInt),
+    latex: dividendInt + " \\div " + divisorInt,
+    answer: answerCode,
+    displayAnswer,
+    repeating: result.rep || null,
+    prompt: "Find the quotient. Use the repeating bar button if needed."
   };
 }
 
@@ -1228,9 +1272,17 @@ export function gradeReviewAnswer(input, question) {
     case "q21": case "q22": case "q24": case "q25":
     case "q26": case "q27": case "q28": case "q29":
     case "q30": case "q31": case "q32": case "q33":
-    case "q34": case "q35": case "q36": case "q37":
+    case "q34": case "q35": case "q36":
     case "q39": case "q40": case "q41": case "q42":
       return norm(input) === norm(question.answer);
+
+    case "q37": {
+      // Answer stored as "whole.nonRep|rep" or "whole.nonRep" for terminating
+      // Student input submitted as same format from RepeatingDecimalInput
+      const normInput = norm(input).replace(/\s/g, "");
+      const normAnswer = norm(question.answer).replace(/\s/g, "");
+      return normInput === normAnswer;
+    }
 
     case "q11": {
       const splitTerms = s => {
