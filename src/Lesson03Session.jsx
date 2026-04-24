@@ -10,34 +10,212 @@ import {
 
 const POINTS = 5;
 
-// - SVG: Rectilinear shape (L/T/U) - all sides labeled -
+// -- ColumnMultiplyWork (copied from ReviewSession) --
+function ColumnMultiplyWork({ a, b }) {
+  const bStr = String(b), aStr = String(a);
+  const bDigitsR = bStr.split("").map(Number).reverse();
+  const product = a * b;
+  const maxLen = Math.max(aStr.length + bStr.length, String(product).length) + 2;
+  const CW = 30, CH = 38, OW = 36;
+  const CARRY_H = 24;
+  const totalRows = 2 + bDigitsR.length + (bDigitsR.length > 1 ? 1 : 0);
+  const W = OW + maxLen * CW + 16;
+  const carryStripH = CARRY_H * bDigitsR.length + 4;
+  const H = carryStripH + CH * totalRows + 20;
+  const rowY = (r) => carryStripH + CH * r + CH * 0.75;
+  const carryY = (pi) => rowY(0) - (pi + 1) * (CARRY_H + 4);
+  const line1Y = rowY(1) + CH * 0.28;
+  const lastPartialRow = 1 + bDigitsR.length;
+  const line2Y = rowY(lastPartialRow) + CH * 0.28;
+  const productRow = lastPartialRow + (bDigitsR.length > 1 ? 1 : 0);
+  const rowText = (num, r, color) => {
+    const s = String(Math.round(Math.abs(num))).padStart(maxLen, " ");
+    return s.split("").map((ch, i) => ch !== " " ? (
+      <text key={i} x={OW + i * CW + CW / 2} y={rowY(r)} textAnchor="middle"
+        fontSize="22" fontWeight={color === "var(--green)" ? "800" : "700"}
+        fill={color} fontFamily="var(--mono)">{ch}</text>
+    ) : null);
+  };
+  return (
+    <svg width={W} height={H} style={{ display: "block", margin: "0 auto" }}>
+      {rowText(a, 0, "var(--text)")}
+      <text x={OW - 6} y={rowY(1)} textAnchor="end" fontSize="20" fill="var(--text3)" fontFamily="var(--mono)">x</text>
+      {rowText(b, 1, "var(--text)")}
+      <line x1={OW} y1={line1Y} x2={OW + maxLen * CW} y2={line1Y} stroke="var(--text)" strokeWidth="2" />
+      {bDigitsR.map((d, pi) => {
+        const partial = a * d * Math.pow(10, pi);
+        const aDigitsR = aStr.split("").map(Number).reverse();
+        let carry = 0; const carries = [];
+        for (let i = 0; i < aDigitsR.length; i++) {
+          const prod = aDigitsR[i] * d + carry;
+          carry = Math.floor(prod / 10);
+          carries.push({ col: maxLen - 2 - i - pi, val: carry });
+        }
+        return (
+          <g key={pi}>
+            {carries.map((c, ci) => c.val > 0 && c.col >= 0 ? (
+              <text key={ci} x={OW + c.col * CW + CW / 2} y={carryY(pi)}
+                textAnchor="middle" fontSize="20" fontWeight="800" fill="var(--blue)" fontFamily="var(--mono)">{c.val}</text>
+            ) : null)}
+            {rowText(partial, pi + 2, "var(--text2)")}
+          </g>
+        );
+      })}
+      {bDigitsR.length > 1 && <line x1={OW} y1={line2Y} x2={OW + maxLen * CW} y2={line2Y} stroke="var(--text)" strokeWidth="2" />}
+      {rowText(product, productRow, "var(--green)")}
+    </svg>
+  );
+}
+
+// -- LongDivisionWork (copied from ReviewSession) --
+function LongDivisionWork({ dividend, divisor, quotient, remainder }) {
+  const dvStr = String(dividend);
+  const nDigits = dvStr.length;
+  const CW = 34, CH = 48, OW = 56, HEADER = 54;
+  const steps = [];
+  let current = 0, i = 0;
+  while (i < nDigits) {
+    current = current * 10 + parseInt(dvStr[i]);
+    if (current < divisor && steps.length === 0 && i < nDigits - 1) { i++; continue; }
+    const q = Math.floor(current / divisor);
+    const sub = q * divisor;
+    const diff = current - sub;
+    steps.push({ rightCol: i, current, q, sub, diff });
+    current = diff; i++;
+  }
+  const qDigits = steps.map(s => ({ col: s.rightCol, digit: String(s.q) }));
+  const W = OW + nDigits * CW + 60;
+  const H = HEADER + CH + steps.length * 2 * CH + 20;
+  const cx = (col) => OW + col * CW + CW / 2;
+  const renderNum = (num, rightCol, y, color, size) => {
+    const s = String(num);
+    return s.split("").map((ch, ki) => {
+      const col = rightCol - s.length + 1 + ki;
+      return <text key={ki} x={cx(col)} y={y} textAnchor="middle" fontSize={size} fontWeight="700" fill={color} fontFamily="var(--mono)">{ch}</text>;
+    });
+  };
+  return (
+    <div style={{ overflowX: "auto", marginTop: 8 }}>
+      <svg width={W} height={H} style={{ display: "block", margin: "0 auto", minWidth: W }}>
+        <text x={OW - 10} y={HEADER + CH * 0.78} textAnchor="end" fontSize="26" fontWeight="700" fill="var(--text)" fontFamily="var(--mono)">{divisor}</text>
+        <line x1={OW - 2} y1={HEADER + CH * 0.18} x2={OW - 2} y2={HEADER + CH} stroke="var(--text)" strokeWidth="2.5" />
+        <line x1={OW - 2} y1={HEADER + CH * 0.18} x2={OW + nDigits * CW + 4} y2={HEADER + CH * 0.18} stroke="var(--text)" strokeWidth="2.5" />
+        {dvStr.split("").map((ch, ci) => (
+          <text key={ci} x={cx(ci)} y={HEADER + CH * 0.78} textAnchor="middle" fontSize="26" fontWeight="700" fill="var(--text)" fontFamily="var(--mono)">{ch}</text>
+        ))}
+        {qDigits.map((qd, qi) => (
+          <text key={qi} x={cx(qd.col)} y={HEADER - 10} textAnchor="middle" fontSize="26" fontWeight="800" fill="var(--green)" fontFamily="var(--mono)">{qd.digit}</text>
+        ))}
+        {steps.map((step, si) => {
+          const baseY = HEADER + CH + si * 2 * CH;
+          const lineY = baseY + CH + 2;
+          const diffY = baseY + CH + CH * 0.78;
+          const isLast = si === steps.length - 1;
+          const showWork = si > 0 && step.current >= 10;
+          const subLen = String(step.sub || 0).length;
+          const lineLeft = cx(Math.max(0, step.rightCol - Math.max(subLen, String(step.current).length) + 1)) - 4;
+          const lineRight = cx(step.rightCol) + CW * 0.4;
+          return (
+            <g key={si}>
+              {showWork && renderNum(step.current, step.rightCol, baseY + CH * 0.78 - CH, "var(--text3)", 20)}
+              {step.sub > 0 && renderNum(step.sub, step.rightCol, baseY + CH * 0.78, "var(--text)", 22)}
+              <line x1={lineLeft} y1={lineY} x2={lineRight} y2={lineY} stroke="var(--text)" strokeWidth="1.5" />
+              {renderNum(step.diff, step.rightCol, diffY, isLast ? "var(--blue)" : "var(--text)", 22)}
+            </g>
+          );
+        })}
+        {remainder > 0 && (
+          <text x={OW + nDigits * CW + 10} y={HEADER + CH + (steps.length * 2 - 1) * CH + CH * 0.78}
+            fontSize="15" fontWeight="700" fill="var(--blue)" fontFamily="var(--mono)">R{remainder}</text>
+        )}
+      </svg>
+    </div>
+  );
+}
+
+// -- SVG: Rectilinear shape with color-coded split rectangles on reveal --
 function RectilinearSVG({ question, revealCorrect }) {
-  const { vertices, sides, unit, hideIndices } = question;
+  const { vertices, sides, unit, hideIndices, shape, W: qW, H: qH, cw, ch, bh, sh, tw, stemLeft, lw, rw } = question;
   const hiddenSet = new Set(hideIndices || []);
   if (!vertices) return null;
-  const W = 400, H = 360;
+  const SVG_W = 400, SVG_H = 360;
   const xs = vertices.map(v => v.x), ys = vertices.map(v => v.y);
   const minX = Math.min(...xs), maxX = Math.max(...xs);
   const minY = Math.min(...ys), maxY = Math.max(...ys);
-  const scale = Math.min((W - 120) / (maxX - minX || 1), (H - 120) / (maxY - minY || 1));
-  const offX = (W - (maxX - minX) * scale) / 2;
-  const offY = (H - (maxY - minY) * scale) / 2;
+  const scale = Math.min((SVG_W - 120) / (maxX - minX || 1), (SVG_H - 120) / (maxY - minY || 1));
+  const offX = (SVG_W - (maxX - minX) * scale) / 2;
+  const offY = (SVG_H - (maxY - minY) * scale) / 2;
   const sv = vertices.map(v => ({ x: (v.x - minX) * scale + offX, y: (v.y - minY) * scale + offY }));
   const n = sv.length;
-  const cx = sv.reduce((s, p) => s + p.x, 0) / n;
-  const cy = sv.reduce((s, p) => s + p.y, 0) / n;
+  const cx2 = sv.reduce((s, p) => s + p.x, 0) / n;
+  const cy2 = sv.reduce((s, p) => s + p.y, 0) / n;
   const mids = sv.map((p, i) => ({ x: (p.x + sv[(i + 1) % n].x) / 2, y: (p.y + sv[(i + 1) % n].y) / 2 }));
   const pathD = sv.map((p, i) => (i === 0 ? "M" : "L") + " " + p.x.toFixed(1) + " " + p.y.toFixed(1)).join(" ") + " Z";
+
+  // Build split-rectangle overlay for reveal
+  // Each shape is split into 2 named rects in question coordinates
+  // We scale them to SVG coordinates
+  const toSVG = (qx, qy) => ({ x: (qx - minX) * scale + offX, y: (qy - minY) * scale + offY });
+  let rect1 = null, rect2 = null;
+  if (revealCorrect && shape && qW) {
+    const scaleVal = vertices[0] ? scale : 1;
+    // Use the raw shape dimensions stored in question
+    // We need to figure out the original scale used when generating vertices
+    // vertices were created at scale=2 or 2.5; recover by comparing
+    const origScale = vertices.length > 0 ? (vertices[1]?.x || 1) / (qW || 1) : 2;
+    const sc = scale / origScale; // final SVG scale
+    if (shape === "L" && cw && ch && qW && qH) {
+      // rect1: W x (H-ch) - bottom rect
+      // rect2: (W-cw) x ch - top-left rect
+      const p1 = toSVG(0, ch * origScale);
+      rect1 = { x: p1.x, y: p1.y, w: qW * origScale * scale / origScale, h: (qH - ch) * origScale * scale / origScale };
+      const p2 = toSVG(0, 0);
+      rect2 = { x: p2.x, y: p2.y, w: (qW - cw) * origScale * scale / origScale, h: ch * origScale * scale / origScale };
+    } else if (shape === "T" && tw && bh && qW && sh) {
+      const p1 = toSVG(0, sh * (vertices[2]?.y / (sh + bh) * (sh + bh) / sh || 2));
+      // T: rect1 = W x bh (base), rect2 = tw x sh (stem)
+      // Use vertex positions directly
+      const baseTopY = sv[2]?.y ?? 0;
+      const baseBottomY = sv[1]?.y ?? SVG_H;
+      const stemTopY = sv[4]?.y ?? 0;
+      const stemLeftX = sv[6]?.x ?? 0;
+      const stemRightX = sv[3]?.x ?? 0;
+      rect1 = { x: sv[0].x, y: baseTopY, w: sv[1].x - sv[0].x, h: baseBottomY - baseTopY };
+      rect2 = { x: stemLeftX, y: stemTopY, w: stemRightX - stemLeftX, h: baseTopY - stemTopY };
+    } else if (shape === "U" && lw && rw && qW && qH && ch) {
+      // U: rect1=left arm (lw x H), rect2=right arm (rw x H), rect3=bottom strip
+      // Or think as: big rect minus inner cutout
+      // For coloring: left arm + right arm + bottom strip
+      // Use vertex positions
+      const botY = sv[1]?.y ?? SVG_H;
+      const topY = sv[2]?.y ?? 0;
+      const innerTopY = sv[4]?.y ?? 0;
+      const innerLeftX = sv[5]?.x ?? 0;
+      const innerRightX = sv[4]?.x ?? 0;
+      rect1 = { x: sv[0].x, y: topY, w: innerLeftX - sv[0].x, h: botY - topY }; // left arm
+      rect2 = { x: innerRightX, y: topY, w: sv[2].x - innerRightX, h: botY - topY }; // right arm
+    }
+  }
+
   return (
-    <svg viewBox={"0 0 " + W + " " + H} style={{ width: "100%", maxWidth: 400, display: "block", margin: "0 auto" }}>
-      <path d={pathD} stroke="var(--blue)" strokeWidth="2.5" fill="rgba(59,130,246,0.07)" />
+    <svg viewBox={"0 0 " + SVG_W + " " + SVG_H} style={{ width: "100%", maxWidth: 400, display: "block", margin: "0 auto" }}>
+      {/* Split rectangle coloring on reveal */}
+      {revealCorrect && rect1 && (
+        <rect x={rect1.x} y={rect1.y} width={rect1.w} height={rect1.h}
+          fill="rgba(232,99,10,0.18)" stroke="rgba(232,99,10,0.5)" strokeWidth="2" strokeDasharray="6,3" rx="2" />
+      )}
+      {revealCorrect && rect2 && (
+        <rect x={rect2.x} y={rect2.y} width={rect2.w} height={rect2.h}
+          fill="rgba(124,58,237,0.15)" stroke="rgba(124,58,237,0.5)" strokeWidth="2" strokeDasharray="6,3" rx="2" />
+      )}
+      <path d={pathD} stroke="var(--blue)" strokeWidth="2.5" fill="rgba(59,130,246,0.04)" />
       {sv.map((p, i) => {
         const next = sv[(i + 1) % n];
         const m = mids[i];
         const ex = next.x - p.x, ey = next.y - p.y;
         const el = Math.sqrt(ex * ex + ey * ey) || 1;
         const perpX = -ey / el, perpY = ex / el;
-        const outDir = (m.x - cx) * perpX + (m.y - cy) * perpY > 0 ? 1 : -1;
+        const outDir = (m.x - cx2) * perpX + (m.y - cy2) * perpY > 0 ? 1 : -1;
         const lx = m.x + perpX * outDir * 20;
         const ly = m.y + perpY * outDir * 20;
         const isHidden = hiddenSet.has(i);
@@ -48,7 +226,7 @@ function RectilinearSVG({ question, revealCorrect }) {
             <line x1={p.x} y1={p.y} x2={next.x} y2={next.y} stroke="var(--blue)" strokeWidth="2.5" />
             <rect x={lx - 32} y={ly - 14} width={64} height={28} rx={5}
               fill={showQ ? "rgba(251,191,36,0.15)" : "var(--bg2)"}
-              stroke={showQ ? "var(--amber)" : "var(--border)"} strokeWidth="1" />
+              stroke={showQ ? "var(--amber)" : isHidden ? "var(--green)" : "var(--border)"} strokeWidth="1" />
             <text x={lx} y={ly + 6} textAnchor="middle" fontSize="13" fontWeight="700"
               fill={showQ ? "#7c3aed" : isHidden ? "var(--green)" : "var(--text)"} fontFamily="var(--mono)">
               {showQ ? "?" : sideLen + unit}
@@ -56,7 +234,7 @@ function RectilinearSVG({ question, revealCorrect }) {
           </g>
         );
       })}
-      <text x={W / 2} y={H - 8} textAnchor="middle" fontSize="11" fill="var(--text3)" fontStyle="italic">Not drawn to scale</text>
+      <text x={SVG_W / 2} y={SVG_H - 8} textAnchor="middle" fontSize="11" fill="var(--text3)" fontStyle="italic">Not drawn to scale</text>
     </svg>
   );
 }
@@ -168,7 +346,7 @@ function QuestionDisplay({ question, revealCorrect }) {
     case "square-area":
       return <SquareAreaSVG question={q} />;
     case "composite-area":
-      return <RectilinearSVG question={q} revealCorrect={false} />;
+      return <RectilinearSVG question={q} revealCorrect={revealCorrect} />;
     default:
       return null;
   }
@@ -219,7 +397,52 @@ function WarmupAnswerInput({ question, onSubmit, submitted }) {
   );
 }
 
-// Area answer input: number + unit choice buttons
+// Composite area: 3 inputs - missing side 1, missing side 2, area
+function CompositeAreaAnswerInput({ question, onSubmit, submitted }) {
+  const [m1, setM1] = useState("");
+  const [m2, setM2] = useState("");
+  const [area, setArea] = useState("");
+  const ref = useRef(null);
+  useEffect(() => { setM1(""); setM2(""); setArea(""); setTimeout(() => ref.current?.focus(), 100); }, [question?.id]);
+  const handleSubmit = () => {
+    if (!m1.trim() || !m2.trim() || !area.trim()) return;
+    onSubmit(JSON.stringify({
+      m1: parseInt(m1.replace(/[^0-9]/g, "")),
+      m2: parseInt(m2.replace(/[^0-9]/g, "")),
+      area: parseInt(area.replace(/[^0-9]/g, "")),
+    }));
+  };
+  const { missingAnswers, unit } = question;
+  return (
+    <div>
+      <div style={{ fontSize: 13, color: "var(--text3)", marginBottom: 8 }}>
+        Find the two missing sides and the area (numbers only, units are {unit} and sq {unit})
+      </div>
+      <div style={{ display: "flex", gap: 8, marginBottom: 8, flexWrap: "wrap" }}>
+        <div style={{ flex: 1, minWidth: 100 }}>
+          <div style={{ fontSize: 12, color: "var(--text3)", marginBottom: 3 }}>Missing side 1</div>
+          <input ref={ref} value={m1} onChange={e => setM1(e.target.value)} inputMode="numeric" disabled={submitted}
+            placeholder={"e.g. 25"} style={{ width: "100%", fontSize: 18, fontFamily: "var(--mono)", padding: "8px 10px" }} />
+        </div>
+        <div style={{ flex: 1, minWidth: 100 }}>
+          <div style={{ fontSize: 12, color: "var(--text3)", marginBottom: 3 }}>Missing side 2</div>
+          <input value={m2} onChange={e => setM2(e.target.value)} inputMode="numeric" disabled={submitted}
+            placeholder={"e.g. 18"} style={{ width: "100%", fontSize: 18, fontFamily: "var(--mono)", padding: "8px 10px" }} />
+        </div>
+        <div style={{ flex: 1, minWidth: 100 }}>
+          <div style={{ fontSize: 12, color: "var(--text3)", marginBottom: 3 }}>Area (sq {unit})</div>
+          <input value={area} onChange={e => setArea(e.target.value)} inputMode="numeric" disabled={submitted}
+            onKeyDown={e => e.key === "Enter" && handleSubmit()}
+            placeholder={"e.g. 900"} style={{ width: "100%", fontSize: 18, fontFamily: "var(--mono)", padding: "8px 10px" }} />
+        </div>
+      </div>
+      <button className="btn btn-primary" style={{ width: "100%" }} onClick={handleSubmit}
+        disabled={submitted || !m1.trim() || !m2.trim() || !area.trim()}>Submit All</button>
+    </div>
+  );
+}
+
+// Area answer input: number + unit choice buttons (for rectangle and square only)
 function AreaAnswerInput({ question, onSubmit, submitted }) {
   const [value, setValue] = useState("");
   const [selectedUnit, setSelectedUnit] = useState(null);
@@ -293,62 +516,65 @@ function NumericAnswerInput({ question, onSubmit, submitted }) {
 function AnswerInput({ question, onSubmit, submitted }) {
   if (!question) return null;
   if (question.type === "warmup") return <WarmupAnswerInput question={question} onSubmit={onSubmit} submitted={submitted} />;
-  if (question.type === "rectangle-area" || question.type === "square-area" || question.type === "composite-area") {
+  if (question.type === "composite-area") return <CompositeAreaAnswerInput question={question} onSubmit={onSubmit} submitted={submitted} />;
+  if (question.type === "rectangle-area" || question.type === "square-area") {
     return <AreaAnswerInput question={question} onSubmit={onSubmit} submitted={submitted} />;
   }
   return <NumericAnswerInput question={question} onSubmit={onSubmit} submitted={submitted} />;
 }
 
-// - Reveal calculation -
+// - Reveal calculation with worked solutions -
 function RevealCalculation({ question }) {
   if (!question) return null;
-  if (question.type === "warmup") {
-    const { missing1, missing2, perimeter, unit } = question;
+  const q = question;
+
+  if (q.type === "warmup") {
     return (
       <div style={{ fontSize: 14, color: "var(--text2)", marginTop: 8 }}>
-        <div>Missing side 1 ({missing1?.label}): <strong style={{ color: "var(--green)", fontFamily: "var(--mono)" }}>{missing1?.length}{unit}</strong></div>
-        <div>Missing side 2 ({missing2?.label}): <strong style={{ color: "var(--green)", fontFamily: "var(--mono)" }}>{missing2?.length}{unit}</strong></div>
-        <div>Perimeter: <strong style={{ color: "var(--green)", fontFamily: "var(--mono)" }}>{perimeter}{unit}</strong></div>
+        <div>Missing side 1 ({q.missing1?.label}): <strong style={{ color: "var(--green)", fontFamily: "var(--mono)" }}>{q.missing1?.length}{q.unit}</strong></div>
+        <div>Missing side 2 ({q.missing2?.label}): <strong style={{ color: "var(--green)", fontFamily: "var(--mono)" }}>{q.missing2?.length}{q.unit}</strong></div>
+        <div>Perimeter: <strong style={{ color: "var(--green)", fontFamily: "var(--mono)" }}>{q.perimeter}{q.unit}</strong></div>
       </div>
     );
   }
-  if (question.type === "rectangle-area") {
-    const { lengthVal, lengthUnit, widthVal, widthUnit, areaFt, areaYd } = question;
+  if (q.type === "round-multiply") {
+    return (
+      <div style={{ fontSize: 15, color: "var(--text2)", marginTop: 8, fontFamily: "var(--mono)" }}>
+        {q.a} x {q.b} = <strong style={{ color: "var(--green)" }}>{q.answer}</strong>
+      </div>
+    );
+  }
+  if (q.type === "col-multiply-1" || q.type === "col-multiply-2" || q.type === "col-multiply-3") {
+    return <div style={{ marginTop: 12 }}><ColumnMultiplyWork a={q.a} b={q.b} /></div>;
+  }
+  if (q.type === "long-division" || q.type === "long-division-zero") {
+    return <div style={{ marginTop: 12 }}><LongDivisionWork dividend={q.dividend} divisor={q.divisor} quotient={q.quotient} remainder={q.remainder} /></div>;
+  }
+  if (q.type === "rectangle-area") {
+    const { lengthVal, lengthUnit, widthVal, widthUnit, areaFt, areaYd } = q;
     const needsConvert = lengthUnit !== widthUnit;
     return (
       <div style={{ fontSize: 14, color: "var(--text2)", marginTop: 8, fontFamily: "var(--mono)" }}>
-        {needsConvert && lengthUnit === "yd" && (
-          <div>{lengthVal} yd = {lengthVal * 3} ft, so {lengthVal * 3} ft x {widthVal} ft = <strong style={{ color: "var(--green)" }}>{areaFt} sq ft</strong></div>
-        )}
-        {needsConvert && widthUnit === "yd" && (
-          <div>{widthVal} yd = {widthVal * 3} ft, so {lengthVal} ft x {widthVal * 3} ft = <strong style={{ color: "var(--green)" }}>{areaFt} sq ft</strong></div>
-        )}
-        {needsConvert && lengthUnit === "ft" && widthUnit === "ft" && (
-          <div>{lengthVal} ft x {widthVal} ft = <strong style={{ color: "var(--green)" }}>{areaFt} sq ft</strong></div>
-        )}
-        {!needsConvert && (
-          <div>{lengthVal} {lengthUnit} x {widthVal} {widthUnit} = <strong style={{ color: "var(--green)" }}>{areaFt} sq ft</strong></div>
-        )}
+        {needsConvert && lengthUnit === "yd" && <div>{lengthVal} yd = {lengthVal * 3} ft, so {lengthVal * 3} ft x {widthVal} ft = <strong style={{ color: "var(--green)" }}>{areaFt} sq ft</strong></div>}
+        {needsConvert && widthUnit === "yd" && <div>{widthVal} yd = {widthVal * 3} ft, so {lengthVal} ft x {widthVal * 3} ft = <strong style={{ color: "var(--green)" }}>{areaFt} sq ft</strong></div>}
+        {!needsConvert && <div>{lengthVal} {lengthUnit} x {widthVal} {widthUnit} = <strong style={{ color: "var(--green)" }}>{areaFt} sq ft</strong></div>}
         {areaYd !== null && <div style={{ marginTop: 4, color: "var(--text3)" }}>Or: {areaYd} sq yd</div>}
       </div>
     );
   }
-  if (question.type === "composite-area" && question.splitExplanation) {
+  if (q.type === "composite-area") {
     return (
-      <div style={{ fontSize: 14, color: "var(--text2)", marginTop: 8, fontFamily: "var(--mono)" }}>
-        {question.splitExplanation}
-      </div>
-    );
-  }
-  if (question.type === "round-multiply") {
-    return (
-      <div style={{ fontSize: 14, color: "var(--text2)", marginTop: 8, fontFamily: "var(--mono)" }}>
-        {question.a} x {question.b} = <strong style={{ color: "var(--green)" }}>{question.answer}</strong>
+      <div style={{ fontSize: 14, color: "var(--text2)", marginTop: 8 }}>
+        {q.missingAnswers && q.missingAnswers.map((ma, i) => (
+          <div key={i}>Missing side {i + 1}: <strong style={{ color: "var(--green)", fontFamily: "var(--mono)" }}>{ma.length}{q.unit}</strong></div>
+        ))}
+        {q.splitExplanation && <div style={{ fontFamily: "var(--mono)", marginTop: 6 }}>{q.splitExplanation} = <strong style={{ color: "var(--green)" }}>{q.area} sq {q.unit}</strong></div>}
       </div>
     );
   }
   return null;
 }
+
 
 // - Timer bar -
 function TimerBar({ endsAt, totalSeconds, onExpired }) {

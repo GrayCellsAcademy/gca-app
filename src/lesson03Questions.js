@@ -458,13 +458,33 @@ function genCompositeArea() {
 
 export function genCompositeShapeArea() {
   const shapeData = genCompositeArea();
+  const { sides, area, unit } = shapeData;
+
+  // Hide 2 derivable sides (same logic as lesson02 rectilinear shapes)
+  // L shape: hide short horizontal (idx 2) and short vertical (idx 3)
+  // T shape: hide right-shoulder (idx 2) and stem-right (idx 3)
+  // U shape: hide inner-right (idx 3) and inner-top (idx 4)
+  let hideIndices;
+  if (shapeData.shape === "L") hideIndices = [2, 3];
+  else if (shapeData.shape === "T") hideIndices = [2, 3];
+  else hideIndices = [3, 4]; // U
+
+  const missingAnswers = hideIndices.map(i => ({
+    idx: i, length: sides[i].length, dir: sides[i].dir,
+  }));
+
   return {
     type: "composite-area",
     ...shapeData,
-    hideIndices: [],
-    answer: JSON.stringify({ value: shapeData.area, unit: "sq" + shapeData.unit }),
-    displayAnswer: shapeData.area + " sq " + shapeData.unit,
-    prompt: "Find the area of this shape. Enter the number and choose units.",
+    hideIndices,
+    missingAnswers,
+    answer: JSON.stringify({
+      m1: missingAnswers[0].length,
+      m2: missingAnswers[1].length,
+      area,
+    }),
+    displayAnswer: area + " sq " + unit,
+    prompt: "Find the two missing sides and the area. Enter all three values.",
     activityType: "composite-area",
   };
 }
@@ -472,11 +492,11 @@ export function genCompositeShapeArea() {
 export function gradeCompositeArea(input, question) {
   try {
     const ans = JSON.parse(input);
-    const val = parseInt(ans.value);
-    const unitIn = String(ans.unit).toLowerCase().replace(/\s+/g, "");
-    const correctUnit = ("sq" + question.unit).toLowerCase();
-    const altUnit = ("square" + question.unit).toLowerCase();
-    return val === question.area && (unitIn === correctUnit || unitIn === altUnit || unitIn === question.unit + "2");
+    return (
+      parseInt(ans.m1) === question.missingAnswers[0].length &&
+      parseInt(ans.m2) === question.missingAnswers[1].length &&
+      parseInt(ans.area) === question.area
+    );
   } catch { return false; }
 }
 
