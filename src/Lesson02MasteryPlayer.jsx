@@ -7,7 +7,6 @@ import {
 export const LESSON02_MASTERY_TOPIC_ID = "lesson02-mastery-v1";
 
 // - Subtraction table config -
-const SUB_START = 2; // Smallest number we can subtract from (2-1=1, no negatives)
 const SUB_TIMER = 10;      // seconds per question
 const SUB_CORRECT_NEEDED = 2;  // correct to pass current number
 const SUB_REVIEW_NEEDED = 1;   // correct to pass review questions
@@ -35,17 +34,19 @@ function shuffle(arr) {
   return a;
 }
 
-function buildSubQuestions(num, masteredNums) {
-  // Current tier: num - 1 through num - (num-1), no negatives
-  // Same as addition: a=num fixed, b=1 through num-1
-  const current = Array.from({ length: num - 1 }, (_, i) => ({
-    a: num, b: i + 1, answer: num - (i + 1),
+function buildSubQuestions(tierNum, masteredTiers) {
+  // Current tier: (tierNum+1)-tierNum through (tierNum+9)-tierNum
+  // e.g. tier 1: 2-1, 3-1, ..., 10-1 (9 questions, need 2 correct each)
+  const current = Array.from({ length: 9 }, (_, i) => ({
+    a: tierNum + 1 + i, b: tierNum,
+    answer: (tierNum + 1 + i) - tierNum, // always 1..9
     streakNeeded: SUB_CORRECT_NEEDED, streak: 0, isCurrent: true,
   }));
-  // Review: previously mastered numbers, 1 correct needed
-  const review = masteredNums.flatMap(mn =>
-    Array.from({ length: mn - 1 }, (_, i) => ({
-      a: mn, b: i + 1, answer: mn - (i + 1),
+  // Review: all previously mastered tiers, same 9 questions each, need 1 correct
+  const review = masteredTiers.flatMap(t =>
+    Array.from({ length: 9 }, (_, i) => ({
+      a: t + 1 + i, b: t,
+      answer: (t + 1 + i) - t,
       streakNeeded: SUB_REVIEW_NEEDED, streak: 0, isCurrent: false,
     }))
   );
@@ -416,8 +417,8 @@ function StreakDots({ current, needed }) {
 
 // - Subtraction Drill Screen -
 function SubtractionDrill({ subData, onComplete, onSaveProgress }) {
-  const { currentNum, masteredNums } = subData;
-  const [questions, setQuestions] = useState(() => buildSubQuestions(currentNum, masteredNums));
+  const { tierNum, masteredTiers } = subData;
+  const [questions, setQuestions] = useState(() => buildSubQuestions(tierNum, masteredTiers));
   const [qIdx, setQIdx] = useState(0);
   const [timeLeft, setTimeLeft] = useState(SUB_TIMER);
   const [showCorrect, setShowCorrect] = useState(null);
@@ -455,7 +456,7 @@ function SubtractionDrill({ subData, onComplete, onSaveProgress }) {
       setQuestions(updated);
       setShowCorrect(null);
       if (allDone(updated)) {
-        advanceNum();
+        advanceTier();
       } else {
         setQIdx(i => i + 1);
       }
@@ -481,17 +482,16 @@ function SubtractionDrill({ subData, onComplete, onSaveProgress }) {
     startTimer();
   };
 
-  const advanceNum = async () => {
-    const newMastered = [...masteredNums, currentNum];
-    const nextNum = currentNum + 1;
-    if (nextNum > TOTAL_NUMS) {
-      await onSaveProgress({ phase: "mastery", subtractionData: { currentNum: nextNum, masteredNums: newMastered }, masteryData: { activityIdx: 0, streak: 0 } });
+  const advanceTier = async () => {
+    const newMastered = [...masteredTiers, tierNum];
+    const nextTier = tierNum + 1;
+    if (nextTier > TOTAL_NUMS) {
+      await onSaveProgress({ phase: "mastery", subtractionData: { tierNum: nextTier, masteredTiers: newMastered }, masteryData: { activityIdx: 0, streak: 0 } });
       onComplete();
     } else {
-      const newData = { currentNum: nextNum, masteredNums: newMastered };
+      const newData = { tierNum: nextTier, masteredTiers: newMastered };
       await onSaveProgress({ phase: "subtraction", subtractionData: newData, masteryData: { activityIdx: 0, streak: 0 } });
-      const newQs = buildSubQuestions(nextNum, newMastered);
-      setQuestions(newQs);
+      setQuestions(buildSubQuestions(nextTier, newMastered));
       setQIdx(0);
       setShowCorrect(null);
     }
@@ -504,9 +504,9 @@ function SubtractionDrill({ subData, onComplete, onSaveProgress }) {
     <div style={{ maxWidth: 520, margin: "0 auto" }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
         <div>
-          <div style={{ fontSize: 15, fontWeight: 800 }}>Subtracting {currentNum}s</div>
+          <div style={{ fontSize: 15, fontWeight: 800 }}>Subtracting {tierNum}s</div>
           <div style={{ fontSize: 13, color: "var(--text3)" }}>
-            {masteredNums.length > 0 ? "Includes review of: " + masteredNums.join(", ") : ""}
+            {masteredTiers.length > 0 ? "Review included: -" + masteredTiers.join(", -") : ""}
           </div>
         </div>
         <CountdownRing seconds={timeLeft} total={SUB_TIMER} />
@@ -558,10 +558,10 @@ function SubtractionDrill({ subData, onComplete, onSaveProgress }) {
 
       {/* Tier roadmap */}
       <div style={{ marginTop: 14, display: "flex", gap: 5, flexWrap: "wrap" }}>
-        {Array.from({ length: TOTAL_NUMS - 1 }, (_, i) => {
-          const n = i + SUB_START;
-          const done = masteredNums.includes(n);
-          const active = n === currentNum;
+        {Array.from({ length: TOTAL_NUMS }, (_, i) => {
+          const n = i + 1;
+          const done = masteredTiers.includes(n);
+          const active = n === tierNum;
           return (
             <div key={n} style={{ fontSize: 13, fontWeight: 700, padding: "3px 10px", borderRadius: 99, background: done ? "rgba(16,185,129,0.15)" : active ? "rgba(232,99,10,0.15)" : "var(--surface)", color: done ? "var(--green)" : active ? "var(--blue)" : "var(--text3)", border: "1px solid " + (done ? "rgba(16,185,129,0.3)" : active ? "rgba(232,99,10,0.3)" : "var(--border)") }}>
               -{n}
@@ -723,7 +723,7 @@ export default function Lesson02MasteryPlayer({ user, topic, onHome }) {
   const topicId = topic?.id || LESSON02_MASTERY_TOPIC_ID;
   const [loading, setLoading] = useState(true);
   const [phase, setPhase] = useState("subtraction"); // subtraction | mastery | complete
-  const [subData, setSubData] = useState({ currentNum: SUB_START, masteredNums: [] });
+  const [subData, setSubData] = useState({ tierNum: 1, masteredTiers: [] });
   const [masteryData, setMasteryData] = useState({ activityIdx: 0, streak: 0 });
 
   useEffect(() => {
@@ -732,7 +732,7 @@ export default function Lesson02MasteryPlayer({ user, topic, onHome }) {
       if (prog?.data) {
         const { phase: p, subtractionData, masteryData: md } = prog.data;
         if (p) setPhase(p);
-        if (subtractionData) setSubData({ currentNum: Math.max(SUB_START, subtractionData.currentNum || SUB_START), masteredNums: subtractionData.masteredNums || [] });
+        if (subtractionData) setSubData({ tierNum: subtractionData.tierNum || 1, masteredTiers: subtractionData.masteredTiers || [] });
         if (md) setMasteryData(md);
       }
       setLoading(false);
@@ -743,7 +743,7 @@ export default function Lesson02MasteryPlayer({ user, topic, onHome }) {
   const saveProgress = async (data) => {
     const { phase: p, subtractionData, masteryData: md } = data;
     const totalSteps = TOTAL_NUMS + MASTERY_ACTIVITIES.length;
-    const subDone = (subtractionData?.masteredNums?.length || (p === "mastery" || p === "complete" ? TOTAL_NUMS : 0));
+    const subDone = (subtractionData?.masteredTiers?.length || (p === "mastery" || p === "complete" ? TOTAL_NUMS : 0));
     const masteryDone = md?.activityIdx || 0;
     const pct = Math.round(((subDone + masteryDone) / totalSteps) * 100);
     await fbSaveProgress(user.id, topicId, {
