@@ -10,6 +10,7 @@ import ClassworkSession, { ClassworkTeacherView, ClassworkStudentView } from "..
 import WorksheetSession, { WorksheetTeacherView, WorksheetStudentView } from "../WorksheetSession";
 import RatioSession, { RatioTeacherView, RatioStudentView } from "../RatioSession";
 import Lesson02Session, { Lesson02TeacherView, Lesson02StudentView } from "../Lesson02Session";
+import Lesson03Session, { Lesson03TeacherView, Lesson03StudentView } from "../Lesson03Session";
 import ReviewSession, { ReviewTeacherView, ReviewStudentView } from "../ReviewSession";
 
 function ClassworkSessionWrapper({ user, onHome }) {
@@ -191,6 +192,9 @@ export default function LiveSession({ user, onHome }) {
   if (view === "lesson02") {
     return <Lesson02Session user={user} onHome={() => setView("menu")} />;
   }
+  if (view === "lesson03") {
+    return <Lesson03Session user={user} onHome={() => setView("menu")} />;
+  }
   if (view === "classwork") {
     return <ClassworkSessionWrapper user={user} onHome={() => setView("menu")} />;
   }
@@ -234,6 +238,14 @@ export default function LiveSession({ user, onHome }) {
                       <div style={{ color: "var(--text2)", fontSize: 13 }}>Line segments, polygons, rectangles, squares, composite shapes.</div>
                     </div>
                   </div>
+                  <div className="card" onClick={() => setView("lesson03")}
+                    style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 16 }}>
+                    <div style={{ fontSize: 14, fontWeight: 800, color: "var(--blue)", minWidth: 36 }}>L3</div>
+                    <div>
+                      <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 4 }}>(3) Multiplication, Division and Area</div>
+                      <div style={{ color: "var(--text2)", fontSize: 13 }}>Round numbers, column multiplication, long division, rectangle and composite area.</div>
+                    </div>
+                  </div>
                 </>
               )}
               <div className="card" onClick={() => setView("review")}
@@ -268,6 +280,11 @@ export default function LiveSession({ user, onHome }) {
             return user.role === "teacher"
               ? <Lesson02TeacherView session={session} sessionId={sessionId} uid={user.id} />
               : <Lesson02StudentView session={session} sessionId={sessionId} uid={user.id} />;
+          }
+          if (session.type === "lesson03") {
+            return user.role === "teacher"
+              ? <Lesson03TeacherView session={session} sessionId={sessionId} uid={user.id} />
+              : <Lesson03StudentView session={session} sessionId={sessionId} uid={user.id} />;
           }
           if (session.type === "worksheet") {
             return user.role === "teacher"
