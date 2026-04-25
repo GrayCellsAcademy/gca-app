@@ -71,7 +71,7 @@ function ColumnMultiplyWork({ a, b }) {
 function LongDivisionWork({ dividend, divisor, quotient, remainder }) {
   const dvStr = String(dividend);
   const nDigits = dvStr.length;
-  const CW = 34, CH = 44, OW = 56, HEADER = 50;
+  const CW = 34, CH = 42, OW = 56, HEADER = 50;
 
   // Build one step per quotient digit
   const steps = [];
@@ -88,12 +88,19 @@ function LongDivisionWork({ dividend, divisor, quotient, remainder }) {
     working = diff;
   }
 
-  const rowH = CH * 2;
+  // Layout per step:
+  //   Row A (height CH): working number (dim, si>0 only) OR subtrahend at top (si=0)
+  //   Row B (height CH): subtrahend (si>0) then line then diff
+  // So each step takes 2*CH of vertical space.
+  // For si=0: no working shown, sub at top of Row A, line at bottom of Row A, diff in Row B
+  // For si>0: working (dim) in Row A, sub in Row B, line after Row B, diff below
+
+  const ROW = CH * 2;
   const W = OW + nDigits * CW + 60;
-  const H = HEADER + CH + steps.length * rowH + CH + 20;
+  const H = HEADER + CH + steps.length * ROW + CH + 20;
   const cx = (col) => OW + col * CW + CW / 2;
 
-  const renderNum = (num, rightCol, y, color, size, opacity) => {
+  const rn = (num, rightCol, y, color, size, opacity) => {
     const s = String(num);
     return s.split("").map((ch, ki) => {
       const col = rightCol - s.length + 1 + ki;
@@ -106,11 +113,14 @@ function LongDivisionWork({ dividend, divisor, quotient, remainder }) {
     });
   };
 
-  const lineSpan = (step) => {
-    const nums = [step.working, step.sub, step.diff].filter(n => n > 0);
-    const maxLen = Math.max(...nums.map(n => String(n).length), 1);
+  const span = (step) => {
+    const maxLen = Math.max(
+      String(step.working).length,
+      step.q > 0 ? String(step.sub).length : 1,
+      step.diff > 0 ? String(step.diff).length : 1
+    );
     return {
-      left: cx(Math.max(0, step.col - maxLen + 1)) - 6,
+      left:  cx(Math.max(0, step.col - maxLen + 1)) - 6,
       right: cx(step.col) + CW * 0.45,
     };
   };
@@ -118,56 +128,84 @@ function LongDivisionWork({ dividend, divisor, quotient, remainder }) {
   return (
     <div style={{ overflowX: "auto", marginTop: 8 }}>
       <svg width={W} height={H} style={{ display: "block", margin: "0 auto", minWidth: W }}>
+        {/* Divisor */}
         <text x={OW - 10} y={HEADER + CH * 0.78} textAnchor="end"
           fontSize="26" fontWeight="700" fill="var(--text)" fontFamily="var(--mono)">{divisor}</text>
-        <line x1={OW - 2} y1={HEADER + CH * 0.18} x2={OW - 2} y2={HEADER + CH}
+        {/* Bracket */}
+        <line x1={OW-2} y1={HEADER+CH*0.18} x2={OW-2} y2={HEADER+CH}
           stroke="var(--text)" strokeWidth="2.5" />
-        <line x1={OW - 2} y1={HEADER + CH * 0.18} x2={OW + nDigits * CW + 4} y2={HEADER + CH * 0.18}
+        <line x1={OW-2} y1={HEADER+CH*0.18} x2={OW+nDigits*CW+4} y2={HEADER+CH*0.18}
           stroke="var(--text)" strokeWidth="2.5" />
+        {/* Dividend */}
         {dvStr.split("").map((ch, ci) => (
-          <text key={ci} x={cx(ci)} y={HEADER + CH * 0.78} textAnchor="middle"
+          <text key={ci} x={cx(ci)} y={HEADER+CH*0.78} textAnchor="middle"
             fontSize="26" fontWeight="700" fill="var(--text)" fontFamily="var(--mono)">{ch}</text>
         ))}
+        {/* Quotient above bracket */}
         {steps.map((step, si) => (
-          <text key={si} x={cx(step.col)} y={HEADER - 8} textAnchor="middle"
+          <text key={si} x={cx(step.col)} y={HEADER-8} textAnchor="middle"
             fontSize="26" fontWeight="800" fill="var(--green)" fontFamily="var(--mono)">{step.q}</text>
         ))}
+        {/* Work rows */}
         {steps.map((step, si) => {
-          const rowTop = HEADER + CH + si * rowH;
-          const bringDownY = rowTop + CH * 0.55;   // brought-down number (dim, above sub)
-          const subY      = rowTop + CH * 0.95;    // subtrahend
-          const lineY     = rowTop + CH + 6;       // line
-          const diffY     = rowTop + CH + CH * 0.75; // difference
-          const isLast    = si === steps.length - 1;
-          const { left: lineLeft, right: lineRight } = lineSpan(step);
+          const top = HEADER + CH + si * ROW;
+          const isFirst = si === 0;
+          const isLast  = si === steps.length - 1;
+          const { left: ll, right: lr } = span(step);
 
-          if (step.q === 0) {
-            // Zero quotient: brought-down number, line, 0
+          if (isFirst) {
+            // si=0: sub at top of row, line, diff
+            const subY  = top + CH * 0.72;
+            const lineY = top + CH + 4;
+            const diffY = top + CH + CH * 0.72;
+            if (step.q === 0) {
+              // shouldn't happen for first step but guard anyway
+              return (
+                <g key={si}>
+                  <line x1={ll} y1={lineY} x2={lr} y2={lineY} stroke="var(--text)" strokeWidth="1.5" />
+                  {rn(0, step.col, diffY, "var(--text)", 22)}
+                </g>
+              );
+            }
             return (
               <g key={si}>
-                {si > 0 && renderNum(step.working, step.col, bringDownY, "var(--text3)", 19, 0.65)}
-                <line x1={lineLeft} y1={lineY} x2={lineRight} y2={lineY}
-                  stroke="var(--text2)" strokeWidth="1.5" />
-                {renderNum(0, step.col, diffY, "var(--text)", 22)}
+                {rn(step.sub, step.col, subY, "var(--text)", 24)}
+                <line x1={ll} y1={lineY} x2={lr} y2={lineY} stroke="var(--text)" strokeWidth="1.5" />
+                {rn(step.diff, step.col, diffY, isLast ? "var(--blue)" : "var(--text)", 22)}
+              </g>
+            );
+          }
+
+          // si>0: working (dim) in row A, sub in row B, line, diff
+          const workY = top + CH * 0.72;        // row A
+          const subY  = top + CH + CH * 0.72;   // row B
+          const lineY = top + CH * 2 + 4;
+          const diffY = top + CH * 2 + CH * 0.72;
+
+          if (step.q === 0) {
+            // zero quotient: show working dim, line, show 0
+            return (
+              <g key={si}>
+                {rn(step.working, step.col, workY, "var(--text3)", 22, 0.6)}
+                <line x1={ll} y1={lineY} x2={lr} y2={lineY} stroke="var(--text2)" strokeWidth="1.5" />
+                {rn(0, step.col, diffY, "var(--text)", 22)}
               </g>
             );
           }
 
           return (
             <g key={si}>
-              {si > 0 && renderNum(step.working, step.col, bringDownY, "var(--text3)", 19, 0.65)}
-              {renderNum(step.sub, step.col, subY, "var(--text)", 24)}
-              <line x1={lineLeft} y1={lineY} x2={lineRight} y2={lineY}
-                stroke="var(--text)" strokeWidth="1.5" />
-              {renderNum(step.diff, step.col, diffY,
-                isLast ? "var(--blue)" : "var(--text)", 22)}
+              {rn(step.working, step.col, workY, "var(--text3)", 22, 0.6)}
+              {rn(step.sub,     step.col, subY,  "var(--text)",  24)}
+              <line x1={ll} y1={lineY} x2={lr} y2={lineY} stroke="var(--text)" strokeWidth="1.5" />
+              {rn(step.diff, step.col, diffY, isLast ? "var(--blue)" : "var(--text)", 22)}
             </g>
           );
         })}
+        {/* Remainder label */}
         {remainder > 0 && (
-          <text
-            x={OW + nDigits * CW + 10}
-            y={HEADER + CH + steps.length * rowH - CH * 0.25}
+          <text x={OW + nDigits * CW + 10}
+            y={HEADER + CH + steps.length * ROW - CH * 0.28}
             fontSize="15" fontWeight="700" fill="var(--blue)" fontFamily="var(--mono)">
             R{remainder}
           </text>
@@ -236,6 +274,11 @@ function RectilinearSVG({ question, revealCorrect }) {
       rect1 = { x: leftX,       y: topY,      w: innerLeftX - leftX,  h: botY - topY };   // left arm
       rect2 = { x: innerRightX, y: topY,      w: rightX - innerRightX, h: botY - topY };  // right arm
       rect3 = { x: innerLeftX,  y: innerBotY, w: innerRightX - innerLeftX, h: botY - innerBotY }; // bottom strip
+      // Store strip label info for rendering
+      rect3.labelX = (innerLeftX + innerRightX) / 2;
+      rect3.labelY = (innerBotY + botY) / 2;
+      rect3.stripH = question.stripH;
+      rect3.unit   = question.unit;
     }
   }
 
@@ -253,6 +296,17 @@ function RectilinearSVG({ question, revealCorrect }) {
       {revealCorrect && rect3 && (
         <rect x={rect3.x} y={rect3.y} width={rect3.w} height={rect3.h}
           fill="rgba(16,185,129,0.15)" stroke="rgba(16,185,129,0.6)" strokeWidth="2" strokeDasharray="6,3" rx="2" />
+      )}
+      {/* Strip height label inside bottom strip on reveal */}
+      {revealCorrect && rect3 && rect3.stripH && (
+        <g>
+          <rect x={rect3.labelX - 34} y={rect3.labelY - 13} width={68} height={26} rx={5}
+            fill="var(--bg2)" stroke="rgba(16,185,129,0.8)" strokeWidth="1.5" />
+          <text x={rect3.labelX} y={rect3.labelY + 6} textAnchor="middle" fontSize="13"
+            fontWeight="800" fill="var(--green)" fontFamily="var(--mono)">
+            {rect3.stripH}{rect3.unit}
+          </text>
+        </g>
       )}
       <path d={pathD} stroke="var(--blue)" strokeWidth="2.5" fill="rgba(59,130,246,0.04)" />
       {sv.map((p, i) => {
