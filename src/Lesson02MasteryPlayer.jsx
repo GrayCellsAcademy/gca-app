@@ -6,13 +6,6 @@ import {
 
 export const LESSON02_MASTERY_TOPIC_ID = "lesson02-mastery-v1";
 
-// - Subtraction table config -
-const SUB_TIMER = 10;      // seconds per question
-const SUB_CORRECT_NEEDED = 2;  // correct to pass current number
-const SUB_REVIEW_NEEDED = 1;   // correct to pass review questions
-const TOTAL_NUMS = 9;          // 1 through 9
-
-// - Mastery activity config -
 const MASTERY_STREAK = 3;
 const MASTERY_ACTIVITIES = [
   { id: "1",  label: "Segment Addition",            description: "3 connected segments - find total length with units." },
@@ -23,35 +16,6 @@ const MASTERY_ACTIVITIES = [
   { id: "5B", label: "Missing Side of Shape",       description: "L/T/U shape - click each missing side and enter its length." },
   { id: "5C", label: "Perimeter of Rectilinear Shape", description: "L/T/U shape with a missing side - find the perimeter." },
 ];
-
-// - Shared helpers -
-function shuffle(arr) {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-}
-
-function buildSubQuestions(tierNum, masteredTiers) {
-  // Current tier: (tierNum+1)-tierNum through (tierNum+9)-tierNum
-  // e.g. tier 1: 2-1, 3-1, ..., 10-1 (9 questions, need 2 correct each)
-  const current = Array.from({ length: 9 }, (_, i) => ({
-    a: tierNum + 1 + i, b: tierNum,
-    answer: (tierNum + 1 + i) - tierNum, // always 1..9
-    streakNeeded: SUB_CORRECT_NEEDED, streak: 0, isCurrent: true,
-  }));
-  // Review: all previously mastered tiers, same 9 questions each, need 1 correct
-  const review = masteredTiers.flatMap(t =>
-    Array.from({ length: 9 }, (_, i) => ({
-      a: t + 1 + i, b: t,
-      answer: (t + 1 + i) - t,
-      streakNeeded: SUB_REVIEW_NEEDED, streak: 0, isCurrent: false,
-    }))
-  );
-  return shuffle([...current, ...review]);
-}
 
 // - SVG components (copied from Lesson02Session, not exported there) -
 
@@ -271,308 +235,6 @@ function QuestionDisplay({ question, selectedSides, onSideClick, revealCorrect, 
   }
 }
 
-// - Subtraction drill answer input -
-
-function SubAnswerInput({ onSubmit, disabled }) {
-  const [val, setVal] = useState("");
-  const ref = useRef(null);
-  useEffect(() => { setVal(""); setTimeout(() => ref.current?.focus(), 80); }, [disabled]);
-  const submit = () => {
-    const n = parseInt(val, 10);
-    if (!isNaN(n)) { onSubmit(n); setVal(""); }
-  };
-  return (
-    <div style={{ display: "flex", gap: 8, justifyContent: "center" }}>
-      <input ref={ref} value={val} onChange={e => setVal(e.target.value.replace(/\D/g, ""))}
-        onKeyDown={e => e.key === "Enter" && submit()}
-        inputMode="numeric" placeholder="?" disabled={disabled}
-        style={{ textAlign: "center", fontSize: 34, fontFamily: "var(--mono)", fontWeight: 700, padding: "12px", width: 120 }} />
-      <button className="btn btn-primary" style={{ fontSize: 20, padding: "12px 24px" }}
-        onMouseDown={e => { e.preventDefault(); submit(); }}
-        onTouchEnd={e => { e.preventDefault(); submit(); }}
-        disabled={disabled || !val.trim()}>
-        OK
-      </button>
-    </div>
-  );
-}
-
-// - Geometry mastery answer input -
-
-function GeoAnswerInput({ question, onSubmit, submitted, selectedSides, onSideClick, activeMissingIdx, setActiveMissingIdx }) {
-  const [input, setInput] = useState("");
-  const [enteredSides, setEnteredSides] = useState({});
-  const inputRef = useRef(null);
-
-  useEffect(() => {
-    setInput(""); setEnteredSides({});
-    setTimeout(() => inputRef.current?.focus(), 100);
-  }, [question?.type]);
-
-  // For 5B: refocus when active missing side changes
-  useEffect(() => {
-    if (question?.type === "rectilinear-5B" && activeMissingIdx !== null) {
-      setInput("");
-      setTimeout(() => inputRef.current?.focus(), 100);
-    }
-  }, [activeMissingIdx, question?.type]);
-
-  if (question?.type === "rectilinear-5B") {
-    const missingAnswers = question.missingAnswers || [];
-    const allEntered = missingAnswers.every(ma => enteredSides[ma.idx] !== undefined);
-    const handleConfirm = () => {
-      if (activeMissingIdx === null || !input.trim()) return;
-      const newEntered = { ...enteredSides, [activeMissingIdx]: input.trim() };
-      setEnteredSides(newEntered);
-      setInput("");
-      const next = missingAnswers.find(ma => newEntered[ma.idx] === undefined);
-      setActiveMissingIdx(next ? next.idx : null);
-    };
-    return (
-      <div>
-        <div style={{ fontSize: 13, color: "var(--text3)", marginBottom: 8 }}>
-          {activeMissingIdx !== null ? "Enter the length for the highlighted side (include units)" : allEntered ? "All sides entered - ready to submit!" : "Click a ? side to select it, then enter its length"}
-        </div>
-        {activeMissingIdx !== null && (
-          <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
-            <input ref={inputRef} value={input} onChange={e => setInput(e.target.value)}
-              onKeyDown={e => e.key === "Enter" && handleConfirm()}
-              placeholder={"e.g. 35" + (question.unit || "")}
-              style={{ flex: 1, fontSize: 20, fontFamily: "var(--mono)", padding: "10px 14px" }} />
-            <button className="btn btn-primary" onClick={handleConfirm} disabled={!input.trim()}>OK</button>
-          </div>
-        )}
-        {Object.entries(enteredSides).length > 0 && (
-          <div style={{ fontSize: 13, color: "var(--text2)", marginBottom: 8 }}>
-            {Object.entries(enteredSides).map(([idx, val]) => (
-              <span key={idx} style={{ marginRight: 12 }}>Side: <strong style={{ fontFamily: "var(--mono)" }}>{val}</strong></span>
-            ))}
-          </div>
-        )}
-        <button className="btn btn-primary" style={{ width: "100%" }}
-          onClick={() => onSubmit(JSON.stringify(missingAnswers.map(ma => ({ idx: ma.idx, value: enteredSides[ma.idx]?.replace(/[^0-9]/g, "") || "" }))))}
-          disabled={submitted || !allEntered}>Submit All</button>
-      </div>
-    );
-  }
-
-  if (question?.type === "rectilinear-5A") {
-    return (
-      <div style={{ textAlign: "center" }}>
-        <div style={{ fontSize: 13, color: "var(--text3)", marginBottom: 8 }}>
-          {"Click sides that sum to the highlighted side. Selected: " + (selectedSides?.length || 0)}
-        </div>
-        <button className="btn btn-primary" style={{ width: "100%" }}
-          onClick={() => onSubmit((selectedSides || []).slice().sort((a, b) => a - b).join(","))}
-          disabled={submitted}>Submit</button>
-      </div>
-    );
-  }
-
-  return (
-    <div>
-      <div style={{ fontSize: 13, color: "var(--text3)", marginBottom: 6 }}>Include units (e.g. 45cm, 120ft)</div>
-      <div style={{ display: "flex", gap: 8 }}>
-        <input ref={inputRef} value={input} onChange={e => setInput(e.target.value)}
-          onKeyDown={e => e.key === "Enter" && onSubmit(input)}
-          placeholder="e.g. 150cm" disabled={submitted}
-          style={{ flex: 1, fontSize: 20, fontFamily: "var(--mono)", padding: "10px 14px" }} />
-        <button className="btn btn-primary" onClick={() => onSubmit(input)} disabled={submitted || !input.trim()}>Submit</button>
-      </div>
-    </div>
-  );
-}
-
-// - Countdown ring -
-function CountdownRing({ seconds, total }) {
-  const r = 24, circ = 2 * Math.PI * r;
-  const pct = seconds / total;
-  const danger = seconds <= 3, warn = seconds <= 6;
-  const color = danger ? "var(--red)" : warn ? "var(--amber)" : "var(--green)";
-  return (
-    <div style={{ position: "relative", width: 60, height: 60, display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <svg width={60} height={60} style={{ position: "absolute", top: 0, left: 0, transform: "rotate(-90deg)" }}>
-        <circle cx={30} cy={30} r={r} fill="none" stroke="var(--surface2)" strokeWidth={4} />
-        <circle cx={30} cy={30} r={r} fill="none" stroke={color} strokeWidth={4}
-          strokeDasharray={circ} strokeDashoffset={circ * (1 - pct)} strokeLinecap="round"
-          style={{ transition: "stroke-dashoffset 0.9s linear, stroke 0.3s" }} />
-      </svg>
-      <span style={{ fontFamily: "var(--mono)", fontSize: 16, fontWeight: 700, color }}>{seconds}</span>
-    </div>
-  );
-}
-
-// - Streak dots -
-function StreakDots({ current, needed }) {
-  return (
-    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
-      <span style={{ fontSize: 13, color: "var(--text3)" }}>Streak:</span>
-      {Array.from({ length: needed }).map((_, i) => (
-        <div key={i} style={{ width: 13, height: 13, borderRadius: "50%", background: i < current ? "var(--green)" : "var(--surface2)", border: "2px solid " + (i < current ? "var(--green)" : "var(--border2)"), transition: "all 0.2s" }} />
-      ))}
-      <span style={{ fontSize: 13, color: "var(--text3)" }}>{current}/{needed}</span>
-    </div>
-  );
-}
-
-// - Subtraction Drill Screen -
-function SubtractionDrill({ subData, onComplete, onSaveProgress }) {
-  const { tierNum, masteredTiers } = subData;
-  const [questions, setQuestions] = useState(() => buildSubQuestions(tierNum, masteredTiers));
-  const [qIdx, setQIdx] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(SUB_TIMER);
-  const [showCorrect, setShowCorrect] = useState(null);
-  const timerRef = useRef(null);
-
-  const currentQ = questions[qIdx % questions.length] || questions[0];
-
-  useEffect(() => {
-    if (!currentQ) return;
-    startTimer();
-    return () => clearInterval(timerRef.current);
-  }, [qIdx, questions.length]);
-
-  if (!currentQ) return <div style={{ display: "flex", justifyContent: "center", padding: 40 }}><div className="spinner" /></div>;
-
-  const startTimer = () => {
-    clearInterval(timerRef.current);
-    setTimeLeft(SUB_TIMER);
-    timerRef.current = setInterval(() => {
-      setTimeLeft(t => {
-        if (t <= 1) { clearInterval(timerRef.current); handleWrong(); return 0; }
-        return t - 1;
-      });
-    }, 1000);
-  };
-
-  const allDone = (qs) => qs.every(q => q.streak >= q.streakNeeded);
-
-  const handleAnswer = (val) => {
-    clearInterval(timerRef.current);
-    if (val === currentQ.answer) {
-      const updated = questions.map((q, i) =>
-        i === (qIdx % questions.length) ? { ...q, streak: q.streak + 1 } : q
-      );
-      setQuestions(updated);
-      setShowCorrect(null);
-      if (allDone(updated)) {
-        advanceTier();
-      } else {
-        setQIdx(i => i + 1);
-      }
-    } else {
-      handleWrong();
-    }
-  };
-
-  const handleWrong = () => {
-    clearInterval(timerRef.current);
-    const updated = questions.map((q, i) =>
-      i === (qIdx % questions.length)
-        ? { ...q, streak: 0, streakNeeded: q.streakNeeded + 1 }
-        : q
-    );
-    setQuestions(updated);
-    setShowCorrect(currentQ.answer);
-  };
-
-  const handleWrongContinue = () => {
-    setShowCorrect(null);
-    setQIdx(i => i + 1);
-    startTimer();
-  };
-
-  const advanceTier = async () => {
-    const newMastered = [...masteredTiers, tierNum];
-    const nextTier = tierNum + 1;
-    if (nextTier > TOTAL_NUMS) {
-      await onSaveProgress({ phase: "mastery", subtractionData: { tierNum: nextTier, masteredTiers: newMastered }, masteryData: { activityIdx: 0, streak: 0 } });
-      onComplete();
-    } else {
-      const newData = { tierNum: nextTier, masteredTiers: newMastered };
-      await onSaveProgress({ phase: "subtraction", subtractionData: newData, masteryData: { activityIdx: 0, streak: 0 } });
-      setQuestions(buildSubQuestions(nextTier, newMastered));
-      setQIdx(0);
-      setShowCorrect(null);
-    }
-  };
-
-  const totalQ = questions.length;
-  const doneQ = questions.filter(q => q.streak >= q.streakNeeded).length;
-
-  return (
-    <div style={{ maxWidth: 520, margin: "0 auto" }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-        <div>
-          <div style={{ fontSize: 15, fontWeight: 800 }}>Subtracting {tierNum}s</div>
-          <div style={{ fontSize: 13, color: "var(--text3)" }}>
-            {masteredTiers.length > 0 ? "Review included: -" + masteredTiers.join(", -") : ""}
-          </div>
-        </div>
-        <CountdownRing seconds={timeLeft} total={SUB_TIMER} />
-      </div>
-
-      {/* Progress */}
-      <div style={{ marginBottom: 16 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: "var(--text3)", marginBottom: 4 }}>
-          <span>Questions cleared</span><span>{doneQ}/{totalQ}</span>
-        </div>
-        <div style={{ height: 6, background: "var(--surface2)", borderRadius: 99, overflow: "hidden" }}>
-          <div style={{ height: "100%", width: (totalQ > 0 ? doneQ / totalQ * 100 : 0) + "%", background: "var(--green)", borderRadius: 99, transition: "width 0.3s" }} />
-        </div>
-      </div>
-
-      <div className="card" style={{ textAlign: "center" }}>
-        <div style={{ fontFamily: "var(--mono)", fontSize: 52, fontWeight: 900, color: "var(--text)", marginBottom: 24, letterSpacing: "-1px" }}>
-          {currentQ.a} - {currentQ.b} = ?
-        </div>
-
-        {!currentQ.isCurrent && (
-          <div style={{ fontSize: 11, color: "var(--text3)", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.06em" }}>Review</div>
-        )}
-
-        {/* Streak dots for this question */}
-        <div style={{ display: "flex", gap: 6, justifyContent: "center", marginBottom: 16 }}>
-          {Array.from({ length: currentQ.streakNeeded }).map((_, i) => (
-            <div key={i} style={{ width: 12, height: 12, borderRadius: "50%", background: i < currentQ.streak ? "var(--green)" : "var(--surface2)", border: "2px solid " + (i < currentQ.streak ? "var(--green)" : "var(--border2)"), transition: "all 0.2s" }} />
-          ))}
-        </div>
-
-        {showCorrect !== null ? (
-          <div style={{ animation: "popIn 0.25s ease" }}>
-            <div style={{ fontSize: 17, fontWeight: 700, color: "var(--red)", marginBottom: 8 }}>Not quite!</div>
-            <div style={{ fontSize: 15, color: "var(--text2)", marginBottom: 6 }}>The answer is</div>
-            <div style={{ fontFamily: "var(--mono)", fontSize: 48, fontWeight: 900, color: "var(--green)", marginBottom: 20 }}>
-              {currentQ.answer}
-            </div>
-            <button className="btn btn-success" style={{ width: "100%", fontSize: 18 }}
-              onMouseDown={e => { e.preventDefault(); handleWrongContinue(); }}
-              onTouchEnd={e => { e.preventDefault(); handleWrongContinue(); }}>
-              Got it - next
-            </button>
-          </div>
-        ) : (
-          <SubAnswerInput onSubmit={handleAnswer} disabled={false} />
-        )}
-      </div>
-
-      {/* Tier roadmap */}
-      <div style={{ marginTop: 14, display: "flex", gap: 5, flexWrap: "wrap" }}>
-        {Array.from({ length: TOTAL_NUMS }, (_, i) => {
-          const n = i + 1;
-          const done = masteredTiers.includes(n);
-          const active = n === tierNum;
-          return (
-            <div key={n} style={{ fontSize: 13, fontWeight: 700, padding: "3px 10px", borderRadius: 99, background: done ? "rgba(16,185,129,0.15)" : active ? "rgba(232,99,10,0.15)" : "var(--surface)", color: done ? "var(--green)" : active ? "var(--blue)" : "var(--text3)", border: "1px solid " + (done ? "rgba(16,185,129,0.3)" : active ? "rgba(232,99,10,0.3)" : "var(--border)") }}>
-              -{n}
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
 // - Geometry Mastery Screen -
 function GeometryMastery({ masteryData, onSaveProgress, onComplete }) {
   const { activityIdx, streak } = masteryData;
@@ -617,21 +279,21 @@ function GeometryMastery({ masteryData, onSaveProgress, onComplete }) {
       if (newStreak >= MASTERY_STREAK) {
         const nextIdx = activityIdx + 1;
         if (nextIdx >= MASTERY_ACTIVITIES.length) {
-          await onSaveProgress({ phase: "complete", subtractionData: null, masteryData: { activityIdx: nextIdx, streak: 0 } });
+          await onSaveProgress({ activityIdx: nextIdx, streak: 0 });
           onComplete();
         } else {
-          await onSaveProgress({ phase: "mastery", subtractionData: null, masteryData: { activityIdx: nextIdx, streak: 0 } });
+          await onSaveProgress({ activityIdx: nextIdx, streak: 0 });
           setCurrentStreak(0);
           // activityIdx change handled by parent
         }
       } else {
-        await onSaveProgress({ phase: "mastery", subtractionData: null, masteryData: { activityIdx, streak: newStreak } });
+        await onSaveProgress({ activityIdx, streak: newStreak });
         setTimeout(() => newQuestion(), 800);
       }
     } else {
       setCurrentStreak(0);
       setPhase("wrong");
-      await onSaveProgress({ phase: "mastery", subtractionData: null, masteryData: { activityIdx, streak: 0 } });
+      await onSaveProgress({ activityIdx, streak: 0 });
     }
   };
 
@@ -722,17 +384,15 @@ function GeometryMastery({ masteryData, onSaveProgress, onComplete }) {
 export default function Lesson02MasteryPlayer({ user, topic, onHome }) {
   const topicId = topic?.id || LESSON02_MASTERY_TOPIC_ID;
   const [loading, setLoading] = useState(true);
-  const [phase, setPhase] = useState("subtraction"); // subtraction | mastery | complete
-  const [subData, setSubData] = useState({ tierNum: 1, masteredTiers: [] });
   const [masteryData, setMasteryData] = useState({ activityIdx: 0, streak: 0 });
+  const [completed, setCompleted] = useState(false);
 
   useEffect(() => {
     const load = async () => {
       const prog = await getProgress(user.id, topicId);
       if (prog?.data) {
-        const { phase: p, subtractionData, masteryData: md } = prog.data;
-        if (p) setPhase(p);
-        if (subtractionData) setSubData({ tierNum: subtractionData.tierNum || 1, masteredTiers: subtractionData.masteredTiers || [] });
+        const { masteryData: md, completed: done } = prog.data;
+        if (done) { setCompleted(true); setLoading(false); return; }
         if (md) setMasteryData(md);
       }
       setLoading(false);
@@ -740,32 +400,27 @@ export default function Lesson02MasteryPlayer({ user, topic, onHome }) {
     load();
   }, []);
 
-  const saveProgress = async (data) => {
-    const { phase: p, subtractionData, masteryData: md } = data;
-    const totalSteps = TOTAL_NUMS + MASTERY_ACTIVITIES.length;
-    const subDone = (subtractionData?.masteredTiers?.length || (p === "mastery" || p === "complete" ? TOTAL_NUMS : 0));
-    const masteryDone = md?.activityIdx || 0;
-    const pct = Math.round(((subDone + masteryDone) / totalSteps) * 100);
+  const saveProgress = async (md, done) => {
+    const pct = Math.round((md.activityIdx / MASTERY_ACTIVITIES.length) * 100);
     await fbSaveProgress(user.id, topicId, {
       started: true,
-      completed: p === "complete",
-      percentComplete: pct,
-      data,
+      completed: done,
+      percentComplete: Math.min(100, pct),
+      data: { masteryData: md, completed: done },
     });
-    if (p) setPhase(p);
-    if (subtractionData) setSubData(subtractionData);
-    if (md) setMasteryData(md);
+    setMasteryData(md);
+    if (done) setCompleted(true);
   };
 
   if (loading) return <div style={{ display: "flex", justifyContent: "center", padding: 60 }}><div className="spinner" /></div>;
 
-  if (phase === "complete") return (
+  if (completed) return (
     <div style={{ maxWidth: 520, margin: "0 auto", textAlign: "center", animation: "fadeUp 0.4s ease" }}>
       <div className="card">
-        <div style={{ fontSize: 64, marginBottom: 16, color: "var(--amber)", fontWeight: 900 }}>100%</div>
+        <div style={{ fontSize: 48, fontWeight: 900, color: "var(--amber)", marginBottom: 16 }}>100%</div>
         <h2 style={{ fontSize: 26, fontWeight: 800, marginBottom: 8 }}>Geometry Mastery Complete!</h2>
         <p style={{ color: "var(--text2)", fontSize: 16, marginBottom: 24 }}>
-          You have mastered subtraction tables and all 7 geometry activities.
+          You have mastered all 7 geometry activities!
         </p>
         <button className="btn btn-primary btn-lg" style={{ width: "100%" }} onClick={onHome}>Back to Home</button>
       </div>
@@ -775,51 +430,22 @@ export default function Lesson02MasteryPlayer({ user, topic, onHome }) {
   return (
     <div style={{ minHeight: "100vh", background: "var(--bg)", padding: "clamp(16px,3vw,32px)" }} className="dot-bg">
       <div style={{ maxWidth: 700, margin: "0 auto" }}>
-        {/* Top bar */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24, flexWrap: "wrap", gap: 12 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <div style={{ width: 40, height: 40, borderRadius: 12, background: "linear-gradient(135deg,var(--blue),var(--cyan))", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 800, color: "#fff" }}>L2</div>
             <div>
               <div style={{ fontWeight: 800, fontSize: 17 }}>Geometry Mastery</div>
-              <div style={{ color: "var(--text3)", fontSize: 12 }}>
-                {phase === "subtraction" ? "Part 1: Subtraction Tables" : "Part 2: Geometry Activities"}
-              </div>
+              <div style={{ color: "var(--text3)", fontSize: 12 }}>7 activities - 3 correct in a row to advance</div>
             </div>
           </div>
           <button className="btn btn-ghost btn-sm" onClick={onHome}>Back to Home</button>
         </div>
-
-        {/* Phase indicator */}
-        <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
-          {["Subtraction Tables", "Geometry Mastery"].map((label, i) => {
-            const isActive = (i === 0 && phase === "subtraction") || (i === 1 && phase === "mastery");
-            const isDone = (i === 0 && phase !== "subtraction");
-            return (
-              <div key={i} style={{ flex: 1, padding: "8px 14px", borderRadius: "var(--radius-sm)", background: isDone ? "rgba(16,185,129,0.1)" : isActive ? "rgba(232,99,10,0.1)" : "var(--surface)", border: "1px solid " + (isDone ? "rgba(16,185,129,0.3)" : isActive ? "rgba(232,99,10,0.3)" : "var(--border)"), textAlign: "center" }}>
-                <div style={{ fontSize: 12, fontWeight: 700, color: isDone ? "var(--green)" : isActive ? "var(--blue)" : "var(--text3)" }}>
-                  {isDone ? "Done - " : isActive ? "Now - " : ""}{label}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        {phase === "subtraction" && (
-          <SubtractionDrill
-            subData={subData}
-            onComplete={() => setPhase("mastery")}
-            onSaveProgress={saveProgress}
-          />
-        )}
-
-        {phase === "mastery" && (
-          <GeometryMastery
-            key={masteryData.activityIdx}
-            masteryData={masteryData}
-            onSaveProgress={saveProgress}
-            onComplete={() => setPhase("complete")}
-          />
-        )}
+        <GeometryMastery
+          key={masteryData.activityIdx}
+          masteryData={masteryData}
+          onSaveProgress={(md) => saveProgress(md, md.activityIdx >= MASTERY_ACTIVITIES.length)}
+          onComplete={() => saveProgress({ activityIdx: MASTERY_ACTIVITIES.length, streak: 0 }, true)}
+        />
       </div>
     </div>
   );
