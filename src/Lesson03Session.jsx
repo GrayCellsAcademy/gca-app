@@ -67,7 +67,7 @@ function ColumnMultiplyWork({ a, b }) {
   );
 }
 
-// -- LongDivisionWork: correct row layout, handles zero-in-middle --
+// -- LongDivisionWork: running-cursor layout, correct zero-in-middle --
 function LongDivisionWork({ dividend, divisor, quotient, remainder }) {
   const dvStr = String(dividend);
   const nDigits = dvStr.length;
@@ -75,8 +75,7 @@ function LongDivisionWork({ dividend, divisor, quotient, remainder }) {
 
   // Build one step per quotient digit
   const steps = [];
-  let working = 0;
-  let started = false;
+  let working = 0, started = false;
   for (let i = 0; i < nDigits; i++) {
     working = working * 10 + parseInt(dvStr[i]);
     if (!started && working < divisor && i < nDigits - 1) continue;
@@ -88,16 +87,60 @@ function LongDivisionWork({ dividend, divisor, quotient, remainder }) {
     working = diff;
   }
 
-  // Layout per step:
-  //   Row A (height CH): working number (dim, si>0 only) OR subtrahend at top (si=0)
-  //   Row B (height CH): subtrahend (si>0) then line then diff
-  // So each step takes 2*CH of vertical space.
-  // For si=0: no working shown, sub at top of Row A, line at bottom of Row A, diff in Row B
-  // For si>0: working (dim) in Row A, sub in Row B, line after Row B, diff below
+  // Assign Y positions using a running cursor.
+  // Normal step (q>0, si=0):  sub + line + diff  = 2 rows
+  // Normal step (q>0, si>0):  working(dim) + sub + line + diff = 3 rows worth but packed:
+  //   workY = cursor + CH*0.72
+  //   subY  = cursor + CH + CH*0.72
+  //   lineY = cursor + CH*2 + 4
+  //   diffY = cursor + CH*2 + CH*0.72
+  //   advance cursor by CH*3
+  // Zero step (q=0, si>0):    working(dim) + line + 0 = 2 rows
+  //   workY = cursor + CH*0.72
+  //   lineY = cursor + CH + 4
+  //   diffY = cursor + CH + CH*0.72
+  //   advance cursor by CH*2
+  // First step (si=0):        sub + line + diff, no working shown
+  //   subY  = cursor + CH*0.72
+  //   lineY = cursor + CH + 4
+  //   diffY = cursor + CH + CH*0.72
+  //   advance cursor by CH*2
 
-  const ROW = CH * 2;
+  let cursor = HEADER + CH;
+  const positioned = steps.map((step, si) => {
+    const isFirst = si === 0;
+    let pos;
+    if (isFirst) {
+      pos = {
+        workY: null,
+        subY:  cursor + CH * 0.72,
+        lineY: cursor + CH + 4,
+        diffY: cursor + CH + CH * 0.72,
+        advance: CH * 2,
+      };
+    } else if (step.q === 0) {
+      pos = {
+        workY: cursor + CH * 0.72,
+        subY:  null,
+        lineY: cursor + CH + 4,
+        diffY: cursor + CH + CH * 0.72,
+        advance: CH * 2,
+      };
+    } else {
+      pos = {
+        workY: cursor + CH * 0.72,
+        subY:  cursor + CH + CH * 0.72,
+        lineY: cursor + CH * 2 + 4,
+        diffY: cursor + CH * 2 + CH * 0.72,
+        advance: CH * 3,
+      };
+    }
+    cursor += pos.advance;
+    return { ...step, ...pos };
+  });
+
+  const totalH = cursor + CH + 20;
   const W = OW + nDigits * CW + 60;
-  const H = HEADER + CH + steps.length * ROW + CH + 20;
   const cx = (col) => OW + col * CW + CW / 2;
 
   const rn = (num, rightCol, y, color, size, opacity) => {
@@ -113,21 +156,20 @@ function LongDivisionWork({ dividend, divisor, quotient, remainder }) {
     });
   };
 
-  const span = (step) => {
-    const maxLen = Math.max(
-      String(step.working).length,
-      step.q > 0 ? String(step.sub).length : 1,
-      step.diff > 0 ? String(step.diff).length : 1
-    );
+  const lineX = (step) => {
+    const nums = [step.working, step.q > 0 ? step.sub : 0].filter(n => n > 0);
+    const maxLen = Math.max(...nums.map(n => String(n).length), 1);
     return {
       left:  cx(Math.max(0, step.col - maxLen + 1)) - 6,
       right: cx(step.col) + CW * 0.45,
     };
   };
 
+  const lastDiffY = positioned.length > 0 ? positioned[positioned.length - 1].diffY : totalH - 20;
+
   return (
     <div style={{ overflowX: "auto", marginTop: 8 }}>
-      <svg width={W} height={H} style={{ display: "block", margin: "0 auto", minWidth: W }}>
+      <svg width={W} height={totalH} style={{ display: "block", margin: "0 auto", minWidth: W }}>
         {/* Divisor */}
         <text x={OW - 10} y={HEADER + CH * 0.78} textAnchor="end"
           fontSize="26" fontWeight="700" fill="var(--text)" fontFamily="var(--mono)">{divisor}</text>
@@ -142,70 +184,28 @@ function LongDivisionWork({ dividend, divisor, quotient, remainder }) {
             fontSize="26" fontWeight="700" fill="var(--text)" fontFamily="var(--mono)">{ch}</text>
         ))}
         {/* Quotient above bracket */}
-        {steps.map((step, si) => (
+        {positioned.map((step, si) => (
           <text key={si} x={cx(step.col)} y={HEADER-8} textAnchor="middle"
             fontSize="26" fontWeight="800" fill="var(--green)" fontFamily="var(--mono)">{step.q}</text>
         ))}
         {/* Work rows */}
-        {steps.map((step, si) => {
-          const top = HEADER + CH + si * ROW;
-          const isFirst = si === 0;
-          const isLast  = si === steps.length - 1;
-          const { left: ll, right: lr } = span(step);
-
-          if (isFirst) {
-            // si=0: sub at top of row, line, diff
-            const subY  = top + CH * 0.72;
-            const lineY = top + CH + 4;
-            const diffY = top + CH + CH * 0.72;
-            if (step.q === 0) {
-              // shouldn't happen for first step but guard anyway
-              return (
-                <g key={si}>
-                  <line x1={ll} y1={lineY} x2={lr} y2={lineY} stroke="var(--text)" strokeWidth="1.5" />
-                  {rn(0, step.col, diffY, "var(--text)", 22)}
-                </g>
-              );
-            }
-            return (
-              <g key={si}>
-                {rn(step.sub, step.col, subY, "var(--text)", 24)}
-                <line x1={ll} y1={lineY} x2={lr} y2={lineY} stroke="var(--text)" strokeWidth="1.5" />
-                {rn(step.diff, step.col, diffY, isLast ? "var(--blue)" : "var(--text)", 22)}
-              </g>
-            );
-          }
-
-          // si>0: working (dim) in row A, sub in row B, line, diff
-          const workY = top + CH * 0.72;        // row A
-          const subY  = top + CH + CH * 0.72;   // row B
-          const lineY = top + CH * 2 + 4;
-          const diffY = top + CH * 2 + CH * 0.72;
-
-          if (step.q === 0) {
-            // zero quotient: show working dim, line, show 0
-            return (
-              <g key={si}>
-                {rn(step.working, step.col, workY, "var(--text3)", 22, 0.6)}
-                <line x1={ll} y1={lineY} x2={lr} y2={lineY} stroke="var(--text2)" strokeWidth="1.5" />
-                {rn(0, step.col, diffY, "var(--text)", 22)}
-              </g>
-            );
-          }
-
+        {positioned.map((step, si) => {
+          const isLast = si === positioned.length - 1;
+          const { left: ll, right: lr } = lineX(step);
           return (
             <g key={si}>
-              {rn(step.working, step.col, workY, "var(--text3)", 22, 0.6)}
-              {rn(step.sub,     step.col, subY,  "var(--text)",  24)}
-              <line x1={ll} y1={lineY} x2={lr} y2={lineY} stroke="var(--text)" strokeWidth="1.5" />
-              {rn(step.diff, step.col, diffY, isLast ? "var(--blue)" : "var(--text)", 22)}
+              {step.workY !== null && rn(step.working, step.col, step.workY, "var(--text3)", 22, 0.6)}
+              {step.subY  !== null && rn(step.sub,     step.col, step.subY,  "var(--text)", 24)}
+              <line x1={ll} y1={step.lineY} x2={lr} y2={step.lineY}
+                stroke={step.q === 0 ? "var(--text2)" : "var(--text)"} strokeWidth="1.5" />
+              {rn(step.q === 0 ? 0 : step.diff, step.col, step.diffY,
+                isLast ? "var(--blue)" : "var(--text)", 22)}
             </g>
           );
         })}
         {/* Remainder label */}
         {remainder > 0 && (
-          <text x={OW + nDigits * CW + 10}
-            y={HEADER + CH + steps.length * ROW - CH * 0.28}
+          <text x={OW + nDigits * CW + 10} y={lastDiffY}
             fontSize="15" fontWeight="700" fill="var(--blue)" fontFamily="var(--mono)">
             R{remainder}
           </text>
@@ -419,7 +419,7 @@ function QuestionDisplay({ question, revealCorrect }) {
   const q = question;
   switch (q.type) {
     case "warmup":
-      return <RectilinearSVG question={q} revealCorrect={revealCorrect} />;
+      return <RectilinearSVG question={q} revealCorrect={false} />;
     case "round-multiply":
       return (
         <div style={{ textAlign: "center", fontFamily: "var(--mono)", fontSize: 42, fontWeight: 900, letterSpacing: "-1px", color: "var(--text)", margin: "8px 0" }}>
