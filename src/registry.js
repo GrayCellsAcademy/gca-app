@@ -5,6 +5,7 @@ import Lesson01MasteryPlayer from "./Lesson01MasteryPlayer";
 import ExtraCredit01Player from "./ExtraCredit01Player";
 import ReviewHomework from "./ReviewHomework";
 import Lesson02MasteryPlayer from "./Lesson02MasteryPlayer";
+import SubtractionTablesPlayer from "./SubtractionTablesPlayer";
 
 export const TOPICS = {
   "addition-tables-v1": {
@@ -70,7 +71,7 @@ export const TOPICS = {
   "lesson02-mastery-v1": {
     id: "lesson02-mastery-v1",
     title: "Geometry Mastery",
-    description: "Subtraction tables (mental math) + 7 geometry mastery activities: segments, polygons, rectangles, squares, and composite shapes.",
+    description: "7 geometry mastery activities: segments, polygons, rectangles, squares, and composite shapes.",
     subject: "math",
     gradeLevel: "6+",
     icon: "",
@@ -78,6 +79,18 @@ export const TOPICS = {
     status: "published",
     order: 6,
     Player: Lesson02MasteryPlayer,
+  },
+  "subtraction-tables-v1": {
+    id: "subtraction-tables-v1",
+    title: "Subtraction Tables",
+    description: "Master single-digit subtraction mentally and quickly - timed drills with cumulative review.",
+    subject: "math",
+    gradeLevel: "6+",
+    icon: "",
+    type: "drill",
+    status: "published",
+    order: 7,
+    Player: SubtractionTablesPlayer,
   },
 };
 
