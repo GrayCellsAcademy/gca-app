@@ -235,6 +235,104 @@ function QuestionDisplay({ question, selectedSides, onSideClick, revealCorrect, 
   }
 }
 
+// - Geometry mastery answer input -
+function GeoAnswerInput({ question, onSubmit, submitted, selectedSides, onSideClick, activeMissingIdx, setActiveMissingIdx }) {
+  const [input, setInput] = useState("");
+  const [enteredSides, setEnteredSides] = useState({});
+  const inputRef = useRef(null);
+
+  useEffect(() => {
+    setInput(""); setEnteredSides({});
+    setTimeout(() => inputRef.current?.focus(), 100);
+  }, [question?.type]);
+
+  // For 5B: refocus when active missing side changes
+  useEffect(() => {
+    if (question?.type === "rectilinear-5B" && activeMissingIdx !== null) {
+      setInput("");
+      setTimeout(() => inputRef.current?.focus(), 80);
+    }
+  }, [activeMissingIdx, question?.type]);
+
+  if (question?.type === "rectilinear-5B") {
+    const missingAnswers = question.missingAnswers || [];
+    const allEntered = missingAnswers.every(ma => enteredSides[ma.idx] !== undefined);
+    const handleConfirm = () => {
+      if (activeMissingIdx === null || !input.trim()) return;
+      const newEntered = { ...enteredSides, [activeMissingIdx]: input.trim() };
+      setEnteredSides(newEntered);
+      setInput("");
+      const next = missingAnswers.find(ma => newEntered[ma.idx] === undefined);
+      setActiveMissingIdx(next ? next.idx : null);
+    };
+    return (
+      <div>
+        <div style={{ fontSize: 13, color: "var(--text3)", marginBottom: 8 }}>
+          {activeMissingIdx !== null ? "Enter the length for the highlighted side (include units)" : allEntered ? "All sides entered - ready to submit!" : "Click a ? side to select it, then enter its length"}
+        </div>
+        {activeMissingIdx !== null && (
+          <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
+            <input ref={inputRef} value={input} onChange={e => setInput(e.target.value)}
+              onKeyDown={e => e.key === "Enter" && handleConfirm()}
+              placeholder={"e.g. 35" + (question.unit || "")}
+              style={{ flex: 1, fontSize: 20, fontFamily: "var(--mono)", padding: "10px 14px" }} />
+            <button className="btn btn-primary" onClick={handleConfirm} disabled={!input.trim()}>OK</button>
+          </div>
+        )}
+        {Object.entries(enteredSides).length > 0 && (
+          <div style={{ fontSize: 13, color: "var(--text2)", marginBottom: 8 }}>
+            {Object.entries(enteredSides).map(([idx, val]) => (
+              <span key={idx} style={{ marginRight: 12 }}>Side: <strong style={{ fontFamily: "var(--mono)" }}>{val}</strong></span>
+            ))}
+          </div>
+        )}
+        <button className="btn btn-primary" style={{ width: "100%" }}
+          onClick={() => onSubmit(JSON.stringify(missingAnswers.map(ma => ({ idx: ma.idx, value: enteredSides[ma.idx]?.replace(/[^0-9]/g, "") || "" }))))}
+          disabled={submitted || !allEntered}>Submit All</button>
+      </div>
+    );
+  }
+
+  if (question?.type === "rectilinear-5A") {
+    return (
+      <div style={{ textAlign: "center" }}>
+        <div style={{ fontSize: 13, color: "var(--text3)", marginBottom: 8 }}>
+          {"Click sides that sum to the highlighted side. Selected: " + (selectedSides?.length || 0)}
+        </div>
+        <button className="btn btn-primary" style={{ width: "100%" }}
+          onClick={() => onSubmit((selectedSides || []).slice().sort((a, b) => a - b).join(","))}
+          disabled={submitted}>Submit</button>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <div style={{ fontSize: 13, color: "var(--text3)", marginBottom: 6 }}>Include units (e.g. 45cm, 120ft)</div>
+      <div style={{ display: "flex", gap: 8 }}>
+        <input ref={inputRef} value={input} onChange={e => setInput(e.target.value)}
+          onKeyDown={e => e.key === "Enter" && onSubmit(input)}
+          placeholder="e.g. 150cm" disabled={submitted}
+          style={{ flex: 1, fontSize: 20, fontFamily: "var(--mono)", padding: "10px 14px" }} />
+        <button className="btn btn-primary" onClick={() => onSubmit(input)} disabled={submitted || !input.trim()}>Submit</button>
+      </div>
+    </div>
+  );
+}
+
+// - Streak dots -
+function StreakDots({ current, needed }) {
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
+      <span style={{ fontSize: 13, color: "var(--text3)" }}>Streak:</span>
+      {Array.from({ length: needed }).map((_, i) => (
+        <div key={i} style={{ width: 13, height: 13, borderRadius: "50%", background: i < current ? "var(--green)" : "var(--surface2)", border: "2px solid " + (i < current ? "var(--green)" : "var(--border2)"), transition: "all 0.2s" }} />
+      ))}
+      <span style={{ fontSize: 13, color: "var(--text3)" }}>{current}/{needed}</span>
+    </div>
+  );
+}
+
 // - Geometry Mastery Screen -
 function GeometryMastery({ masteryData, onSaveProgress, onComplete }) {
   const { activityIdx, streak } = masteryData;
