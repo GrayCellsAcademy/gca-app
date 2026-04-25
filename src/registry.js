@@ -6,6 +6,7 @@ import ExtraCredit01Player from "./ExtraCredit01Player";
 import ReviewHomework from "./ReviewHomework";
 import Lesson02MasteryPlayer from "./Lesson02MasteryPlayer";
 import SubtractionTablesPlayer from "./SubtractionTablesPlayer";
+import Lesson03MasteryPlayer from "./Lesson03MasteryPlayer";
 
 export const TOPICS = {
   "addition-tables-v1": {
@@ -91,6 +92,18 @@ export const TOPICS = {
     status: "published",
     order: 7,
     Player: SubtractionTablesPlayer,
+  },
+  "lesson03-mastery-v1": {
+    id: "lesson03-mastery-v1",
+    title: "Lesson 3 Mastery",
+    description: "Times tables (2s and 3s), column multiplication, long division, and area of rectangles, squares, and composite shapes.",
+    subject: "math",
+    gradeLevel: "6+",
+    icon: "",
+    type: "mastery",
+    status: "published",
+    order: 8,
+    Player: Lesson03MasteryPlayer,
   },
 };
 
