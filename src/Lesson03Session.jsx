@@ -67,88 +67,87 @@ function ColumnMultiplyWork({ a, b }) {
   );
 }
 
-// -- LongDivisionWork (copied from ReviewSession, fixed zero-middle handling) --
+// -- LongDivisionWork: correct row layout, handles zero-in-middle --
 function LongDivisionWork({ dividend, divisor, quotient, remainder }) {
   const dvStr = String(dividend);
   const nDigits = dvStr.length;
-  const CW = 34, CH = 48, OW = 56, HEADER = 54;
+  const CW = 34, CH = 44, OW = 56, HEADER = 50;
 
-  // Build steps: one per dividend digit after the initial grouping
-  // Each step: bringDown digit, form working number, divide, subtract
+  // Build one step per quotient digit
   const steps = [];
   let working = 0;
   let started = false;
   for (let i = 0; i < nDigits; i++) {
     working = working * 10 + parseInt(dvStr[i]);
-    if (!started && working < divisor && i < nDigits - 1) continue; // group initial digits
+    if (!started && working < divisor && i < nDigits - 1) continue;
     started = true;
     const q = Math.floor(working / divisor);
     const sub = q * divisor;
     const diff = working - sub;
-    steps.push({ col: i, working, q, sub, diff, isZero: q === 0 });
+    steps.push({ col: i, working, q, sub, diff });
     working = diff;
   }
 
+  const rowH = CH * 2;
   const W = OW + nDigits * CW + 60;
-  // Height: each non-zero step shows working+sub+line+diff = 2*CH rows
-  // Zero steps show only working (no sub/line/diff visible) but still bring down next digit
-  const H = HEADER + CH + steps.length * 2 * CH + 20;
+  const H = HEADER + CH + steps.length * rowH + CH + 20;
   const cx = (col) => OW + col * CW + CW / 2;
 
-  const renderNum = (num, rightCol, y, color, size) => {
+  const renderNum = (num, rightCol, y, color, size, opacity) => {
     const s = String(num);
     return s.split("").map((ch, ki) => {
       const col = rightCol - s.length + 1 + ki;
+      if (col < 0) return null;
       return (
         <text key={ki} x={cx(col)} y={y} textAnchor="middle"
-          fontSize={size} fontWeight="700" fill={color} fontFamily="var(--mono)">{ch}</text>
+          fontSize={size} fontWeight="700" fill={color}
+          opacity={opacity ?? 1} fontFamily="var(--mono)">{ch}</text>
       );
     });
+  };
+
+  const lineSpan = (step) => {
+    const nums = [step.working, step.sub, step.diff].filter(n => n > 0);
+    const maxLen = Math.max(...nums.map(n => String(n).length), 1);
+    return {
+      left: cx(Math.max(0, step.col - maxLen + 1)) - 6,
+      right: cx(step.col) + CW * 0.45,
+    };
   };
 
   return (
     <div style={{ overflowX: "auto", marginTop: 8 }}>
       <svg width={W} height={H} style={{ display: "block", margin: "0 auto", minWidth: W }}>
-        {/* Divisor */}
         <text x={OW - 10} y={HEADER + CH * 0.78} textAnchor="end"
           fontSize="26" fontWeight="700" fill="var(--text)" fontFamily="var(--mono)">{divisor}</text>
-        {/* Division bracket */}
         <line x1={OW - 2} y1={HEADER + CH * 0.18} x2={OW - 2} y2={HEADER + CH}
           stroke="var(--text)" strokeWidth="2.5" />
         <line x1={OW - 2} y1={HEADER + CH * 0.18} x2={OW + nDigits * CW + 4} y2={HEADER + CH * 0.18}
           stroke="var(--text)" strokeWidth="2.5" />
-        {/* Dividend digits */}
         {dvStr.split("").map((ch, ci) => (
           <text key={ci} x={cx(ci)} y={HEADER + CH * 0.78} textAnchor="middle"
             fontSize="26" fontWeight="700" fill="var(--text)" fontFamily="var(--mono)">{ch}</text>
         ))}
-        {/* Quotient digits above bracket */}
         {steps.map((step, si) => (
-          <text key={si} x={cx(step.col)} y={HEADER - 10} textAnchor="middle"
+          <text key={si} x={cx(step.col)} y={HEADER - 8} textAnchor="middle"
             fontSize="26" fontWeight="800" fill="var(--green)" fontFamily="var(--mono)">{step.q}</text>
         ))}
-        {/* Steps */}
         {steps.map((step, si) => {
-          const baseY = HEADER + CH + si * 2 * CH;
-          const workY = baseY + CH * 0.78;
-          const subY = workY;
-          const lineY = baseY + CH + 2;
-          const diffY = baseY + CH + CH * 0.78;
-          const isLast = si === steps.length - 1;
-          // Show working number if it was built by bringing down (si > 0 or multi-digit)
-          const showWorking = si > 0 || String(step.working).length > 1;
-          const workLen = String(step.working).length;
-          const subLen = String(step.sub).length;
-          const spanLen = Math.max(workLen, step.isZero ? workLen : subLen);
-          const lineLeft = cx(Math.max(0, step.col - spanLen + 1)) - 4;
-          const lineRight = cx(step.col) + CW * 0.4;
+          const rowTop = HEADER + CH + si * rowH;
+          const bringDownY = rowTop + CH * 0.55;   // brought-down number (dim, above sub)
+          const subY      = rowTop + CH * 0.95;    // subtrahend
+          const lineY     = rowTop + CH + 6;       // line
+          const diffY     = rowTop + CH + CH * 0.75; // difference
+          const isLast    = si === steps.length - 1;
+          const { left: lineLeft, right: lineRight } = lineSpan(step);
 
-          if (step.isZero) {
-            // Zero quotient: show working number being brought down, 0 below line, no subtraction
+          if (step.q === 0) {
+            // Zero quotient: brought-down number, line, 0
             return (
               <g key={si}>
-                {showWorking && renderNum(step.working, step.col, workY, "var(--text3)", 20)}
-                <line x1={lineLeft} y1={lineY} x2={lineRight} y2={lineY} stroke="var(--text)" strokeWidth="1.5" />
+                {si > 0 && renderNum(step.working, step.col, bringDownY, "var(--text3)", 19, 0.65)}
+                <line x1={lineLeft} y1={lineY} x2={lineRight} y2={lineY}
+                  stroke="var(--text2)" strokeWidth="1.5" />
                 {renderNum(0, step.col, diffY, "var(--text)", 22)}
               </g>
             );
@@ -156,18 +155,22 @@ function LongDivisionWork({ dividend, divisor, quotient, remainder }) {
 
           return (
             <g key={si}>
-              {showWorking && renderNum(step.working, step.col, workY, "var(--text3)", 20)}
-              {renderNum(step.sub, step.col, subY, "var(--text)", 22)}
-              <line x1={lineLeft} y1={lineY} x2={lineRight} y2={lineY} stroke="var(--text)" strokeWidth="1.5" />
-              {renderNum(step.diff, step.col, diffY, isLast ? "var(--blue)" : "var(--text)", 22)}
+              {si > 0 && renderNum(step.working, step.col, bringDownY, "var(--text3)", 19, 0.65)}
+              {renderNum(step.sub, step.col, subY, "var(--text)", 24)}
+              <line x1={lineLeft} y1={lineY} x2={lineRight} y2={lineY}
+                stroke="var(--text)" strokeWidth="1.5" />
+              {renderNum(step.diff, step.col, diffY,
+                isLast ? "var(--blue)" : "var(--text)", 22)}
             </g>
           );
         })}
-        {/* Remainder label */}
         {remainder > 0 && (
-          <text x={OW + nDigits * CW + 10}
-            y={HEADER + CH + (steps.length * 2 - 1) * CH + CH * 0.78}
-            fontSize="15" fontWeight="700" fill="var(--blue)" fontFamily="var(--mono)">R{remainder}</text>
+          <text
+            x={OW + nDigits * CW + 10}
+            y={HEADER + CH + steps.length * rowH - CH * 0.25}
+            fontSize="15" fontWeight="700" fill="var(--blue)" fontFamily="var(--mono)">
+            R{remainder}
+          </text>
         )}
       </svg>
     </div>
@@ -220,17 +223,19 @@ function RectilinearSVG({ question, revealCorrect }) {
       rect1 = { x: x0, y: shoulderY, w: x1 - x0, h: y0 - shoulderY }; // base
       rect2 = { x: stemLeftX, y: stemTopY, w: stemRightX - stemLeftX, h: shoulderY - stemTopY }; // stem
     } else if (shape === "U" && sv.length >= 8) {
-      // Left arm + right arm + bottom strip
-      const x0 = sv[0].x;                  // left x
-      const x1 = sv[1].x;                  // right x
-      const topY = sv[2].y;                // top y
-      const botY = sv[0].y;               // bottom y
-      const innerTopRightX = sv[3].x;     // inner top-right x
-      const innerTopLeftX = sv[6].x;      // inner top-left x
-      const innerBotY = sv[4].y;          // inner bottom y
-      rect1 = { x: x0, y: topY, w: innerTopLeftX - x0, h: botY - topY };          // left arm
-      rect2 = { x: innerTopRightX, y: topY, w: x1 - innerTopRightX, h: botY - topY }; // right arm
-      rect3 = { x: innerTopLeftX, y: innerBotY, w: innerTopRightX - innerTopLeftX, h: botY - innerBotY }; // bottom strip
+      // Addition method: left arm + bottom strip + right arm
+      // Vertices: [0]=bot-left, [1]=bot-right, [2]=top-right, [3]=inner-top-right,
+      //           [4]=inner-bot-right, [5]=inner-bot-left, [6]=inner-top-left, [7]=top-left
+      const botY        = sv[0].y;   // bottom y
+      const topY        = sv[2].y;   // top y (arms reach here)
+      const innerBotY   = sv[4].y;   // where inner cutout bottom is = bottom of arms inner face
+      const innerRightX = sv[3].x;   // right edge of inner cutout
+      const innerLeftX  = sv[6].x;   // left edge of inner cutout
+      const leftX       = sv[0].x;   // left outer edge
+      const rightX      = sv[1].x;   // right outer edge
+      rect1 = { x: leftX,       y: topY,      w: innerLeftX - leftX,  h: botY - topY };   // left arm
+      rect2 = { x: innerRightX, y: topY,      w: rightX - innerRightX, h: botY - topY };  // right arm
+      rect3 = { x: innerLeftX,  y: innerBotY, w: innerRightX - innerLeftX, h: botY - innerBotY }; // bottom strip
     }
   }
 

@@ -432,28 +432,49 @@ function genCompositeArea() {
       splitExplanation: W + "x" + bh + " + " + tw + "x" + sh + " = " + (W*bh) + " + " + (tw*sh) + " = " + area };
   }
 
-  // U shape
+  // U shape - addition method: left arm + bottom strip + right arm
   const W = randInt(40, 70);
   const H = randInt(40, 70);
   const lw = randInt(10, 20);
   const rw = randInt(10, 20);
-  const ch = randInt(15, H - 15);
-  const area = W * H - (W - lw - rw) * ch;
+  const ch = randInt(15, H - 15); // height of inner cutout (arms are H tall, bottom strip is H-ch tall)
+  const armH = H;          // full height of each arm
+  const stripH = H - ch;   // height of bottom connecting strip
+  const stripW = W - lw - rw;
+  const areaLeft = lw * armH;
+  const areaRight = rw * armH;
+  const areaStrip = stripW * stripH;
+  const area = areaLeft + areaRight + areaStrip;
   const sides = [
-    { length: W, dir: "h" }, { length: H, dir: "v" },
-    { length: rw, dir: "h" }, { length: ch, dir: "v" },
-    { length: W-lw-rw, dir: "h" }, { length: ch, dir: "v" },
-    { length: lw, dir: "h" }, { length: H, dir: "v" },
+    { length: W,    dir: "h" }, // bottom
+    { length: H,    dir: "v" }, // right outer
+    { length: rw,   dir: "h" }, // top-right
+    { length: ch,   dir: "v" }, // inner-right vertical (HIDDEN)
+    { length: stripW, dir: "h" }, // inner-top (HIDDEN)
+    { length: ch,   dir: "v" }, // inner-left vertical
+    { length: lw,   dir: "h" }, // top-left
+    { length: H,    dir: "v" }, // left outer
   ];
   const scale = 2;
   const vertices = [
-    { x: 0, y: H*scale }, { x: W*scale, y: H*scale },
-    { x: W*scale, y: 0 }, { x: (W-rw)*scale, y: 0 },
-    { x: (W-rw)*scale, y: ch*scale }, { x: lw*scale, y: ch*scale },
-    { x: lw*scale, y: 0 }, { x: 0, y: 0 },
+    { x: 0,           y: H*scale },
+    { x: W*scale,     y: H*scale },
+    { x: W*scale,     y: 0 },
+    { x: (W-rw)*scale, y: 0 },
+    { x: (W-rw)*scale, y: ch*scale },
+    { x: lw*scale,    y: ch*scale },
+    { x: lw*scale,    y: 0 },
+    { x: 0,           y: 0 },
   ];
-  return { shape: "U", sides, vertices, unit, area,
-    splitExplanation: W + "x" + H + " - " + (W-lw-rw) + "x" + ch + " = " + (W*H) + " - " + ((W-lw-rw)*ch) + " = " + area };
+  return {
+    shape: "U", sides, vertices, unit, area,
+    W, H, lw, rw, ch, stripW, stripH, armH,
+    splitExplanation:
+      "Left arm: " + lw + "x" + armH + "=" + areaLeft +
+      ", Bottom: " + stripW + "x" + stripH + "=" + areaStrip +
+      ", Right arm: " + rw + "x" + armH + "=" + areaRight +
+      " => " + area,
+  };
 }
 
 export function genCompositeShapeArea() {
