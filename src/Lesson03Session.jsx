@@ -274,8 +274,9 @@ function RectilinearSVG({ question, revealCorrect }) {
       rect1 = { x: leftX,       y: topY,      w: innerLeftX - leftX,  h: botY - topY };   // left arm
       rect2 = { x: innerRightX, y: topY,      w: rightX - innerRightX, h: botY - topY };  // right arm
       rect3 = { x: innerLeftX,  y: innerBotY, w: innerRightX - innerLeftX, h: botY - innerBotY }; // bottom strip
-      // Store strip label info for rendering
-      rect3.labelX = (innerLeftX + innerRightX) / 2;
+      // Strip height label: place on the LEFT interior dotted line (innerLeftX)
+      // midpoint vertically between innerBotY and botY
+      rect3.labelX = innerLeftX;
       rect3.labelY = (innerBotY + botY) / 2;
       rect3.stripH = question.stripH;
       rect3.unit   = question.unit;
@@ -297,12 +298,12 @@ function RectilinearSVG({ question, revealCorrect }) {
         <rect x={rect3.x} y={rect3.y} width={rect3.w} height={rect3.h}
           fill="rgba(16,185,129,0.15)" stroke="rgba(16,185,129,0.6)" strokeWidth="2" strokeDasharray="6,3" rx="2" />
       )}
-      {/* Strip height label inside bottom strip on reveal */}
+      {/* Strip height label on the left interior dotted boundary line */}
       {revealCorrect && rect3 && rect3.stripH && (
         <g>
-          <rect x={rect3.labelX - 34} y={rect3.labelY - 13} width={68} height={26} rx={5}
+          <rect x={rect3.labelX + 4} y={rect3.labelY - 13} width={68} height={26} rx={5}
             fill="var(--bg2)" stroke="rgba(16,185,129,0.8)" strokeWidth="1.5" />
-          <text x={rect3.labelX} y={rect3.labelY + 6} textAnchor="middle" fontSize="13"
+          <text x={rect3.labelX + 38} y={rect3.labelY + 6} textAnchor="middle" fontSize="13"
             fontWeight="800" fill="var(--green)" fontFamily="var(--mono)">
             {rect3.stripH}{rect3.unit}
           </text>
