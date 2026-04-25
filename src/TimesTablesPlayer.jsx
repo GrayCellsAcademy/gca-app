@@ -1,16 +1,22 @@
 import { useState, useEffect, useRef } from "react";
 import { saveProgress as fbSaveProgress, getProgress } from "./core/firebase";
-import {
-  genColMultiplyStage1, genColMultiplyStage2, genColMultiplyStage3,
-  genLongDivision, genLongDivisionZeroMiddle,
-  genRectangleArea, genSquareArea, genCompositeShapeArea,
-  gradeColMultiply, gradeLongDivision, gradeRectangleArea,
-  gradeSquareArea, gradeCompositeArea,
-} from "./lesson03Questions";
 
-export const LESSON03_MASTERY_TOPIC_ID = "lesson03-mastery-v1";
+export const TIMES_TABLES_TOPIC_ID = "times-tables-v1";
 
-const MASTERY_STREAK = 3;
+const TT_TIMER = 10;
+const TT_CORRECT = 3;
+const TT_REVIEW_CORRECT = 1;
+const SKIP_COUNT_TIME = 30;
+const TABLES = [2, 3];
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
 
 // - Shared UI -
 function CountdownRing({ seconds, total }) {
@@ -611,192 +617,12 @@ function TimesTableSection({ ttData, onComplete, onSave }) {
   );
 }
 
-// - Mastery Activities -
-// globalStep maps to: 0-2=mul topics, 3-4=div topics, 5-7=area topics
-const MASTERY_STEPS = [
-  { label: "Column Multiplication", sublabel: "2-3 digit x 1 digit",  group: "mul", subIdx: 0 },
-  { label: "Column Multiplication", sublabel: "2-3 digit x 2 digit",  group: "mul", subIdx: 1 },
-  { label: "Column Multiplication", sublabel: "3-4 digit x 3 digit",  group: "mul", subIdx: 2 },
-  { label: "Long Division",         sublabel: "Standard",              group: "div", subIdx: 0 },
-  { label: "Long Division",         sublabel: "Zero in Middle",        group: "div", subIdx: 1 },
-  { label: "Area",                  sublabel: "Rectangle",             group: "area", subIdx: 0 },
-  { label: "Area",                  sublabel: "Square",                group: "area", subIdx: 1 },
-  { label: "Area",                  sublabel: "Composite Shape",       group: "area", subIdx: 2 },
-];
-
-function genMasteryQuestion(step) {
-  const s = MASTERY_STEPS[step];
-  if (s.group === "mul") {
-    if (s.subIdx === 0) return genColMultiplyStage1();
-    if (s.subIdx === 1) return genColMultiplyStage2();
-    return genColMultiplyStage3();
-  }
-  if (s.group === "div") {
-    return s.subIdx === 0 ? genLongDivision() : genLongDivisionZeroMiddle();
-  }
-  // area
-  if (s.subIdx === 0) return genRectangleArea();
-  if (s.subIdx === 1) return genSquareArea();
-  return genCompositeShapeArea();
-}
-
-function gradeMasteryAnswer(input, question) {
-  if (!question) return false;
-  const t = question.type;
-  if (t === "col-multiply-1" || t === "col-multiply-2" || t === "col-multiply-3") return gradeColMultiply(input, question);
-  if (t === "long-division" || t === "long-division-zero") return gradeLongDivision(input, question);
-  if (t === "rectangle-area") return gradeRectangleArea(input, question);
-  if (t === "square-area") return gradeSquareArea(input, question);
-  if (t === "composite-area") return gradeCompositeArea(input, question);
-  return false;
-}
-
-function wrongResetStep(step) {
-  const s = MASTERY_STEPS[step];
-  if (s.group === "mul") return step - s.subIdx; // back to start of mul group
-  if (s.group === "div") return 3; // back to standard division
-  return 5; // back to rectangle area
-}
-
-function MasterySection({ masteryData, onSave, onComplete }) {
-  const { globalStep, streak } = masteryData;
-  const [currentStreak, setCurrentStreak] = useState(streak || 0);
-  const [question, setQuestion] = useState(null);
-  const [submitted, setSubmitted] = useState(false);
-  const [result, setResult] = useState(null); // null | { correct }
-
-  const step = MASTERY_STEPS[globalStep];
-
-  useEffect(() => { newQuestion(); }, [globalStep]);
-
-  const newQuestion = () => {
-    setQuestion(genMasteryQuestion(globalStep));
-    setSubmitted(false);
-    setResult(null);
-  };
-
-  const handleSubmit = async (input) => {
-    if (!question || submitted) return;
-    setSubmitted(true);
-    const correct = gradeMasteryAnswer(input, question);
-    if (correct) {
-      const newStreak = currentStreak + 1;
-      setCurrentStreak(newStreak);
-      if (newStreak >= MASTERY_STREAK) {
-        const nextStep = globalStep + 1;
-        if (nextStep >= MASTERY_STEPS.length) {
-          await onSave({ globalStep: nextStep, streak: 0 });
-          onComplete();
-        } else {
-          await onSave({ globalStep: nextStep, streak: 0 });
-        }
-      } else {
-        await onSave({ globalStep, streak: newStreak });
-        setResult({ correct: true });
-      }
-    } else {
-      const resetStep = wrongResetStep(globalStep);
-      setCurrentStreak(0);
-      setResult({ correct: false });
-      await onSave({ globalStep: resetStep, streak: 0 });
-    }
-  };
-
-  if (!question || !step) return <div style={{ display: "flex", justifyContent: "center", padding: 40 }}><div className="spinner" /></div>;
-
-  const isArea = step.group === "area";
-  const isMul = step.group === "mul";
-  const isDiv = step.group === "div";
-
-  return (
-    <div style={{ maxWidth: 600, margin: "0 auto" }}>
-      {/* Step roadmap */}
-      <div style={{ display: "flex", gap: 5, flexWrap: "wrap", marginBottom: 16 }}>
-        {MASTERY_STEPS.map((s, i) => {
-          const done = i < globalStep;
-          const active = i === globalStep;
-          return (
-            <div key={i} style={{ fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 99, background: done ? "rgba(16,185,129,0.12)" : active ? "rgba(232,99,10,0.12)" : "var(--surface)", color: done ? "var(--green)" : active ? "var(--blue)" : "var(--text3)", border: "1px solid " + (done ? "rgba(16,185,129,0.3)" : active ? "rgba(232,99,10,0.3)" : "var(--border)") }}>
-              {done ? "done" : s.sublabel}
-            </div>
-          );
-        })}
-      </div>
-
-      <div className="card">
-        <div style={{ marginBottom: 12 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text3)", textTransform: "uppercase", letterSpacing: "0.06em" }}>{step.label}</div>
-          <div style={{ fontSize: 17, fontWeight: 800 }}>{step.sublabel}</div>
-        </div>
-        <StreakDots current={currentStreak} needed={MASTERY_STREAK} />
-        <div style={{ fontSize: 14, color: "var(--text2)", marginBottom: 12 }}>{question.prompt}</div>
-
-        {/* Question display */}
-        {isMul && (
-          <div style={{ display: "flex", justifyContent: "center", marginBottom: 14 }}>
-            <ColumnMultiplyWork a={question.a} b={question.b} />
-          </div>
-        )}
-        {isDiv && (
-          <div style={{ display: "flex", justifyContent: "center", marginBottom: 14 }}>
-            <svg viewBox="0 0 240 70" style={{ width: "100%", maxWidth: 240, display: "block", margin: "0 auto" }}>
-              <text x={52} y={50} fontSize="28" fontWeight="700" fill="var(--text)" fontFamily="var(--mono)">{question.divisor}</text>
-              <line x1={72} y1={12} x2={72} y2={58} stroke="var(--text)" strokeWidth="2.5" />
-              <line x1={72} y1={12} x2={76 + String(question.dividend).length * 20} y2={12} stroke="var(--text)" strokeWidth="2.5" />
-              <text x={78} y={50} fontSize="28" fontWeight="700" fill="var(--text)" fontFamily="var(--mono)">{question.dividend}</text>
-            </svg>
-          </div>
-        )}
-        {isArea && question.type === "rectangle-area" && <RectangleAreaSVG question={question} />}
-        {isArea && question.type === "square-area" && <SquareAreaSVG question={question} />}
-        {isArea && question.type === "composite-area" && <CompositeAreaSVG question={question} />}
-
-        {/* Answer / result */}
-        {result ? (
-          <div style={{ marginTop: 14 }}>
-            <div style={{ textAlign: "center", fontSize: 18, fontWeight: 800, color: result.correct ? "var(--green)" : "var(--red)", marginBottom: 10 }}>
-              {result.correct ? "Correct! " + currentStreak + "/" + MASTERY_STREAK : "Incorrect - streak reset"}
-            </div>
-            {/* Show worked solution on wrong */}
-            {!result.correct && (
-              <div style={{ background: "rgba(16,185,129,0.06)", border: "1px solid rgba(16,185,129,0.2)", borderRadius: "var(--radius-sm)", padding: "12px", marginBottom: 12 }}>
-                <div style={{ fontSize: 12, color: "var(--text3)", marginBottom: 6 }}>Worked solution</div>
-                {isMul && <ColumnMultiplyWork a={question.a} b={question.b} />}
-                {isDiv && <LongDivisionWork dividend={question.dividend} divisor={question.divisor} quotient={question.quotient} remainder={question.remainder} />}
-                {isArea && (
-                  <div style={{ fontSize: 14, color: "var(--green)", fontFamily: "var(--mono)", fontWeight: 700 }}>
-                    {question.displayAnswer}
-                    {question.type === "rectangle-area" && question.areaYd !== null && " or " + question.areaYd + " sq yd"}
-                  </div>
-                )}
-              </div>
-            )}
-            <button className="btn btn-primary" style={{ width: "100%" }} onClick={newQuestion}>
-              {result.correct ? "Next question" : "Try again"}
-            </button>
-          </div>
-        ) : (
-          <div style={{ marginTop: 14 }}>
-            {isArea ? (
-              <AreaAnswerInput question={question} onSubmit={handleSubmit} submitted={submitted} />
-            ) : (
-              <NumInput onSubmit={handleSubmit} disabled={submitted}
-                placeholder={isDiv ? "e.g. 86r1" : "Answer"}
-                isDivision={isDiv} />
-            )}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
 
 // - Main Player -
-export default function Lesson03MasteryPlayer({ user, topic, onHome }) {
-  const topicId = topic?.id || LESSON03_MASTERY_TOPIC_ID;
+export default function TimesTablesPlayer({ user, topic, onHome }) {
+  const topicId = topic?.id || TIMES_TABLES_TOPIC_ID;
   const [loading, setLoading] = useState(true);
-  const [masteryData, setMasteryData] = useState({ globalStep: 0, streak: 0 });
+  const [ttData, setTtData] = useState({ tableIdx: 0, tablePhase: 1, masteredTables: [] });
   const [completed, setCompleted] = useState(false);
 
   useEffect(() => {
@@ -805,17 +631,17 @@ export default function Lesson03MasteryPlayer({ user, topic, onHome }) {
       if (prog?.data) {
         const d = prog.data;
         if (d.completed) { setCompleted(true); setLoading(false); return; }
-        if (d.masteryData) setMasteryData(d.masteryData);
+        if (d.ttData) setTtData(d.ttData);
       }
       setLoading(false);
     };
     load();
   }, []);
 
-  const save = async (newMd, done) => {
-    const pct = done ? 100 : Math.round((newMd.globalStep / MASTERY_STEPS.length) * 100);
-    await fbSaveProgress(user.id, topicId, { started: true, completed: done, percentComplete: Math.min(100, pct), data: { masteryData: newMd, completed: done } });
-    setMasteryData(newMd);
+  const save = async (newTtData, done) => {
+    const pct = done ? 100 : Math.round(((newTtData.tableIdx * 3 + (newTtData.tablePhase - 1)) / (TABLES.length * 3)) * 100);
+    await fbSaveProgress(user.id, topicId, { started: true, completed: done, percentComplete: Math.min(100, pct), data: { ttData: newTtData, completed: done } });
+    setTtData(newTtData);
     if (done) setCompleted(true);
   };
 
@@ -825,10 +651,8 @@ export default function Lesson03MasteryPlayer({ user, topic, onHome }) {
     <div style={{ maxWidth: 520, margin: "0 auto", textAlign: "center", animation: "fadeUp 0.4s ease" }}>
       <div className="card">
         <div style={{ fontSize: 48, fontWeight: 900, color: "var(--amber)", marginBottom: 16 }}>100%</div>
-        <h2 style={{ fontSize: 24, fontWeight: 800, marginBottom: 8 }}>Mastery Complete!</h2>
-        <p style={{ color: "var(--text2)", fontSize: 15, marginBottom: 24 }}>
-          Column multiplication, long division, and area mastered!
-        </p>
+        <h2 style={{ fontSize: 24, fontWeight: 800, marginBottom: 8 }}>Times Tables Complete!</h2>
+        <p style={{ color: "var(--text2)", fontSize: 15, marginBottom: 24 }}>You have mastered the 2s and 3s times tables!</p>
         <button className="btn btn-primary btn-lg" style={{ width: "100%" }} onClick={onHome}>Back to Home</button>
       </div>
     </div>
@@ -836,22 +660,22 @@ export default function Lesson03MasteryPlayer({ user, topic, onHome }) {
 
   return (
     <div style={{ minHeight: "100vh", background: "var(--bg)", padding: "clamp(16px,3vw,32px)" }} className="dot-bg">
-      <div style={{ maxWidth: 700, margin: "0 auto" }}>
+      <div style={{ maxWidth: 600, margin: "0 auto" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20, flexWrap: "wrap", gap: 12 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <div style={{ width: 40, height: 40, borderRadius: 12, background: "linear-gradient(135deg,var(--blue),var(--purple))", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 800, color: "#fff" }}>L3</div>
+            <div style={{ width: 40, height: 40, borderRadius: 12, background: "linear-gradient(135deg,var(--blue),var(--cyan))", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 800, color: "#fff" }}>x</div>
             <div>
-              <div style={{ fontWeight: 800, fontSize: 17 }}>HW 7 (019): Multiply, Divide & Area Mastery</div>
-              <div style={{ color: "var(--text3)", fontSize: 12 }}>3 correct in a row to advance each topic</div>
+              <div style={{ fontWeight: 800, fontSize: 17 }}>HW 6 (019): Times Tables</div>
+              <div style={{ color: "var(--text3)", fontSize: 12 }}>Skip count, in-order, and random drills</div>
             </div>
           </div>
           <button className="btn btn-ghost btn-sm" onClick={onHome}>Back to Home</button>
         </div>
-        <MasterySection
-          key={masteryData.globalStep}
-          masteryData={masteryData}
-          onSave={(newMd) => save(newMd, newMd.globalStep >= MASTERY_STEPS.length)}
-          onComplete={() => save({ globalStep: MASTERY_STEPS.length, streak: 0 }, true)}
+        <TimesTableSection
+          key={ttData.tableIdx + "-" + ttData.tablePhase}
+          ttData={ttData}
+          onComplete={() => save({ ...ttData, tableIdx: TABLES.length }, true)}
+          onSave={(newTtData, done) => save(newTtData, done || false)}
         />
       </div>
     </div>
