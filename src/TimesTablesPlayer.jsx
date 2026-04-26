@@ -8,6 +8,7 @@ const SKIP_GOAL = 30;
 const STAGE2_PASSES = 3;
 const STAGE3_STREAK = 3;
 const STAGE3_REVIEW = 1;
+const TT_TIMER = 10;
 
 function shuffle(arr) {
   const a = [...arr];
@@ -112,26 +113,40 @@ function Stage1({ n, onComplete }) {
     const beat = elapsed <= SKIP_GOAL;
     return (
       <div className="card" style={{ maxWidth:480,margin:"0 auto",textAlign:"center",animation:"popIn 0.3s ease" }}>
-        <div style={{ fontSize:48,fontWeight:900,color:beat?"var(--green)":"var(--amber)",marginBottom:8 }}>{elapsed}s</div>
-        <h3 style={{ fontSize:20,fontWeight:800,marginBottom:8 }}>
-          {beat ? "Goal beaten! Advancing..." : "Good try! Goal is " + SKIP_GOAL + "s"}
-        </h3>
-        {bestTime !== null && <p style={{ color:"var(--text3)",fontSize:13,marginBottom:16 }}>Best this session: {bestTime}s</p>}
-        {!beat && <button className="btn btn-primary" style={{ width:"100%" }} onClick={handleRetry}>Try again</button>}
+        <div style={{ fontSize:22,fontWeight:800,color:"var(--green)",marginBottom:8 }}>
+          {beat ? "Great job!" : "Good try!"}
+        </div>
+        <div style={{ fontSize:72,fontWeight:900,color:beat?"var(--green)":"var(--amber)",marginBottom:4,fontFamily:"var(--mono)" }}>{elapsed}s</div>
+        <div style={{ fontSize:15,color:"var(--text2)",marginBottom:8 }}>
+          {beat ? "You beat the " + SKIP_GOAL + "s goal!" : "Goal is " + SKIP_GOAL + "s - try again!"}
+        </div>
+        {bestTime !== null && <p style={{ color:"var(--text3)",fontSize:13,marginBottom:20 }}>Best this session: {bestTime}s</p>}
+        {beat ? (
+          <button className="btn btn-success btn-lg" style={{ width:"100%" }} onClick={() => onComplete(elapsed)}>
+            On to Stage 2!
+          </button>
+        ) : (
+          <button className="btn btn-primary" style={{ width:"100%" }} onClick={handleRetry}>Try again</button>
+        )}
       </div>
     );
   }
 
   return (
     <div style={{ maxWidth:480,margin:"0 auto" }}>
+      {/* Progress dots */}
       <div style={{ display:"flex",gap:8,justifyContent:"center",marginBottom:20 }}>
         {sequence.map((_,i) => (
           <div key={i} style={{ width:14,height:14,borderRadius:"50%",background:i<idx?"var(--green)":i===idx?"var(--blue)":"var(--surface2)",border:"2px solid "+(i<idx?"var(--green)":i===idx?"var(--blue)":"var(--border2)"),transition:"all 0.2s" }} />
         ))}
       </div>
-      <div style={{ textAlign:"right",fontSize:14,fontFamily:"var(--mono)",color:elapsed>SKIP_GOAL?"var(--red)":"var(--text3)",marginBottom:8 }}>
-        {started ? elapsed + "s" : ""}
-        {bestTime !== null && <span style={{ marginLeft:12,color:"var(--text3)" }}>Best: {bestTime}s</span>}
+      {/* Big timer */}
+      <div style={{ textAlign:"center",marginBottom:12 }}>
+        <div style={{ fontSize:72,fontWeight:900,fontFamily:"var(--mono)",color:elapsed>SKIP_GOAL?"var(--red)":elapsed>20?"var(--amber)":"var(--blue)",lineHeight:1,transition:"color 0.3s" }}>
+          {elapsed}s
+        </div>
+        <div style={{ fontSize:13,color:"var(--text3)" }}>Goal: {SKIP_GOAL}s</div>
+        {bestTime !== null && <div style={{ fontSize:12,color:"var(--text3)",marginTop:2 }}>Best: {bestTime}s</div>}
       </div>
       <div className="card" style={{ textAlign:"center" }}>
         <div style={{ fontSize:16,color:"var(--text2)",marginBottom:16 }}>
@@ -159,11 +174,15 @@ function Stage2({ n, onComplete }) {
   const [input, setInput] = useState("");
   const [wrongPanel, setWrongPanel] = useState(null);
   const [passFlash, setPassFlash] = useState(false);
+  const [intro, setIntro] = useState(true);
+  const [done, setDone] = useState(false);
   const inputRef = useRef(null);
   const questions = Array.from({ length:10 },(_,i) => ({ b:i+1,answer:n*(i+1) }));
   const currentQ = questions[qIdx];
 
-  useEffect(() => { setInput(""); setTimeout(() => inputRef.current?.focus(), 80); }, [qIdx, passes]);
+  useEffect(() => {
+    if (!intro && !done) { setInput(""); setTimeout(() => inputRef.current?.focus(), 80); }
+  }, [qIdx, passes, intro, done]);
 
   const handleSubmit = () => {
     const val = parseInt(input.trim(), 10);
@@ -176,7 +195,7 @@ function Stage2({ n, onComplete }) {
         setPassFlash(true);
         setTimeout(() => setPassFlash(false), 600);
         if (newPasses >= STAGE2_PASSES) {
-          setTimeout(() => onComplete(), 700);
+          setDone(true);
         } else {
           setQIdx(0);
         }
@@ -193,6 +212,33 @@ function Stage2({ n, onComplete }) {
     setQIdx(0);
     setTimeout(() => inputRef.current?.focus(), 80);
   };
+
+  if (intro) return (
+    <div className="card" style={{ maxWidth:480,margin:"0 auto",textAlign:"center" }}>
+      <div style={{ fontSize:52,fontWeight:900,color:"var(--blue)",marginBottom:8 }}>x{n}</div>
+      <h3 style={{ fontSize:22,fontWeight:800,marginBottom:12 }}>Stage 2: Ordered Q&A</h3>
+      <div style={{ display:"flex",flexDirection:"column",gap:8,marginBottom:20,textAlign:"left",background:"var(--bg2)",borderRadius:"var(--radius-sm)",padding:"14px 16px" }}>
+        <div style={{ fontSize:15,color:"var(--text2)" }}>Questions asked in order: {n}x1, {n}x2... {n}x10</div>
+        <div style={{ fontSize:15,color:"var(--text2)" }}>Zero mistakes to earn a pass</div>
+        <div style={{ fontSize:15,color:"var(--text2)" }}>Earn <strong>3 perfect passes</strong> to advance</div>
+        <div style={{ fontSize:13,color:"var(--text3)" }}>Wrong answer resets the current pass back to question 1</div>
+      </div>
+      <button className="btn btn-primary btn-lg" style={{ width:"100%" }} onClick={() => setIntro(false)}>Start Stage 2</button>
+    </div>
+  );
+
+  if (done) return (
+    <div className="card" style={{ maxWidth:480,margin:"0 auto",textAlign:"center",animation:"popIn 0.3s ease" }}>
+      <div style={{ fontSize:64,marginBottom:8 }}>-</div>
+      <h3 style={{ fontSize:24,fontWeight:800,color:"var(--green)",marginBottom:8 }}>3 Perfect Passes!</h3>
+      <p style={{ color:"var(--text2)",fontSize:15,marginBottom:24 }}>
+        You answered all {n}x1 through {n}x10 perfectly, three times in a row. Amazing!
+      </p>
+      <button className="btn btn-success btn-lg" style={{ width:"100%" }} onClick={onComplete}>
+        On to Stage 3!
+      </button>
+    </div>
+  );
 
   return (
     <div style={{ maxWidth:480,margin:"0 auto" }}>
@@ -241,16 +287,43 @@ function buildStage3Questions(n, masteredTables) {
 }
 
 function Stage3({ n, masteredTables, onComplete }) {
+  const [intro, setIntro] = useState(true);
+  const [done, setDone] = useState(false);
   const [questions, setQuestions] = useState(() => buildStage3Questions(n, masteredTables));
   const [qIdx, setQIdx] = useState(0);
   const [input, setInput] = useState("");
   const [wrongPanel, setWrongPanel] = useState(null);
+  const [timeLeft, setTimeLeft] = useState(TT_TIMER);
+  const timerRef = useRef(null);
   const inputRef = useRef(null);
   const currentQ = questions[qIdx % Math.max(1,questions.length)];
   const totalQ = questions.length;
   const clearedQ = questions.filter(q => q.streak >= q.streakNeeded).length;
 
-  useEffect(() => { setInput(""); setTimeout(() => inputRef.current?.focus(), 80); }, [qIdx]);
+  // Start/restart timer on each new question
+  useEffect(() => {
+    if (intro || done || wrongPanel) return;
+    setInput("");
+    setTimeout(() => inputRef.current?.focus(), 80);
+    clearInterval(timerRef.current);
+    setTimeLeft(TT_TIMER);
+    timerRef.current = setInterval(() => {
+      setTimeLeft(t => {
+        if (t <= 1) { clearInterval(timerRef.current); handleTimeout(); return 0; }
+        return t - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timerRef.current);
+  }, [qIdx, intro, done, wrongPanel]);
+
+  const handleTimeout = () => {
+    clearInterval(timerRef.current);
+    const updated = questions.map((q,i) =>
+      i === (qIdx % questions.length) ? { ...q,streak:0,streakNeeded:q.streakNeeded+1 } : q
+    );
+    setQuestions(updated);
+    setWrongPanel({ n:currentQ.n,b:currentQ.b,correct:currentQ.answer,timeout:true });
+  };
 
   const allCleared = (qs) => qs.every(q => q.streak >= q.streakNeeded);
 
@@ -258,12 +331,13 @@ function Stage3({ n, masteredTables, onComplete }) {
     const val = parseInt(input.trim(), 10);
     setInput("");
     if (isNaN(val)) return;
+    clearInterval(timerRef.current);
     if (val === currentQ.answer) {
       const updated = questions.map((q,i) =>
         i === (qIdx % questions.length) ? { ...q,streak:q.streak+1 } : q
       );
       setQuestions(updated);
-      if (allCleared(updated)) { onComplete(); return; }
+      if (allCleared(updated)) { setDone(true); return; }
       setQIdx(i => i+1);
     } else {
       const updated = questions.map((q,i) =>
@@ -277,14 +351,48 @@ function Stage3({ n, masteredTables, onComplete }) {
   const handleWrongDismiss = () => {
     setWrongPanel(null);
     setQIdx(i => i+1);
-    setTimeout(() => inputRef.current?.focus(), 80);
   };
 
+  if (intro) return (
+    <div className="card" style={{ maxWidth:480,margin:"0 auto",textAlign:"center" }}>
+      <div style={{ fontSize:52,fontWeight:900,color:"var(--blue)",marginBottom:8 }}>x{n}</div>
+      <h3 style={{ fontSize:22,fontWeight:800,marginBottom:12 }}>Stage 3: Mixed Practice</h3>
+      <div style={{ display:"flex",flexDirection:"column",gap:8,marginBottom:20,textAlign:"left",background:"var(--bg2)",borderRadius:"var(--radius-sm)",padding:"14px 16px" }}>
+        <div style={{ fontSize:15,color:"var(--text2)" }}>All 10 questions shuffled randomly</div>
+        <div style={{ fontSize:15,color:"var(--text2)" }}>Each question needs <strong>3 correct in a row</strong> to clear</div>
+        <div style={{ fontSize:15,color:"var(--red)",fontWeight:700 }}>10 seconds per question!</div>
+        <div style={{ fontSize:13,color:"var(--text3)" }}>Wrong answer or timeout: required streak increases by 1</div>
+        {masteredTables.length > 0 && <div style={{ fontSize:13,color:"var(--text3)" }}>Includes review questions from: x{masteredTables.join(", x")} (1 correct to clear)</div>}
+      </div>
+      <button className="btn btn-primary btn-lg" style={{ width:"100%" }} onClick={() => setIntro(false)}>Start Stage 3</button>
+    </div>
+  );
+
+  if (done) return (
+    <div className="card" style={{ maxWidth:480,margin:"0 auto",textAlign:"center",animation:"popIn 0.3s ease" }}>
+      <div style={{ fontSize:64,marginBottom:8 }}>-</div>
+      <h3 style={{ fontSize:24,fontWeight:800,color:"var(--green)",marginBottom:8 }}>Table Mastered!</h3>
+      <p style={{ color:"var(--text2)",fontSize:15,marginBottom:24 }}>
+        You cleared all questions in the {n}s table! Every answer correct, streak by streak.
+      </p>
+      <button className="btn btn-success btn-lg" style={{ width:"100%" }} onClick={onComplete}>
+        Continue!
+      </button>
+    </div>
+  );
+
   if (!currentQ) return null;
+
+  // Big countdown ring
+  const r = 36, circ = 2 * Math.PI * r;
+  const pct = timeLeft / TT_TIMER;
+  const timerColor = timeLeft <= 3 ? "var(--red)" : timeLeft <= 6 ? "var(--amber)" : "var(--green)";
 
   return (
     <div style={{ maxWidth:480,margin:"0 auto" }}>
       {wrongPanel && <WrongPanel n={wrongPanel.n} b={wrongPanel.b} correct={wrongPanel.correct} onContinue={handleWrongDismiss} />}
+
+      {/* Progress bar */}
       <div style={{ marginBottom:16 }}>
         <div style={{ display:"flex",justifyContent:"space-between",fontSize:13,color:"var(--text3)",marginBottom:4 }}>
           <span>Questions cleared</span><span>{clearedQ}/{totalQ}</span>
@@ -293,11 +401,25 @@ function Stage3({ n, masteredTables, onComplete }) {
           <div style={{ height:"100%",width:(totalQ>0?clearedQ/totalQ*100:0)+"%",background:"var(--green)",borderRadius:99,transition:"width 0.3s" }} />
         </div>
       </div>
+
       <div className="card" style={{ textAlign:"center" }}>
+        {/* Timer ring - big and prominent */}
+        <div style={{ display:"flex",justifyContent:"center",marginBottom:16 }}>
+          <div style={{ position:"relative",width:90,height:90,display:"flex",alignItems:"center",justifyContent:"center" }}>
+            <svg width={90} height={90} style={{ position:"absolute",top:0,left:0,transform:"rotate(-90deg)" }}>
+              <circle cx={45} cy={45} r={r} fill="none" stroke="var(--surface2)" strokeWidth={6} />
+              <circle cx={45} cy={45} r={r} fill="none" stroke={timerColor} strokeWidth={6}
+                strokeDasharray={circ} strokeDashoffset={circ*(1-pct)} strokeLinecap="round"
+                style={{ transition:"stroke-dashoffset 0.9s linear,stroke 0.3s" }} />
+            </svg>
+            <span style={{ fontFamily:"var(--mono)",fontSize:28,fontWeight:900,color:timerColor }}>{timeLeft}</span>
+          </div>
+        </div>
+
         {!currentQ.isCurrent && (
           <div style={{ fontSize:11,color:"var(--text3)",marginBottom:6,textTransform:"uppercase",letterSpacing:"0.06em" }}>Review - x{currentQ.n}</div>
         )}
-        <div style={{ fontFamily:"var(--mono)",fontSize:52,fontWeight:900,color:"var(--text)",marginBottom:16,letterSpacing:"-1px" }}>
+        <div style={{ fontFamily:"var(--mono)",fontSize:52,fontWeight:900,color:"var(--text)",marginBottom:12,letterSpacing:"-1px" }}>
           {currentQ.n} x {currentQ.b} = ?
         </div>
         <div style={{ display:"flex",gap:6,justifyContent:"center",marginBottom:16 }}>
