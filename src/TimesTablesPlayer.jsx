@@ -64,11 +64,18 @@ function Stage1({ n, onComplete }) {
   const stopTimer = () => clearInterval(timerRef.current);
   useEffect(() => () => clearInterval(timerRef.current), []);
 
+  // Start timer when student hits Start button
+  useEffect(() => {
+    if (started && !done) {
+      startTimer();
+      setTimeout(() => inputRef.current?.focus(), 80);
+    }
+  }, [started]);
+
   const handleSubmit = () => {
     const val = parseInt(input.trim(), 10);
     setInput("");
     if (isNaN(val)) return;
-    if (!started) { setStarted(true); startTimer(); }
     if (val === sequence[idx]) {
       if (idx === 9) {
         stopTimer();
@@ -86,26 +93,15 @@ function Stage1({ n, onComplete }) {
     }
   };
 
-  const handleRetry = () => {
-    setIdx(0); setInput(""); setDone(false);
-    setStarted(false); setElapsed(0);
-    clearInterval(timerRef.current);
-  };
-
-  // Focus input whenever we enter the active question screen
-  useEffect(() => {
-    if (started && !done) setTimeout(() => inputRef.current?.focus(), 80);
-  }, [started, done, idx]);
-
   if (!started && !done) return (
     <div className="card" style={{ maxWidth:480,margin:"0 auto",textAlign:"center" }}>
       <div style={{ fontSize:52,fontWeight:900,color:"var(--blue)",marginBottom:8 }}>x{n}</div>
       <h3 style={{ fontSize:22,fontWeight:800,marginBottom:8 }}>Stage 1: Count by {n}s</h3>
       <p style={{ color:"var(--text2)",fontSize:15,marginBottom:8 }}>
-        Type each multiple of {n} in order: {n}, {n*2}, {n*3}... up to {n*10}.
+        Skip count from {n} to {n*10}, starting at {n}.
       </p>
       <p style={{ color:"var(--text3)",fontSize:13,marginBottom:20 }}>
-        Beat {SKIP_GOAL} seconds to advance. Timer starts on your first answer.
+        Beat {SKIP_GOAL} seconds to advance. Timer starts when you click Start.
       </p>
       <button className="btn btn-primary btn-lg" style={{ width:"100%" }}
         onClick={() => setStarted(true)}>Start</button>
@@ -138,15 +134,12 @@ function Stage1({ n, onComplete }) {
         {bestTime !== null && <span style={{ marginLeft:12,color:"var(--text3)" }}>Best: {bestTime}s</span>}
       </div>
       <div className="card" style={{ textAlign:"center" }}>
-        <div style={{ fontSize:18,color:"var(--text2)",marginBottom:6 }}>What comes next?</div>
-        <div style={{ fontFamily:"var(--mono)",fontSize:28,fontWeight:900,color:"var(--text)",marginBottom:4 }}>
-          {idx > 0 ? sequence[idx-1] : "?"} <span style={{ color:wrongFlash?"var(--red)":"var(--text3)" }}>-&gt;</span> <span style={{ color:wrongFlash?"var(--red)":"var(--amber)" }}>?</span>
+        <div style={{ fontSize:16,color:"var(--text2)",marginBottom:16 }}>
+          Skip count by {n}s - type each number in order
         </div>
-        {idx > 0 && (
-          <div style={{ fontSize:12,color:"var(--text3)",marginBottom:12 }}>
-            {sequence.slice(0,idx).join(", ")} <span style={{ color:"var(--amber)" }}>... ?</span>
-          </div>
-        )}
+        <div style={{ fontFamily:"var(--mono)",fontSize:38,fontWeight:900,color:wrongFlash?"var(--red)":"var(--amber)",marginBottom:20,transition:"color 0.15s" }}>
+          ?
+        </div>
         <input ref={inputRef} value={input}
           onChange={e => setInput(e.target.value.replace(/\D/g,""))}
           onKeyDown={e => e.key === "Enter" && handleSubmit()}
