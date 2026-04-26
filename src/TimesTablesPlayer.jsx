@@ -90,8 +90,12 @@ function Stage1({ n, onComplete }) {
     setIdx(0); setInput(""); setDone(false);
     setStarted(false); setElapsed(0);
     clearInterval(timerRef.current);
-    setTimeout(() => inputRef.current?.focus(), 80);
   };
+
+  // Focus input whenever we enter the active question screen
+  useEffect(() => {
+    if (started && !done) setTimeout(() => inputRef.current?.focus(), 80);
+  }, [started, done, idx]);
 
   if (!started && !done) return (
     <div className="card" style={{ maxWidth:480,margin:"0 auto",textAlign:"center" }}>
@@ -104,11 +108,7 @@ function Stage1({ n, onComplete }) {
         Beat {SKIP_GOAL} seconds to advance. Timer starts on your first answer.
       </p>
       <button className="btn btn-primary btn-lg" style={{ width:"100%" }}
-        onClick={() => setTimeout(() => inputRef.current?.focus(), 80)}>Start</button>
-      <input ref={inputRef} value={input}
-        onChange={e => setInput(e.target.value.replace(/\D/g,""))}
-        onKeyDown={e => e.key === "Enter" && handleSubmit()}
-        style={{ position:"absolute",opacity:0,width:1,height:1 }} />
+        onClick={() => setStarted(true)}>Start</button>
     </div>
   );
 
