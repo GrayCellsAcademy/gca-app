@@ -87,27 +87,37 @@ function CategoryManager({ categories, onChange }) {
 }
 
 //  Assignment Row (in topic list) 
-function AssignmentRow({ assignment, categories, onUpdate, onRemove, onReset }) {
+function AssignmentRow({ assignment, categories, onUpdate, onRemove, onReset, onDragStart, onDragOver, onDrop, onDragEnd, isDragging }) {
   const topic = getTopic(assignment.topicId);
-  // For live session assignments, topic won't be in registry
   const isSession = assignment.isSession || false;
-  const displayTitle = isSession
-    ? (assignment.sessionTitle || "Live Session")
-    : (topic?.title || assignment.topicId);
   if (!topic && !isSession) return null;
 
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 10, background: "var(--bg2)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "10px 14px" }}>
-      <div style={{ color: "var(--text3)", fontSize: 20, userSelect: "none" }}></div>
-      <span style={{ fontSize: 20 }}>{topic.icon}</span>
+    <div
+      draggable
+      onDragStart={onDragStart}
+      onDragOver={e => { e.preventDefault(); onDragOver(); }}
+      onDrop={onDrop}
+      onDragEnd={onDragEnd}
+      style={{
+        display: "flex", alignItems: "center", gap: 10,
+        background: isDragging ? "rgba(232,99,10,0.08)" : "var(--bg2)",
+        border: isDragging ? "2px dashed var(--blue)" : "1px solid var(--border)",
+        borderRadius: "var(--radius)", padding: "10px 14px",
+        opacity: isDragging ? 0.5 : 1,
+        cursor: "grab", transition: "all 0.15s",
+      }}>
+      <div style={{ color: "var(--text3)", fontSize: 20, userSelect: "none", cursor: "grab" }}>&#9776;</div>
+      <span style={{ fontSize: 20 }}>{topic?.icon}</span>
       <div style={{ flex: 1 }}>
-        <div style={{ fontWeight: 700, fontSize: 20 }}>{topic.title}</div>
+        <div style={{ fontWeight: 700, fontSize: 20 }}>{topic?.title || assignment.topicId}</div>
       </div>
 
       {/* Category selector */}
       <select
         value={assignment.categoryId || ""}
         onChange={e => onUpdate({ categoryId: e.target.value || null })}
+        onMouseDown={e => e.stopPropagation()}
         style={{ fontSize: 20, padding: "5px 8px", width: 140 }}>
         <option value="">No category</option>
         {categories.map(c => (
@@ -120,6 +130,7 @@ function AssignmentRow({ assignment, categories, onUpdate, onRemove, onReset }) 
         type="date"
         value={assignment.dueDate || ""}
         onChange={e => onUpdate({ dueDate: e.target.value || null })}
+        onMouseDown={e => e.stopPropagation()}
         style={{ fontSize: 20, padding: "5px 8px", width: 140 }}
       />
 
@@ -321,7 +332,9 @@ function ClassPanel({ cls, onUpdate }) {
   const [categories, setCategories] = useState(cls.categories || []);
   const [catDirty, setCatDirty] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [resetDialog, setResetDialog] = useState(null); // { topicId, topicTitle, uid, name } or { topicId, topicTitle, all: true }
+  const [resetDialog, setResetDialog] = useState(null);
+  const [dragIdx, setDragIdx] = useState(null);
+  const [dragOverIdx, setDragOverIdx] = useState(null); // { topicId, topicTitle, uid, name } or { topicId, topicTitle, all: true }
 
   const publishedTopics = getPublishedTopics();
   const assignments = normalizeAssignments(cls.assignedTopics);
@@ -466,7 +479,7 @@ function ClassPanel({ cls, onUpdate }) {
               </p>
 
               <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 14 }}>
-                {assignments.map(a => (
+                {assignments.map((a, idx) => (
                   <AssignmentRow
                     key={a.topicId}
                     assignment={a}
@@ -477,6 +490,18 @@ function ClassPanel({ cls, onUpdate }) {
                       const t = getTopic(a.topicId);
                       setResetDialog({ topicId: a.topicId, topicTitle: t?.title || a.topicId, all: true });
                     }}
+                    isDragging={dragIdx === idx}
+                    onDragStart={() => setDragIdx(idx)}
+                    onDragOver={() => setDragOverIdx(idx)}
+                    onDrop={() => {
+                      if (dragIdx === null || dragIdx === dragOverIdx) return;
+                      const reordered = [...assignments];
+                      const [moved] = reordered.splice(dragIdx, 1);
+                      reordered.splice(dragOverIdx, 0, moved);
+                      handleReorder(reordered.map(a => a.topicId));
+                      setDragIdx(null); setDragOverIdx(null);
+                    }}
+                    onDragEnd={() => { setDragIdx(null); setDragOverIdx(null); }}
                   />
                 ))}
               </div>

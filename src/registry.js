@@ -54,8 +54,8 @@ export const TOPICS = {
   },
   "review-homework-v1": {
     id: "review-homework-v1",
-    title: "HW 4 (019)",
-    description: "Final exam review - practice all 44 topics at your own pace.",
+    title: "Final Exam Review",
+    description: "Practice all 44 final exam topics at your own pace. No grade - just build your streak on each question type.",
     subject: "math", gradeLevel: "6+", icon: "", type: "homework", status: "published", order: 7,
     Player: ReviewHomework,
   },
