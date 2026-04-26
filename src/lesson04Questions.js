@@ -162,43 +162,42 @@ export function gradeWarmupB(input, question) {
   return n === correct;
 }
 
-// -- Topic 1: Division with Zero --
-// 4 problem types in random order
-const DIV_ZERO_POOL = [
-  { format: "standard", numeratorIsZero: false, desc: "a / 0" },
-  { format: "standard", numeratorIsZero: true,  desc: "0 / a" },
-  { format: "fraction",  numeratorIsZero: false, desc: "a/0 fraction" },
-  { format: "fraction",  numeratorIsZero: true,  desc: "0/a fraction" },
-];
-
-export function genDivZero(typeIdx) {
+// -- Topic 1: Division with Zero (Q5 style - 2 problems at once) --
+export function genDivZero() {
   const a = randInt(2, 9);
-  const t = DIV_ZERO_POOL[typeIdx];
-  const isUndefined = !t.numeratorIsZero;
-  const numerator = t.numeratorIsZero ? 0 : a;
-  const denominator = t.numeratorIsZero ? a : 0;
-  let display, latex;
-  if (t.format === "fraction") {
-    latex = "\\dfrac{" + numerator + "}{" + denominator + "}";
-    display = numerator + "/" + denominator;
-  } else {
-    display = numerator + " / " + denominator;
-    latex = numerator + " \\div " + denominator;
-  }
+  let b;
+  do { b = randInt(2, 9); } while (b === a);
+  // One fraction, one standard; independently pick 0/n or n/0
+  const types = ["zero-num", "zero-den"];
+  const type1 = randChoice(types);
+  const type2 = randChoice(types);
+  const style1 = Math.random() < 0.5 ? "fraction" : "standard";
+  const style2 = style1 === "fraction" ? "standard" : "fraction";
+  const makeProb = (type, n, style) => {
+    const num = type === "zero-num" ? 0 : n;
+    const den = type === "zero-num" ? n : 0;
+    const isUndef = type === "zero-den";
+    const latex = style === "fraction"
+      ? "\\dfrac{" + num + "}{" + den + "}"
+      : num + " \\div " + den;
+    return { num, den, style, latex, answer: isUndef ? "undefined" : "0", isUndefined: isUndef };
+  };
+  const prob1 = makeProb(type1, a, style1);
+  const prob2 = makeProb(type2, b, style2);
   return {
-    type: "div-zero", typeIdx, a, numeratorIsZero: t.numeratorIsZero,
-    format: t.format, display, latex,
-    answer: isUndefined ? "undefined" : "0",
-    displayAnswer: isUndefined ? "Undefined" : "0",
-    isUndefined,
-    prompt: "Evaluate. Choose: 0 or Undefined.",
+    type: "div-zero", prob1, prob2,
+    answer: JSON.stringify({ ans1: prob1.answer, ans2: prob2.answer }),
+    displayAnswer: "Expr 1: " + prob1.answer + ", Expr 2: " + prob2.answer,
+    prompt: "Evaluate each expression. Enter a number or press UNDEFINED.",
   };
 }
 
 export function gradeDivZero(input, question) {
-  const n = normalizeAnswer(input);
-  if (question.isUndefined) return n === "undefined";
-  return n === "0";
+  try {
+    const ans = JSON.parse(input);
+    return normalizeAnswer(ans.ans1) === normalizeAnswer(question.prob1.answer) &&
+           normalizeAnswer(ans.ans2) === normalizeAnswer(question.prob2.answer);
+  } catch { return false; }
 }
 
 // -- Topic 2: Computing Powers --
@@ -269,167 +268,223 @@ export function gradeRoot(input, question) {
 }
 
 // -- Topic 4 & 5: Order of Operations and Variable Expressions --
-// We generate these as structured expression trees
 
-function safeDiv(a, b) { return b === 0 ? null : a / b; }
-function safePow(base, exp) { return Math.pow(base, exp); }
-function safeSqrt(x) { return Math.sqrt(x); }
-function safeCbrt(x) { return Math.cbrt(x); }
-
-// Evaluate a single operation
 function evalOp(op, a, b) {
   switch (op) {
     case "+": return a + b;
     case "-": return a - b;
     case "*": return a * b;
-    case "/": return b === 0 ? null : a / b;
+    case "/": return b === 0 ? null : Number.isInteger(a / b) ? a / b : null;
     case "^": return Math.pow(a, b);
-    case "sqrt": return Math.sqrt(a);
-    case "cbrt": return Math.cbrt(a);
     default: return null;
   }
 }
 
-// Pick a valid operand for an operation
-function pickOperand(op, position) {
-  if (op === "sqrt") return randChoice([0, 1, 4, 9, 16, 25]);
-  if (op === "cbrt") return randChoice([0, 1, 8, 27, 64, 125]);
-  if (op === "^") {
-    const useRound = Math.random() < 0.3;
-    if (useRound) return { base: randChoice([10, 20, 30, 40, 50]), exp: randInt(1, 3) };
-    return { base: randInt(0, 5), exp: randInt(1, 5) };
-  }
-  if (op === "/") {
-    if (position === "divisor") return randInt(1, 3); // no zero divisor unless intentional
-    return randInt(1, 9);
-  }
-  if (op === "*") return randInt(1, 3); // max factor 3 so product <= 3*10=30
-  return randInt(0, 9);
+// -- Shared constraints checker --
+// Returns false if operand/op combo violates rules
+function isValidOp(op, a, b) {
+  if (op === "*" && (a === 0 || b === 0 || a === 1 || b === 1)) return false;
+  if (op === "/" && (b === 0 || b === 1)) return false; // div by 0 only in div-zero topic
+  if (op === "^" && b === 1) return false;
+  if (op === "^" && a === 0 && b === 0) return false;
+  return true;
 }
 
-// Generate a 2-operation expression
+// Pick random value for left operand of op, never 0 or 1 for mul
+function pickA(op) {
+  if (op === "*") return randInt(2, 5);
+  if (op === "/") return randInt(4, 20);
+  if (op === "^") return randInt(2, 5);
+  if (op === "sqrt") return randChoice([4, 9, 16, 25]);
+  if (op === "cbrt") return randChoice([8, 27, 64, 125]);
+  return randInt(2, 9);
+}
+
+// Pick random value for right operand (b), respecting constraints
+function pickB(op) {
+  if (op === "*") return randInt(2, 4);  // 2-4 so max product 20
+  if (op === "/") return randInt(2, 4);  // clean divisor 2-4, no 1
+  if (op === "^") return randInt(2, 4);  // exponent 2-4, no 1
+  if (op === "+") return randInt(2, 9);
+  if (op === "-") return randInt(2, 9);
+  return randInt(2, 9);
+}
+
+// Check if parentheses actually change the result vs no parentheses
+function parensChangeResult(a, op1, b, op2, c) {
+  // Without parens: evaluate op2 first if higher precedence, then op1
+  // With parens: evaluate op1 first always
+  const precedence = { "+": 1, "-": 1, "*": 2, "/": 2, "^": 3 };
+  const p1 = precedence[op1] || 0;
+  const p2 = precedence[op2] || 0;
+  if (p1 >= p2) return false; // parens don't change anything if op1 already has >= precedence
+  // e.g. (2 + 3) * 4 vs 2 + 3 * 4 -- parens DO matter
+  return true;
+}
+
+// Generate a 2-operation expression: a op1 b op2 c
+// Ops must include at least one +/- and one */
 export function genOrderOfOps2() {
-  const OPS = ["+", "-", "*", "/", "^", "sqrt"];
-  const op1 = randChoice(OPS);
-  let op2 = randChoice(OPS);
-  // Avoid same op twice for variety
-  let attempts = 0;
-  while (op2 === op1 && attempts < 10) { op2 = randChoice(OPS); attempts++; }
+  for (let attempt = 0; attempt < 100; attempt++) {
+    // Pick two different ops, at least one +/- and one */^
+    const addSub = randChoice(["+", "-"]);
+    const mulDiv = randChoice(["*", "/"]);
+    const ops = [addSub, mulDiv].sort(() => Math.random() - 0.5);
+    const [op1, op2] = ops;
 
-  // Build a simple 2-op expression: (a op1 b) op2 c or a op1 (b op2 c)
-  // with parentheses sometimes
-  const useParens = Math.random() < 0.4;
+    // Optionally use parens around first pair - only if it changes result
+    const tryParens = Math.random() < 0.5 && parensChangeResult(2, op1, 2, op2, 2);
 
-  // Generate values based on ops
-  const a = randInt(1, 9);
-  const b = op1 === "/" ? randInt(1, 3) : op1 === "*" ? randInt(1, 3) : op1 === "^" ? randInt(0, 5) : randInt(0, 9);
-  const c = op2 === "/" ? randInt(1, 3) : op2 === "*" ? randInt(1, 3) : op2 === "^" ? randInt(0, 5) : randInt(0, 9);
+    const a = pickA(op1);
+    const b = op1 === "sqrt" || op1 === "cbrt" ? null : pickB(op1);
+    const c = pickB(op2);
 
-  // Compute result based on standard order of ops (no parens) or with parens
-  let expr, result, latex;
+    if (!isValidOp(op1, a, b)) continue;
+    if (!isValidOp(op2, 0, c)) continue; // 0 is placeholder for left side
 
-  if (!useParens) {
-    // Standard order: * / ^ before + -
-    // Simplified: just show left-to-right with natural precedence
-    const r1 = evalOp(op1, a, b);
-    if (r1 === null || !Number.isInteger(r1)) return genOrderOfOps2();
-    result = evalOp(op2, r1, c);
-    if (result === null || !Number.isInteger(result) || Math.abs(result) > 10000) return genOrderOfOps2();
-    expr = formatExpr(a, op1, b, null, op2, c, false);
-    latex = formatLatex(a, op1, b, null, op2, c, false);
-  } else {
-    // Parens around first pair
-    const r1 = evalOp(op1, a, b);
-    if (r1 === null || !Number.isInteger(r1)) return genOrderOfOps2();
-    result = evalOp(op2, r1, c);
-    if (result === null || !Number.isInteger(result) || Math.abs(result) > 10000) return genOrderOfOps2();
-    expr = "(" + formatPair(a, op1, b) + ") " + opSym(op2) + " " + c;
-    latex = "(" + latexPair(a, op1, b) + ") " + latexOp(op2) + " " + c;
+    const inner = b !== null ? evalOp(op1, a, b) : (op1 === "sqrt" ? Math.sqrt(a) : Math.cbrt(a));
+    if (inner === null || !Number.isInteger(inner) || inner < 0) continue;
+
+    const result = evalOp(op2, inner, c);
+    if (result === null || !Number.isInteger(result) || result < 0 || result > 1000) continue;
+
+    // Check no negative intermediate
+    if (inner < 0 || result < 0) continue;
+
+    let latex;
+    if (tryParens && b !== null) {
+      latex = "(" + latexPair(a, op1, b) + ") " + latexOp(op2) + " " + c;
+    } else {
+      latex = b !== null
+        ? latexPair(a, op1, b) + " " + latexOp(op2) + " " + c
+        : latexOp(op1) + "{" + a + "} " + latexOp(op2) + " " + c;
+    }
+
+    return {
+      type: "order-ops-2", latex, result,
+      answer: String(result), displayAnswer: String(result),
+      isUndefined: false, prompt: "Evaluate using the correct order of operations.",
+    };
   }
-
-  const isUndefined = result === null;
-  return {
-    type: "order-ops-2", expr, latex, result,
-    answer: isUndefined ? "undefined" : String(result),
-    displayAnswer: isUndefined ? "Undefined" : String(result),
-    isUndefined, prompt: "Evaluate using the correct order of operations.",
-  };
+  return genOrderOfOps2();
 }
 
+// 3-operation expression: must have at least one +/- and one *//
 export function genOrderOfOps3() {
-  // Try a few times to get a clean result
-  for (let i = 0; i < 50; i++) {
-    const OPS = ["+", "-", "*", "/", "^"];
-    const op1 = randChoice(OPS), op2 = randChoice(OPS), op3 = randChoice(OPS);
-    const a = randInt(1, 5), b = randInt(1, 3), c = randInt(1, 3), d = randInt(1, 5);
-    const useParens = Math.random() < 0.4;
-    let result, latex;
-    if (!useParens) {
-      // Left to right respecting precedence: ^ then * / then + -
-      // Simplified: compute step by step
-      const r1 = evalOp(op1, a, b);
-      if (r1 === null || !Number.isInteger(r1)) continue;
-      const r2 = evalOp(op2, r1, c);
-      if (r2 === null || !Number.isInteger(r2)) continue;
+  for (let attempt = 0; attempt < 200; attempt++) {
+    // Ensure ops include at least one +/- and one *//^
+    const addSubOps = ["+", "-"];
+    const mulDivOps = ["*", "/"];
+    // Pick one of each category, then a third freely
+    const op1 = randChoice([...addSubOps, ...mulDivOps]);
+    const op2 = randChoice([...addSubOps, ...mulDivOps]);
+    const op3 = randChoice([...addSubOps, ...mulDivOps]);
+    const allOps = [op1, op2, op3];
+    const hasAddSub = allOps.some(o => o === "+" || o === "-");
+    const hasMulDiv = allOps.some(o => o === "*" || o === "/");
+    if (!hasAddSub || !hasMulDiv) continue;
+
+    const a = randInt(2, 9);
+    const b = pickB(op1);
+    const c = pickB(op2);
+    const d = pickB(op3);
+
+    if (!isValidOp(op1, a, b)) continue;
+
+    // Optionally wrap first two ops in parens
+    const useParens = Math.random() < 0.4 && parensChangeResult(a, op1, b, op2, c);
+
+    let r1, r2, result, latex;
+    if (useParens) {
+      r1 = evalOp(op1, a, b);
+      if (r1 === null || !Number.isInteger(r1) || r1 < 0) continue;
+      r2 = evalOp(op2, r1, c);
+      if (r2 === null || !Number.isInteger(r2) || r2 < 0) continue;
       result = evalOp(op3, r2, d);
-      if (result === null || !Number.isInteger(result) || Math.abs(result) > 10000) continue;
-      latex = latexPair(a, op1, b) + " " + latexOp(op2) + " " + c + " " + latexOp(op3) + " " + d;
-    } else {
-      const r1 = evalOp(op1, a, b);
-      if (r1 === null || !Number.isInteger(r1)) continue;
-      const r2 = evalOp(op2, r1, c);
-      if (r2 === null || !Number.isInteger(r2)) continue;
-      result = evalOp(op3, r2, d);
-      if (result === null || !Number.isInteger(result) || Math.abs(result) > 10000) continue;
+      if (result === null || !Number.isInteger(result) || result < 0 || result > 1000) continue;
       latex = "(" + latexPair(a, op1, b) + ") " + latexOp(op2) + " " + c + " " + latexOp(op3) + " " + d;
+    } else {
+      // No parens: left to right (simplified - all same precedence level for clean results)
+      r1 = evalOp(op1, a, b);
+      if (r1 === null || !Number.isInteger(r1) || r1 < 0) continue;
+      r2 = evalOp(op2, r1, c);
+      if (r2 === null || !Number.isInteger(r2) || r2 < 0) continue;
+      result = evalOp(op3, r2, d);
+      if (result === null || !Number.isInteger(result) || result < 0 || result > 1000) continue;
+      latex = latexPair(a, op1, b) + " " + latexOp(op2) + " " + c + " " + latexOp(op3) + " " + d;
     }
+
     return {
       type: "order-ops-3", latex, result,
       answer: String(result), displayAnswer: String(result),
       isUndefined: false, prompt: "Evaluate using the correct order of operations.",
     };
   }
-  return genOrderOfOps2(); // fallback
+  // Fallback: simple safe expression
+  const a = randInt(2, 6), b = randInt(2, 4), c = randInt(2, 6), d = randInt(2, 4);
+  const r1 = a + b, r2 = r1 * c, result = r2 + d;
+  return {
+    type: "order-ops-3",
+    latex: a + " + " + b + " \\times " + c + " + " + d,
+    result, answer: String(result), displayAnswer: String(result),
+    isUndefined: false, prompt: "Evaluate using the correct order of operations.",
+  };
 }
 
 // -- Topic 5: Variable Expressions --
+// 3 operations, at least one +/- and one *//
 export function genVarExpression() {
-  const vars = ["x", "y"];
-  const useTwo = Math.random() < 0.4;
-  const xVal = randInt(1, 5);
-  const yVal = useTwo ? randInt(1, 5) : null;
-  const OPS = ["+", "-", "*", "/", "^"];
-  const op1 = randChoice(OPS);
-  const op2 = randChoice(OPS);
-  const a = randInt(1, 5), b = randInt(1, 3);
+  for (let attempt = 0; attempt < 200; attempt++) {
+    const xVal = randInt(2, 5);
+    // Structure: coeff*x op1 b op2 c  (3 operations: *, op1, op2)
+    // Must include +/- for op1 or op2
+    const addSubOps = ["+", "-"];
+    const mulDivOps = ["*", "/"];
+    // All 3 ops: always * (for ax), then pick op1 and op2 with at least one +/-
+    const op1 = randChoice([...addSubOps, ...mulDivOps]);
+    const op2 = randChoice([...addSubOps, ...mulDivOps]);
+    const hasAddSub = [op1, op2].some(o => o === "+" || o === "-");
+    const hasMulDiv = [op1, op2].some(o => o === "*" || o === "/");
+    // * is always present (ax), so hasMulDiv is already satisfied, but need +/- in remaining
+    if (!hasAddSub) continue;
 
-  // Simple 2-op expression with one variable
-  // e.g. 3x + 2, x^2 - 1, 2x/3 + 1
-  let latex, result;
+    const coeff = randInt(2, 5);
+    const b = op1 === "/" ? randInt(2, 4) : randInt(2, 9);
+    const c = op2 === "/" ? randInt(2, 4) : randInt(2, 9);
 
-  const c = randInt(1, 9);
-  // Build: a * x (op1) c, then (op2) b if 3-ops
-  const xTerm = evalOp("*", a, xVal);
-  const mid = evalOp(op1, xTerm, c);
-  if (mid === null || !Number.isInteger(mid)) return genVarExpression();
-  result = mid;
+    if (!isValidOp(op1, 0, b)) continue; // b as right operand
+    if (!isValidOp(op2, 0, c)) continue;
 
-  // Format: use ax notation (no multiplication sign)
-  const axLatex = a === 1 ? "x" : a + "x";
-  if (op1 === "+") latex = axLatex + " + " + c;
-  else if (op1 === "-") latex = axLatex + " - " + c;
-  else if (op1 === "/") latex = "\\dfrac{" + axLatex + "}{" + c + "}";
-  else latex = axLatex + " " + latexOp(op1) + " " + c;
+    // Evaluate: coeff * xVal first (the ax term), then op1 b, then op2 c
+    const axVal = coeff * xVal;
+    const r1 = evalOp(op1, axVal, b);
+    if (r1 === null || !Number.isInteger(r1) || r1 < 0) continue;
+    const result = evalOp(op2, r1, c);
+    if (result === null || !Number.isInteger(result) || result < 0 || result > 1000) continue;
 
-  if (result === null || !Number.isInteger(result) || Math.abs(result) > 1000) return genVarExpression();
+    // Format: ax op1 b op2 c  (coeff*x written as "3x")
+    const axLatex = coeff === 1 ? "x" : coeff + "x";
+    let latex;
+    if (op1 === "/") {
+      latex = "\\dfrac{" + axLatex + "}{" + b + "} " + latexOp(op2) + " " + c;
+    } else {
+      latex = axLatex + " " + latexOp(op1) + " " + b + " " + latexOp(op2) + " " + c;
+    }
 
-  const given = "x = " + xVal;
+    const given = "x = " + xVal;
+    return {
+      type: "var-expr", latex, result, xVal, coeff, given,
+      answer: String(result), displayAnswer: String(result),
+      isUndefined: false,
+      prompt: "Evaluate the expression. Given: " + given,
+    };
+  }
+  // Safe fallback
+  const xVal = 3, coeff = 2, b = 4, c = 5;
   return {
-    type: "var-expr", latex, result,
-    answer: String(result), displayAnswer: String(result),
-    given, xVal,
-    isUndefined: false,
-    prompt: "Evaluate the expression. Given: " + given,
+    type: "var-expr", latex: "2x + 4 - 5", result: 3, xVal, coeff,
+    given: "x = 3", answer: "3", displayAnswer: "3",
+    isUndefined: false, prompt: "Evaluate the expression. Given: x = 3",
   };
 }
 
@@ -487,26 +542,20 @@ function formatLatex(a, op1, b, _r1, op2, c, _parens) {
 export const LESSON04_TOPICS = [
   { id: "warmup-a",     label: "Warm-up: Composite Shape",        description: "Perimeter + area, 2 missing sides" },
   { id: "warmup-b",     label: "Warm-up: Long Division (Zero)",   description: "4-digit / 2-3, zero in middle" },
-  { id: "div-zero-0",   label: "Division with Zero",              description: "a / 0 (standard)" },
-  { id: "div-zero-1",   label: "Division with Zero",              description: "0 / a (standard)" },
-  { id: "div-zero-2",   label: "Division with Zero",              description: "a/0 (fraction)" },
-  { id: "div-zero-3",   label: "Division with Zero",              description: "0/a (fraction)" },
-  { id: "power",        label: "Computing Powers",                 description: "Bases 0-5 or round, exp 1-5" },
+  { id: "div-zero",     label: "Division with Zero",              description: "2 problems: 0/a and a/0 in mixed formats" },
+  { id: "power",        label: "Computing Powers",                 description: "Bases 0-5 or round, exp 2-5" },
   { id: "sqrt",         label: "Square Roots",                     description: "Pool of 6, resets after all 6" },
   { id: "cbrt",         label: "Cube Roots",                       description: "Pool of 6, resets after all 6" },
-  { id: "order-ops-2",  label: "Order of Operations (2 ops)",     description: "Any 2 ops with/without parens" },
-  { id: "order-ops-3",  label: "Order of Operations (3 ops)",     description: "Any 3 ops with/without parens" },
-  { id: "var-expr",     label: "Variable Expressions",            description: "2-3 ops, 1-2 variables" },
+  { id: "order-ops-2",  label: "Order of Operations (2 ops)",     description: "Mix of +/- and x/div" },
+  { id: "order-ops-3",  label: "Order of Operations (3 ops)",     description: "Mix of +/- and x/div" },
+  { id: "var-expr",     label: "Variable Expressions",            description: "3 ops: ax +/- b +/- c with given x" },
 ];
 
 export function generateLesson04Question(topicId, state) {
   switch (topicId) {
     case "warmup-a":   return genWarmupA();
     case "warmup-b":   return genWarmupB();
-    case "div-zero-0": return genDivZero(0);
-    case "div-zero-1": return genDivZero(1);
-    case "div-zero-2": return genDivZero(2);
-    case "div-zero-3": return genDivZero(3);
+    case "div-zero":   return genDivZero();
     case "power":      return genPower();
     case "sqrt":       return genSqrt(state?.sqrtPool || makeSqrtPool(), state?.sqrtIdx || 0);
     case "cbrt":       return genCbrt(state?.cbrtPool || makeCbrtPool(), state?.cbrtIdx || 0);
@@ -527,10 +576,8 @@ export function gradeLesson04Answer(input, question) {
     case "sqrt":
     case "cbrt":        return gradeRoot(input, question);
     case "order-ops-2":
-    case "order-ops-3": return question.isUndefined
-        ? normalizeAnswer(input) === "undefined"
-        : parseInt(input.replace(/,/g, ""), 10) === question.result;
-    case "var-expr":    return gradeVarExpr(input, question);
+    case "order-ops-3": return parseInt(input.replace(/,/g, ""), 10) === question.result;
+    case "var-expr":    return parseInt(input.replace(/,/g, ""), 10) === question.result;
     default: return false;
   }
 }

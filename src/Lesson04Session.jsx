@@ -179,7 +179,16 @@ function QuestionDisplay({ question, revealCorrect }) {
         </div>
       );
     case "div-zero":
-      return <div style={{ textAlign:"center" }}><KaTeX expr={q.latex} /></div>;
+      return (
+        <div style={{ display:"flex",gap:60,justifyContent:"center",alignItems:"center",flexWrap:"wrap",padding:"10px 0" }}>
+          {[q.prob1, q.prob2].map((p,i) => (
+            <div key={i} style={{ textAlign:"center",minWidth:120 }}>
+              <div style={{ fontSize:13,color:"var(--text3)",marginBottom:8,fontWeight:600 }}>Expression {i+1}</div>
+              <KaTeX expr={p.latex} />
+            </div>
+          ))}
+        </div>
+      );
     case "power":
       return <div style={{ textAlign:"center" }}><KaTeX expr={q.latex} /></div>;
     case "sqrt":
@@ -217,7 +226,12 @@ function RevealCalculation({ question }) {
     return <div style={{ marginTop:8 }}><LongDivisionWork dividend={q.dividend} divisor={q.divisor} quotient={q.quotient} remainder={q.remainder} /></div>;
   }
   if (q.type === "div-zero") {
-    return <div style={{ fontSize:15,color:"var(--text2)",marginTop:8 }}>{q.isUndefined ? "Division by zero is undefined." : "Zero divided by any number is 0."}</div>;
+    return (
+      <div style={{ fontSize:14,color:"var(--text2)",marginTop:8 }}>
+        <div>Expr 1: <strong style={{ color:"var(--green)",fontFamily:"var(--mono)" }}>{q.prob1.isUndefined?"Undefined":"0"}</strong> - {q.prob1.isUndefined?"Division by zero is undefined.":"Zero divided by any number is 0."}</div>
+        <div>Expr 2: <strong style={{ color:"var(--green)",fontFamily:"var(--mono)" }}>{q.prob2.isUndefined?"Undefined":"0"}</strong> - {q.prob2.isUndefined?"Division by zero is undefined.":"Zero divided by any number is 0."}</div>
+      </div>
+    );
   }
   return null;
 }
@@ -262,16 +276,68 @@ function WarmupAAnswerInput({ question, onSubmit, submitted }) {
   );
 }
 
-// Multiple choice: 0 or Undefined
-function ZeroOrUndefinedInput({ onSubmit, submitted }) {
+// Two-problem div-zero input (like Q5 in ReviewSession)
+function DivZeroTwoInput({ question, onSubmit, submitted }) {
+  const [ans1, setAns1] = useState("");
+  const [ans2, setAns2] = useState("");
+  const ref = useRef(null);
+  useEffect(() => { setAns1(""); setAns2(""); setTimeout(()=>ref.current?.focus(),80); }, [question?.id]);
+  const handleSubmit = () => {
+    if (!ans1.trim() || !ans2.trim()) return;
+    onSubmit(JSON.stringify({ ans1: ans1.trim().toLowerCase(), ans2: ans2.trim().toLowerCase() }));
+  };
+  const inputStyle = { textAlign:"center",fontSize:22,fontFamily:"var(--mono)",fontWeight:700,padding:"10px",width:"100%" };
   return (
-    <div style={{ display:"flex",gap:12,justifyContent:"center" }}>
-      {["0","Undefined"].map(opt => (
-        <button key={opt} className="btn btn-primary" style={{ fontSize:20,padding:"14px 32px" }}
-          onClick={() => onSubmit(opt.toLowerCase())} disabled={submitted}>
-          {opt}
-        </button>
-      ))}
+    <div>
+      <div style={{ display:"flex",gap:12,flexWrap:"wrap",marginBottom:10 }}>
+        {[{ val:ans1,set:setAns1,ref }, { val:ans2,set:setAns2,ref:null }].map((item,i) => (
+          <div key={i} style={{ flex:1,minWidth:140 }}>
+            <div style={{ fontSize:13,color:"var(--text3)",marginBottom:4 }}>Expression {i+1}</div>
+            <input ref={item.ref} style={inputStyle} value={item.val}
+              onChange={e=>item.set(e.target.value)} placeholder="0 or..." disabled={submitted} />
+            <button className="btn btn-ghost btn-sm" style={{ width:"100%",marginTop:4,fontSize:13 }}
+              onClick={()=>item.set("undefined")} disabled={submitted}>UNDEFINED</button>
+          </div>
+        ))}
+      </div>
+      <button className="btn btn-primary" style={{ width:"100%" }} onClick={handleSubmit}
+        disabled={submitted||!ans1.trim()||!ans2.trim()}>Submit Both</button>
+    </div>
+  );
+}
+
+// Long division: separate quotient and remainder fields (like Q6 in ReviewSession)
+function LongDivisionAnswerInput({ onSubmit, submitted }) {
+  const [quot, setQuot] = useState("");
+  const [rem, setRem] = useState("");
+  const ref = useRef(null);
+  useEffect(() => { setQuot(""); setRem(""); setTimeout(()=>ref.current?.focus(),80); }, [submitted]);
+  const handleSubmit = () => {
+    if (!quot.trim()) return;
+    const ans = rem.trim() && rem.trim() !== "0"
+      ? quot.trim() + "r" + rem.trim()
+      : quot.trim();
+    onSubmit(ans);
+  };
+  return (
+    <div>
+      <div style={{ display:"flex",gap:12,marginBottom:10 }}>
+        <div style={{ flex:2 }}>
+          <div style={{ fontSize:13,color:"var(--text3)",marginBottom:4 }}>Quotient</div>
+          <input ref={ref} value={quot} onChange={e=>setQuot(e.target.value.replace(/\D/g,""))}
+            onKeyDown={e=>e.key==="Enter"&&handleSubmit()} inputMode="numeric" disabled={submitted}
+            style={{ width:"100%",textAlign:"center",fontSize:24,fontFamily:"var(--mono)",fontWeight:700,padding:"10px" }} />
+        </div>
+        <div style={{ flex:1 }}>
+          <div style={{ fontSize:13,color:"var(--text3)",marginBottom:4 }}>Remainder</div>
+          <input value={rem} onChange={e=>setRem(e.target.value.replace(/\D/g,""))}
+            onKeyDown={e=>e.key==="Enter"&&handleSubmit()} inputMode="numeric" disabled={submitted}
+            placeholder="0"
+            style={{ width:"100%",textAlign:"center",fontSize:24,fontFamily:"var(--mono)",fontWeight:700,padding:"10px" }} />
+        </div>
+      </div>
+      <button className="btn btn-primary" style={{ width:"100%" }} onClick={handleSubmit}
+        disabled={submitted||!quot.trim()}>Submit</button>
     </div>
   );
 }
@@ -325,11 +391,11 @@ function AnswerInput({ question, onSubmit, submitted }) {
   if (!question) return null;
   const t = question.type;
   if (t === "warmup-a") return <WarmupAAnswerInput question={question} onSubmit={onSubmit} submitted={submitted} />;
-  if (t === "warmup-b") return <NumericInput onSubmit={onSubmit} submitted={submitted} placeholder="e.g. 1024r1" isDivision={true} />;
-  if (t === "div-zero") return <ZeroOrUndefinedInput onSubmit={onSubmit} submitted={submitted} />;
+  if (t === "warmup-b") return <LongDivisionAnswerInput onSubmit={onSubmit} submitted={submitted} />;
+  if (t === "div-zero") return <DivZeroTwoInput question={question} onSubmit={onSubmit} submitted={submitted} />;
   if (t === "power" || t === "sqrt" || t === "cbrt") return <NumericInput onSubmit={onSubmit} submitted={submitted} />;
   if (t === "order-ops-2" || t === "order-ops-3" || t === "var-expr") {
-    return <MaybeUndefinedInput question={question} onSubmit={onSubmit} submitted={submitted} />;
+    return <NumericInput onSubmit={onSubmit} submitted={submitted} />;
   }
   return <NumericInput onSubmit={onSubmit} submitted={submitted} />;
 }
