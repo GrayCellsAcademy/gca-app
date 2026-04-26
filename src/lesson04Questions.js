@@ -117,7 +117,7 @@ export function genWarmupA() {
     type: "warmup-a", ...shapeData, unit, hideIndices, missingAnswers,
     answer: JSON.stringify({ m1: missingAnswers[0].length, m2: missingAnswers[1].length, perimeter, area }),
     displayAnswer: "Perimeter: " + perimeter + unit + ", Area: " + area + " sq " + unit,
-    prompt: "Find the two missing sides, the perimeter, and the area. Enter all four values.",
+    prompt: "Find the perimeter and area. Enter both values.",
   };
 }
 
@@ -125,8 +125,6 @@ export function gradeWarmupA(input, question) {
   try {
     const ans = JSON.parse(input);
     return (
-      parseInt(ans.m1) === question.missingAnswers[0].length &&
-      parseInt(ans.m2) === question.missingAnswers[1].length &&
       parseInt(ans.perimeter) === question.perimeter &&
       parseInt(ans.area) === question.area
     );
@@ -310,162 +308,137 @@ function pickB(op) {
   return randInt(2, 9);
 }
 
-// Check if parentheses actually change the result vs no parentheses
-function parensChangeResult(a, op1, b, op2, c) {
-  // Without parens: evaluate op2 first if higher precedence, then op1
-  // With parens: evaluate op1 first always
-  const precedence = { "+": 1, "-": 1, "*": 2, "/": 2, "^": 3 };
-  const p1 = precedence[op1] || 0;
-  const p2 = precedence[op2] || 0;
-  if (p1 >= p2) return false; // parens don't change anything if op1 already has >= precedence
-  // e.g. (2 + 3) * 4 vs 2 + 3 * 4 -- parens DO matter
-  return true;
+// Evaluate a flat expression a op1 b op2 c [op3 d] with correct precedence
+// Returns null if any step fails, non-integer, negative, or > 1000
+function evalWithPrecedence(tokens) {
+  // tokens = [num, op, num, op, num, ...] alternating
+  // Step 1: apply * and / left to right
+  let nums = [...tokens.filter((_, i) => i % 2 === 0)];
+  let ops  = [...tokens.filter((_, i) => i % 2 === 1)];
+  let i = 0;
+  while (i < ops.length) {
+    if (ops[i] === "*" || ops[i] === "/") {
+      const result = evalOp(ops[i], nums[i], nums[i + 1]);
+      if (result === null || !Number.isInteger(result) || result < 0) return null;
+      nums.splice(i, 2, result);
+      ops.splice(i, 1);
+    } else {
+      i++;
+    }
+  }
+  // Step 2: apply + and - left to right
+  let result = nums[0];
+  for (let j = 0; j < ops.length; j++) {
+    result = evalOp(ops[j], result, nums[j + 1]);
+    if (result === null || !Number.isInteger(result) || result < 0) return null;
+  }
+  if (result === null || !Number.isInteger(result) || result < 0 || result > 1000) return null;
+  return result;
 }
 
-// Generate a 2-operation expression: a op1 b op2 c
-// Ops must include at least one +/- and one */
+// Generate a 2-operation expression: a op1 b op2 c (no parens)
+// Must include at least one +/- and one */
 export function genOrderOfOps2() {
-  for (let attempt = 0; attempt < 100; attempt++) {
-    // Pick two different ops, at least one +/- and one */^
+  for (let attempt = 0; attempt < 200; attempt++) {
     const addSub = randChoice(["+", "-"]);
     const mulDiv = randChoice(["*", "/"]);
-    const ops = [addSub, mulDiv].sort(() => Math.random() - 0.5);
-    const [op1, op2] = ops;
+    // Randomly assign which is op1 and which is op2
+    const [op1, op2] = Math.random() < 0.5 ? [addSub, mulDiv] : [mulDiv, addSub];
 
-    // Optionally use parens around first pair - only if it changes result
-    const tryParens = Math.random() < 0.5 && parensChangeResult(2, op1, 2, op2, 2);
-
-    const a = pickA(op1);
-    const b = op1 === "sqrt" || op1 === "cbrt" ? null : pickB(op1);
-    const c = pickB(op2);
+    const a = randInt(2, 9);
+    const b = op1 === "*" ? randInt(2, 4) : op1 === "/" ? randInt(2, 4) : randInt(2, 9);
+    const c = op2 === "*" ? randInt(2, 4) : op2 === "/" ? randInt(2, 4) : randInt(2, 9);
 
     if (!isValidOp(op1, a, b)) continue;
-    if (!isValidOp(op2, 0, c)) continue; // 0 is placeholder for left side
+    if (op2 === "/" && !isValidOp(op2, 0, c)) continue;
 
-    const inner = b !== null ? evalOp(op1, a, b) : (op1 === "sqrt" ? Math.sqrt(a) : Math.cbrt(a));
-    if (inner === null || !Number.isInteger(inner) || inner < 0) continue;
+    const result = evalWithPrecedence([a, op1, b, op2, c]);
+    if (result === null) continue;
 
-    const result = evalOp(op2, inner, c);
-    if (result === null || !Number.isInteger(result) || result < 0 || result > 1000) continue;
-
-    // Check no negative intermediate
-    if (inner < 0 || result < 0) continue;
-
-    let latex;
-    if (tryParens && b !== null) {
-      latex = "(" + latexPair(a, op1, b) + ") " + latexOp(op2) + " " + c;
-    } else {
-      latex = b !== null
-        ? latexPair(a, op1, b) + " " + latexOp(op2) + " " + c
-        : latexOp(op1) + "{" + a + "} " + latexOp(op2) + " " + c;
-    }
-
+    const latex = latexPair(a, op1, b) + " " + latexOp(op2) + " " + c;
     return {
       type: "order-ops-2", latex, result,
       answer: String(result), displayAnswer: String(result),
       isUndefined: false, prompt: "Evaluate using the correct order of operations.",
     };
   }
-  return genOrderOfOps2();
+  // Safe fallback: 3 + 2*4 = 11
+  return { type:"order-ops-2", latex:"3 + 2 \\times 4", result:11, answer:"11", displayAnswer:"11", isUndefined:false, prompt:"Evaluate using the correct order of operations." };
 }
 
-// 3-operation expression: must have at least one +/- and one *//
+// 3-operation expression: a op1 b op2 c op3 d
+// Must include at least one +/- and one */
 export function genOrderOfOps3() {
-  for (let attempt = 0; attempt < 200; attempt++) {
-    // Ensure ops include at least one +/- and one *//^
-    const addSubOps = ["+", "-"];
-    const mulDivOps = ["*", "/"];
-    // Pick one of each category, then a third freely
-    const op1 = randChoice([...addSubOps, ...mulDivOps]);
-    const op2 = randChoice([...addSubOps, ...mulDivOps]);
-    const op3 = randChoice([...addSubOps, ...mulDivOps]);
+  for (let attempt = 0; attempt < 300; attempt++) {
+    // Ensure at least one +/- and one */
+    const allOpsPool = ["+", "-", "*", "/"];
+    const op1 = randChoice(allOpsPool);
+    const op2 = randChoice(allOpsPool);
+    const op3 = randChoice(allOpsPool);
     const allOps = [op1, op2, op3];
     const hasAddSub = allOps.some(o => o === "+" || o === "-");
     const hasMulDiv = allOps.some(o => o === "*" || o === "/");
     if (!hasAddSub || !hasMulDiv) continue;
 
     const a = randInt(2, 9);
-    const b = pickB(op1);
-    const c = pickB(op2);
-    const d = pickB(op3);
+    const b = (op1 === "*" || op1 === "/") ? randInt(2, 4) : randInt(2, 9);
+    const c = (op2 === "*" || op2 === "/") ? randInt(2, 4) : randInt(2, 9);
+    const d = (op3 === "*" || op3 === "/") ? randInt(2, 4) : randInt(2, 9);
 
     if (!isValidOp(op1, a, b)) continue;
+    if (op2 === "/" && !isValidOp(op2, 0, c)) continue;
+    if (op3 === "/" && !isValidOp(op3, 0, d)) continue;
 
-    // Optionally wrap first two ops in parens
-    const useParens = Math.random() < 0.4 && parensChangeResult(a, op1, b, op2, c);
+    const result = evalWithPrecedence([a, op1, b, op2, c, op3, d]);
+    if (result === null) continue;
 
-    let r1, r2, result, latex;
-    if (useParens) {
-      r1 = evalOp(op1, a, b);
-      if (r1 === null || !Number.isInteger(r1) || r1 < 0) continue;
-      r2 = evalOp(op2, r1, c);
-      if (r2 === null || !Number.isInteger(r2) || r2 < 0) continue;
-      result = evalOp(op3, r2, d);
-      if (result === null || !Number.isInteger(result) || result < 0 || result > 1000) continue;
-      latex = "(" + latexPair(a, op1, b) + ") " + latexOp(op2) + " " + c + " " + latexOp(op3) + " " + d;
-    } else {
-      // No parens: left to right (simplified - all same precedence level for clean results)
-      r1 = evalOp(op1, a, b);
-      if (r1 === null || !Number.isInteger(r1) || r1 < 0) continue;
-      r2 = evalOp(op2, r1, c);
-      if (r2 === null || !Number.isInteger(r2) || r2 < 0) continue;
-      result = evalOp(op3, r2, d);
-      if (result === null || !Number.isInteger(result) || result < 0 || result > 1000) continue;
-      latex = latexPair(a, op1, b) + " " + latexOp(op2) + " " + c + " " + latexOp(op3) + " " + d;
-    }
-
+    const latex = latexPair(a, op1, b) + " " + latexOp(op2) + " " + c + " " + latexOp(op3) + " " + d;
     return {
       type: "order-ops-3", latex, result,
       answer: String(result), displayAnswer: String(result),
       isUndefined: false, prompt: "Evaluate using the correct order of operations.",
     };
   }
-  // Fallback: simple safe expression
-  const a = randInt(2, 6), b = randInt(2, 4), c = randInt(2, 6), d = randInt(2, 4);
-  const r1 = a + b, r2 = r1 * c, result = r2 + d;
-  return {
-    type: "order-ops-3",
-    latex: a + " + " + b + " \\times " + c + " + " + d,
-    result, answer: String(result), displayAnswer: String(result),
-    isUndefined: false, prompt: "Evaluate using the correct order of operations.",
-  };
+  // Safe fallback: 5 + 3*4 - 2 = 15
+  return { type:"order-ops-3", latex:"5 + 3 \\times 4 - 2", result:15, answer:"15", displayAnswer:"15", isUndefined:false, prompt:"Evaluate using the correct order of operations." };
 }
 
 // -- Topic 5: Variable Expressions --
-// 3 operations, at least one +/- and one *//
+// Structure: coeff*x op1 b op2 c  (ax is always the mul term)
+// The displayed expression is "3x + 4 - 2" etc.
+// Evaluation uses correct precedence: ax is treated as a single term (already multiplied)
+// then op1 and op2 applied with precedence
 export function genVarExpression() {
   for (let attempt = 0; attempt < 200; attempt++) {
     const xVal = randInt(2, 5);
-    // Structure: coeff*x op1 b op2 c  (3 operations: *, op1, op2)
-    // Must include +/- for op1 or op2
-    const addSubOps = ["+", "-"];
-    const mulDivOps = ["*", "/"];
-    // All 3 ops: always * (for ax), then pick op1 and op2 with at least one +/-
-    const op1 = randChoice([...addSubOps, ...mulDivOps]);
-    const op2 = randChoice([...addSubOps, ...mulDivOps]);
+    const coeff = randInt(2, 5);
+    // op1 and op2 must include at least one +/-, the ax term provides the mul
+    const op1 = randChoice(["+", "-", "*", "/"]);
+    const op2 = randChoice(["+", "-", "*", "/"]);
     const hasAddSub = [op1, op2].some(o => o === "+" || o === "-");
-    const hasMulDiv = [op1, op2].some(o => o === "*" || o === "/");
-    // * is always present (ax), so hasMulDiv is already satisfied, but need +/- in remaining
     if (!hasAddSub) continue;
 
-    const coeff = randInt(2, 5);
-    const b = op1 === "/" ? randInt(2, 4) : randInt(2, 9);
-    const c = op2 === "/" ? randInt(2, 4) : randInt(2, 9);
+    const b = (op1 === "*" || op1 === "/") ? randInt(2, 4) : randInt(2, 9);
+    const c = (op2 === "*" || op2 === "/") ? randInt(2, 4) : randInt(2, 9);
 
-    if (!isValidOp(op1, 0, b)) continue; // b as right operand
+    if (!isValidOp(op1, 0, b)) continue;
     if (!isValidOp(op2, 0, c)) continue;
 
-    // Evaluate: coeff * xVal first (the ax term), then op1 b, then op2 c
+    // The expression is: coeff*x op1 b op2 c
+    // Evaluate by substituting x: replace coeff*x with axVal, then eval with precedence
+    // But the ax term is already a product - treat as single number for precedence
+    // So expression value = evalWithPrecedence([axVal, op1, b, op2, c])
     const axVal = coeff * xVal;
-    const r1 = evalOp(op1, axVal, b);
-    if (r1 === null || !Number.isInteger(r1) || r1 < 0) continue;
-    const result = evalOp(op2, r1, c);
-    if (result === null || !Number.isInteger(result) || result < 0 || result > 1000) continue;
+    const result = evalWithPrecedence([axVal, op1, b, op2, c]);
+    if (result === null) continue;
 
-    // Format: ax op1 b op2 c  (coeff*x written as "3x")
+    // Format the expression with ax notation
     const axLatex = coeff === 1 ? "x" : coeff + "x";
     let latex;
     if (op1 === "/") {
+      // e.g. 3x/4 + 2 -- written as fraction
+      const afterDiv = evalOp("/", axVal, b);
+      if (afterDiv === null || !Number.isInteger(afterDiv)) continue;
       latex = "\\dfrac{" + axLatex + "}{" + b + "} " + latexOp(op2) + " " + c;
     } else {
       latex = axLatex + " " + latexOp(op1) + " " + b + " " + latexOp(op2) + " " + c;
@@ -479,13 +452,8 @@ export function genVarExpression() {
       prompt: "Evaluate the expression. Given: " + given,
     };
   }
-  // Safe fallback
-  const xVal = 3, coeff = 2, b = 4, c = 5;
-  return {
-    type: "var-expr", latex: "2x + 4 - 5", result: 3, xVal, coeff,
-    given: "x = 3", answer: "3", displayAnswer: "3",
-    isUndefined: false, prompt: "Evaluate the expression. Given: x = 3",
-  };
+  // Safe fallback: 3x + 4 - 2 with x=2 => 8
+  return { type:"var-expr", latex:"3x + 4 - 2", result:8, xVal:2, coeff:3, given:"x = 2", answer:"8", displayAnswer:"8", isUndefined:false, prompt:"Evaluate. Given: x = 2" };
 }
 
 export function gradeVarExpr(input, question) {

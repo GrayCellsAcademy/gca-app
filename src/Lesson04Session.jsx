@@ -239,39 +239,32 @@ function RevealCalculation({ question }) {
 // -- Answer inputs --
 // Warmup A: 4 values - m1, m2, perimeter, area+unit
 function WarmupAAnswerInput({ question, onSubmit, submitted }) {
-  const [m1, setM1] = useState(""), [m2, setM2] = useState("");
   const [perim, setPerim] = useState(""), [area, setArea] = useState("");
-  const [areaUnit, setAreaUnit] = useState(null);
   const ref = useRef(null);
-  useEffect(() => { setM1(""); setM2(""); setPerim(""); setArea(""); setAreaUnit(null); setTimeout(()=>ref.current?.focus(),100); }, [question?.id]);
+  useEffect(() => { setPerim(""); setArea(""); setTimeout(()=>ref.current?.focus(),100); }, [question?.id]);
   const unit = question.unit;
   const handleSubmit = () => {
-    if (!m1||!m2||!perim||!area||!areaUnit) return;
-    onSubmit(JSON.stringify({ m1:parseInt(m1), m2:parseInt(m2), perimeter:parseInt(perim), area:parseInt(area) }));
+    if (!perim||!area) return;
+    onSubmit(JSON.stringify({ perimeter:parseInt(perim), area:parseInt(area) }));
   };
   return (
     <div>
-      <div style={{ fontSize:13,color:"var(--text3)",marginBottom:8 }}>Enter all four values (units: {unit})</div>
-      <div style={{ display:"flex",gap:8,flexWrap:"wrap",marginBottom:8 }}>
-        <div style={{ flex:1,minWidth:110 }}>
-          <div style={{ fontSize:12,color:"var(--text3)",marginBottom:2 }}>Missing side 1</div>
-          <input ref={ref} value={m1} onChange={e=>setM1(e.target.value)} inputMode="numeric" disabled={submitted} placeholder={"e.g. 25"} style={{ width:"100%",fontSize:17,fontFamily:"var(--mono)",padding:"8px 10px" }} />
-        </div>
-        <div style={{ flex:1,minWidth:110 }}>
-          <div style={{ fontSize:12,color:"var(--text3)",marginBottom:2 }}>Missing side 2</div>
-          <input value={m2} onChange={e=>setM2(e.target.value)} inputMode="numeric" disabled={submitted} placeholder={"e.g. 18"} style={{ width:"100%",fontSize:17,fontFamily:"var(--mono)",padding:"8px 10px" }} />
-        </div>
-        <div style={{ flex:1,minWidth:110 }}>
+      <div style={{ fontSize:13,color:"var(--text3)",marginBottom:8 }}>Enter perimeter and area (units: {unit})</div>
+      <div style={{ display:"flex",gap:8,marginBottom:8 }}>
+        <div style={{ flex:1 }}>
           <div style={{ fontSize:12,color:"var(--text3)",marginBottom:2 }}>Perimeter ({unit})</div>
-          <input value={perim} onChange={e=>setPerim(e.target.value)} inputMode="numeric" disabled={submitted} placeholder={"e.g. 180"} style={{ width:"100%",fontSize:17,fontFamily:"var(--mono)",padding:"8px 10px" }} />
+          <input ref={ref} value={perim} onChange={e=>setPerim(e.target.value)} inputMode="numeric" disabled={submitted}
+            placeholder={"e.g. 180"} style={{ width:"100%",fontSize:18,fontFamily:"var(--mono)",padding:"8px 10px" }} />
         </div>
-        <div style={{ flex:1,minWidth:110 }}>
+        <div style={{ flex:1 }}>
           <div style={{ fontSize:12,color:"var(--text3)",marginBottom:2 }}>Area (sq {unit})</div>
-          <input value={area} onChange={e=>setArea(e.target.value)} inputMode="numeric" disabled={submitted} onKeyDown={e=>e.key==="Enter"&&handleSubmit()} placeholder={"e.g. 900"} style={{ width:"100%",fontSize:17,fontFamily:"var(--mono)",padding:"8px 10px" }} />
+          <input value={area} onChange={e=>setArea(e.target.value)} inputMode="numeric" disabled={submitted}
+            onKeyDown={e=>e.key==="Enter"&&handleSubmit()}
+            placeholder={"e.g. 900"} style={{ width:"100%",fontSize:18,fontFamily:"var(--mono)",padding:"8px 10px" }} />
         </div>
       </div>
       <button className="btn btn-primary" style={{ width:"100%" }} onClick={handleSubmit}
-        disabled={submitted||!m1||!m2||!perim||!area}>Submit All</button>
+        disabled={submitted||!perim||!area}>Submit</button>
     </div>
   );
 }
@@ -294,7 +287,7 @@ function DivZeroTwoInput({ question, onSubmit, submitted }) {
           <div key={i} style={{ flex:1,minWidth:140 }}>
             <div style={{ fontSize:13,color:"var(--text3)",marginBottom:4 }}>Expression {i+1}</div>
             <input ref={item.ref} style={inputStyle} value={item.val}
-              onChange={e=>item.set(e.target.value)} placeholder="0 or..." disabled={submitted} />
+              onChange={e=>item.set(e.target.value)} disabled={submitted} />
             <button className="btn btn-ghost btn-sm" style={{ width:"100%",marginTop:4,fontSize:13 }}
               onClick={()=>item.set("undefined")} disabled={submitted}>UNDEFINED</button>
           </div>
