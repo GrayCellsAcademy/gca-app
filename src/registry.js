@@ -7,7 +7,9 @@ import ReviewHomework from "./ReviewHomework";
 import Lesson02MasteryPlayer from "./Lesson02MasteryPlayer";
 import SubtractionTablesPlayer from "./SubtractionTablesPlayer";
 import TimesTablesPlayer from "./TimesTablesPlayer";
+import TimesTablesPlayer45 from "./TimesTablesPlayer45";
 import Lesson03MasteryPlayer from "./Lesson03MasteryPlayer";
+import Lesson04MasteryPlayer from "./Lesson04MasteryPlayer";
 
 export const TOPICS = {
   "addition-tables-v1": {
@@ -51,6 +53,20 @@ export const TOPICS = {
     description: "Column multiplication, long division, and area mastery.",
     subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 6,
     Player: Lesson03MasteryPlayer,
+  },
+  "times-tables-45-v1": {
+    id: "times-tables-45-v1",
+    title: "Times Table (4 & 5)",
+    description: "Master the 4s and 5s times tables with skip counting, in-order, and random drills.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "drill", status: "published", order: 8,
+    Player: TimesTablesPlayer45,
+  },
+  "lesson04-mastery-v1": {
+    id: "lesson04-mastery-v1",
+    title: "HW 5 (019)",
+    description: "Exponents, square roots, cube roots, order of operations, and variable expressions.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 9,
+    Player: Lesson04MasteryPlayer,
   },
   "review-homework-v1": {
     id: "review-homework-v1",
