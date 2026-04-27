@@ -66,7 +66,7 @@ function RectangleMissingSVG({ question }) {
       <rect x={rx+rw+6} y={ry+rh/2-13} width={66} height={26} rx={4} fill="rgba(251,191,36,0.15)" stroke="var(--amber)" strokeWidth="1" />
       <text x={rx+rw+39} y={ry+rh/2+7} textAnchor="middle" fontSize="13" fontWeight="700" fill="#7c3aed" fontFamily="var(--mono)">?</text>
       {/* Area label - center */}
-      <text x={W/2} y={ry+rh/2+6} textAnchor="middle" fontSize="14" fontWeight="700" fill="var(--text2)" fontFamily="var(--mono)">Area = {area} {unit}</text>
+      <text x={W/2} y={ry+rh/2+6} textAnchor="middle" fontSize="14" fontWeight="700" fill="var(--text2)" fontFamily="var(--mono)">Area = {area} sq {unit}</text>
       <text x={W/2} y={H-4} textAnchor="middle" fontSize="11" fill="var(--text3)" fontStyle="italic">Not drawn to scale</text>
     </svg>
   );
@@ -161,8 +161,8 @@ function QuestionDisplay({ question, revealCorrect }) {
 
     case "multiple-minus":
       return (
-        <div style={{ textAlign:"center",fontFamily:"var(--mono)",fontSize:52,fontWeight:900,color:"var(--text)",margin:"12px 0" }}>
-          {q.display}
+        <div style={{ textAlign:"center",margin:"12px 0" }}>
+          <KaTeX expr={q.latex} />
         </div>
       );
 
@@ -170,16 +170,36 @@ function QuestionDisplay({ question, revealCorrect }) {
     case "signed-act2":
     case "signed-act3":
     case "signed-act4":
+      // On reveal: show all expressions with their answers annotated
+      if (revealCorrect) {
+        const correct = JSON.parse(q.answer);
+        return (
+          <div style={{ display:"flex",flexDirection:"column",gap:6,maxHeight:320,overflowY:"auto" }}>
+            {q.exprs.map((expr,i) => {
+              const c = correct[i];
+              const isAct4 = q.type === "signed-act4";
+              return (
+                <div key={i} style={{ background:"var(--bg2)",borderRadius:"var(--radius-sm)",padding:"8px 12px",display:"flex",alignItems:"center",gap:10,flexWrap:"wrap" }}>
+                  <span style={{ fontFamily:"var(--mono)",fontSize:15,fontWeight:700,flex:1,minWidth:130 }}>{expr.display}</span>
+                  {isAct4 ? (
+                    <span style={{ fontFamily:"var(--mono)",fontSize:15,color:"var(--green)",fontWeight:700 }}>= {expr.result}</span>
+                  ) : (
+                    <span style={{ fontSize:13,color:"var(--green)",fontWeight:700 }}>
+                      {c.num1==="+"?"(+)":"(-)"} and {c.num2==="+"?"(+)":"(-)"}
+                      {c.addOrSub ? " -> " + c.addOrSub.toUpperCase() : ""}
+                      {c.ansSign ? " -> answer " + c.ansSign : ""}
+                    </span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        );
+      }
+      // Before reveal: show prompt only, input handles the expressions
       return (
-        <div style={{ display:"flex",flexDirection:"column",gap:8 }}>
-          {q.exprs.map((expr,i) => (
-            <div key={i} style={{ background:"var(--bg2)",borderRadius:"var(--radius-sm)",padding:"8px 14px",display:"flex",alignItems:"center",justifyContent:"space-between" }}>
-              <span style={{ fontFamily:"var(--mono)",fontSize:17,fontWeight:700,color:"var(--text)",minWidth:140 }}>{expr.display}</span>
-              {revealCorrect && (
-                <span style={{ fontFamily:"var(--mono)",fontSize:15,color:"var(--green)",fontWeight:700 }}>= {expr.result}</span>
-              )}
-            </div>
-          ))}
+        <div style={{ textAlign:"center",fontSize:14,color:"var(--text2)",padding:"12px 0" }}>
+          {q.exprs.length} expressions to evaluate - answer one at a time below.
         </div>
       );
 
@@ -328,7 +348,7 @@ function SignedNumInput({ onSubmit, submitted }) {
     <div style={{ display:"flex",gap:8,justifyContent:"center" }}>
       <input ref={ref} value={val} onChange={e=>setVal(e.target.value.replace(/[^0-9\-]/g,""))}
         onKeyDown={e=>e.key==="Enter"&&submit()} inputMode="text" disabled={submitted}
-        placeholder="e.g. -5 or 8"
+        placeholder=""
         style={{ textAlign:"center",fontSize:30,fontFamily:"var(--mono)",fontWeight:700,padding:"10px",width:140 }} />
       <button className="btn btn-primary" style={{ fontSize:18,padding:"10px 20px" }}
         onMouseDown={e=>{e.preventDefault();submit();}} onTouchEnd={e=>{e.preventDefault();submit();}}
@@ -337,113 +357,161 @@ function SignedNumInput({ onSubmit, submitted }) {
   );
 }
 
-// Signed operations acts 1-3: buttons per expression
+// Signed operations acts 1-3: one expression at a time, collect all then submit
 function SignedActInput({ question, onSubmit, submitted }) {
-  const actType = question.type; // signed-act1, -act2, -act3
-  const n = question.exprs.length;
-  const [selections, setSelections] = useState(() => question.exprs.map(()=>({ num1:"", num2:"", addOrSub:"", ansSign:"" })));
+  const actType = question.type;
+  const exprs = question.exprs;
+  const [currentIdx, setCurrentIdx] = useState(0);
+  const [allSelections, setAllSelections] = useState(() => exprs.map(()=>({ num1:"", num2:"", addOrSub:"", ansSign:"" })));
+  const [done, setDone] = useState(false);
 
-  const set = (i, field, val) => setSelections(prev => prev.map((s,j)=>j===i?{...s,[field]:val}:s));
+  const s = allSelections[currentIdx] || {};
+  const set = (field, val) => setAllSelections(prev => prev.map((x,j)=>j===currentIdx?{...x,[field]:val}:x));
 
-  const isComplete = selections.every(s => {
+  const isCurrentComplete = () => {
     if (!s.num1 || !s.num2) return false;
-    if (actType==="signed-act2"||actType==="signed-act3") if (!s.addOrSub) return false;
-    if (actType==="signed-act3") if (!s.ansSign) return false;
+    if ((actType==="signed-act2"||actType==="signed-act3") && !s.addOrSub) return false;
+    if (actType==="signed-act3" && !s.ansSign) return false;
     return true;
-  });
+  };
 
-  const handleSubmit = () => {
-    const ans = selections.map(s => {
-      const out = { num1:s.num1, num2:s.num2 };
-      if (actType==="signed-act2"||actType==="signed-act3") out.addOrSub=s.addOrSub;
-      if (actType==="signed-act3") out.ansSign=s.ansSign;
-      return out;
-    });
-    onSubmit(JSON.stringify(ans));
+  const handleNext = () => {
+    if (currentIdx < exprs.length - 1) {
+      setCurrentIdx(i => i + 1);
+    } else {
+      setDone(true);
+      const ans = allSelections.map(sel => {
+        const out = { num1:sel.num1, num2:sel.num2 };
+        if (actType==="signed-act2"||actType==="signed-act3") out.addOrSub=sel.addOrSub;
+        if (actType==="signed-act3") out.ansSign=sel.ansSign;
+        return out;
+      });
+      onSubmit(JSON.stringify(ans));
+    }
   };
 
   const SignBtn = ({ label, active, color, onClick }) => (
-    <button onClick={onClick}
-      style={{ padding:"4px 10px",borderRadius:"var(--radius-sm)",border:"2px solid "+(active?color:"var(--border)"),background:active?"rgba(59,130,246,0.12)":"var(--surface)",fontFamily:"var(--mono)",fontSize:14,fontWeight:700,cursor:"pointer",color:active?color:"var(--text3)",minWidth:36 }}>
+    <button onClick={onClick} disabled={submitted}
+      style={{ padding:"8px 16px",borderRadius:"var(--radius-sm)",border:"2px solid "+(active?color:"var(--border)"),background:active?color+"22":"var(--surface)",fontFamily:"var(--mono)",fontSize:16,fontWeight:700,cursor:"pointer",color:active?color:"var(--text3)",minWidth:52 }}>
       {label}
     </button>
   );
 
+  if (done) return (
+    <div style={{ textAlign:"center",padding:"20px",color:"var(--green)",fontWeight:700 }}>Submitted! Waiting for reveal...</div>
+  );
+
   return (
     <div>
-      <div style={{ display:"flex",flexDirection:"column",gap:8,marginBottom:12,maxHeight:360,overflowY:"auto" }}>
-        {question.exprs.map((expr,i) => {
-          const s = selections[i];
-          return (
-            <div key={i} style={{ background:"var(--bg2)",borderRadius:"var(--radius-sm)",padding:"10px 12px" }}>
-              <div style={{ fontFamily:"var(--mono)",fontSize:15,fontWeight:700,marginBottom:8,color:"var(--text)" }}>{expr.display}</div>
-              <div style={{ display:"flex",gap:10,flexWrap:"wrap",alignItems:"center" }}>
-                <div>
-                  <div style={{ fontSize:10,color:"var(--text3)",marginBottom:3 }}>1st number</div>
-                  <div style={{ display:"flex",gap:4 }}>
-                    <SignBtn label="+" active={s.num1==="+"} color="var(--green)" onClick={()=>!submitted&&set(i,"num1","+")} />
-                    <SignBtn label="-" active={s.num1==="-"} color="var(--red)" onClick={()=>!submitted&&set(i,"num1","-")} />
-                  </div>
-                </div>
-                <div>
-                  <div style={{ fontSize:10,color:"var(--text3)",marginBottom:3 }}>2nd number</div>
-                  <div style={{ display:"flex",gap:4 }}>
-                    <SignBtn label="+" active={s.num2==="+"} color="var(--green)" onClick={()=>!submitted&&set(i,"num2","+")} />
-                    <SignBtn label="-" active={s.num2==="-"} color="var(--red)" onClick={()=>!submitted&&set(i,"num2","-")} />
-                  </div>
-                </div>
-                {(actType==="signed-act2"||actType==="signed-act3") && (
-                  <div>
-                    <div style={{ fontSize:10,color:"var(--text3)",marginBottom:3 }}>Operation</div>
-                    <div style={{ display:"flex",gap:4 }}>
-                      <SignBtn label="ADD" active={s.addOrSub==="add"} color="var(--blue)" onClick={()=>!submitted&&set(i,"addOrSub","add")} />
-                      <SignBtn label="SUB" active={s.addOrSub==="sub"} color="var(--purple)" onClick={()=>!submitted&&set(i,"addOrSub","sub")} />
-                    </div>
-                  </div>
-                )}
-                {actType==="signed-act3" && (
-                  <div>
-                    <div style={{ fontSize:10,color:"var(--text3)",marginBottom:3 }}>Answer sign</div>
-                    <div style={{ display:"flex",gap:4 }}>
-                      <SignBtn label="+" active={s.ansSign==="+"} color="var(--green)" onClick={()=>!submitted&&set(i,"ansSign","+")} />
-                      <SignBtn label="-" active={s.ansSign==="-"} color="var(--red)" onClick={()=>!submitted&&set(i,"ansSign","-")} />
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          );
-        })}
+      {/* Progress */}
+      <div style={{ display:"flex",justifyContent:"space-between",fontSize:13,color:"var(--text3)",marginBottom:8 }}>
+        <span>Expression {currentIdx+1} of {exprs.length}</span>
+        <span>{allSelections.filter((_,j)=>j<currentIdx).length} done</span>
       </div>
+      <div style={{ height:4,background:"var(--surface2)",borderRadius:99,overflow:"hidden",marginBottom:16 }}>
+        <div style={{ height:"100%",width:((currentIdx)/exprs.length*100)+"%",background:"var(--blue)",borderRadius:99,transition:"width 0.3s" }} />
+      </div>
+
+      {/* Current expression in KaTeX */}
+      <div style={{ textAlign:"center",marginBottom:16 }}>
+        <KaTeX expr={exprs[currentIdx].latex} />
+      </div>
+
+      {/* Buttons */}
+      <div style={{ display:"flex",gap:16,flexWrap:"wrap",justifyContent:"center",marginBottom:16 }}>
+        <div style={{ textAlign:"center" }}>
+          <div style={{ fontSize:12,color:"var(--text3)",marginBottom:6 }}>1st number is</div>
+          <div style={{ display:"flex",gap:8 }}>
+            <SignBtn label="+" active={s.num1==="+"} color="var(--green)" onClick={()=>set("num1","+")} />
+            <SignBtn label="-" active={s.num1==="-"} color="var(--red)" onClick={()=>set("num1","-")} />
+          </div>
+        </div>
+        <div style={{ textAlign:"center" }}>
+          <div style={{ fontSize:12,color:"var(--text3)",marginBottom:6 }}>2nd number is</div>
+          <div style={{ display:"flex",gap:8 }}>
+            <SignBtn label="+" active={s.num2==="+"} color="var(--green)" onClick={()=>set("num2","+")} />
+            <SignBtn label="-" active={s.num2==="-"} color="var(--red)" onClick={()=>set("num2","-")} />
+          </div>
+        </div>
+        {(actType==="signed-act2"||actType==="signed-act3") && (
+          <div style={{ textAlign:"center" }}>
+            <div style={{ fontSize:12,color:"var(--text3)",marginBottom:6 }}>We should</div>
+            <div style={{ display:"flex",gap:8 }}>
+              <SignBtn label="ADD" active={s.addOrSub==="add"} color="var(--blue)" onClick={()=>set("addOrSub","add")} />
+              <SignBtn label="SUB" active={s.addOrSub==="sub"} color="var(--purple)" onClick={()=>set("addOrSub","sub")} />
+            </div>
+          </div>
+        )}
+        {actType==="signed-act3" && (
+          <div style={{ textAlign:"center" }}>
+            <div style={{ fontSize:12,color:"var(--text3)",marginBottom:6 }}>Answer sign</div>
+            <div style={{ display:"flex",gap:8 }}>
+              <SignBtn label="+" active={s.ansSign==="+"} color="var(--green)" onClick={()=>set("ansSign","+")} />
+              <SignBtn label="-" active={s.ansSign==="-"} color="var(--red)" onClick={()=>set("ansSign","-")} />
+            </div>
+          </div>
+        )}
+      </div>
+
       <button className="btn btn-primary" style={{ width:"100%" }}
-        onClick={handleSubmit} disabled={submitted||!isComplete}>Submit All</button>
+        onClick={handleNext} disabled={submitted||!isCurrentComplete()}>
+        {currentIdx < exprs.length-1 ? "Next expression" : "Submit all"}
+      </button>
     </div>
   );
 }
 
-// Signed act 4: 8 numeric inputs
+// Signed act 4: one expression at a time, numeric input
 function SignedAct4Input({ question, onSubmit, submitted }) {
-  const [answers, setAnswers] = useState(question.exprs.map(()=>""));
+  const exprs = question.exprs;
+  const [currentIdx, setCurrentIdx] = useState(0);
+  const [answers, setAnswers] = useState(exprs.map(()=>""));
+  const [val, setVal] = useState("");
+  const [done, setDone] = useState(false);
   const ref = useRef(null);
-  useEffect(() => { setAnswers(question.exprs.map(()=>"")); setTimeout(()=>ref.current?.focus(),80); }, [question?.id]);
-  const set = (i,v) => setAnswers(prev=>prev.map((x,j)=>j===i?v:x));
-  const allDone = answers.every(a=>a!=="");
+  useEffect(() => { setVal(""); setTimeout(()=>ref.current?.focus(),80); }, [currentIdx]);
+
+  const handleNext = () => {
+    if (!val.trim()) return;
+    const newAnswers = answers.map((x,j)=>j===currentIdx?val.trim():x);
+    setAnswers(newAnswers);
+    setVal("");
+    if (currentIdx < exprs.length-1) {
+      setCurrentIdx(i=>i+1);
+    } else {
+      setDone(true);
+      onSubmit(JSON.stringify(newAnswers.map(v=>parseInt(v)||0)));
+    }
+  };
+
+  if (done) return (
+    <div style={{ textAlign:"center",padding:"20px",color:"var(--green)",fontWeight:700 }}>Submitted! Waiting for reveal...</div>
+  );
+
   return (
     <div>
-      <div style={{ display:"flex",flexDirection:"column",gap:6,marginBottom:12,maxHeight:360,overflowY:"auto" }}>
-        {question.exprs.map((expr,i) => (
-          <div key={i} style={{ display:"flex",alignItems:"center",gap:10,background:"var(--bg2)",borderRadius:"var(--radius-sm)",padding:"8px 12px" }}>
-            <span style={{ fontFamily:"var(--mono)",fontSize:16,fontWeight:700,flex:1 }}>{expr.display} =</span>
-            <input ref={i===0?ref:null} value={answers[i]}
-              onChange={e=>set(i,e.target.value.replace(/[^0-9\-]/g,""))}
-              inputMode="text" disabled={submitted}
-              style={{ width:80,textAlign:"center",fontSize:18,fontFamily:"var(--mono)",fontWeight:700,padding:"6px" }} />
-          </div>
-        ))}
+      <div style={{ display:"flex",justifyContent:"space-between",fontSize:13,color:"var(--text3)",marginBottom:8 }}>
+        <span>Expression {currentIdx+1} of {exprs.length}</span>
+        <span>{currentIdx} done</span>
       </div>
-      <button className="btn btn-primary" style={{ width:"100%" }}
-        onClick={() => onSubmit(JSON.stringify(answers.map(v=>parseInt(v)||0)))}
-        disabled={submitted||!allDone}>Submit All</button>
+      <div style={{ height:4,background:"var(--surface2)",borderRadius:99,overflow:"hidden",marginBottom:16 }}>
+        <div style={{ height:"100%",width:(currentIdx/exprs.length*100)+"%",background:"var(--blue)",borderRadius:99,transition:"width 0.3s" }} />
+      </div>
+      <div style={{ textAlign:"center",marginBottom:16 }}>
+        <KaTeX expr={exprs[currentIdx].latex} />
+      </div>
+      <div style={{ display:"flex",gap:8,justifyContent:"center" }}>
+        <input ref={ref} value={val}
+          onChange={e=>setVal(e.target.value.replace(/[^0-9\-]/g,""))}
+          onKeyDown={e=>e.key==="Enter"&&handleNext()}
+          inputMode="text" disabled={submitted} placeholder=""
+          style={{ textAlign:"center",fontSize:28,fontFamily:"var(--mono)",fontWeight:700,padding:"10px",width:140 }} />
+        <button className="btn btn-primary" style={{ fontSize:18,padding:"10px 20px" }}
+          onMouseDown={e=>{e.preventDefault();handleNext();}} onTouchEnd={e=>{e.preventDefault();handleNext();}}
+          disabled={submitted||!val.trim()}>
+          {currentIdx<exprs.length-1?"Next":"Submit"}
+        </button>
+      </div>
     </div>
   );
 }
@@ -452,7 +520,7 @@ function AnswerInput({ question, onSubmit, submitted }) {
   if (!question) return null;
   const t = question.type;
   if (t==="warmup-a") return <UnitAnswerInput onSubmit={onSubmit} submitted={submitted} placeholder={"e.g. 245"+question.unit} />;
-  if (t==="warmup-b") return <UnitAnswerInput onSubmit={onSubmit} submitted={submitted} placeholder={"e.g. 8"+question.unit} />;
+  if (t==="warmup-b") return <UnitAnswerInput onSubmit={onSubmit} submitted={submitted} />;
   if (t==="warmup-c") return <DivZeroInput question={question} onSubmit={onSubmit} submitted={submitted} />;
   if (t==="compare-signed") return <CompareSignedInput question={question} onSubmit={onSubmit} submitted={submitted} />;
   if (t==="absolute-value") return <AbsValueInput question={question} onSubmit={onSubmit} submitted={submitted} />;

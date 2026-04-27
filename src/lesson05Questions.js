@@ -204,13 +204,17 @@ export function gradeAbsoluteValue(input, question) {
 
 // -- Topic 3: Multiple Minus Signs --
 export function genMultipleMinus() {
-  const minusSigns = randInt(1, 4);
+  const minusSigns = randInt(2, 4); // at least 2
   const base = randInt(2, 20);
   const value = minusSigns % 2 === 0 ? base : -base;
-  const display = "-".repeat(minusSigns) + base;
+  // Build nested parentheses: -(-(-5)) for 3 signs
+  let latex = String(base);
+  for (let i = 0; i < minusSigns; i++) {
+    latex = "-(" + latex + ")";
+  }
   return {
     type: "multiple-minus", minusSigns, base, value,
-    display, answer: String(value), displayAnswer: String(value),
+    latex, answer: String(value), displayAnswer: String(value),
     prompt: "Simplify the expression.",
   };
 }
@@ -255,15 +259,22 @@ export function genSignedExpressions() {
     };
   };
 
+  const makeLatex = (n1Neg, n2Neg, subtract, a, b) => {
+    const n1 = n1Neg ? "-" + a : String(a);
+    const n2 = n2Neg ? "-" + b : String(b);
+    if (subtract) return n1 + " - " + (n2Neg ? "(-" + b + ")" : n2);
+    return n1 + " + " + (n2Neg ? "(-" + b + ")" : n2);
+  };
+
   const exprs = shuffle([
-    { label: "a+b",      display: a + " + " + b,         ...buildExpr(false, false, false) },
-    { label: "a+(-b)",   display: a + " + (-" + b + ")",  ...buildExpr(false, true, false) },
-    { label: "-a+b",     display: "-" + a + " + " + b,    ...buildExpr(true, false, false) },
-    { label: "-a+(-b)",  display: "-" + a + " + (-" + b + ")", ...buildExpr(true, true, false) },
-    { label: "a-b",      display: a + " - " + b,          ...buildExpr(false, false, true) },
-    { label: "a-(-b)",   display: a + " - (-" + b + ")",  ...buildExpr(false, true, true) },
-    { label: "-a-b",     display: "-" + a + " - " + b,    ...buildExpr(true, false, true) },
-    { label: "-a-(-b)",  display: "-" + a + " - (-" + b + ")", ...buildExpr(true, true, true) },
+    { label:"a+b",     display:a+" + "+b,          latex:makeLatex(false,false,false,a,b), ...buildExpr(false,false,false) },
+    { label:"a+(-b)",  display:a+" + (-"+b+")",     latex:makeLatex(false,true,false,a,b),  ...buildExpr(false,true,false) },
+    { label:"-a+b",    display:"-"+a+" + "+b,       latex:makeLatex(true,false,false,a,b),  ...buildExpr(true,false,false) },
+    { label:"-a+(-b)", display:"-"+a+" + (-"+b+")", latex:makeLatex(true,true,false,a,b),   ...buildExpr(true,true,false) },
+    { label:"a-b",     display:a+" - "+b,           latex:makeLatex(false,false,true,a,b),  ...buildExpr(false,false,true) },
+    { label:"a-(-b)",  display:a+" - (-"+b+")",     latex:makeLatex(false,true,true,a,b),   ...buildExpr(false,true,true) },
+    { label:"-a-b",    display:"-"+a+" - "+b,       latex:makeLatex(true,false,true,a,b),   ...buildExpr(true,false,true) },
+    { label:"-a-(-b)", display:"-"+a+" - (-"+b+")", latex:makeLatex(true,true,true,a,b),    ...buildExpr(true,true,true) },
   ]);
 
   return { a, b, exprs };
