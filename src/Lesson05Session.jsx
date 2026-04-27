@@ -66,7 +66,10 @@ function RectangleMissingSVG({ question }) {
       <rect x={rx+rw+6} y={ry+rh/2-13} width={66} height={26} rx={4} fill="rgba(251,191,36,0.15)" stroke="var(--amber)" strokeWidth="1" />
       <text x={rx+rw+39} y={ry+rh/2+7} textAnchor="middle" fontSize="13" fontWeight="700" fill="#7c3aed" fontFamily="var(--mono)">?</text>
       {/* Area label - center */}
-      <text x={W/2} y={ry+rh/2+6} textAnchor="middle" fontSize="14" fontWeight="700" fill="var(--text2)" fontFamily="var(--mono)">Area = {area} sq {unit}</text>
+      <text x={W/2} y={ry+rh/2+6} textAnchor="middle" fontSize="14" fontWeight="700" fill="var(--text2)" fontFamily="var(--mono)">
+        <tspan>Area = {area} {unit}</tspan>
+        <tspan dy="-6" fontSize="10">2</tspan>
+      </text>
       <text x={W/2} y={H-4} textAnchor="middle" fontSize="11" fill="var(--text3)" fontStyle="italic">Not drawn to scale</text>
     </svg>
   );
@@ -222,7 +225,7 @@ function RevealCalculation({ question }) {
   if (q.type === "warmup-b") {
     return (
       <div style={{ fontSize:14,color:"var(--text2)",marginTop:8,fontFamily:"var(--mono)" }}>
-        {q.area} / {q.knownSide} = <strong style={{ color:"var(--green)" }}>{q.missingSide} {q.unit}</strong>
+        {q.area} {q.unit}- / {q.knownSide} {q.unit} = <strong style={{ color:"var(--green)" }}>{q.missingSide} {q.unit}</strong>
       </div>
     );
   }

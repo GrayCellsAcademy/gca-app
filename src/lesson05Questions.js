@@ -240,20 +240,23 @@ export function genSignedExpressions() {
   // answerSign: sign of result
 
   const buildExpr = (n1Neg, n2Neg, subtract) => {
-    // The actual value of num1 and num2 on number line
+    // Actual values in the expression
     const v1 = n1Neg ? -a : a;
     const v2 = n2Neg ? -b : b;
     const result = subtract ? v1 - v2 : v1 + v2;
-    // Effective direction: positive = right, negative = left
-    const dir1 = v1 >= 0 ? "+" : "-";
-    const dir2Effective = subtract ? (v2 >= 0 ? "-" : "+") : (v2 >= 0 ? "+" : "-");
-    const sameDir = dir1 === dir2Effective;
-    const addSub = sameDir ? "add" : "sub";
+    // Effective value of each number after resolving all minus signs
+    // num1 effective = v1 (it's just the first number as written)
+    // num2 effective = -v2 if subtract (because subtracting v2 = adding -v2), else v2
+    const eff1 = v1;
+    const eff2 = subtract ? -v2 : v2;
+    const num1Sign = eff1 >= 0 ? "+" : "-";
+    const num2Sign = eff2 >= 0 ? "+" : "-";
+    // Same effective sign = add absolute values, opposite = subtract
+    const addSub = num1Sign === num2Sign ? "add" : "sub";
     const ansSign = result > 0 ? "+" : result < 0 ? "-" : "+";
     return {
       v1, v2, result,
-      num1Sign: n1Neg ? "-" : "+",
-      num2Sign: n2Neg ? "-" : "+",
+      num1Sign, num2Sign,
       addOrSub: addSub,
       answerSign: ansSign,
     };
