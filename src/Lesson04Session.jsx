@@ -110,7 +110,7 @@ function LongDivisionWork({ dividend, divisor, quotient, remainder }) {
           );
         })}
         {remainder > 0 && (
-          <text x={OW+nDigits*CW+10} y={lastDiffY} fontSize="15" fontWeight="700" fill="var(--blue)" fontFamily="var(--mono)">R{remainder}</text>
+          <text x={OW+nDigits*CW+10} y={lastDiffY} fontSize="20" fontWeight="700" fill="var(--blue)" fontFamily="var(--mono)">R{remainder}</text>
         )}
       </svg>
     </div>
@@ -150,11 +150,11 @@ function RectilinearSVG({ question, revealCorrect }) {
           <g key={i}>
             <line x1={p.x} y1={p.y} x2={next.x} y2={next.y} stroke="var(--blue)" strokeWidth="2.5" />
             <rect x={lx-32} y={ly-14} width={64} height={28} rx={5} fill={showQ?"rgba(251,191,36,0.15)":"var(--bg2)"} stroke={showQ?"var(--amber)":isHidden?"var(--green)":"var(--border)"} strokeWidth="1" />
-            <text x={lx} y={ly+6} textAnchor="middle" fontSize="13" fontWeight="700" fill={showQ?"#7c3aed":isHidden?"var(--green)":"var(--text)"} fontFamily="var(--mono)">{showQ?"?":sideLen+unit}</text>
+            <text x={lx} y={ly+6} textAnchor="middle" fontSize="20" fontWeight="700" fill={showQ?"#7c3aed":isHidden?"var(--green)":"var(--text)"} fontFamily="var(--mono)">{showQ?"?":sideLen+unit}</text>
           </g>
         );
       })}
-      <text x={W/2} y={H-8} textAnchor="middle" fontSize="11" fill="var(--text3)" fontStyle="italic">Not drawn to scale</text>
+      <text x={W/2} y={H-8} textAnchor="middle" fontSize="20" fill="var(--text3)" fontStyle="italic">Not drawn to scale</text>
     </svg>
   );
 }
@@ -183,7 +183,7 @@ function QuestionDisplay({ question, revealCorrect }) {
         <div style={{ display:"flex",gap:60,justifyContent:"center",alignItems:"center",flexWrap:"wrap",padding:"10px 0" }}>
           {[q.prob1, q.prob2].map((p,i) => (
             <div key={i} style={{ textAlign:"center",minWidth:120 }}>
-              <div style={{ fontSize:13,color:"var(--text3)",marginBottom:8,fontWeight:600 }}>Expression {i+1}</div>
+              <div style={{ fontSize:20,color:"var(--text3)",marginBottom:8,fontWeight:600 }}>Expression {i+1}</div>
               <KaTeX expr={p.latex} />
             </div>
           ))}
@@ -199,7 +199,7 @@ function QuestionDisplay({ question, revealCorrect }) {
     case "var-expr":
       return (
         <div style={{ textAlign:"center" }}>
-          {q.given && <div style={{ fontSize:14,color:"var(--text2)",marginBottom:6 }}>{q.given}</div>}
+          {q.given && <div style={{ fontSize:20,color:"var(--text2)",marginBottom:6 }}>{q.given}</div>}
           <KaTeX expr={q.latex} />
         </div>
       );
@@ -214,7 +214,7 @@ function RevealCalculation({ question }) {
   const q = question;
   if (q.type === "warmup-a") {
     return (
-      <div style={{ fontSize:14,color:"var(--text2)",marginTop:8 }}>
+      <div style={{ fontSize:20,color:"var(--text2)",marginTop:8 }}>
         <div>Missing side 1: <strong style={{ color:"var(--green)",fontFamily:"var(--mono)" }}>{q.missingAnswers?.[0]?.length}{q.unit}</strong></div>
         <div>Missing side 2: <strong style={{ color:"var(--green)",fontFamily:"var(--mono)" }}>{q.missingAnswers?.[1]?.length}{q.unit}</strong></div>
         <div>Perimeter: <strong style={{ color:"var(--green)",fontFamily:"var(--mono)" }}>{q.perimeter}{q.unit}</strong></div>
@@ -227,7 +227,7 @@ function RevealCalculation({ question }) {
   }
   if (q.type === "div-zero") {
     return (
-      <div style={{ fontSize:14,color:"var(--text2)",marginTop:8 }}>
+      <div style={{ fontSize:20,color:"var(--text2)",marginTop:8 }}>
         <div>Expr 1: <strong style={{ color:"var(--green)",fontFamily:"var(--mono)" }}>{q.prob1.isUndefined?"Undefined":"0"}</strong> - {q.prob1.isUndefined?"Division by zero is undefined.":"Zero divided by any number is 0."}</div>
         <div>Expr 2: <strong style={{ color:"var(--green)",fontFamily:"var(--mono)" }}>{q.prob2.isUndefined?"Undefined":"0"}</strong> - {q.prob2.isUndefined?"Division by zero is undefined.":"Zero divided by any number is 0."}</div>
       </div>
@@ -249,18 +249,18 @@ function WarmupAAnswerInput({ question, onSubmit, submitted }) {
   };
   return (
     <div>
-      <div style={{ fontSize:13,color:"var(--text3)",marginBottom:8 }}>Enter perimeter and area (units: {unit})</div>
+      <div style={{ fontSize:20,color:"var(--text3)",marginBottom:8 }}>Enter perimeter and area (units: {unit})</div>
       <div style={{ display:"flex",gap:8,marginBottom:8 }}>
         <div style={{ flex:1 }}>
-          <div style={{ fontSize:12,color:"var(--text3)",marginBottom:2 }}>Perimeter ({unit})</div>
+          <div style={{ fontSize:20,color:"var(--text3)",marginBottom:2 }}>Perimeter ({unit})</div>
           <input ref={ref} value={perim} onChange={e=>setPerim(e.target.value)} inputMode="numeric" disabled={submitted}
-            placeholder={"e.g. 180"} style={{ width:"100%",fontSize:18,fontFamily:"var(--mono)",padding:"8px 10px" }} />
+            placeholder={"e.g. 180"} style={{ width:"100%",fontSize:20,fontFamily:"var(--mono)",padding:"8px 10px" }} />
         </div>
         <div style={{ flex:1 }}>
-          <div style={{ fontSize:12,color:"var(--text3)",marginBottom:2 }}>Area (sq {unit})</div>
+          <div style={{ fontSize:20,color:"var(--text3)",marginBottom:2 }}>Area (sq {unit})</div>
           <input value={area} onChange={e=>setArea(e.target.value)} inputMode="numeric" disabled={submitted}
             onKeyDown={e=>e.key==="Enter"&&handleSubmit()}
-            placeholder={"e.g. 900"} style={{ width:"100%",fontSize:18,fontFamily:"var(--mono)",padding:"8px 10px" }} />
+            placeholder={"e.g. 900"} style={{ width:"100%",fontSize:20,fontFamily:"var(--mono)",padding:"8px 10px" }} />
         </div>
       </div>
       <button className="btn btn-primary" style={{ width:"100%" }} onClick={handleSubmit}
@@ -285,10 +285,10 @@ function DivZeroTwoInput({ question, onSubmit, submitted }) {
       <div style={{ display:"flex",gap:12,flexWrap:"wrap",marginBottom:10 }}>
         {[{ val:ans1,set:setAns1,ref }, { val:ans2,set:setAns2,ref:null }].map((item,i) => (
           <div key={i} style={{ flex:1,minWidth:140 }}>
-            <div style={{ fontSize:13,color:"var(--text3)",marginBottom:4 }}>Expression {i+1}</div>
+            <div style={{ fontSize:20,color:"var(--text3)",marginBottom:4 }}>Expression {i+1}</div>
             <input ref={item.ref} style={inputStyle} value={item.val}
               onChange={e=>item.set(e.target.value)} disabled={submitted} />
-            <button className="btn btn-ghost btn-sm" style={{ width:"100%",marginTop:4,fontSize:13 }}
+            <button className="btn btn-ghost btn-sm" style={{ width:"100%",marginTop:4,fontSize:20 }}
               onClick={()=>item.set("undefined")} disabled={submitted}>UNDEFINED</button>
           </div>
         ))}
@@ -316,13 +316,13 @@ function LongDivisionAnswerInput({ onSubmit, submitted }) {
     <div>
       <div style={{ display:"flex",gap:12,marginBottom:10 }}>
         <div style={{ flex:2 }}>
-          <div style={{ fontSize:13,color:"var(--text3)",marginBottom:4 }}>Quotient</div>
+          <div style={{ fontSize:20,color:"var(--text3)",marginBottom:4 }}>Quotient</div>
           <input ref={ref} value={quot} onChange={e=>setQuot(e.target.value.replace(/\D/g,""))}
             onKeyDown={e=>e.key==="Enter"&&handleSubmit()} inputMode="numeric" disabled={submitted}
             style={{ width:"100%",textAlign:"center",fontSize:24,fontFamily:"var(--mono)",fontWeight:700,padding:"10px" }} />
         </div>
         <div style={{ flex:1 }}>
-          <div style={{ fontSize:13,color:"var(--text3)",marginBottom:4 }}>Remainder</div>
+          <div style={{ fontSize:20,color:"var(--text3)",marginBottom:4 }}>Remainder</div>
           <input value={rem} onChange={e=>setRem(e.target.value.replace(/\D/g,""))}
             onKeyDown={e=>e.key==="Enter"&&handleSubmit()} inputMode="numeric" disabled={submitted}
             placeholder="0"
@@ -348,7 +348,7 @@ function NumericInput({ onSubmit, submitted, placeholder, isDivision }) {
         onKeyDown={e=>e.key==="Enter"&&submit()} inputMode={isDivision?"text":"numeric"}
         placeholder={placeholder||"?"} disabled={submitted}
         style={{ textAlign:"center",fontSize:30,fontFamily:"var(--mono)",fontWeight:700,padding:"10px",width:isDivision?140:120 }} />
-      <button className="btn btn-primary" style={{ fontSize:18,padding:"10px 20px" }}
+      <button className="btn btn-primary" style={{ fontSize:20,padding:"10px 20px" }}
         onMouseDown={e=>{e.preventDefault();submit();}} onTouchEnd={e=>{e.preventDefault();submit();}}
         disabled={submitted||!val.trim()}>OK</button>
     </div>
@@ -371,10 +371,10 @@ function MaybeUndefinedInput({ question, onSubmit, submitted }) {
           onKeyDown={e=>e.key==="Enter"&&submit()} inputMode="numeric"
           placeholder="Number..." disabled={submitted}
           style={{ flex:1,textAlign:"center",fontSize:26,fontFamily:"var(--mono)",fontWeight:700,padding:"10px" }} />
-        <button className="btn btn-primary" style={{ fontSize:16,padding:"10px 16px" }}
+        <button className="btn btn-primary" style={{ fontSize:20,padding:"10px 16px" }}
           onMouseDown={e=>{e.preventDefault();submit();}} disabled={submitted||!val.trim()}>OK</button>
       </div>
-      <button className="btn btn-amber" style={{ width:"100%",fontSize:18 }}
+      <button className="btn btn-amber" style={{ width:"100%",fontSize:20 }}
         onClick={()=>submit("undefined")} disabled={submitted}>Undefined</button>
     </div>
   );
@@ -412,8 +412,8 @@ function TimerBar({ endsAt, totalSeconds, onExpired }) {
   const color = remaining <= 5 ? "var(--red)" : remaining <= 10 ? "var(--amber)" : "var(--green)";
   return (
     <div style={{ marginBottom:12 }}>
-      <div style={{ display:"flex",justifyContent:"space-between",fontSize:13,color:"var(--text3)",marginBottom:4 }}>
-        <span>Time remaining</span><span style={{ fontWeight:700,color,fontSize:16 }}>{remaining}s</span>
+      <div style={{ display:"flex",justifyContent:"space-between",fontSize:20,color:"var(--text3)",marginBottom:4 }}>
+        <span>Time remaining</span><span style={{ fontWeight:700,color,fontSize:20 }}>{remaining}s</span>
       </div>
       <div style={{ height:7,background:"var(--surface2)",borderRadius:99,overflow:"hidden" }}>
         <div style={{ height:"100%",width:pct+"%",background:color,borderRadius:99,transition:"width 0.5s linear" }} />
@@ -516,15 +516,15 @@ function TeacherLesson04({ session, sessionId, uid }) {
       <div className="card" style={{ marginBottom:16 }}>
         <div style={{ display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:12 }}>
           <div>
-            <div style={{ fontSize:13,color:"var(--text3)",marginBottom:2 }}>Join Code</div>
+            <div style={{ fontSize:20,color:"var(--text3)",marginBottom:2 }}>Join Code</div>
             <div style={{ fontSize:36,fontWeight:900,fontFamily:"var(--mono)",color:"var(--blue)",letterSpacing:"0.15em" }}>{session.joinCode}</div>
-            <div style={{ fontSize:13,color:"var(--text3)" }}>{totalStudents} student{totalStudents!==1?"s":""} joined</div>
+            <div style={{ fontSize:20,color:"var(--text3)" }}>{totalStudents} student{totalStudents!==1?"s":""} joined</div>
           </div>
           <div style={{ display:"flex",alignItems:"center",gap:10,flexWrap:"wrap" }}>
             <div style={{ display:"flex",alignItems:"center",gap:8 }}>
-              <label style={{ fontSize:13,color:"var(--text2)" }}>Seconds:</label>
+              <label style={{ fontSize:20,color:"var(--text2)" }}>Seconds:</label>
               <input type="number" min={10} max={300} value={timerInput} onChange={e=>setTimerInput(Number(e.target.value))}
-                style={{ width:70,padding:"6px 10px",fontSize:14,textAlign:"center" }} />
+                style={{ width:70,padding:"6px 10px",fontSize:20,textAlign:"center" }} />
             </div>
             {session.status==="question" && <button className="btn btn-ghost" onClick={handleReveal}>Reveal</button>}
             {session.status==="revealing" && (
@@ -545,17 +545,17 @@ function TeacherLesson04({ session, sessionId, uid }) {
       <div style={{ display:"grid",gridTemplateColumns:"260px 1fr",gap:16,alignItems:"start" }}>
         {/* Topic sidebar */}
         <div style={{ display:"flex",flexDirection:"column",gap:6 }}>
-          <div style={{ fontSize:12,fontWeight:700,color:"var(--text3)",textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:4 }}>Topic</div>
+          <div style={{ fontSize:20,fontWeight:700,color:"var(--text3)",textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:4 }}>Topic</div>
           {LESSON04_TOPICS.map((t,i) => {
             const isActive = i === currentTopicIdx;
             const isDone = i < currentTopicIdx;
             return (
               <button key={t.id} onClick={() => setCurrentTopicIdx(i)}
                 style={{ background:isActive?"rgba(59,130,246,0.15)":"var(--surface)",border:"2px solid "+(isActive?"var(--blue)":isDone?"rgba(16,185,129,0.3)":"var(--border)"),borderRadius:"var(--radius)",padding:"7px 10px",cursor:"pointer",textAlign:"left",fontFamily:"var(--font)" }}>
-                <div style={{ fontWeight:700,fontSize:12,color:isActive?"var(--blue)":isDone?"var(--green)":"var(--text)" }}>
+                <div style={{ fontWeight:700,fontSize:20,color:isActive?"var(--blue)":isDone?"var(--green)":"var(--text)" }}>
                   {isDone?"done ":isActive?"now ":""}  {t.label}
                 </div>
-                <div style={{ fontSize:10,color:"var(--text3)",marginTop:1 }}>{t.description}</div>
+                <div style={{ fontSize:20,color:"var(--text3)",marginTop:1 }}>{t.description}</div>
               </button>
             );
           })}
@@ -572,7 +572,7 @@ function TeacherLesson04({ session, sessionId, uid }) {
               <p style={{ color:"var(--blue)",fontFamily:"var(--mono)",fontSize:24,fontWeight:900 }}>{session.joinCode}</p>
               <div style={{ display:"flex",flexWrap:"wrap",gap:8,justifyContent:"center",marginTop:12 }}>
                 {Object.values(participants).map(p => (
-                  <div key={p.name} style={{ background:"var(--surface)",border:"1px solid var(--border)",borderRadius:"var(--radius-sm)",padding:"5px 12px",fontSize:13,fontWeight:600 }}>{p.name}</div>
+                  <div key={p.name} style={{ background:"var(--surface)",border:"1px solid var(--border)",borderRadius:"var(--radius-sm)",padding:"5px 12px",fontSize:20,fontWeight:600 }}>{p.name}</div>
                 ))}
               </div>
             </div>
@@ -581,10 +581,10 @@ function TeacherLesson04({ session, sessionId, uid }) {
           {question && (session.status==="question"||session.status==="revealing") && (
             <>
               <div className="card">
-                <div style={{ fontSize:12,color:"var(--text3)",marginBottom:8 }}>
+                <div style={{ fontSize:20,color:"var(--text3)",marginBottom:8 }}>
                   {currentTopic.label} - {submittedCount}/{totalStudents} submitted - {correctCount} correct
                 </div>
-                <div style={{ fontSize:16,fontWeight:700,color:"var(--text)",marginBottom:12 }}>{question.prompt}</div>
+                <div style={{ fontSize:20,fontWeight:700,color:"var(--text)",marginBottom:12 }}>{question.prompt}</div>
                 <QuestionDisplay question={question} revealCorrect={session.status==="revealing"} />
                 {session.status==="question" && session.timerEndsAt && (
                   <div style={{ marginTop:12 }}>
@@ -593,7 +593,7 @@ function TeacherLesson04({ session, sessionId, uid }) {
                 )}
                 {session.status==="revealing" && (
                   <div style={{ marginTop:12,background:"rgba(16,185,129,0.06)",border:"1px solid rgba(16,185,129,0.2)",borderRadius:"var(--radius-sm)",padding:"12px 16px" }}>
-                    <div style={{ fontSize:13,color:"var(--text3)",marginBottom:4 }}>Correct answer</div>
+                    <div style={{ fontSize:20,color:"var(--text3)",marginBottom:4 }}>Correct answer</div>
                     <div style={{ fontSize:22,fontWeight:800,color:"var(--green)",fontFamily:"var(--mono)",marginBottom:4 }}>
                       {question.displayAnswer}
                     </div>
@@ -606,7 +606,7 @@ function TeacherLesson04({ session, sessionId, uid }) {
               </div>
 
               <div className="card">
-                <h3 style={{ fontSize:14,fontWeight:700,marginBottom:10 }}>Student Answers</h3>
+                <h3 style={{ fontSize:20,fontWeight:700,marginBottom:10 }}>Student Answers</h3>
                 <div style={{ display:"flex",flexDirection:"column",gap:5,maxHeight:280,overflowY:"auto" }}>
                   {Object.entries(participants).map(([pUid,p]) => {
                     const ans = answers.find(a => a.uid===pUid);
@@ -614,13 +614,13 @@ function TeacherLesson04({ session, sessionId, uid }) {
                     const correct = has && gradeLesson04Answer(ans.answer, question);
                     return (
                       <div key={pUid} style={{ display:"flex",alignItems:"center",justifyContent:"space-between",background:"var(--bg2)",borderRadius:"var(--radius-sm)",padding:"7px 12px",border:"1px solid "+(has?(correct?"rgba(16,185,129,0.3)":"rgba(239,68,68,0.3)"):"var(--border)") }}>
-                        <span style={{ fontWeight:600,fontSize:13 }}>{p.name}</span>
+                        <span style={{ fontWeight:600,fontSize:20 }}>{p.name}</span>
                         {has ? (
                           <div style={{ display:"flex",alignItems:"center",gap:8 }}>
-                            {session.status==="revealing" && <span style={{ fontFamily:"var(--mono)",fontSize:13,color:"var(--text2)" }}>{ans.answer}</span>}
+                            {session.status==="revealing" && <span style={{ fontFamily:"var(--mono)",fontSize:20,color:"var(--text2)" }}>{ans.answer}</span>}
                             <span style={{ fontWeight:700,color:correct?"var(--green)":"var(--red)" }}>{correct?"+"+POINTS:"X"}</span>
                           </div>
-                        ) : <span style={{ fontSize:12,color:"var(--text3)" }}>thinking...</span>}
+                        ) : <span style={{ fontSize:20,color:"var(--text3)" }}>thinking...</span>}
                       </div>
                     );
                   })}
@@ -680,7 +680,7 @@ function StudentLesson04({ session, sessionId, uid }) {
   return (
     <div style={{ maxWidth:560,margin:"0 auto" }}>
       <div style={{ display:"flex",justifyContent:"flex-end",marginBottom:12 }}>
-        <div style={{ background:"var(--surface)",border:"1px solid var(--border)",borderRadius:"var(--radius-sm)",padding:"5px 12px",fontSize:13,fontWeight:700 }}>
+        <div style={{ background:"var(--surface)",border:"1px solid var(--border)",borderRadius:"var(--radius-sm)",padding:"5px 12px",fontSize:20,fontWeight:700 }}>
           Score: {myScore} pts
         </div>
       </div>
@@ -690,7 +690,7 @@ function StudentLesson04({ session, sessionId, uid }) {
         )}
         {question && (
           <>
-            <div style={{ fontSize:15,fontWeight:700,marginBottom:12,color:"var(--text)" }}>{question.prompt}</div>
+            <div style={{ fontSize:20,fontWeight:700,marginBottom:12,color:"var(--text)" }}>{question.prompt}</div>
             <QuestionDisplay question={question} revealCorrect={session.status==="revealing"} />
           </>
         )}
@@ -703,7 +703,7 @@ function StudentLesson04({ session, sessionId, uid }) {
                 </div>
                 {!result.correct && question?.displayAnswer && (
                   <div style={{ marginTop:8 }}>
-                    <div style={{ color:"var(--green)",fontSize:16,marginBottom:4 }}>
+                    <div style={{ color:"var(--green)",fontSize:20,marginBottom:4 }}>
                       Correct: <strong style={{ fontFamily:"var(--mono)" }}>{question.displayAnswer}</strong>
                     </div>
                     <RevealCalculation question={question} />
@@ -714,7 +714,7 @@ function StudentLesson04({ session, sessionId, uid }) {
               <div>
                 <div style={{ color:"var(--text3)",marginBottom:4 }}>No answer submitted.</div>
                 {question?.displayAnswer && (
-                  <div style={{ color:"var(--green)",fontSize:16 }}>
+                  <div style={{ color:"var(--green)",fontSize:20 }}>
                     Correct: <strong style={{ fontFamily:"var(--mono)" }}>{question.displayAnswer}</strong>
                   </div>
                 )}
@@ -723,8 +723,8 @@ function StudentLesson04({ session, sessionId, uid }) {
           </div>
         ) : submitted ? (
           <div style={{ textAlign:"center",marginTop:12 }}>
-            <div style={{ fontSize:15,fontWeight:700,color:"var(--green)",marginBottom:4 }}>Submitted!</div>
-            <div style={{ fontSize:12,color:"var(--text3)" }}>Waiting for teacher to reveal...</div>
+            <div style={{ fontSize:20,fontWeight:700,color:"var(--green)",marginBottom:4 }}>Submitted!</div>
+            <div style={{ fontSize:20,color:"var(--text3)" }}>Waiting for teacher to reveal...</div>
           </div>
         ) : question ? (
           <div style={{ marginTop:14 }}>
@@ -756,17 +756,17 @@ function CreateLesson04Session({ user, onCreated }) {
     <div style={{ maxWidth:480,margin:"0 auto" }}>
       <div className="card">
         <h2 style={{ fontSize:20,fontWeight:800,marginBottom:4 }}>Lesson 4 - Properties, Exponents, Roots, and Order of Operations</h2>
-        <p style={{ color:"var(--text2)",fontSize:13,marginBottom:16 }}>Division with zero, computing powers, square and cube roots, order of operations, and variable expressions.</p>
+        <p style={{ color:"var(--text2)",fontSize:20,marginBottom:16 }}>Division with zero, computing powers, square and cube roots, order of operations, and variable expressions.</p>
         <div style={{ marginBottom:12 }}>
-          <label style={{ fontSize:13,fontWeight:600,color:"var(--text2)",display:"block",marginBottom:5 }}>Class</label>
-          <select value={selectedClass} onChange={e=>setSelectedClass(e.target.value)} style={{ width:"100%",padding:"10px 12px",fontSize:14 }}>
+          <label style={{ fontSize:20,fontWeight:600,color:"var(--text2)",display:"block",marginBottom:5 }}>Class</label>
+          <select value={selectedClass} onChange={e=>setSelectedClass(e.target.value)} style={{ width:"100%",padding:"10px 12px",fontSize:20 }}>
             <option value="">Select a class...</option>
             {classes.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}
           </select>
         </div>
         <div style={{ marginBottom:16 }}>
-          <label style={{ fontSize:13,fontWeight:600,color:"var(--text2)",display:"block",marginBottom:5 }}>Default seconds per question</label>
-          <input type="number" min={30} max={300} value={timer} onChange={e=>setTimer(Number(e.target.value))} style={{ width:"100%",padding:"10px 12px",fontSize:14 }} />
+          <label style={{ fontSize:20,fontWeight:600,color:"var(--text2)",display:"block",marginBottom:5 }}>Default seconds per question</label>
+          <input type="number" min={30} max={300} value={timer} onChange={e=>setTimer(Number(e.target.value))} style={{ width:"100%",padding:"10px 12px",fontSize:20 }} />
         </div>
         <button className="btn btn-primary btn-lg" style={{ width:"100%" }} onClick={handleCreate} disabled={loading||!selectedClass}>
           {loading?"Creating...":"Start Session"}
@@ -791,10 +791,10 @@ export default function Lesson04Session({ user, onHome }) {
       <div style={{ maxWidth:1200,margin:"0 auto" }}>
         <div style={{ display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:24,flexWrap:"wrap",gap:12 }}>
           <div style={{ display:"flex",alignItems:"center",gap:12 }}>
-            <div style={{ width:40,height:40,borderRadius:12,background:"linear-gradient(135deg,var(--blue),var(--purple))",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:800,color:"#fff" }}>L4</div>
+            <div style={{ width:40,height:40,borderRadius:12,background:"linear-gradient(135deg,var(--blue),var(--purple))",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,fontWeight:800,color:"#fff" }}>L4</div>
             <div>
-              <div style={{ fontWeight:800,fontSize:18 }}>GCA</div>
-              <div style={{ color:"var(--text3)",fontSize:12 }}>Lesson 4 - Properties, Exponents, Roots, Order of Operations</div>
+              <div style={{ fontWeight:800,fontSize:20 }}>GCA</div>
+              <div style={{ color:"var(--text3)",fontSize:20 }}>Lesson 4 - Properties, Exponents, Roots, Order of Operations</div>
             </div>
           </div>
           <button className="btn btn-ghost btn-sm" onClick={onHome}>Back to Home</button>

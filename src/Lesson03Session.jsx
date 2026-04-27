@@ -206,7 +206,7 @@ function LongDivisionWork({ dividend, divisor, quotient, remainder }) {
         {/* Remainder label */}
         {remainder > 0 && (
           <text x={OW + nDigits * CW + 10} y={lastDiffY}
-            fontSize="15" fontWeight="700" fill="var(--blue)" fontFamily="var(--mono)">
+            fontSize="20" fontWeight="700" fill="var(--blue)" fontFamily="var(--mono)">
             R{remainder}
           </text>
         )}
@@ -303,7 +303,7 @@ function RectilinearSVG({ question, revealCorrect }) {
         <g>
           <rect x={rect3.labelX + 4} y={rect3.labelY - 13} width={68} height={26} rx={5}
             fill="var(--bg2)" stroke="rgba(16,185,129,0.8)" strokeWidth="1.5" />
-          <text x={rect3.labelX + 38} y={rect3.labelY + 6} textAnchor="middle" fontSize="13"
+          <text x={rect3.labelX + 38} y={rect3.labelY + 6} textAnchor="middle" fontSize="20"
             fontWeight="800" fill="var(--green)" fontFamily="var(--mono)">
             {rect3.stripH}{rect3.unit}
           </text>
@@ -328,14 +328,14 @@ function RectilinearSVG({ question, revealCorrect }) {
             <rect x={lx - 32} y={ly - 14} width={64} height={28} rx={5}
               fill={showQ ? "rgba(251,191,36,0.15)" : "var(--bg2)"}
               stroke={showQ ? "var(--amber)" : isHidden ? "var(--green)" : "var(--border)"} strokeWidth="1" />
-            <text x={lx} y={ly + 6} textAnchor="middle" fontSize="13" fontWeight="700"
+            <text x={lx} y={ly + 6} textAnchor="middle" fontSize="20" fontWeight="700"
               fill={showQ ? "#7c3aed" : isHidden ? "var(--green)" : "var(--text)"} fontFamily="var(--mono)">
               {showQ ? "?" : sideLen + unit}
             </text>
           </g>
         );
       })}
-      <text x={SVG_W / 2} y={SVG_H - 8} textAnchor="middle" fontSize="11" fill="var(--text3)" fontStyle="italic">Not drawn to scale</text>
+      <text x={SVG_W / 2} y={SVG_H - 8} textAnchor="middle" fontSize="20" fill="var(--text3)" fontStyle="italic">Not drawn to scale</text>
     </svg>
   );
 }
@@ -351,11 +351,11 @@ function RectangleAreaSVG({ question }) {
       <polyline points={(rx+14)+","+ry+" "+(rx+14)+","+(ry+14)+" "+rx+","+(ry+14)} fill="none" stroke="var(--text3)" strokeWidth="1.5" />
       {/* Length label - top */}
       <rect x={rx+rw/2-36} y={ry-22} width={72} height={22} rx={4} fill="var(--bg2)" stroke="var(--border)" strokeWidth="1" />
-      <text x={rx+rw/2} y={ry-6} textAnchor="middle" fontSize="14" fontWeight="700" fill="var(--text)" fontFamily="var(--mono)">{lengthVal} {lengthUnit}</text>
+      <text x={rx+rw/2} y={ry-6} textAnchor="middle" fontSize="20" fontWeight="700" fill="var(--text)" fontFamily="var(--mono)">{lengthVal} {lengthUnit}</text>
       {/* Width label - right */}
       <rect x={rx+rw+6} y={ry+rh/2-12} width={72} height={24} rx={4} fill="var(--bg2)" stroke="var(--border)" strokeWidth="1" />
-      <text x={rx+rw+42} y={ry+rh/2+6} textAnchor="middle" fontSize="14" fontWeight="700" fill="var(--text)" fontFamily="var(--mono)">{widthVal} {widthUnit}</text>
-      <text x={W/2} y={H-6} textAnchor="middle" fontSize="11" fill="var(--text3)" fontStyle="italic">Not drawn to scale</text>
+      <text x={rx+rw+42} y={ry+rh/2+6} textAnchor="middle" fontSize="20" fontWeight="700" fill="var(--text)" fontFamily="var(--mono)">{widthVal} {widthUnit}</text>
+      <text x={W/2} y={H-6} textAnchor="middle" fontSize="20" fill="var(--text3)" fontStyle="italic">Not drawn to scale</text>
     </svg>
   );
 }
@@ -370,7 +370,7 @@ function SquareAreaSVG({ question }) {
       <rect x={sx} y={sy} width={sw} height={sw} stroke="var(--blue)" strokeWidth="2.5" fill="rgba(59,130,246,0.07)" />
       <polyline points={(sx+14)+","+sy+" "+(sx+14)+","+(sy+14)+" "+sx+","+(sy+14)} fill="none" stroke="var(--text3)" strokeWidth="1.5" />
       <rect x={sx+sw/2-28} y={sy-20} width={56} height={22} rx={4} fill="var(--bg2)" stroke="var(--border)" strokeWidth="1" />
-      <text x={sx+sw/2} y={sy-4} textAnchor="middle" fontSize="13" fontWeight="700" fill="var(--text)" fontFamily="var(--mono)">{s} {unit}</text>
+      <text x={sx+sw/2} y={sy-4} textAnchor="middle" fontSize="20" fontWeight="700" fill="var(--text)" fontFamily="var(--mono)">{s} {unit}</text>
     </svg>
   );
 }
@@ -473,23 +473,23 @@ function WarmupAnswerInput({ question, onSubmit, submitted }) {
   const { missing1, missing2, unit } = question;
   return (
     <div>
-      <div style={{ fontSize: 13, color: "var(--text3)", marginBottom: 8 }}>Enter all three values (numbers only, units are {unit})</div>
+      <div style={{ fontSize: 20, color: "var(--text3)", marginBottom: 8 }}>Enter all three values (numbers only, units are {unit})</div>
       <div style={{ display: "flex", gap: 8, marginBottom: 8, flexWrap: "wrap" }}>
         <div style={{ flex: 1, minWidth: 120 }}>
-          <div style={{ fontSize: 12, color: "var(--text3)", marginBottom: 3 }}>Missing side 1 ({missing1?.label})</div>
+          <div style={{ fontSize: 20, color: "var(--text3)", marginBottom: 3 }}>Missing side 1 ({missing1?.label})</div>
           <input ref={ref} value={m1} onChange={e => setM1(e.target.value)} inputMode="numeric" disabled={submitted}
-            placeholder={"e.g. 35" + unit} style={{ width: "100%", fontSize: 18, fontFamily: "var(--mono)", padding: "8px 10px" }} />
+            placeholder={"e.g. 35" + unit} style={{ width: "100%", fontSize: 20, fontFamily: "var(--mono)", padding: "8px 10px" }} />
         </div>
         <div style={{ flex: 1, minWidth: 120 }}>
-          <div style={{ fontSize: 12, color: "var(--text3)", marginBottom: 3 }}>Missing side 2 ({missing2?.label})</div>
+          <div style={{ fontSize: 20, color: "var(--text3)", marginBottom: 3 }}>Missing side 2 ({missing2?.label})</div>
           <input value={m2} onChange={e => setM2(e.target.value)} inputMode="numeric" disabled={submitted}
-            placeholder={"e.g. 58" + unit} style={{ width: "100%", fontSize: 18, fontFamily: "var(--mono)", padding: "8px 10px" }} />
+            placeholder={"e.g. 58" + unit} style={{ width: "100%", fontSize: 20, fontFamily: "var(--mono)", padding: "8px 10px" }} />
         </div>
         <div style={{ flex: 1, minWidth: 120 }}>
-          <div style={{ fontSize: 12, color: "var(--text3)", marginBottom: 3 }}>Perimeter</div>
+          <div style={{ fontSize: 20, color: "var(--text3)", marginBottom: 3 }}>Perimeter</div>
           <input value={perim} onChange={e => setPerim(e.target.value)} inputMode="numeric" disabled={submitted}
             onKeyDown={e => e.key === "Enter" && handleSubmit()}
-            placeholder={"e.g. 180" + unit} style={{ width: "100%", fontSize: 18, fontFamily: "var(--mono)", padding: "8px 10px" }} />
+            placeholder={"e.g. 180" + unit} style={{ width: "100%", fontSize: 20, fontFamily: "var(--mono)", padding: "8px 10px" }} />
         </div>
       </div>
       <button className="btn btn-primary" style={{ width: "100%" }} onClick={handleSubmit}
@@ -516,25 +516,25 @@ function CompositeAreaAnswerInput({ question, onSubmit, submitted }) {
   const { missingAnswers, unit } = question;
   return (
     <div>
-      <div style={{ fontSize: 13, color: "var(--text3)", marginBottom: 8 }}>
+      <div style={{ fontSize: 20, color: "var(--text3)", marginBottom: 8 }}>
         Find the two missing sides and the area (numbers only, units are {unit} and sq {unit})
       </div>
       <div style={{ display: "flex", gap: 8, marginBottom: 8, flexWrap: "wrap" }}>
         <div style={{ flex: 1, minWidth: 100 }}>
-          <div style={{ fontSize: 12, color: "var(--text3)", marginBottom: 3 }}>Missing side 1</div>
+          <div style={{ fontSize: 20, color: "var(--text3)", marginBottom: 3 }}>Missing side 1</div>
           <input ref={ref} value={m1} onChange={e => setM1(e.target.value)} inputMode="numeric" disabled={submitted}
-            placeholder={"e.g. 25"} style={{ width: "100%", fontSize: 18, fontFamily: "var(--mono)", padding: "8px 10px" }} />
+            placeholder={"e.g. 25"} style={{ width: "100%", fontSize: 20, fontFamily: "var(--mono)", padding: "8px 10px" }} />
         </div>
         <div style={{ flex: 1, minWidth: 100 }}>
-          <div style={{ fontSize: 12, color: "var(--text3)", marginBottom: 3 }}>Missing side 2</div>
+          <div style={{ fontSize: 20, color: "var(--text3)", marginBottom: 3 }}>Missing side 2</div>
           <input value={m2} onChange={e => setM2(e.target.value)} inputMode="numeric" disabled={submitted}
-            placeholder={"e.g. 18"} style={{ width: "100%", fontSize: 18, fontFamily: "var(--mono)", padding: "8px 10px" }} />
+            placeholder={"e.g. 18"} style={{ width: "100%", fontSize: 20, fontFamily: "var(--mono)", padding: "8px 10px" }} />
         </div>
         <div style={{ flex: 1, minWidth: 100 }}>
-          <div style={{ fontSize: 12, color: "var(--text3)", marginBottom: 3 }}>Area (sq {unit})</div>
+          <div style={{ fontSize: 20, color: "var(--text3)", marginBottom: 3 }}>Area (sq {unit})</div>
           <input value={area} onChange={e => setArea(e.target.value)} inputMode="numeric" disabled={submitted}
             onKeyDown={e => e.key === "Enter" && handleSubmit()}
-            placeholder={"e.g. 900"} style={{ width: "100%", fontSize: 18, fontFamily: "var(--mono)", padding: "8px 10px" }} />
+            placeholder={"e.g. 900"} style={{ width: "100%", fontSize: 20, fontFamily: "var(--mono)", padding: "8px 10px" }} />
         </div>
       </div>
       <button className="btn btn-primary" style={{ width: "100%" }} onClick={handleSubmit}
@@ -564,7 +564,7 @@ function AreaAnswerInput({ question, onSubmit, submitted }) {
 
   return (
     <div>
-      <div style={{ fontSize: 13, color: "var(--text3)", marginBottom: 6 }}>
+      <div style={{ fontSize: 20, color: "var(--text3)", marginBottom: 6 }}>
         {question.type === "rectangle-area" ? "Convert if needed, then enter area and choose units." : "Enter area and choose units."}
       </div>
       <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
@@ -577,7 +577,7 @@ function AreaAnswerInput({ question, onSubmit, submitted }) {
         {unitChoices.map(u => (
           <button key={u} onClick={() => setSelectedUnit(u)} disabled={submitted}
             className={"btn btn-sm " + (selectedUnit === u ? "btn-primary" : "btn-ghost")}
-            style={{ fontSize: 14, padding: "8px 16px" }}>
+            style={{ fontSize: 20, padding: "8px 16px" }}>
             {u}
           </button>
         ))}
@@ -598,7 +598,7 @@ function NumericAnswerInput({ question, onSubmit, submitted }) {
   return (
     <div>
       {isDivision && (
-        <div style={{ fontSize: 13, color: "var(--text3)", marginBottom: 6 }}>Use r for remainder, e.g. 86r1</div>
+        <div style={{ fontSize: 20, color: "var(--text3)", marginBottom: 6 }}>Use r for remainder, e.g. 86r1</div>
       )}
       <div style={{ display: "flex", gap: 8 }}>
         <input ref={ref} value={value}
@@ -631,7 +631,7 @@ function RevealCalculation({ question }) {
 
   if (q.type === "warmup") {
     return (
-      <div style={{ fontSize: 14, color: "var(--text2)", marginTop: 8 }}>
+      <div style={{ fontSize: 20, color: "var(--text2)", marginTop: 8 }}>
         <div>Missing side 1 ({q.missing1?.label}): <strong style={{ color: "var(--green)", fontFamily: "var(--mono)" }}>{q.missing1?.length}{q.unit}</strong></div>
         <div>Missing side 2 ({q.missing2?.label}): <strong style={{ color: "var(--green)", fontFamily: "var(--mono)" }}>{q.missing2?.length}{q.unit}</strong></div>
         <div>Perimeter: <strong style={{ color: "var(--green)", fontFamily: "var(--mono)" }}>{q.perimeter}{q.unit}</strong></div>
@@ -640,7 +640,7 @@ function RevealCalculation({ question }) {
   }
   if (q.type === "round-multiply") {
     return (
-      <div style={{ fontSize: 15, color: "var(--text2)", marginTop: 8, fontFamily: "var(--mono)" }}>
+      <div style={{ fontSize: 20, color: "var(--text2)", marginTop: 8, fontFamily: "var(--mono)" }}>
         {q.a} x {q.b} = <strong style={{ color: "var(--green)" }}>{q.answer}</strong>
       </div>
     );
@@ -655,7 +655,7 @@ function RevealCalculation({ question }) {
     const { lengthVal, lengthUnit, widthVal, widthUnit, areaFt, areaYd } = q;
     const needsConvert = lengthUnit !== widthUnit;
     return (
-      <div style={{ fontSize: 14, color: "var(--text2)", marginTop: 8, fontFamily: "var(--mono)" }}>
+      <div style={{ fontSize: 20, color: "var(--text2)", marginTop: 8, fontFamily: "var(--mono)" }}>
         {needsConvert && lengthUnit === "yd" && <div>{lengthVal} yd = {lengthVal * 3} ft, so {lengthVal * 3} ft x {widthVal} ft = <strong style={{ color: "var(--green)" }}>{areaFt} sq ft</strong></div>}
         {needsConvert && widthUnit === "yd" && <div>{widthVal} yd = {widthVal * 3} ft, so {lengthVal} ft x {widthVal * 3} ft = <strong style={{ color: "var(--green)" }}>{areaFt} sq ft</strong></div>}
         {!needsConvert && <div>{lengthVal} {lengthUnit} x {widthVal} {widthUnit} = <strong style={{ color: "var(--green)" }}>{areaFt} sq ft</strong></div>}
@@ -665,7 +665,7 @@ function RevealCalculation({ question }) {
   }
   if (q.type === "composite-area") {
     return (
-      <div style={{ fontSize: 14, color: "var(--text2)", marginTop: 8 }}>
+      <div style={{ fontSize: 20, color: "var(--text2)", marginTop: 8 }}>
         {q.missingAnswers && q.missingAnswers.map((ma, i) => (
           <div key={i}>Missing side {i + 1}: <strong style={{ color: "var(--green)", fontFamily: "var(--mono)" }}>{ma.length}{q.unit}</strong></div>
         ))}
@@ -696,9 +696,9 @@ function TimerBar({ endsAt, totalSeconds, onExpired }) {
   const color = remaining <= 5 ? "var(--red)" : remaining <= 10 ? "var(--amber)" : "var(--green)";
   return (
     <div style={{ marginBottom: 12 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: "var(--text3)", marginBottom: 4 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 20, color: "var(--text3)", marginBottom: 4 }}>
         <span>Time remaining</span>
-        <span style={{ fontWeight: 700, color, fontSize: 16 }}>{remaining}s</span>
+        <span style={{ fontWeight: 700, color, fontSize: 20 }}>{remaining}s</span>
       </div>
       <div style={{ height: 7, background: "var(--surface2)", borderRadius: 99, overflow: "hidden" }}>
         <div style={{ height: "100%", width: pct + "%", background: color, borderRadius: 99, transition: "width 0.5s linear" }} />
@@ -782,16 +782,16 @@ function TeacherLesson03({ session, sessionId, uid }) {
       <div className="card" style={{ marginBottom: 16 }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
           <div>
-            <div style={{ fontSize: 13, color: "var(--text3)", marginBottom: 2 }}>Join Code</div>
+            <div style={{ fontSize: 20, color: "var(--text3)", marginBottom: 2 }}>Join Code</div>
             <div style={{ fontSize: 36, fontWeight: 900, fontFamily: "var(--mono)", color: "var(--blue)", letterSpacing: "0.15em" }}>{session.joinCode}</div>
-            <div style={{ fontSize: 13, color: "var(--text3)" }}>{totalStudents} student{totalStudents !== 1 ? "s" : ""} joined</div>
+            <div style={{ fontSize: 20, color: "var(--text3)" }}>{totalStudents} student{totalStudents !== 1 ? "s" : ""} joined</div>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <label style={{ fontSize: 13, color: "var(--text2)" }}>Seconds:</label>
+              <label style={{ fontSize: 20, color: "var(--text2)" }}>Seconds:</label>
               <input type="number" min={10} max={300} value={timerInput}
                 onChange={e => setTimerInput(Number(e.target.value))}
-                style={{ width: 70, padding: "6px 10px", fontSize: 14, textAlign: "center" }} />
+                style={{ width: 70, padding: "6px 10px", fontSize: 20, textAlign: "center" }} />
             </div>
             {session.status === "question" && <button className="btn btn-ghost" onClick={handleReveal}>Reveal</button>}
             {session.status === "revealing" && (
@@ -812,17 +812,17 @@ function TeacherLesson03({ session, sessionId, uid }) {
       <div style={{ display: "grid", gridTemplateColumns: "260px 1fr", gap: 16, alignItems: "start" }}>
         {/* Topic sidebar */}
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          <div style={{ fontSize: 12, fontWeight: 700, color: "var(--text3)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 4 }}>Topic</div>
+          <div style={{ fontSize: 20, fontWeight: 700, color: "var(--text3)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 4 }}>Topic</div>
           {LESSON03_TOPICS.map((t, i) => {
             const isActive = i === currentTopicIdx;
             const isDone = i < currentTopicIdx;
             return (
               <button key={t.id} onClick={() => setCurrentTopicIdx(i)}
                 style={{ background: isActive ? "rgba(59,130,246,0.15)" : "var(--surface)", border: "2px solid " + (isActive ? "var(--blue)" : isDone ? "rgba(16,185,129,0.3)" : "var(--border)"), borderRadius: "var(--radius)", padding: "8px 12px", cursor: "pointer", textAlign: "left", fontFamily: "var(--font)" }}>
-                <div style={{ fontWeight: 700, fontSize: 12, color: isActive ? "var(--blue)" : isDone ? "var(--green)" : "var(--text)" }}>
+                <div style={{ fontWeight: 700, fontSize: 20, color: isActive ? "var(--blue)" : isDone ? "var(--green)" : "var(--text)" }}>
                   {isDone ? "done " : isActive ? "now " : (i + 1) + ". "}{t.label}
                 </div>
-                <div style={{ fontSize: 10, color: "var(--text3)", marginTop: 2 }}>{t.description}</div>
+                <div style={{ fontSize: 20, color: "var(--text3)", marginTop: 2 }}>{t.description}</div>
               </button>
             );
           })}
@@ -839,7 +839,7 @@ function TeacherLesson03({ session, sessionId, uid }) {
               <p style={{ color: "var(--blue)", fontFamily: "var(--mono)", fontSize: 24, fontWeight: 900 }}>{session.joinCode}</p>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "center", marginTop: 12 }}>
                 {Object.values(participants).map(p => (
-                  <div key={p.name} style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-sm)", padding: "5px 12px", fontSize: 13, fontWeight: 600 }}>{p.name}</div>
+                  <div key={p.name} style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-sm)", padding: "5px 12px", fontSize: 20, fontWeight: 600 }}>{p.name}</div>
                 ))}
               </div>
             </div>
@@ -848,10 +848,10 @@ function TeacherLesson03({ session, sessionId, uid }) {
           {question && (session.status === "question" || session.status === "revealing") && (
             <>
               <div className="card">
-                <div style={{ fontSize: 12, color: "var(--text3)", marginBottom: 8 }}>
+                <div style={{ fontSize: 20, color: "var(--text3)", marginBottom: 8 }}>
                   {currentTopic.label} - {submittedCount}/{totalStudents} submitted - {correctCount} correct
                 </div>
-                <div style={{ fontSize: 16, fontWeight: 700, color: "var(--text)", marginBottom: 12 }}>{question.prompt}</div>
+                <div style={{ fontSize: 20, fontWeight: 700, color: "var(--text)", marginBottom: 12 }}>{question.prompt}</div>
                 <QuestionDisplay question={question} revealCorrect={session.status === "revealing"} />
                 {session.status === "question" && session.timerEndsAt && (
                   <div style={{ marginTop: 12 }}>
@@ -860,7 +860,7 @@ function TeacherLesson03({ session, sessionId, uid }) {
                 )}
                 {session.status === "revealing" && (
                   <div style={{ marginTop: 12, background: "rgba(16,185,129,0.06)", border: "1px solid rgba(16,185,129,0.2)", borderRadius: "var(--radius-sm)", padding: "12px 16px" }}>
-                    <div style={{ fontSize: 13, color: "var(--text3)", marginBottom: 6 }}>Correct answer</div>
+                    <div style={{ fontSize: 20, color: "var(--text3)", marginBottom: 6 }}>Correct answer</div>
                     <div style={{ fontSize: 20, fontWeight: 800, color: "var(--green)", fontFamily: "var(--mono)", marginBottom: 6 }}>
                       {question.displayAnswer}
                     </div>
@@ -873,7 +873,7 @@ function TeacherLesson03({ session, sessionId, uid }) {
               </div>
 
               <div className="card">
-                <h3 style={{ fontSize: 14, fontWeight: 700, marginBottom: 10 }}>Student Answers</h3>
+                <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 10 }}>Student Answers</h3>
                 <div style={{ display: "flex", flexDirection: "column", gap: 5, maxHeight: 280, overflowY: "auto" }}>
                   {Object.entries(participants).map(([pUid, p]) => {
                     const ans = answers.find(a => a.uid === pUid);
@@ -881,13 +881,13 @@ function TeacherLesson03({ session, sessionId, uid }) {
                     const correct = has && gradeLesson03Answer(ans.answer, question);
                     return (
                       <div key={pUid} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "var(--bg2)", borderRadius: "var(--radius-sm)", padding: "7px 12px", border: "1px solid " + (has ? (correct ? "rgba(16,185,129,0.3)" : "rgba(239,68,68,0.3)") : "var(--border)") }}>
-                        <span style={{ fontWeight: 600, fontSize: 13 }}>{p.name}</span>
+                        <span style={{ fontWeight: 600, fontSize: 20 }}>{p.name}</span>
                         {has ? (
                           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                            {session.status === "revealing" && <span style={{ fontFamily: "var(--mono)", fontSize: 13, color: "var(--text2)" }}>{ans.answer}</span>}
+                            {session.status === "revealing" && <span style={{ fontFamily: "var(--mono)", fontSize: 20, color: "var(--text2)" }}>{ans.answer}</span>}
                             <span style={{ fontWeight: 700, color: correct ? "var(--green)" : "var(--red)" }}>{correct ? "+" + POINTS : "X"}</span>
                           </div>
-                        ) : <span style={{ fontSize: 12, color: "var(--text3)" }}>thinking...</span>}
+                        ) : <span style={{ fontSize: 20, color: "var(--text3)" }}>thinking...</span>}
                       </div>
                     );
                   })}
@@ -946,7 +946,7 @@ function StudentLesson03({ session, sessionId, uid }) {
   return (
     <div style={{ maxWidth: 560, margin: "0 auto" }}>
       <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 12 }}>
-        <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-sm)", padding: "5px 12px", fontSize: 13, fontWeight: 700 }}>
+        <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-sm)", padding: "5px 12px", fontSize: 20, fontWeight: 700 }}>
           Score: {myScore} pts
         </div>
       </div>
@@ -956,7 +956,7 @@ function StudentLesson03({ session, sessionId, uid }) {
         )}
         {question && (
           <>
-            <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 12, color: "var(--text)" }}>{question.prompt}</div>
+            <div style={{ fontSize: 20, fontWeight: 700, marginBottom: 12, color: "var(--text)" }}>{question.prompt}</div>
             <QuestionDisplay question={question} revealCorrect={session.status === "revealing"} />
           </>
         )}
@@ -969,7 +969,7 @@ function StudentLesson03({ session, sessionId, uid }) {
                 </div>
                 {!result.correct && question?.displayAnswer && (
                   <div style={{ marginTop: 8 }}>
-                    <div style={{ color: "var(--green)", fontSize: 16, marginBottom: 4 }}>
+                    <div style={{ color: "var(--green)", fontSize: 20, marginBottom: 4 }}>
                       Correct: <strong style={{ fontFamily: "var(--mono)" }}>{question.displayAnswer}</strong>
                     </div>
                     <RevealCalculation question={question} />
@@ -981,7 +981,7 @@ function StudentLesson03({ session, sessionId, uid }) {
                 <div style={{ color: "var(--text3)", marginBottom: 4 }}>No answer submitted.</div>
                 {question?.displayAnswer && (
                   <>
-                    <div style={{ color: "var(--green)", fontSize: 16, marginBottom: 6 }}>
+                    <div style={{ color: "var(--green)", fontSize: 20, marginBottom: 6 }}>
                       Correct: <strong style={{ fontFamily: "var(--mono)" }}>{question.displayAnswer}</strong>
                     </div>
                     <RevealCalculation question={question} />
@@ -992,8 +992,8 @@ function StudentLesson03({ session, sessionId, uid }) {
           </div>
         ) : submitted ? (
           <div style={{ textAlign: "center", marginTop: 12 }}>
-            <div style={{ fontSize: 15, fontWeight: 700, color: "var(--green)", marginBottom: 4 }}>Submitted!</div>
-            <div style={{ fontSize: 12, color: "var(--text3)" }}>Waiting for teacher to reveal...</div>
+            <div style={{ fontSize: 20, fontWeight: 700, color: "var(--green)", marginBottom: 4 }}>Submitted!</div>
+            <div style={{ fontSize: 20, color: "var(--text3)" }}>Waiting for teacher to reveal...</div>
           </div>
         ) : question ? (
           <div style={{ marginTop: 14 }}>
@@ -1025,17 +1025,17 @@ function CreateLesson03Session({ user, onCreated }) {
     <div style={{ maxWidth: 480, margin: "0 auto" }}>
       <div className="card">
         <h2 style={{ fontSize: 20, fontWeight: 800, marginBottom: 4 }}>Lesson 3 - Multiplication, Division and Area</h2>
-        <p style={{ color: "var(--text2)", fontSize: 13, marginBottom: 16 }}>Round number multiplication, column multiplication, long division, and area of rectangles, squares, and composite shapes.</p>
+        <p style={{ color: "var(--text2)", fontSize: 20, marginBottom: 16 }}>Round number multiplication, column multiplication, long division, and area of rectangles, squares, and composite shapes.</p>
         <div style={{ marginBottom: 12 }}>
-          <label style={{ fontSize: 13, fontWeight: 600, color: "var(--text2)", display: "block", marginBottom: 5 }}>Class</label>
-          <select value={selectedClass} onChange={e => setSelectedClass(e.target.value)} style={{ width: "100%", padding: "10px 12px", fontSize: 14 }}>
+          <label style={{ fontSize: 20, fontWeight: 600, color: "var(--text2)", display: "block", marginBottom: 5 }}>Class</label>
+          <select value={selectedClass} onChange={e => setSelectedClass(e.target.value)} style={{ width: "100%", padding: "10px 12px", fontSize: 20 }}>
             <option value="">Select a class...</option>
             {classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
           </select>
         </div>
         <div style={{ marginBottom: 16 }}>
-          <label style={{ fontSize: 13, fontWeight: 600, color: "var(--text2)", display: "block", marginBottom: 5 }}>Default seconds per question</label>
-          <input type="number" min={30} max={300} value={timer} onChange={e => setTimer(Number(e.target.value))} style={{ width: "100%", padding: "10px 12px", fontSize: 14 }} />
+          <label style={{ fontSize: 20, fontWeight: 600, color: "var(--text2)", display: "block", marginBottom: 5 }}>Default seconds per question</label>
+          <input type="number" min={30} max={300} value={timer} onChange={e => setTimer(Number(e.target.value))} style={{ width: "100%", padding: "10px 12px", fontSize: 20 }} />
         </div>
         <button className="btn btn-primary btn-lg" style={{ width: "100%" }} onClick={handleCreate} disabled={loading || !selectedClass}>
           {loading ? "Creating..." : "Start Session"}
@@ -1060,10 +1060,10 @@ export default function Lesson03Session({ user, onHome }) {
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24, flexWrap: "wrap", gap: 12 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <div style={{ width: 40, height: 40, borderRadius: 12, background: "linear-gradient(135deg,var(--blue),var(--cyan))", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 800, color: "#fff" }}>L3</div>
+            <div style={{ width: 40, height: 40, borderRadius: 12, background: "linear-gradient(135deg,var(--blue),var(--cyan))", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, fontWeight: 800, color: "#fff" }}>L3</div>
             <div>
-              <div style={{ fontWeight: 800, fontSize: 18 }}>GCA</div>
-              <div style={{ color: "var(--text3)", fontSize: 12 }}>Lesson 3 - Multiplication, Division and Area</div>
+              <div style={{ fontWeight: 800, fontSize: 20 }}>GCA</div>
+              <div style={{ color: "var(--text3)", fontSize: 20 }}>Lesson 3 - Multiplication, Division and Area</div>
             </div>
           </div>
           <button className="btn btn-ghost btn-sm" onClick={onHome}>Back to Home</button>
