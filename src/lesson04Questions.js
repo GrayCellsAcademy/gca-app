@@ -204,11 +204,11 @@ export function genPower() {
   let base, exp, result;
   if (useRound) {
     base = randChoice([10, 20, 30, 40, 50]);
-    exp = randInt(1, 3);
+    exp = randInt(2, 3);
     result = Math.pow(base, exp);
   } else {
-    base = randInt(0, 5);
-    exp = randInt(1, 5);
+    base = randInt(2, 5);
+    exp = randInt(2, 5);
     result = Math.pow(base, exp);
   }
   const latex = base + "^{" + exp + "}";
@@ -225,7 +225,6 @@ export function gradePower(input, question) {
 
 // -- Topic 3: Square Roots --
 const SQRT_POOL = [
-  { radicand: 0, answer: 0 }, { radicand: 1, answer: 1 },
   { radicand: 4, answer: 2 }, { radicand: 9, answer: 3 },
   { radicand: 16, answer: 4 }, { radicand: 25, answer: 5 },
 ];
@@ -244,7 +243,6 @@ export function genSqrt(pool, idx) {
 
 // -- Topic 3: Cube Roots --
 const CBRT_POOL = [
-  { radicand: 0, answer: 0 }, { radicand: 1, answer: 1 },
   { radicand: 8, answer: 2 }, { radicand: 27, answer: 3 },
   { radicand: 64, answer: 4 }, { radicand: 125, answer: 5 },
 ];
