@@ -63,7 +63,7 @@ export const TOPICS = {
   },
   "lesson04-mastery-v1": {
     id: "lesson04-mastery-v1",
-    title: "HW 5 (019)",
+    title: "HW 4 (019)",
     description: "Exponents, square roots, cube roots, order of operations, and variable expressions.",
     subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 9,
     Player: Lesson04MasteryPlayer,

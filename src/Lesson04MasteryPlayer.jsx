@@ -272,7 +272,7 @@ export default function Lesson04MasteryPlayer({ user, topic, onHome }) {
     <div style={{ maxWidth:520,margin:"0 auto",textAlign:"center",animation:"fadeUp 0.4s ease" }}>
       <div className="card">
         <div style={{ fontSize:48,fontWeight:900,color:"var(--amber)",marginBottom:16 }}>100%</div>
-        <h2 style={{ fontSize:24,fontWeight:800,marginBottom:8 }}>HW 5 (019) Complete!</h2>
+        <h2 style={{ fontSize:24,fontWeight:800,marginBottom:8 }}>HW 4 (019) Complete!</h2>
         <p style={{ color:"var(--text2)",fontSize:15,marginBottom:24 }}>
           Exponents, roots, order of operations, and variable expressions mastered!
         </p>
@@ -288,7 +288,7 @@ export default function Lesson04MasteryPlayer({ user, topic, onHome }) {
           <div style={{ display:"flex",alignItems:"center",gap:12 }}>
             <div style={{ width:40,height:40,borderRadius:12,background:"linear-gradient(135deg,var(--blue),var(--purple))",display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,fontWeight:800,color:"#fff" }}>L4</div>
             <div>
-              <div style={{ fontWeight:800,fontSize:17 }}>HW 5 (019): Mastery Activities</div>
+              <div style={{ fontWeight:800,fontSize:17 }}>HW 4 (019): Mastery Activities</div>
               <div style={{ color:"var(--text3)",fontSize:12 }}>3 correct in a row to advance each activity</div>
             </div>
           </div>
