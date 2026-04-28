@@ -8,8 +8,10 @@ import Lesson02MasteryPlayer from "./Lesson02MasteryPlayer";
 import SubtractionTablesPlayer from "./SubtractionTablesPlayer";
 import TimesTablesPlayer from "./TimesTablesPlayer";
 import TimesTablesPlayer45 from "./TimesTablesPlayer45";
+import TimesTablesPlayer6 from "./TimesTablesPlayer6";
 import Lesson03MasteryPlayer from "./Lesson03MasteryPlayer";
 import Lesson04MasteryPlayer from "./Lesson04MasteryPlayer";
+import Lesson05MasteryPlayer from "./Lesson05MasteryPlayer";
 
 export const TOPICS = {
   "addition-tables-v1": {
@@ -57,16 +59,30 @@ export const TOPICS = {
   "times-tables-45-v1": {
     id: "times-tables-45-v1",
     title: "Times Table (4 & 5)",
-    description: "Master the 4s and 5s times tables with skip counting, in-order, and random drills.",
+    description: "Master the 4s and 5s times tables.",
     subject: "math", gradeLevel: "6+", icon: "", type: "drill", status: "published", order: 8,
     Player: TimesTablesPlayer45,
+  },
+  "times-tables-6-v1": {
+    id: "times-tables-6-v1",
+    title: "Times Table (6)",
+    description: "Master the 6s times table.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "drill", status: "published", order: 9,
+    Player: TimesTablesPlayer6,
   },
   "lesson04-mastery-v1": {
     id: "lesson04-mastery-v1",
     title: "HW 4 (019)",
     description: "Exponents, square roots, cube roots, order of operations, and variable expressions.",
-    subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 9,
+    subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 10,
     Player: Lesson04MasteryPlayer,
+  },
+  "lesson05-mastery-v1": {
+    id: "lesson05-mastery-v1",
+    title: "HW 5 (019)",
+    description: "Comparing signed numbers, absolute value, multiple minus signs, and signed operations.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 11,
+    Player: Lesson05MasteryPlayer,
   },
   "review-homework-v1": {
     id: "review-homework-v1",
