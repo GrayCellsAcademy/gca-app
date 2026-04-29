@@ -13,6 +13,7 @@ import Lesson02Session, { Lesson02TeacherView, Lesson02StudentView } from "../Le
 import Lesson03Session, { Lesson03TeacherView, Lesson03StudentView } from "../Lesson03Session";
 import Lesson04Session, { Lesson04TeacherView, Lesson04StudentView } from "../Lesson04Session";
 import Lesson05Session, { Lesson05TeacherView, Lesson05StudentView } from "../Lesson05Session";
+import Lesson06Session, { Lesson06TeacherView, Lesson06StudentView } from "../Lesson06Session";
 import ReviewSession, { ReviewTeacherView, ReviewStudentView } from "../ReviewSession";
 
 function ClassworkSessionWrapper({ user, onHome }) {
@@ -203,6 +204,9 @@ export default function LiveSession({ user, onHome }) {
   if (view === "lesson05") {
     return <Lesson05Session user={user} onHome={() => setView("menu")} />;
   }
+  if (view === "lesson06") {
+    return <Lesson06Session user={user} onHome={() => setView("menu")} />;
+  }
   if (view === "classwork") {
     return <ClassworkSessionWrapper user={user} onHome={() => setView("menu")} />;
   }
@@ -270,6 +274,14 @@ export default function LiveSession({ user, onHome }) {
                       <div style={{ color: "var(--text2)", fontSize: 20 }}>Comparing signed numbers, absolute value, multiple minus signs, and signed operations.</div>
                     </div>
                   </div>
+                  <div className="card" onClick={() => setView("lesson06")}
+                    style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 16 }}>
+                    <div style={{ fontSize: 20, fontWeight: 800, color: "var(--blue)", minWidth: 36 }}>L6</div>
+                    <div>
+                      <div style={{ fontWeight: 800, fontSize: 20, marginBottom: 4 }}>(6) Expressions and Properties</div>
+                      <div style={{ color: "var(--text2)", fontSize: 20 }}>Multiple signed numbers, distributive property, combining like terms, product rule.</div>
+                    </div>
+                  </div>
                 </>
               )}
               <div className="card" onClick={() => setView("join")}
@@ -311,6 +323,11 @@ export default function LiveSession({ user, onHome }) {
             return user.role === "teacher"
               ? <Lesson05TeacherView session={session} sessionId={sessionId} uid={user.id} />
               : <Lesson05StudentView session={session} sessionId={sessionId} uid={user.id} />;
+          }
+          if (session.type === "lesson06") {
+            return user.role === "teacher"
+              ? <Lesson06TeacherView session={session} sessionId={sessionId} uid={user.id} />
+              : <Lesson06StudentView session={session} sessionId={sessionId} uid={user.id} />;
           }
           if (session.type === "worksheet") {
             return user.role === "teacher"
