@@ -13,24 +13,35 @@ const COLORS = ["#3b82f6","#10b981","#f59e0b","#ef4444","#8b5cf6"];
 
 // - KaTeX -
 function useKaTeX() {
+  const [ready, setReady] = useState(!!window.katex);
   useEffect(() => {
-    if (window.katex) return;
+    if (window.katex) { setReady(true); return; }
     const link = document.createElement("link");
     link.rel = "stylesheet";
     link.href = "https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css";
     document.head.appendChild(link);
     const script = document.createElement("script");
     script.src = "https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js";
-    script.async = true; document.head.appendChild(script);
+    script.async = true;
+    script.onload = () => setReady(true);
+    document.head.appendChild(script);
   }, []);
+  return ready;
 }
 
 function KaTeX({ expr, display }) {
   const ref = useRef(null);
   useEffect(() => {
-    if (ref.current && window.katex) {
-      try { window.katex.render(expr, ref.current, { throwOnError: false, displayMode: !!display }); }
-      catch {}
+    if (ref.current) {
+      const tryRender = () => {
+        if (window.katex) {
+          try { window.katex.render(expr, ref.current, { throwOnError: false, displayMode: !!display }); }
+          catch {}
+        } else {
+          setTimeout(tryRender, 100);
+        }
+      };
+      tryRender();
     }
   });
   return <span ref={ref} style={{ fontSize: display ? 28 : "inherit" }} />;
@@ -39,12 +50,19 @@ function KaTeX({ expr, display }) {
 function KaTeXBlock({ expr }) {
   const ref = useRef(null);
   useEffect(() => {
-    if (ref.current && window.katex) {
-      try { window.katex.render(expr, ref.current, { throwOnError: false, displayMode: true }); }
-      catch {}
+    if (ref.current) {
+      const tryRender = () => {
+        if (window.katex) {
+          try { window.katex.render(expr, ref.current, { throwOnError: false, displayMode: true }); }
+          catch {}
+        } else {
+          setTimeout(tryRender, 100);
+        }
+      };
+      tryRender();
     }
   });
-  return <div ref={ref} style={{ fontSize: 28, margin: "8px 0" }} />;
+  return <div ref={ref} style={{ fontSize: 28, margin: "8px 0", minHeight: 40 }} />;
 }
 
 // - Composite Shape SVG (same as L4) -
@@ -104,19 +122,39 @@ function QuestionDisplay({ question, revealCorrect }) {
     return <RectilinearSVG question={q} revealCorrect={revealCorrect} />;
   }
   if (q.type === "warmup-b" || q.type === "warmup-c" || q.type === "multiple-signed") {
-    return <div style={{ textAlign:"center" }}><KaTeXBlock expr={q.latex} /></div>;
+    return (
+      <div style={{ textAlign:"center" }}>
+        <KaTeXBlock expr={q.latex} />
+        <div style={{ fontFamily:"var(--mono)",fontSize:24,color:"var(--text2)",marginTop:4 }}>{q.latex.replace(/[\\{}]/g,"").replace(/[a-z]+/g,"")}</div>
+      </div>
+    );
   }
   if (q.type === "distributive") {
-    return <div style={{ textAlign:"center" }}><KaTeXBlock expr={q.latex} /></div>;
-  }
-  if (q.type === "like-terms-identify") {
-    return null; // handled in answer input
+    return (
+      <div style={{ textAlign:"center" }}>
+        <KaTeXBlock expr={q.latex} />
+        <div style={{ fontFamily:"var(--mono)",fontSize:28,fontWeight:700,color:"var(--text)",marginTop:4 }}>{q.display}</div>
+      </div>
+    );
   }
   if (q.type === "combine-like-terms") {
-    return <div style={{ textAlign:"center" }}><KaTeXBlock expr={q.latex} /></div>;
+    return (
+      <div style={{ textAlign:"center" }}>
+        <KaTeXBlock expr={q.latex} />
+        <div style={{ fontFamily:"var(--mono)",fontSize:24,color:"var(--text2)",marginTop:4 }}>{q.latex}</div>
+      </div>
+    );
   }
   if (q.type === "product-rule") {
-    return <div style={{ textAlign:"center" }}><KaTeXBlock expr={q.latex} /></div>;
+    return (
+      <div style={{ textAlign:"center" }}>
+        <KaTeXBlock expr={q.latex} />
+        <div style={{ fontFamily:"var(--mono)",fontSize:24,color:"var(--text2)",marginTop:4 }}>{q.latex.replace(/\\cdot/g,"*").replace(/\^{(\d+)}/g,"^$1").replace(/\\/g,"")}</div>
+      </div>
+    );
+  }
+  if (q.type === "like-terms-identify") {
+    return null; // handled entirely in AnswerInput
   }
   return null;
 }
