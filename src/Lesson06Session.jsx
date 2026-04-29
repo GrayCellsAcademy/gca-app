@@ -240,9 +240,10 @@ function AlgebraInput({ onSubmit, submitted, placeholder }) {
 
 // Like terms click-to-group input
 function LikeTermsInput({ question, onSubmit, submitted }) {
+  const numGroups = question.groups.length;
   const [colorIdx, setColorIdx] = useState(0);
   const [termColors, setTermColors] = useState(question.terms.map(()=>-1));
-  const [groups, setGroups] = useState([[], []]);
+  const [groups, setGroups] = useState(() => Array.from({length: numGroups}, ()=>[]));
 
   const handleTermClick = (i) => {
     if (submitted) return;
@@ -277,7 +278,7 @@ function LikeTermsInput({ question, onSubmit, submitted }) {
         {question.prompt}
       </div>
       <div style={{ display:"flex",gap:8,marginBottom:12,flexWrap:"wrap" }}>
-        {COLORS.slice(0,3).map((c,i)=>(
+        {COLORS.slice(0,numGroups).map((c,i)=>(
           <button key={i} onClick={()=>setColorIdx(i)} disabled={submitted}
             style={{ padding:"8px 20px",borderRadius:"var(--radius-sm)",border:"3px solid "+(i===colorIdx?c:"var(--border)"),background:i===colorIdx?c+"33":"var(--surface)",fontSize:20,fontWeight:700,cursor:"pointer",color:c }}>
             Color {i+1}

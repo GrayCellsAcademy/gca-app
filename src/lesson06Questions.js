@@ -307,29 +307,29 @@ export function genDistributive(problemIdx) {
 // Normalize an algebraic expression for comparison
 // Rules: ignore extra spaces, accept different term order, 1x=x, -1x=-x
 function normalizeExpr(str) {
-  let s=str.trim().toLowerCase().replace(/\s+/g,"");
-  // Parse into terms
-  const terms=[];
-  let i=0;
-  while(i<s.length) {
-    let sign=1;
-    if(s[i]==="+") { i++; }
-    else if(s[i]==="-") { sign=-1; i++; }
-    else if(i>0) break;
-    // Parse coefficient and variable
-    let coeff="";
-    while(i<s.length&&/\d/.test(s[i])) { coeff+=s[i]; i++; }
-    let varPart="";
-    while(i<s.length&&/[a-z]/.test(s[i])) { varPart+=s[i]; i++; }
-    // Skip + between terms
-    if(i<s.length&&s[i]==="+") i++;
-    const c=(coeff===""?1:parseInt(coeff))*sign;
-    const v=varPart.split("").sort().join(""); // sort variable letters
-    terms.push({ c,v });
+  let s = str.trim().toLowerCase().replace(/\s+/g, "");
+  const terms = [];
+  let i = 0;
+  while (i < s.length) {
+    let sign = 1;
+    if (s[i] === "+") { i++; }
+    else if (s[i] === "-") { sign = -1; i++; }
+    // parse coefficient
+    let coeff = "";
+    while (i < s.length && /\d/.test(s[i])) { coeff += s[i]; i++; }
+    // parse variable part
+    let varPart = "";
+    while (i < s.length && /[a-z\^0-9]/.test(s[i])) {
+      // handle x^n notation
+      if (s[i] === "^") { i++; let exp=""; while(i<s.length&&/\d/.test(s[i])){exp+=s[i];i++;} varPart+="^"+exp; }
+      else { varPart += s[i]; i++; }
+    }
+    if (coeff === "" && varPart === "") { i++; continue; } // skip unexpected char
+    const c = (coeff === "" ? 1 : parseInt(coeff)) * sign;
+    const v = varPart;
+    terms.push({ c, v });
   }
-  // Sort terms by variable part, then by coefficient
-  terms.sort((a,b)=>a.v.localeCompare(b.v)||a.c-b.c);
-  return terms.map(t=>({c:t.c,v:t.v}));
+  return terms.sort((a, b) => a.v.localeCompare(b.v) || a.c - b.c);
 }
 
 function termsEqual(a,b) {
