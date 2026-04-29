@@ -362,18 +362,29 @@ function makeCoeff() { return randInt(2,9); }
 
 export function genLikeTermsIdentify() {
   const tmpl=randChoice(LIKE_TERMS_TEMPLATES);
-  const rawTerms=[];
+  // Build terms as objects with unique ids to avoid index collision
+  const rawTermObjs=[];
   const rawGroups=[];
   const rawGroupLabels=[];
+  let uid=0;
   tmpl.vars.forEach(v=>{
     const c1=makeCoeff(), c2=makeCoeff();
-    rawTerms.push(c1+v, c2+v);
-    rawGroups.push([c1+v, c2+v]);
-    rawGroupLabels.push([c1+v, c2+v]);
+    // Ensure the two terms in a group have different coefficients
+    const cc2 = c1===c2 ? (c2%9)+2 : c2;
+    const t1={id:uid++,label:c1+v}, t2={id:uid++,label:cc2+v};
+    rawTermObjs.push(t1,t2);
+    rawGroups.push([t1.id,t2.id]);
+    rawGroupLabels.push([t1.label,t2.label]);
   });
-  tmpl.soloVars.forEach(v=>rawTerms.push(makeCoeff()+v));
-  const terms=shuffle([...rawTerms]);
-  const groups=rawGroups.map(g=>g.map(t=>terms.indexOf(t)));
+  tmpl.soloVars.forEach(v=>{
+    rawTermObjs.push({id:uid++,label:makeCoeff()+v});
+  });
+  const shuffled=shuffle([...rawTermObjs]);
+  const terms=shuffled.map(t=>t.label);
+  // Map group ids to shuffled positions
+  const idToIdx={};
+  shuffled.forEach((t,i)=>{ idToIdx[t.id]=i; });
+  const groups=rawGroups.map(g=>g.map(id=>idToIdx[id]));
   return {
     type:"like-terms-identify",terms,groups,
     answer:JSON.stringify(groups),
@@ -385,9 +396,14 @@ export function genLikeTermsIdentify() {
 export function gradeLikeTermsIdentify(input,question) {
   try {
     const studentGroups=JSON.parse(input).map(g=>[...g].sort((a,b)=>a-b));
-    const correctGroups=question.groups.map(g=>[...g].sort((a,b)=>a-b));
-    // Each correct group must appear in student groups (order of groups doesn't matter)
-    return correctGroups.every(cg=>studentGroups.some(sg=>sg.length===cg.length&&sg.every((v,i)=>v===cg[i])));
+    // question.groups may be an object from Firestore, convert to array
+    const qGroups=Array.isArray(question.groups)
+      ? question.groups
+      : Object.values(question.groups);
+    const correctGroups=qGroups.map(g=>[...g].sort((a,b)=>a-b));
+    return correctGroups.every(cg=>studentGroups.some(sg=>
+      sg.length===cg.length&&sg.every((v,i)=>v===cg[i])
+    ));
   } catch { return false; }
 }
 

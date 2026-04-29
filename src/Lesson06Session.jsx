@@ -240,28 +240,27 @@ function AlgebraInput({ onSubmit, submitted, placeholder }) {
 
 // Like terms click-to-group input
 function LikeTermsInput({ question, onSubmit, submitted }) {
-  const numGroups = question.groups.length;
+  const terms = question.terms || [];
+  const questionGroups = question.groups || [[], []];
+  const numGroups = questionGroups.length;
   const [colorIdx, setColorIdx] = useState(0);
-  const [termColors, setTermColors] = useState(question.terms.map(()=>-1));
+  const [termColors, setTermColors] = useState(terms.map(()=>-1));
   const [groups, setGroups] = useState(() => Array.from({length: numGroups}, ()=>[]));
 
   useEffect(() => {
     setColorIdx(0);
-    setTermColors(question.terms.map(()=>-1));
-    setGroups(Array.from({length: question.groups.length}, ()=>[]));
+    setTermColors((question.terms||[]).map(()=>-1));
+    setGroups(Array.from({length: (question.groups||[[]]).length}, ()=>[]));
   }, [question.id]);
 
   const handleTermClick = (i) => {
     if (submitted) return;
     const newColors = [...termColors];
     const oldColor = newColors[i];
-
     if (oldColor === colorIdx) {
-      // Deselect: remove from current group
       newColors[i] = -1;
       setGroups(prev => prev.map(g => g.filter(x => x !== i)));
     } else {
-      // Move to new color: remove from old group, add to new group, all in one update
       newColors[i] = colorIdx;
       setGroups(prev => prev.map((g, gi) => {
         const removed = g.filter(x => x !== i);
@@ -276,27 +275,31 @@ function LikeTermsInput({ question, onSubmit, submitted }) {
     onSubmit(JSON.stringify(nonEmptyGroups));
   };
 
+  if (!terms.length) {
+    return <div style={{ color:"var(--red)",fontSize:20 }}>Error: no terms loaded. Try generating a new question.</div>;
+  }
+
   return (
     <div>
       <div style={{ fontSize:20,color:"var(--text2)",marginBottom:12 }}>
-        {question.prompt}
+        Select a color, then click all terms that belong to the same group.
       </div>
       <div style={{ display:"flex",gap:8,marginBottom:12,flexWrap:"wrap" }}>
         {COLORS.slice(0,numGroups).map((c,i)=>(
           <button key={i} onClick={()=>setColorIdx(i)} disabled={submitted}
             style={{ padding:"8px 20px",borderRadius:"var(--radius-sm)",border:"3px solid "+(i===colorIdx?c:"var(--border)"),background:i===colorIdx?c+"33":"var(--surface)",fontSize:20,fontWeight:700,cursor:"pointer",color:c }}>
-            Color {i+1}
+            {i===colorIdx?"- ":""}Group {i+1}
           </button>
         ))}
       </div>
       <div style={{ display:"flex",flexWrap:"wrap",gap:10,marginBottom:16 }}>
-        {question.terms.map((term,i)=>{
+        {terms.map((term,i)=>{
           const c=termColors[i];
           const color=c>=0?COLORS[c]:"var(--border)";
           const bg=c>=0?COLORS[c]+"22":"var(--surface)";
           return (
             <button key={i} onClick={()=>handleTermClick(i)} disabled={submitted}
-              style={{ padding:"10px 20px",borderRadius:"var(--radius-sm)",border:"2px solid "+color,background:bg,fontSize:22,fontFamily:"var(--mono)",fontWeight:700,cursor:"pointer",color:c>=0?COLORS[c]:"var(--text)" }}>
+              style={{ padding:"10px 20px",borderRadius:"var(--radius-sm)",border:"2px solid "+color,background:bg,fontSize:22,fontFamily:"var(--mono)",fontWeight:700,cursor:"pointer",color:c>=0?COLORS[c]:"var(--text)",transition:"all 0.15s" }}>
               {term}
             </button>
           );
