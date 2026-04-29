@@ -227,7 +227,11 @@ function SignedOpsMastery({ onComplete, onSave, savedStreak }) {
   const expr = questions[qIdx];
   const totalQ = questions.length;
 
-  useEffect(() => { setVal(""); setTimeout(()=>ref.current?.focus(),80); }, [qIdx, stage]);
+  const [s1Sel, setS1Sel] = useState(""); // stage 1 selections
+  const [s2Sel, setS2Sel] = useState("");
+
+  // Reset selections when expression changes
+  useEffect(() => { setS1Sel(""); setS2Sel(""); setVal(""); setTimeout(()=>ref.current?.focus(),80); }, [qIdx, stage]);
 
   const handleWrong = async () => {
     setWrong(true);
@@ -345,22 +349,29 @@ function SignedOpsMastery({ onComplete, onSave, savedStreak }) {
                 <div style={{ fontSize:22,fontWeight:700,color:"var(--text2)",marginBottom:14,textAlign:"center" }}>
                   What is the sign of each number?
                 </div>
-                <div style={{ display:"flex",gap:24,justifyContent:"center",flexWrap:"wrap" }}>
+                <div style={{ display:"flex",gap:24,justifyContent:"center",flexWrap:"wrap",marginBottom:16 }}>
                   <div style={{ textAlign:"center" }}>
                     <div style={{ fontSize:20,color:"var(--text3)",marginBottom:8 }}>1st number</div>
                     <div style={{ display:"flex",gap:10 }}>
-                      <SignBtn label="+" color="var(--green)" onClick={()=>handleStageAnswer({ num1:"+",num2:"?" })} />
-                      <SignBtn label="-" color="var(--red)" onClick={()=>handleStageAnswer({ num1:"-",num2:"?" })} />
+                      <button onClick={()=>setS1Sel("+")}
+                        style={{ padding:"12px 24px",borderRadius:"var(--radius-sm)",border:"2px solid "+(s1Sel==="+"?"var(--green)":"var(--border)"),background:s1Sel==="+"?"rgba(16,185,129,0.15)":"var(--surface)",fontFamily:"var(--mono)",fontSize:22,fontWeight:700,cursor:"pointer",color:s1Sel==="+"?"var(--green)":"var(--text3)" }}>+</button>
+                      <button onClick={()=>setS1Sel("-")}
+                        style={{ padding:"12px 24px",borderRadius:"var(--radius-sm)",border:"2px solid "+(s1Sel==="-"?"var(--red)":"var(--border)"),background:s1Sel==="-"?"rgba(239,68,68,0.15)":"var(--surface)",fontFamily:"var(--mono)",fontSize:22,fontWeight:700,cursor:"pointer",color:s1Sel==="-"?"var(--red)":"var(--text3)" }}>-</button>
                     </div>
                   </div>
                   <div style={{ textAlign:"center" }}>
                     <div style={{ fontSize:20,color:"var(--text3)",marginBottom:8 }}>2nd number</div>
                     <div style={{ display:"flex",gap:10 }}>
-                      <SignBtn label="+" color="var(--green)" onClick={()=>handleStageAnswer({ num1:expr.num1Sign,num2:"+" })} />
-                      <SignBtn label="-" color="var(--red)" onClick={()=>handleStageAnswer({ num1:expr.num1Sign,num2:"-" })} />
+                      <button onClick={()=>setS2Sel("+")}
+                        style={{ padding:"12px 24px",borderRadius:"var(--radius-sm)",border:"2px solid "+(s2Sel==="+"?"var(--green)":"var(--border)"),background:s2Sel==="+"?"rgba(16,185,129,0.15)":"var(--surface)",fontFamily:"var(--mono)",fontSize:22,fontWeight:700,cursor:"pointer",color:s2Sel==="+"?"var(--green)":"var(--text3)" }}>+</button>
+                      <button onClick={()=>setS2Sel("-")}
+                        style={{ padding:"12px 24px",borderRadius:"var(--radius-sm)",border:"2px solid "+(s2Sel==="-"?"var(--red)":"var(--border)"),background:s2Sel==="-"?"rgba(239,68,68,0.15)":"var(--surface)",fontFamily:"var(--mono)",fontSize:22,fontWeight:700,cursor:"pointer",color:s2Sel==="-"?"var(--red)":"var(--text3)" }}>-</button>
                     </div>
                   </div>
                 </div>
+                <button className="btn btn-primary" style={{ width:"100%",fontSize:20 }}
+                  onClick={()=>handleStageAnswer({ num1:s1Sel,num2:s2Sel })}
+                  disabled={!s1Sel||!s2Sel}>Submit</button>
               </div>
             )}
             {stage === 2 && (
