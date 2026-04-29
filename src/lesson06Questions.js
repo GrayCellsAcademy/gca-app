@@ -262,20 +262,44 @@ export function gradeMultipleSigned(input,question) {
   return parseInt(input.replace(/\s/g,""),10)===question.result;
 }
 
-// - Topic 2: Distributive Property -
-const DISTRIBUTIVE_PROBLEMS=[
-  { id:"d1", display:"2(3x+1)",   latex:"2(3x+1)",   answer:"6x+2" },
-  { id:"d2", display:"(3x+1)2",   latex:"(3x+1)2",   answer:"6x+2" },
-  { id:"d3", display:"2(3x-1)",   latex:"2(3x-1)",   answer:"6x-2" },
-  { id:"d4", display:"-2(3x-1)",  latex:"-2(3x-1)",  answer:"-6x+2" },
-  { id:"d5", display:"-(3x-1)",   latex:"-(3x-1)",   answer:"-3x+1" },
-  { id:"d6", display:"2(3x-4y-6)",latex:"2(3x-4y-6)","answer":"6x-8y-12" },
-];
-
+// - Topic 2: Distributive Property - vary coefficients 2-9, keep signs -
 export function genDistributive(problemIdx) {
-  const p=DISTRIBUTIVE_PROBLEMS[problemIdx];
+  const a=randInt(2,9), b=randInt(2,9), c=randInt(2,9), d=randInt(2,9), e=randInt(2,9);
+  let display,latex,answer;
+  if (problemIdx===0) {
+    // a(bx+c) => abx+ac
+    display=a+"("+b+"x+"+c+")";
+    latex=a+"("+b+"x+"+c+")";
+    answer=(a*b)+"x+"+(a*c);
+  } else if (problemIdx===1) {
+    // (bx+c)a => abx+ac
+    display="("+b+"x+"+c+")"+a;
+    latex="("+b+"x+"+c+")"+a;
+    answer=(a*b)+"x+"+(a*c);
+  } else if (problemIdx===2) {
+    // a(bx-c) => abx-ac
+    display=a+"("+b+"x-"+c+")";
+    latex=a+"("+b+"x-"+c+")";
+    answer=(a*b)+"x-"+(a*c);
+  } else if (problemIdx===3) {
+    // -a(bx-c) => -abx+ac
+    display="-"+a+"("+b+"x-"+c+")";
+    latex="-"+a+"("+b+"x-"+c+")";
+    answer="-"+(a*b)+"x+"+(a*c);
+  } else if (problemIdx===4) {
+    // -(bx-c) => -bx+c
+    display="-("+b+"x-"+c+")";
+    latex="-("+b+"x-"+c+")";
+    answer="-"+b+"x+"+c;
+  } else {
+    // a(bx-cy-d) => abx-acy-ad
+    display=a+"("+b+"x-"+c+"y-"+d+")";
+    latex=a+"("+b+"x-"+c+"y-"+d+")";
+    answer=(a*b)+"x-"+(a*c)+"y-"+(a*d);
+  }
   return {
-    type:"distributive",problemIdx,...p,
+    type:"distributive",problemIdx,display,latex,answer,
+    latexAnswer:answer,displayAnswer:answer,
     prompt:"Expand the expression.",
   };
 }
@@ -325,24 +349,35 @@ export function gradeDistributive(input,question) {
 }
 
 // - Topic 3: Combining Like Terms -
-// Activity 1: Identifying like terms (click-to-group)
-const LIKE_TERMS_SETS=[
-  { terms:["3x","5y","7x","2z","9y","4z"],   groups:[["3x","7x"],["5y","9y"],["2z","4z"]], soloIndices:[] },
-  { terms:["2x","4xy","6x","3y","8xy","5z"],  groups:[["2x","6x"],["4xy","8xy"]], soloIndices:[3,5] },
-  { terms:["5a","3b","2a","7c","9b","4d"],    groups:[["5a","2a"],["3b","9b"]], soloIndices:[3,5] },
-  { terms:["6x","4y","2x","8y","3z","5w"],    groups:[["6x","2x"],["4y","8y"]], soloIndices:[4,5] },
-  { terms:["7ab","2c","5ab","4d","3c","6e"],  groups:[["7ab","5ab"],["2c","3c"]], soloIndices:[3,5] },
+// Activity 1: Identifying like terms - generate with varied coefficients
+const LIKE_TERMS_TEMPLATES=[
+  { vars:["x","y","z"], groups:2, soloVars:[] },
+  { vars:["x","xy"], groups:2, soloVars:["y","z"] },
+  { vars:["a","b"], groups:2, soloVars:["c","d"] },
+  { vars:["x","y"], groups:2, soloVars:["z","w"] },
+  { vars:["ab","c"], groups:2, soloVars:["d","e"] },
 ];
 
+function makeCoeff() { return randInt(2,9); }
+
 export function genLikeTermsIdentify() {
-  const set=randChoice(LIKE_TERMS_SETS);
-  const terms=shuffle([...set.terms]);
-  // Remap groups to shuffled indices
-  const groups=set.groups.map(g=>g.map(t=>terms.indexOf(t)));
+  const tmpl=randChoice(LIKE_TERMS_TEMPLATES);
+  const rawTerms=[];
+  const rawGroups=[];
+  const rawGroupLabels=[];
+  tmpl.vars.forEach(v=>{
+    const c1=makeCoeff(), c2=makeCoeff();
+    rawTerms.push(c1+v, c2+v);
+    rawGroups.push([c1+v, c2+v]);
+    rawGroupLabels.push([c1+v, c2+v]);
+  });
+  tmpl.soloVars.forEach(v=>rawTerms.push(makeCoeff()+v));
+  const terms=shuffle([...rawTerms]);
+  const groups=rawGroups.map(g=>g.map(t=>terms.indexOf(t)));
   return {
     type:"like-terms-identify",terms,groups,
     answer:JSON.stringify(groups),
-    displayAnswer:set.groups.map(g=>g.join(", ")).join(" | "),
+    displayAnswer:rawGroupLabels.map(g=>g.join(", ")).join(" | "),
     prompt:"Click terms to group like terms together. Use different colors for each group.",
   };
 }
@@ -356,27 +391,56 @@ export function gradeLikeTermsIdentify(input,question) {
   } catch { return false; }
 }
 
-// Activities 2-5: Combining like terms
-const COMBINE_PROBLEMS=[
-  { id:"c2", latex:"3x + 5y + 2x",                       answer:"5x+5y" },
-  { id:"c3", latex:"4a + 3b - 4a + 7b",                   answer:"10b" },
-  { id:"c4", latex:"2x + 3y + 5x + 4y + 6",               answer:"7x+7y+6" },
-  { id:"c5a",latex:"3(2x+5)+4",                           answer:"6x+19" },
-  { id:"c5b",latex:"3(2x-7)-(5x-4)",                      answer:"x-17" },
-];
-
+// Activities 2-5: Combining like terms - varied coefficients
 export function genCombineLikeTerms(actIdx) {
-  // actIdx 0=act2, 1=act3, 2=act4, 3=act5
-  const problems=actIdx<3?[COMBINE_PROBLEMS[actIdx]]:COMBINE_PROBLEMS.slice(3);
-  const p=randChoice(problems);
+  const r=()=>randInt(2,9);
+  const rn=()=>(Math.random()<0.3?-1:1)*randInt(2,9); // occasionally negative
+  let latex,answer;
+
+  if (actIdx===0) {
+    // 3 terms, one pair to combine: ax + by + cx = (a+c)x + by
+    const a=r(),b=r(),c=r();
+    const ac=a+c;
+    latex=a+"x + "+b+"y + "+c+"x";
+    answer=ac+"x+"+b+"y";
+  } else if (actIdx===1) {
+    // 4 terms, two pairs, one cancels: ax + by - ax + cy = (b+c)y or similar
+    const a=r(),b=r(),c=r();
+    // Ensure one pair cancels: ax - ax = 0
+    latex=a+"a + "+b+"b - "+a+"a + "+c+"b";
+    answer=(b+c)+"b";
+  } else if (actIdx===2) {
+    // 5 terms, two pairs to combine: ax+by+cx+dy+e
+    const a=r(),b=r(),c=r(),d=r(),e=r();
+    latex=a+"x + "+b+"y + "+c+"x + "+d+"y + "+e;
+    answer=(a+c)+"x+"+(b+d)+"y+"+e;
+  } else {
+    // Distribute + combine: a(bx+c)+d or a(bx-c)-(dx-e)
+    const type=Math.random()<0.5?'A':'B';
+    if (type==='A') {
+      const a=r(),b=r(),c=r(),d=r();
+      latex=a+"("+b+"x+"+c+")+"+d;
+      answer=(a*b)+"x+"+(a*c+d);
+    } else {
+      const a=r(),b=r(),c=r(),d=r(),e=r();
+      // a(bx-c)-(dx-e) = abx-ac-dx+e = (ab-d)x+(e-ac)
+      const xCoeff=a*b-d;
+      const constCoeff=e-a*c;
+      latex=a+"("+b+"x-"+c+")-("+d+"x-"+e+")";
+      const xPart=xCoeff===0?"":(xCoeff===1?"x":xCoeff==="-1"?"-x":xCoeff+"x");
+      const constPart=constCoeff===0?"":constCoeff>0?(xPart?"+"+constCoeff:String(constCoeff)):String(constCoeff);
+      answer=(xPart+constPart)||"0";
+    }
+  }
   return {
-    type:"combine-like-terms",actIdx,...p,
+    type:"combine-like-terms",actIdx,latex,answer,
+    latexAnswer:answer,displayAnswer:answer,
     prompt:"Simplify by combining like terms.",
   };
 }
 
 export function gradeCombineLikeTerms(input,question) {
-  return gradeDistributive(input,question); // same normalizer
+  return gradeDistributive(input,question); // same normalizer handles any order
 }
 
 // - Topic 4: Product Rule -

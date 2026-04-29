@@ -122,36 +122,16 @@ function QuestionDisplay({ question, revealCorrect }) {
     return <RectilinearSVG question={q} revealCorrect={revealCorrect} />;
   }
   if (q.type === "warmup-b" || q.type === "warmup-c" || q.type === "multiple-signed") {
-    return (
-      <div style={{ textAlign:"center" }}>
-        <KaTeXBlock expr={q.latex} />
-        <div style={{ fontFamily:"var(--mono)",fontSize:24,color:"var(--text2)",marginTop:4 }}>{q.latex.replace(/[\\{}]/g,"").replace(/[a-z]+/g,"")}</div>
-      </div>
-    );
+    return <div style={{ textAlign:"center" }}><KaTeXBlock expr={q.latex} /></div>;
   }
   if (q.type === "distributive") {
-    return (
-      <div style={{ textAlign:"center" }}>
-        <KaTeXBlock expr={q.latex} />
-        <div style={{ fontFamily:"var(--mono)",fontSize:28,fontWeight:700,color:"var(--text)",marginTop:4 }}>{q.display}</div>
-      </div>
-    );
+    return <div style={{ textAlign:"center" }}><KaTeXBlock expr={q.latex} /></div>;
   }
   if (q.type === "combine-like-terms") {
-    return (
-      <div style={{ textAlign:"center" }}>
-        <KaTeXBlock expr={q.latex} />
-        <div style={{ fontFamily:"var(--mono)",fontSize:24,color:"var(--text2)",marginTop:4 }}>{q.latex}</div>
-      </div>
-    );
+    return <div style={{ textAlign:"center" }}><KaTeXBlock expr={q.latex} /></div>;
   }
   if (q.type === "product-rule") {
-    return (
-      <div style={{ textAlign:"center" }}>
-        <KaTeXBlock expr={q.latex} />
-        <div style={{ fontFamily:"var(--mono)",fontSize:24,color:"var(--text2)",marginTop:4 }}>{q.latex.replace(/\\cdot/g,"*").replace(/\^{(\d+)}/g,"^$1").replace(/\\/g,"")}</div>
-      </div>
-    );
+    return <div style={{ textAlign:"center" }}><KaTeXBlock expr={q.latex} /></div>;
   }
   if (q.type === "like-terms-identify") {
     return null; // handled entirely in AnswerInput
@@ -217,7 +197,7 @@ function WarmupAAnswerInput({ question, onSubmit, submitted }) {
   );
 }
 
-function NumericInput({ onSubmit, submitted, allowNeg, placeholder }) {
+function NumericInput({ onSubmit, submitted, allowNeg }) {
   const [val, setVal] = useState("");
   const ref = useRef(null);
   useEffect(() => { setVal(""); setTimeout(()=>ref.current?.focus(),80); }, [submitted]);
@@ -227,7 +207,7 @@ function NumericInput({ onSubmit, submitted, allowNeg, placeholder }) {
     <div style={{ display:"flex",gap:8,justifyContent:"center" }}>
       <input ref={ref} value={val} onChange={e=>setVal(e.target.value.replace(pattern,""))}
         onKeyDown={e=>e.key==="Enter"&&submit()} inputMode={allowNeg?"text":"numeric"}
-        placeholder={placeholder||"?"} disabled={submitted}
+        placeholder="" disabled={submitted}
         style={{ textAlign:"center",fontSize:30,fontFamily:"var(--mono)",fontWeight:700,padding:"10px",width:140 }} />
       <button className="btn btn-primary" style={{ fontSize:20,padding:"10px 20px" }}
         onMouseDown={e=>{e.preventDefault();submit();}} onTouchEnd={e=>{e.preventDefault();submit();}}
@@ -328,7 +308,7 @@ function AnswerInput({ question, onSubmit, submitted }) {
   const t = question.type;
   if (t==="warmup-a") return <WarmupAAnswerInput question={question} onSubmit={onSubmit} submitted={submitted} />;
   if (t==="warmup-b") return <NumericInput onSubmit={onSubmit} submitted={submitted} />;
-  if (t==="warmup-c"||t==="multiple-signed") return <NumericInput onSubmit={onSubmit} submitted={submitted} allowNeg placeholder="-5 or 8" />;
+  if (t==="warmup-c"||t==="multiple-signed") return <NumericInput onSubmit={onSubmit} submitted={submitted} allowNeg />;
   if (t==="distributive"||t==="combine-like-terms") return <AlgebraInput onSubmit={onSubmit} submitted={submitted} placeholder={question.answer} />;
   if (t==="like-terms-identify") return <LikeTermsInput question={question} onSubmit={onSubmit} submitted={submitted} />;
   if (t==="product-rule") return <AlgebraInput onSubmit={onSubmit} submitted={submitted} placeholder={question.answer} />;
