@@ -245,24 +245,28 @@ function LikeTermsInput({ question, onSubmit, submitted }) {
   const [termColors, setTermColors] = useState(question.terms.map(()=>-1));
   const [groups, setGroups] = useState(() => Array.from({length: numGroups}, ()=>[]));
 
+  useEffect(() => {
+    setColorIdx(0);
+    setTermColors(question.terms.map(()=>-1));
+    setGroups(Array.from({length: question.groups.length}, ()=>[]));
+  }, [question.id]);
+
   const handleTermClick = (i) => {
     if (submitted) return;
     const newColors = [...termColors];
-    if (newColors[i] === colorIdx) {
-      // Deselect
+    const oldColor = newColors[i];
+
+    if (oldColor === colorIdx) {
+      // Deselect: remove from current group
       newColors[i] = -1;
-      const newGroups = groups.map(g=>g.filter(x=>x!==i));
-      setGroups(newGroups);
+      setGroups(prev => prev.map(g => g.filter(x => x !== i)));
     } else {
-      // Remove from old group
-      const oldColor = newColors[i];
-      if (oldColor >= 0) {
-        const newGroups = groups.map((g,gi)=>gi===oldColor?g.filter(x=>x!==i):g);
-        setGroups(newGroups);
-      }
+      // Move to new color: remove from old group, add to new group, all in one update
       newColors[i] = colorIdx;
-      const newGroups = groups.map((g,gi)=>gi===colorIdx?[...g,i]:g);
-      setGroups(newGroups);
+      setGroups(prev => prev.map((g, gi) => {
+        const removed = g.filter(x => x !== i);
+        return gi === colorIdx ? [...removed, i] : removed;
+      }));
     }
     setTermColors(newColors);
   };
