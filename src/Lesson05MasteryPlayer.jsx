@@ -221,6 +221,7 @@ function SignedOpsMastery({ onComplete, onSave, savedStreak }) {
   const [streak, setStreak] = useState(savedStreak || 0);
   const [stage, setStage] = useState(1); // 1,2,3,4
   const [wrong, setWrong] = useState(false);
+  const [wrongStage, setWrongStage] = useState(null);
   const [val, setVal] = useState("");
   const ref = useRef(null);
 
@@ -233,12 +234,11 @@ function SignedOpsMastery({ onComplete, onSave, savedStreak }) {
   // Reset selections when expression changes
   useEffect(() => { setS1Sel(""); setS2Sel(""); setVal(""); setTimeout(()=>ref.current?.focus(),80); }, [qIdx, stage]);
 
-  const handleWrong = async () => {
+  const handleWrong = async (failedStage) => {
     setWrong(true);
-    const newStreak = 0;
+    setWrongStage(failedStage);
     setStreak(0);
-    await onSave(newStreak);
-    // reshuffle after showing wrong
+    await onSave(0);
   };
 
   const handleWrongNext = () => {
@@ -262,7 +262,7 @@ function SignedOpsMastery({ onComplete, onSave, savedStreak }) {
     }
 
     if (!correct) {
-      await handleWrong();
+      await handleWrong(stage);
     } else if (stage < 4) {
       setStage(s => s + 1);
     } else {
@@ -286,35 +286,117 @@ function SignedOpsMastery({ onComplete, onSave, savedStreak }) {
     </button>
   );
 
-  const WrongDisplay = () => (
-    <div style={{ animation:"popIn 0.25s ease" }}>
-      <div style={{ textAlign:"center",fontSize:22,fontWeight:800,color:"var(--red)",marginBottom:12 }}>Incorrect - streak reset</div>
-      <div style={{ background:"rgba(16,185,129,0.06)",border:"1px solid rgba(16,185,129,0.2)",borderRadius:"var(--radius-sm)",padding:"14px",marginBottom:14 }}>
-        <div style={{ fontSize:20,color:"var(--text3)",marginBottom:8 }}>Correct answer</div>
-        <KaTeX expr={expr.latex} />
-        <div style={{ display:"flex",flexDirection:"column",gap:6,marginTop:8 }}>
-          <div style={{ fontSize:20,color:"var(--text2)" }}>
-            1st number: <strong style={{ color:expr.num1Sign==="+"?"var(--green)":"var(--red)" }}>{expr.num1Sign==="+"?"positive":"negative"}</strong>
+  const WrongDisplay = () => {
+    const stageExplanation = () => {
+      if (wrongStage === 1) {
+        // Explain effective signs
+        const explain1 = expr.num1Sign === "+"
+          ? "The first number is positive."
+          : "The first number is negative.";
+        const explain2 = expr.num2Sign === "+"
+          ? "The second number is positive (all minus signs cancel to +)."
+          : "The second number is negative (odd number of minus signs).";
+        return (
+          <div style={{ display:"flex",flexDirection:"column",gap:6 }}>
+            <div style={{ fontSize:20,color:"var(--text2)" }}>
+              1st number: <strong style={{ color:expr.num1Sign==="+"?"var(--green)":"var(--red)" }}>{expr.num1Sign==="+"?"positive (+)":"negative (-)"}</strong>
+            </div>
+            <div style={{ fontSize:20,color:"var(--text3)" }}>{explain1}</div>
+            <div style={{ fontSize:20,color:"var(--text2)",marginTop:4 }}>
+              2nd number: <strong style={{ color:expr.num2Sign==="+"?"var(--green)":"var(--red)" }}>{expr.num2Sign==="+"?"positive (+)":"negative (-)"}</strong>
+            </div>
+            <div style={{ fontSize:20,color:"var(--text3)" }}>{explain2}</div>
           </div>
-          <div style={{ fontSize:20,color:"var(--text2)" }}>
-            2nd number: <strong style={{ color:expr.num2Sign==="+"?"var(--green)":"var(--red)" }}>{expr.num2Sign==="+"?"positive":"negative"}</strong>
+        );
+      }
+      if (wrongStage === 2) {
+        const sameDir = expr.num1Sign === expr.num2Sign;
+        return (
+          <div style={{ display:"flex",flexDirection:"column",gap:6 }}>
+            <div style={{ fontSize:20,color:"var(--text2)" }}>
+              1st number is <strong style={{ color:expr.num1Sign==="+"?"var(--green)":"var(--red)" }}>{expr.num1Sign==="+"?"positive":"negative"}</strong>,{" "}
+              2nd number is <strong style={{ color:expr.num2Sign==="+"?"var(--green)":"var(--red)" }}>{expr.num2Sign==="+"?"positive":"negative"}</strong>.
+            </div>
+            <div style={{ fontSize:20,color:"var(--text2)",marginTop:4 }}>
+              {sameDir
+                ? "Same sign = same direction = ADD the absolute values."
+                : "Opposite signs = opposite directions = SUBTRACT the absolute values."}
+            </div>
+            <div style={{ fontSize:22,fontWeight:700,color:"var(--blue)",marginTop:4 }}>
+              We should: {expr.addOrSub.toUpperCase()}
+            </div>
           </div>
-          <div style={{ fontSize:20,color:"var(--text2)" }}>
-            We should: <strong style={{ color:"var(--blue)" }}>{expr.addOrSub.toUpperCase()}</strong>
+        );
+      }
+      if (wrongStage === 3) {
+        const larger = Math.max(Math.abs(expr.v1), Math.abs(expr.v2));
+        const largerIsFirst = Math.abs(expr.v1) >= Math.abs(expr.v2);
+        return (
+          <div style={{ display:"flex",flexDirection:"column",gap:6 }}>
+            <div style={{ fontSize:20,color:"var(--text2)" }}>
+              The larger absolute value is <strong style={{ fontFamily:"var(--mono)" }}>{larger}</strong>,{" "}
+              which belongs to the{" "}
+              <strong style={{ color:largerIsFirst?(expr.num1Sign==="+"?"var(--green)":"var(--red)"):(expr.num2Sign==="+"?"var(--green)":"var(--red)") }}>
+                {largerIsFirst
+                  ? (expr.num1Sign === "+" ? "positive" : "negative")
+                  : (expr.num2Sign === "+" ? "positive" : "negative")} number.
+              </strong>
+            </div>
+            <div style={{ fontSize:20,color:"var(--text2)",marginTop:4 }}>
+              The answer takes the sign of the larger absolute value.
+            </div>
+            <div style={{ fontSize:22,fontWeight:700,color:expr.answerSign==="+"?"var(--green)":"var(--red)",marginTop:4 }}>
+              Answer sign: {expr.answerSign === "+" ? "positive (+)" : "negative (-)"}
+            </div>
           </div>
-          <div style={{ fontSize:20,color:"var(--text2)" }}>
-            Answer sign: <strong style={{ color:expr.answerSign==="+"?"var(--green)":"var(--red)" }}>{expr.answerSign==="+"?"positive":"negative"}</strong>
+        );
+      }
+      if (wrongStage === 4) {
+        return (
+          <div style={{ display:"flex",flexDirection:"column",gap:6 }}>
+            <div style={{ fontSize:20,color:"var(--text2)" }}>
+              We {expr.addOrSub} |{Math.abs(expr.v1)}| and |{Math.abs(expr.v2)}|:{" "}
+              <strong style={{ fontFamily:"var(--mono)" }}>
+                {expr.addOrSub === "add"
+                  ? Math.abs(expr.v1) + " + " + Math.abs(expr.v2) + " = " + (Math.abs(expr.v1)+Math.abs(expr.v2))
+                  : Math.max(Math.abs(expr.v1),Math.abs(expr.v2)) + " - " + Math.min(Math.abs(expr.v1),Math.abs(expr.v2)) + " = " + Math.abs(expr.result)}
+              </strong>
+            </div>
+            <div style={{ fontSize:20,color:"var(--text2)" }}>
+              With the {expr.answerSign === "+" ? "positive" : "negative"} sign:
+            </div>
+            <div style={{ fontSize:26,fontWeight:800,color:"var(--green)",fontFamily:"var(--mono)" }}>
+              = {expr.result}
+            </div>
           </div>
-          <div style={{ fontSize:22,fontWeight:800,color:"var(--green)",fontFamily:"var(--mono)" }}>
-            = {expr.result}
-          </div>
+        );
+      }
+      return null;
+    };
+
+    return (
+      <div style={{ animation:"popIn 0.25s ease" }}>
+        <div style={{ textAlign:"center",fontSize:22,fontWeight:800,color:"var(--red)",marginBottom:12 }}>
+          Incorrect - Stage {wrongStage} wrong - streak reset
         </div>
+        <div style={{ textAlign:"center",marginBottom:8 }}>
+          <KaTeX expr={expr.latex} />
+        </div>
+        <div style={{ background:"rgba(16,185,129,0.06)",border:"1px solid rgba(16,185,129,0.2)",borderRadius:"var(--radius-sm)",padding:"14px",marginBottom:14 }}>
+          <div style={{ fontSize:20,color:"var(--text3)",marginBottom:10,fontWeight:700 }}>
+            {wrongStage === 1 && "Stage 1: Sign of each number"}
+            {wrongStage === 2 && "Stage 2: Add or subtract?"}
+            {wrongStage === 3 && "Stage 3: Sign of the answer"}
+            {wrongStage === 4 && "Stage 4: Final calculation"}
+          </div>
+          {stageExplanation()}
+        </div>
+        <button className="btn btn-primary" style={{ width:"100%",fontSize:20 }} onClick={handleWrongNext}>
+          Got it - try again (reshuffled)
+        </button>
       </div>
-      <button className="btn btn-primary" style={{ width:"100%",fontSize:20 }} onClick={handleWrongNext}>
-        Try again (reshuffled)
-      </button>
-    </div>
-  );
+    );
+  };
 
   return (
     <div>
