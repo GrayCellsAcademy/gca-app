@@ -67,36 +67,13 @@ function QuestionDisplay({ question, revealCorrect }) {
   }
 
   if (q.type === "sign-of-product") {
-    return (
-      <div style={{ display:"flex",flexDirection:"column",gap:8 }}>
-        {q.exprs.map((expr,i) => (
-          <div key={i} style={{ display:"flex",alignItems:"center",justifyContent:"space-between",background:"var(--bg2)",borderRadius:"var(--radius-sm)",padding:"10px 16px" }}>
-            <span style={{ fontFamily:"var(--mono)",fontSize:22,fontWeight:700 }}>{expr.display}</span>
-            {revealCorrect && (
-              <span style={{ fontWeight:800,fontSize:22,color:expr.sign==="+"?"var(--green)":"var(--red)" }}>{expr.sign}</span>
-            )}
-          </div>
-        ))}
-      </div>
-    );
+    // Display handled entirely in input component (one at a time)
+    return null;
   }
 
   if (q.type === "negative-power") {
-    return (
-      <div style={{ display:"flex",flexDirection:"column",gap:8 }}>
-        {q.exprs.map((expr,i) => (
-          <div key={i} style={{ display:"flex",alignItems:"center",justifyContent:"space-between",background:"var(--bg2)",borderRadius:"var(--radius-sm)",padding:"10px 16px",flexWrap:"wrap",gap:8 }}>
-            <KaTeXInline expr={expr.latex} />
-            {revealCorrect && (
-              <div style={{ display:"flex",flexDirection:"column",alignItems:"flex-end" }}>
-                <span style={{ fontWeight:800,fontSize:22,color:expr.sign==="+"?"var(--green)":"var(--red)" }}>{expr.sign}</span>
-                <span style={{ fontSize:20,color:"var(--text3)" }}>{expr.note}</span>
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
-    );
+    // Display handled entirely in input component (one at a time)
+    return null;
   }
 
   if (q.type === "negative-root") {
@@ -116,59 +93,52 @@ function QuestionDisplay({ question, revealCorrect }) {
 }
 
 // - Answer Inputs -
-// 8-sign buttons for sign-of-product
-function SignOfProductInput({ question, onSubmit, submitted }) {
-  const [answers, setAnswers] = useState(question.exprs.map(()=>""));
-  const set = (i,v) => setAnswers(prev=>prev.map((x,j)=>j===i?v:x));
-  const allDone = answers.every(a=>a!=="");
-  return (
-    <div>
-      <div style={{ display:"flex",flexDirection:"column",gap:8,marginBottom:12 }}>
-        {question.exprs.map((expr,i) => (
-          <div key={i} style={{ display:"flex",alignItems:"center",gap:12,background:"var(--bg2)",borderRadius:"var(--radius-sm)",padding:"10px 14px" }}>
-            <span style={{ fontFamily:"var(--mono)",fontSize:20,fontWeight:700,flex:1 }}>{expr.display}</span>
-            <div style={{ display:"flex",gap:8 }}>
-              {["+","-"].map(sym=>(
-                <button key={sym} onClick={()=>!submitted&&set(i,sym)}
-                  style={{ width:44,height:44,borderRadius:"var(--radius-sm)",border:"2px solid "+(answers[i]===sym?(sym==="+"?"var(--green)":"var(--red)"):"var(--border)"),background:answers[i]===sym?(sym==="+"?"rgba(16,185,129,0.15)":"rgba(239,68,68,0.15)"):"var(--surface)",fontFamily:"var(--mono)",fontSize:22,fontWeight:700,cursor:"pointer",color:answers[i]===sym?(sym==="+"?"var(--green)":"var(--red)"):"var(--text)" }}>
-                  {sym}
-                </button>
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
-      <button className="btn btn-primary" style={{ width:"100%",fontSize:20 }}
-        onClick={()=>onSubmit(JSON.stringify(answers))} disabled={submitted||!allDone}>Submit All</button>
+// One-at-a-time sign selector for sign-of-product (8 exprs) and negative-power (4 exprs)
+function OneAtATimeSignInput({ question, onSubmit, submitted }) {
+  useKaTeX();
+  const exprs = question.exprs || [];
+  const [currentIdx, setCurrentIdx] = useState(0);
+  const [allAnswers, setAllAnswers] = useState([]);
+  const [done, setDone] = useState(false);
+
+  useEffect(() => { setCurrentIdx(0); setAllAnswers([]); setDone(false); }, [question.id]);
+
+  const handlePick = (sign) => {
+    if (submitted || done) return;
+    const newAnswers = [...allAnswers, sign];
+    setAllAnswers(newAnswers);
+    if (currentIdx < exprs.length - 1) {
+      setCurrentIdx(i => i + 1);
+    } else {
+      setDone(true);
+      onSubmit(JSON.stringify(newAnswers));
+    }
+  };
+
+  if (done) return (
+    <div style={{ textAlign:"center",fontSize:20,fontWeight:700,color:"var(--green)",padding:16 }}>
+      Submitted! Waiting for reveal...
     </div>
   );
-}
 
-// 4-sign buttons for negative powers
-function NegativePowerInput({ question, onSubmit, submitted }) {
-  useKaTeX();
-  const [answers, setAnswers] = useState(question.exprs.map(()=>""));
-  const set = (i,v) => setAnswers(prev=>prev.map((x,j)=>j===i?v:x));
-  const allDone = answers.every(a=>a!=="");
   return (
     <div>
-      <div style={{ display:"flex",flexDirection:"column",gap:10,marginBottom:12 }}>
-        {question.exprs.map((expr,i) => (
-          <div key={i} style={{ display:"flex",alignItems:"center",gap:12,background:"var(--bg2)",borderRadius:"var(--radius-sm)",padding:"10px 14px",flexWrap:"wrap" }}>
-            <div style={{ flex:1,minWidth:120 }}><KaTeXInline expr={expr.latex} /></div>
-            <div style={{ display:"flex",gap:8 }}>
-              {["+","-"].map(sym=>(
-                <button key={sym} onClick={()=>!submitted&&set(i,sym)}
-                  style={{ width:44,height:44,borderRadius:"var(--radius-sm)",border:"2px solid "+(answers[i]===sym?(sym==="+"?"var(--green)":"var(--red)"):"var(--border)"),background:answers[i]===sym?(sym==="+"?"rgba(16,185,129,0.15)":"rgba(239,68,68,0.15)"):"var(--surface)",fontFamily:"var(--mono)",fontSize:22,fontWeight:700,cursor:"pointer",color:answers[i]===sym?(sym==="+"?"var(--green)":"var(--red)"):"var(--text)" }}>
-                  {sym}
-                </button>
-              ))}
-            </div>
-          </div>
-        ))}
+      <div style={{ display:"flex",justifyContent:"space-between",fontSize:20,color:"var(--text3)",marginBottom:8 }}>
+        <span>Expression {currentIdx+1} of {exprs.length}</span>
+        <span>{currentIdx} done</span>
       </div>
-      <button className="btn btn-primary" style={{ width:"100%",fontSize:20 }}
-        onClick={()=>onSubmit(JSON.stringify(answers))} disabled={submitted||!allDone}>Submit All</button>
+      <div style={{ height:4,background:"var(--surface2)",borderRadius:99,overflow:"hidden",marginBottom:16 }}>
+        <div style={{ height:"100%",width:(currentIdx/exprs.length*100)+"%",background:"var(--blue)",borderRadius:99,transition:"width 0.3s" }} />
+      </div>
+      <div style={{ textAlign:"center",marginBottom:20,background:"var(--bg2)",borderRadius:"var(--radius-sm)",padding:"16px" }}>
+        <KaTeXBlock expr={expr.latex} />
+      </div>
+      <div style={{ display:"flex",gap:16,justifyContent:"center" }}>
+        <button onClick={()=>handlePick("+")} disabled={submitted}
+          style={{ flex:1,maxWidth:140,padding:"16px",borderRadius:"var(--radius-sm)",border:"2px solid var(--green)",background:"rgba(16,185,129,0.1)",fontSize:32,fontWeight:900,cursor:"pointer",color:"var(--green)" }}>+</button>
+        <button onClick={()=>handlePick("-")} disabled={submitted}
+          style={{ flex:1,maxWidth:140,padding:"16px",borderRadius:"var(--radius-sm)",border:"2px solid var(--red)",background:"rgba(239,68,68,0.1)",fontSize:32,fontWeight:900,cursor:"pointer",color:"var(--red)" }}>-</button>
+      </div>
     </div>
   );
 }
@@ -221,8 +191,8 @@ function AnswerInput({ question, onSubmit, submitted }) {
   if (!question) return null;
   const t = question.type;
   if (t==="warmup-a"||t==="warmup-b") return <AlgebraInput onSubmit={onSubmit} submitted={submitted} placeholder={question.answer} />;
-  if (t==="sign-of-product") return <SignOfProductInput question={question} onSubmit={onSubmit} submitted={submitted} />;
-  if (t==="negative-power") return <NegativePowerInput question={question} onSubmit={onSubmit} submitted={submitted} />;
+  if (t==="sign-of-product") return <OneAtATimeSignInput question={question} onSubmit={onSubmit} submitted={submitted} />;
+  if (t==="negative-power") return <OneAtATimeSignInput question={question} onSubmit={onSubmit} submitted={submitted} />;
   if (t==="negative-root") return <NumOrUndefinedInput onSubmit={onSubmit} submitted={submitted} />;
   if (t==="signed-ooo"||t==="signed-var-expr") return <NumOrUndefinedInput onSubmit={onSubmit} submitted={submitted} />;
   return null;
@@ -239,11 +209,27 @@ function RevealPanel({ question }) {
       </div>
     );
   }
+  if (q.type==="sign-of-product") {
+    return (
+      <div style={{ marginTop:8 }}>
+        {q.exprs.map((e,i)=>(
+          <div key={i} style={{ display:"flex",alignItems:"center",gap:10,marginBottom:4 }}>
+            <span style={{ fontFamily:"var(--mono)",fontSize:20,color:"var(--text2)" }}>{e.display}</span>
+            <span style={{ fontWeight:700,fontSize:20,color:e.sign==="+"?"var(--green)":"var(--red)" }}>{e.sign}</span>
+          </div>
+        ))}
+      </div>
+    );
+  }
   if (q.type==="negative-power") {
     return (
-      <div style={{ fontSize:20,color:"var(--text2)",marginTop:8 }}>
+      <div style={{ marginTop:8 }}>
         {q.exprs.map((e,i)=>(
-          <div key={i}><strong style={{ fontFamily:"var(--mono)" }}>{e.latex}</strong>: {e.sign==="+"?"positive":"negative"} - {e.note}</div>
+          <div key={i} style={{ display:"flex",alignItems:"center",gap:12,marginBottom:6,background:"var(--bg2)",borderRadius:"var(--radius-sm)",padding:"8px 12px",flexWrap:"wrap" }}>
+            <KaTeXInline expr={e.latex} />
+            <span style={{ fontWeight:800,fontSize:20,color:e.sign==="+"?"var(--green)":"var(--red)" }}>{e.sign==="+"?"positive":"negative"}</span>
+            <span style={{ fontSize:20,color:"var(--text3)" }}>{e.note}</span>
+          </div>
         ))}
       </div>
     );
