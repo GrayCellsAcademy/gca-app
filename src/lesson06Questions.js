@@ -512,7 +512,6 @@ export const LESSON06_TOPICS=[
   { id:"distributive-3", label:"Distributive: -2(3x-1)",          description:"Problem 4 of 6" },
   { id:"distributive-4", label:"Distributive: -(3x-1)",           description:"Problem 5 of 6" },
   { id:"distributive-5", label:"Distributive: 2(3x-4y-6)",        description:"Problem 6 of 6" },
-  { id:"like-terms-id",  label:"Like Terms: Identify",            description:"Click to group like terms" },
   { id:"combine-2",      label:"Like Terms: Combine (3 terms)",   description:"One pair to combine" },
   { id:"combine-3",      label:"Like Terms: Combine (4 terms)",   description:"Two pairs, one cancels" },
   { id:"combine-4",      label:"Like Terms: Combine (5 terms)",   description:"Two pairs to combine" },
@@ -526,7 +525,6 @@ export function generateLesson06Question(topicId) {
   if(topicId==="warmup-c") return genWarmupC();
   if(topicId==="multiple-signed") return genMultipleSigned();
   if(topicId.startsWith("distributive-")) return genDistributive(parseInt(topicId.split("-")[1]));
-  if(topicId==="like-terms-id") return genLikeTermsIdentify();
   if(topicId==="combine-2") return genCombineLikeTerms(0);
   if(topicId==="combine-3") return genCombineLikeTerms(1);
   if(topicId==="combine-4") return genCombineLikeTerms(2);
@@ -543,7 +541,6 @@ export function gradeLesson06Answer(input,question) {
     case "warmup-c":        return gradeWarmupC(input,question);
     case "multiple-signed": return gradeMultipleSigned(input,question);
     case "distributive":    return gradeDistributive(input,question);
-    case "like-terms-identify": return gradeLikeTermsIdentify(input,question);
     case "combine-like-terms":  return gradeCombineLikeTerms(input,question);
     case "product-rule":    return gradeProductRule(input,question);
     default: return false;

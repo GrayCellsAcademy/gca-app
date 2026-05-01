@@ -9,7 +9,6 @@ import {
 } from "./lesson06Questions";
 
 const POINTS = 5;
-const COLORS = ["#3b82f6","#10b981","#f59e0b","#ef4444","#8b5cf6"];
 
 // - KaTeX -
 function useKaTeX() {
@@ -133,9 +132,6 @@ function QuestionDisplay({ question, revealCorrect }) {
   if (q.type === "product-rule") {
     return <div style={{ textAlign:"center" }}><KaTeXBlock expr={q.latex} /></div>;
   }
-  if (q.type === "like-terms-identify") {
-    return null; // handled entirely in AnswerInput
-  }
   return null;
 }
 
@@ -239,80 +235,6 @@ function AlgebraInput({ onSubmit, submitted, placeholder }) {
 }
 
 // Like terms click-to-group input
-function LikeTermsInput({ question, onSubmit, submitted }) {
-  const terms = Array.isArray(question.terms) ? question.terms : [];
-  const qGroups = Array.isArray(question.groups) ? question.groups : Object.values(question.groups || {});
-  const numGroups = qGroups.length || 2;
-
-  // termColors[i] = color index (0,1,2...) or -1 for uncolored
-  // Use a simple object keyed by index so it always works regardless of terms.length at mount
-  const [colorIdx, setColorIdx] = useState(0);
-  const [termColors, setTermColors] = useState({});
-
-  // Reset when question changes
-  useEffect(() => {
-    setColorIdx(0);
-    setTermColors({});
-  }, [question.id]);
-
-  const handleTermClick = (i) => {
-    if (submitted) return;
-    setTermColors(prev => {
-      const next = { ...prev };
-      if (next[i] === colorIdx) {
-        delete next[i]; // deselect
-      } else {
-        next[i] = colorIdx; // assign current color
-      }
-      return next;
-    });
-  };
-
-  const handleSubmit = () => {
-    // Build groups array from termColors
-    const builtGroups = Array.from({ length: numGroups }, (_, gi) =>
-      terms.map((_, i) => i).filter(i => termColors[i] === gi)
-    );
-    onSubmit(JSON.stringify(builtGroups.filter(g => g.length > 0)));
-  };
-
-  if (!terms.length) {
-    return <div style={{ color:"var(--red)",fontSize:20 }}>No terms loaded - generate a new question.</div>;
-  }
-
-  return (
-    <div>
-      <div style={{ fontSize:20,color:"var(--text2)",marginBottom:12 }}>
-        Select a group color, then click the terms that belong to it.
-      </div>
-      <div style={{ display:"flex",gap:8,marginBottom:16,flexWrap:"wrap" }}>
-        {COLORS.slice(0, numGroups).map((c, i) => (
-          <button key={i} onClick={() => setColorIdx(i)} disabled={submitted}
-            style={{ padding:"10px 24px",borderRadius:"var(--radius-sm)",border:"3px solid "+(i===colorIdx?c:"var(--border)"),background:i===colorIdx?c+"33":"var(--surface)",fontSize:20,fontWeight:700,cursor:"pointer",color:c }}>
-            {i===colorIdx ? "- " : ""}Group {i+1}
-          </button>
-        ))}
-      </div>
-      <div style={{ display:"flex",flexWrap:"wrap",gap:12,marginBottom:18 }}>
-        {terms.map((term, i) => {
-          const ci = termColors[i] !== undefined ? termColors[i] : -1;
-          const color = ci >= 0 ? COLORS[ci] : "var(--text3)";
-          const bg = ci >= 0 ? COLORS[ci] + "22" : "var(--surface)";
-          const border = ci >= 0 ? COLORS[ci] : "var(--border)";
-          return (
-            <button key={i} onClick={() => handleTermClick(i)} disabled={submitted}
-              style={{ padding:"12px 22px",borderRadius:"var(--radius-sm)",border:"2.5px solid "+border,background:bg,fontSize:24,fontFamily:"var(--mono)",fontWeight:700,cursor:"pointer",color,transition:"all 0.15s",transform:ci>=0?"scale(1.06)":"scale(1)" }}>
-              {term}
-            </button>
-          );
-        })}
-      </div>
-      <button className="btn btn-primary" style={{ width:"100%",fontSize:20 }}
-        onClick={handleSubmit} disabled={submitted}>Submit Groups</button>
-    </div>
-  );
-}
-
 function AnswerInput({ question, onSubmit, submitted }) {
   if (!question) return null;
   const t = question.type;
@@ -320,7 +242,6 @@ function AnswerInput({ question, onSubmit, submitted }) {
   if (t==="warmup-b") return <NumericInput onSubmit={onSubmit} submitted={submitted} />;
   if (t==="warmup-c"||t==="multiple-signed") return <NumericInput onSubmit={onSubmit} submitted={submitted} allowNeg />;
   if (t==="distributive"||t==="combine-like-terms") return <AlgebraInput onSubmit={onSubmit} submitted={submitted} placeholder={question.answer} />;
-  if (t==="like-terms-identify") return <LikeTermsInput question={question} onSubmit={onSubmit} submitted={submitted} />;
   if (t==="product-rule") return <AlgebraInput onSubmit={onSubmit} submitted={submitted} placeholder={question.answer} />;
   return <NumericInput onSubmit={onSubmit} submitted={submitted} />;
 }
