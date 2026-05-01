@@ -269,7 +269,7 @@ export function genSignedOoO() {
 }
 
 export function gradeSignedOoO(input,question){
-  if(question.isUndefined) return String(input).toLowerCase().replace(/\s/g,")==="undefined";
+  if(question.isUndefined) return String(input).toLowerCase().replace(/\s/g,"") === "undefined";
   return parseInt(input.replace(/\s/g,""),10)===question.result;
 }
 
@@ -324,7 +324,7 @@ export function genSignedVarExpr() {
 }
 
 export function gradeSignedVarExpr(input,question){
-  if(question.isUndefined) return String(input).toLowerCase().replace(/\s/g,")==="undefined";
+  if(question.isUndefined) return String(input).toLowerCase().replace(/\s/g,"") === "undefined";
   return parseInt(input.replace(/\s/g,""),10)===question.result;
 }
 
