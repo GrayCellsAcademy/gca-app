@@ -96,7 +96,10 @@ function QuestionDisplay({ question, revealCorrect }) {
 // One-at-a-time sign selector for sign-of-product (8 exprs) and negative-power (4 exprs)
 function OneAtATimeSignInput({ question, onSubmit, submitted }) {
   useKaTeX();
-  const exprs = question.exprs || [];
+  // Firestore may serialize arrays as objects - convert back
+  const exprs = Array.isArray(question.exprs)
+    ? question.exprs
+    : Object.values(question.exprs || {});
   const [currentIdx, setCurrentIdx] = useState(0);
   const [allAnswers, setAllAnswers] = useState([]);
   const [done, setDone] = useState(false);
@@ -131,7 +134,7 @@ function OneAtATimeSignInput({ question, onSubmit, submitted }) {
         <div style={{ height:"100%",width:(currentIdx/exprs.length*100)+"%",background:"var(--blue)",borderRadius:99,transition:"width 0.3s" }} />
       </div>
       <div style={{ textAlign:"center",marginBottom:20,background:"var(--bg2)",borderRadius:"var(--radius-sm)",padding:"16px" }}>
-        <KaTeXBlock expr={expr.latex} />
+        <KaTeXBlock expr={expr.latex || expr.display || "?"} />
       </div>
       <div style={{ display:"flex",gap:16,justifyContent:"center" }}>
         <button onClick={()=>handlePick("+")} disabled={submitted}
