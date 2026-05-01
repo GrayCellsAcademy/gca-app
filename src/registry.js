@@ -9,9 +9,11 @@ import SubtractionTablesPlayer from "./SubtractionTablesPlayer";
 import TimesTablesPlayer from "./TimesTablesPlayer";
 import TimesTablesPlayer45 from "./TimesTablesPlayer45";
 import TimesTablesPlayer6 from "./TimesTablesPlayer6";
+import TimesTablesPlayer7 from "./TimesTablesPlayer7";
 import Lesson03MasteryPlayer from "./Lesson03MasteryPlayer";
 import Lesson04MasteryPlayer from "./Lesson04MasteryPlayer";
 import Lesson05MasteryPlayer from "./Lesson05MasteryPlayer";
+import Lesson06MasteryPlayer from "./Lesson06MasteryPlayer";
 
 export const TOPICS = {
   "addition-tables-v1": {
@@ -70,19 +72,33 @@ export const TOPICS = {
     subject: "math", gradeLevel: "6+", icon: "", type: "drill", status: "published", order: 9,
     Player: TimesTablesPlayer6,
   },
+  "times-tables-7-v1": {
+    id: "times-tables-7-v1",
+    title: "Times Table (7)",
+    description: "Master the 7s times table.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "drill", status: "published", order: 10,
+    Player: TimesTablesPlayer7,
+  },
   "lesson04-mastery-v1": {
     id: "lesson04-mastery-v1",
     title: "HW 4 (019)",
     description: "Exponents, square roots, cube roots, order of operations, and variable expressions.",
-    subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 10,
+    subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 11,
     Player: Lesson04MasteryPlayer,
   },
   "lesson05-mastery-v1": {
     id: "lesson05-mastery-v1",
     title: "HW 5 (019)",
     description: "Comparing signed numbers, absolute value, multiple minus signs, and signed operations.",
-    subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 11,
+    subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 12,
     Player: Lesson05MasteryPlayer,
+  },
+  "lesson06-mastery-v1": {
+    id: "lesson06-mastery-v1",
+    title: "HW 6 (019)",
+    description: "Multiple signed numbers, distributive property, combining like terms, product rule.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 13,
+    Player: Lesson06MasteryPlayer,
   },
   "review-homework-v1": {
     id: "review-homework-v1",
