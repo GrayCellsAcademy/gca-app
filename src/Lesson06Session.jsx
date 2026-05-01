@@ -129,8 +129,28 @@ function QuestionDisplay({ question, revealCorrect }) {
   if (q.type === "combine-like-terms") {
     return <div style={{ textAlign:"center" }}><KaTeXBlock expr={q.latex} /></div>;
   }
-  if (q.type === "product-rule") {
-    return <div style={{ textAlign:"center" }}><KaTeXBlock expr={q.latex} /></div>;
+  if (q.type === "like-terms-identify") {
+    if (revealCorrect) {
+      return (
+        <div style={{ marginBottom:8 }}>
+          <div style={{ display:"flex",flexWrap:"wrap",gap:10 }}>
+            {q.terms.map((term,i)=>(
+              <span key={i} style={{ padding:"8px 16px",borderRadius:"var(--radius-sm)",border:"2px solid var(--border)",background:"var(--surface)",fontSize:22,fontFamily:"var(--mono)",fontWeight:700 }}>{term}</span>
+            ))}
+          </div>
+          <div style={{ fontSize:20,color:"var(--green)",fontWeight:700,marginTop:10 }}>
+            Like pairs: {q.displayAnswer}
+          </div>
+        </div>
+      );
+    }
+    return (
+      <div style={{ display:"flex",flexWrap:"wrap",gap:10,marginBottom:8 }}>
+        {q.terms.map((term,i)=>(
+          <span key={i} style={{ padding:"8px 16px",borderRadius:"var(--radius-sm)",border:"2px solid var(--border)",background:"var(--surface)",fontSize:22,fontFamily:"var(--mono)",fontWeight:700 }}>{term}</span>
+        ))}
+      </div>
+    );
   }
   return null;
 }
@@ -235,6 +255,99 @@ function AlgebraInput({ onSubmit, submitted, placeholder }) {
 }
 
 // Like terms click-to-group input
+// Like Terms Identify: step-by-step, select 2 at a time
+function LikeTermsIdentifyInput({ question, onSubmit, submitted }) {
+  const terms = question.terms || [];
+  const [selected, setSelected] = useState([]); // indices of currently selected terms (max 2)
+  const [submittedPairs, setSubmittedPairs] = useState([]); // [[i,j], ...]
+  const [pairColors, setPairColors] = useState({}); // termIdx -> color
+  const [done, setDone] = useState(false);
+  const PAIR_COLORS = ["#3b82f6","#10b981","#f59e0b","#ef4444"];
+
+  useEffect(() => {
+    setSelected([]); setSubmittedPairs([]); setPairColors({}); setDone(false);
+  }, [question.id]);
+
+  const handleTermClick = (i) => {
+    if (submitted || done) return;
+    // Can't reselect already-paired terms
+    if (pairColors[i] !== undefined) return;
+    setSelected(prev => {
+      if (prev.includes(i)) return prev.filter(x=>x!==i); // deselect
+      if (prev.length >= 2) return prev; // max 2 selected
+      return [...prev, i];
+    });
+  };
+
+  const handleSubmitPair = () => {
+    if (selected.length !== 2) return;
+    const colorIdx = submittedPairs.length;
+    const color = PAIR_COLORS[colorIdx % PAIR_COLORS.length];
+    const newPairs = [...submittedPairs, [...selected].sort((a,b)=>a-b)];
+    const newColors = { ...pairColors, [selected[0]]: color, [selected[1]]: color };
+    setSubmittedPairs(newPairs);
+    setPairColors(newColors);
+    setSelected([]);
+    // Max 3 pairs - if they submit a 3rd it will be graded as wrong (only 2 correct pairs)
+    if (newPairs.length >= 3) {
+      onSubmit(JSON.stringify(newPairs));
+    }
+  };
+
+  const handleDone = () => {
+    setDone(true);
+    onSubmit(JSON.stringify(submittedPairs));
+  };
+
+  if (!terms.length) return <div style={{ color:"var(--red)",fontSize:20 }}>No terms loaded.</div>;
+
+  const canSubmitPair = selected.length === 2 && !submitted && !done;
+  const canDone = submittedPairs.length > 0 && !submitted && !done;
+
+  return (
+    <div>
+      <div style={{ fontSize:20,color:"var(--text2)",marginBottom:8 }}>
+        Click two like terms, then <strong>Submit Pair</strong>. Repeat for the next pair. Click <strong>Done</strong> when finished.
+      </div>
+      {submittedPairs.length > 0 && (
+        <div style={{ marginBottom:10 }}>
+          {submittedPairs.map((pair,i)=>(
+            <div key={i} style={{ fontSize:20,color:PAIR_COLORS[i],fontWeight:700,fontFamily:"var(--mono)" }}>
+              Pair {i+1}: {terms[pair[0]]} and {terms[pair[1]]}
+            </div>
+          ))}
+        </div>
+      )}
+      <div style={{ display:"flex",flexWrap:"wrap",gap:12,marginBottom:16 }}>
+        {terms.map((term,i)=>{
+          const isPaired = pairColors[i] !== undefined;
+          const isSelected = selected.includes(i);
+          const color = isPaired ? pairColors[i] : isSelected ? "#8b5cf6" : "var(--text)";
+          const border = isPaired ? pairColors[i] : isSelected ? "#8b5cf6" : "var(--border)";
+          const bg = isPaired ? pairColors[i]+"22" : isSelected ? "#8b5cf622" : "var(--surface)";
+          return (
+            <button key={i} onClick={()=>handleTermClick(i)}
+              disabled={submitted||done||isPaired}
+              style={{ padding:"12px 22px",borderRadius:"var(--radius-sm)",border:"2.5px solid "+border,background:bg,fontSize:24,fontFamily:"var(--mono)",fontWeight:700,cursor:isPaired?"default":"pointer",color,transition:"all 0.15s",transform:isSelected?"scale(1.08)":"scale(1)" }}>
+              {term}
+            </button>
+          );
+        })}
+      </div>
+      <div style={{ display:"flex",gap:10 }}>
+        <button className="btn btn-primary" style={{ flex:1,fontSize:20 }}
+          onClick={handleSubmitPair} disabled={!canSubmitPair}>
+          Submit Pair {selected.length===2?"-":"(select 2)"}
+        </button>
+        <button className="btn btn-ghost" style={{ flex:1,fontSize:20,border:"2px solid var(--green)",color:"var(--green)" }}
+          onClick={handleDone} disabled={!canDone}>
+          Done
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function AnswerInput({ question, onSubmit, submitted }) {
   if (!question) return null;
   const t = question.type;
@@ -242,6 +355,7 @@ function AnswerInput({ question, onSubmit, submitted }) {
   if (t==="warmup-b") return <NumericInput onSubmit={onSubmit} submitted={submitted} />;
   if (t==="warmup-c"||t==="multiple-signed") return <NumericInput onSubmit={onSubmit} submitted={submitted} allowNeg />;
   if (t==="distributive"||t==="combine-like-terms") return <AlgebraInput onSubmit={onSubmit} submitted={submitted} placeholder={question.answer} />;
+  if (t==="like-terms-identify") return <LikeTermsIdentifyInput question={question} onSubmit={onSubmit} submitted={submitted} />;
   if (t==="product-rule") return <AlgebraInput onSubmit={onSubmit} submitted={submitted} placeholder={question.answer} />;
   return <NumericInput onSubmit={onSubmit} submitted={submitted} />;
 }

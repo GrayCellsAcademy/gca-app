@@ -500,7 +500,75 @@ export function gradeProductRule(input,question) {
   return norm(input)===norm(question.answer);
 }
 
-// - Topic registry -
+// - Like Terms Identify (after product rule) -
+// 6 terms: 2 with same single variable, 2 with same 2-var combo (different order), 2 with same coeff but different var
+const SINGLE_VARS = ["x","y","z","a","b","n","m"];
+const DOUBLE_VARS = [["u","v"],["x","y"],["a","b"],["m","n"],["p","q"]];
+
+export function genLikeTermsIdentify() {
+  // Pick variables
+  const sVars = shuffle([...SINGLE_VARS]);
+  const sv = sVars[0]; // the matching single variable
+  const distractorV1 = sVars[1]; // solo term variable 1
+  const distractorV2 = sVars[2]; // not used - use coefficient trick instead
+
+  const dvPair = randChoice(DOUBLE_VARS);
+  const dv1 = dvPair[0]+dvPair[1]; // e.g. "uv"
+  const dv2 = dvPair[1]+dvPair[0]; // e.g. "vu"
+
+  // Group 1: same single variable, different coefficients (one can be negative)
+  const c1a = (Math.random()<0.4?-1:1)*randInt(2,12);
+  const c1b = (Math.random()<0.4?-1:1)*randInt(2,12);
+  const t1a = (c1a===1?"":c1a===-1?"-":c1a)+sv;
+  const t1b = (c1b===1?"":c1b===-1?"-":c1b)+sv;
+
+  // Group 2: same two-variable combo written in different order
+  const c2a = (Math.random()<0.3?-1:1)*randInt(2,12);
+  const c2b = (Math.random()<0.3?-1:1)*randInt(2,12);
+  const t2a = (c2a===1?"":c2a===-1?"-":c2a)+dv1;
+  const t2b = (c2b===1?"":c2b===-1?"-":c2b)+dv2;
+
+  // Decoys: same coefficient, different variable - NOT like terms
+  const sharedCoeff = randInt(2,15);
+  const d1 = sharedCoeff;                          // constant
+  const d2 = "-"+sharedCoeff+distractorV1;         // -9t style
+
+  // Shuffle all 6 terms
+  const termObjs = shuffle([
+    { label:String(t1a), group:0, uid:0 },
+    { label:String(t1b), group:0, uid:1 },
+    { label:String(t2a), group:1, uid:2 },
+    { label:String(t2b), group:1, uid:3 },
+    { label:String(d1),  group:-1, uid:4 }, // decoy
+    { label:String(d2),  group:-1, uid:5 }, // decoy
+  ]);
+
+  const terms = termObjs.map(t=>t.label);
+  // correctPairs[0] = [idx of t1a, idx of t1b], correctPairs[1] = [idx of t2a, idx of t2b]
+  const correctPairs = [
+    termObjs.map((t,i)=>({t,i})).filter(({t})=>t.group===0).map(({i})=>i).sort((a,b)=>a-b),
+    termObjs.map((t,i)=>({t,i})).filter(({t})=>t.group===1).map(({i})=>i).sort((a,b)=>a-b),
+  ];
+
+  return {
+    type:"like-terms-identify",
+    terms, correctPairs,
+    displayAnswer: terms[correctPairs[0][0]]+" & "+terms[correctPairs[0][1]]+" | "+terms[correctPairs[1][0]]+" & "+terms[correctPairs[1][1]],
+    prompt:"Click two like terms, then Submit. Repeat for another pair. Click Done when finished.",
+  };
+}
+
+export function gradeLikeTermsIdentify(input, question) {
+  // input = JSON array of submitted pairs: [[i,j],[k,l]] where each pair is sorted
+  try {
+    const submitted = JSON.parse(input).map(p=>[...p].sort((a,b)=>a-b));
+    const correct = question.correctPairs.map(p=>[...p].sort((a,b)=>a-b));
+    if (submitted.length !== correct.length) return false;
+    return correct.every(cp => submitted.some(sp =>
+      sp.length===2 && sp[0]===cp[0] && sp[1]===cp[1]
+    ));
+  } catch { return false; }
+}
 export const LESSON06_TOPICS=[
   { id:"warmup-a",       label:"Warm-up: Composite Shape",        description:"Perimeter + area, 2 missing sides" },
   { id:"warmup-b",       label:"Warm-up: Order of Operations",    description:"3 operations, updated constraints" },
@@ -517,6 +585,7 @@ export const LESSON06_TOPICS=[
   { id:"combine-4",      label:"Like Terms: Combine (5 terms)",   description:"Two pairs to combine" },
   { id:"combine-5",      label:"Like Terms: Distribute+Combine",  description:"With distribution" },
   { id:"product-rule",   label:"Product Rule",                    description:"ax^m * bx^n" },
+  { id:"like-terms-id",  label:"Like Terms: Identify",            description:"6 terms, find 2 pairs, click Done when finished" },
 ];
 
 export function generateLesson06Question(topicId) {
@@ -530,6 +599,7 @@ export function generateLesson06Question(topicId) {
   if(topicId==="combine-4") return genCombineLikeTerms(2);
   if(topicId==="combine-5") return genCombineLikeTerms(3);
   if(topicId==="product-rule") return genProductRule();
+  if(topicId==="like-terms-id") return genLikeTermsIdentify();
   return genMultipleSigned();
 }
 
@@ -543,6 +613,7 @@ export function gradeLesson06Answer(input,question) {
     case "distributive":    return gradeDistributive(input,question);
     case "combine-like-terms":  return gradeCombineLikeTerms(input,question);
     case "product-rule":    return gradeProductRule(input,question);
+    case "like-terms-identify": return gradeLikeTermsIdentify(input,question);
     default: return false;
   }
 }
