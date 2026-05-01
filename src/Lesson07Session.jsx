@@ -505,7 +505,7 @@ function StudentLesson07({ session, sessionId, uid }) {
           Score: {myScore} pts
         </div>
       </div>
-      <div className="card" key={question?.id}>
+      <div className="card" key={question?.id || "waiting"}>
         {session.status==="question"&&session.timerEndsAt&&!submitted&&(
           <TimerBar endsAt={session.timerEndsAt} totalSeconds={session.timerSeconds} />
         )}

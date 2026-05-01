@@ -40,15 +40,19 @@ export function genWarmupB() {
   const t1coeff=a*b, t1exp=m+n;
   const t2coeff=a*c, t2exp=m+p;
   const t3coeff=a*d, t3exp=m;
-  const fmtTerm=(coeff,exp)=>{
-    const c=coeff===1?"":coeff;
-    const e=exp===1?"x":"x^{"+exp+"}";
-    return c+e;
+  const fmtLatex=(coeff,exp)=>{
+    const cv=coeff===1?"":String(coeff);
+    const ev=exp===1?"x":"x^{"+exp+"}";
+    return cv+ev;
   };
-  const latex=a+"x^{"+m+"}("+b+"x^{"+n+"}-"+c+"x^{"+p+"}-"+d+")";
+  // Input expression: show x^p and x^n without ^1
+  const bTerm=n===1?"x":"x^{"+n+"}";
+  const cTerm=p===1?"x":"x^{"+p+"}";
+  const outerTerm=m===1?"x":"x^{"+m+"}";
+  const latex=a+outerTerm+"("+b+bTerm+"-"+c+cTerm+"-"+d+")";
+  const latexAnswer=fmtLatex(t1coeff,t1exp)+"-"+fmtLatex(t2coeff,t2exp)+"-"+fmtLatex(t3coeff,t3exp);
   const fmt2=(co,ex)=>{const cv=co===1?"":String(co);const ev=ex===1?"x":"x^"+ex;return cv+ev;};
   const answer=fmt2(t1coeff,t1exp)+"-"+fmt2(t2coeff,t2exp)+"-"+fmt2(t3coeff,t3exp);
-  const latexAnswer=fmtTerm(t1coeff,t1exp)+"-"+fmtTerm(t2coeff,t2exp)+"-"+fmtTerm(t3coeff,t3exp);
   return {
     type:"warmup-b",latex,latexAnswer,answer,displayAnswer:latexAnswer,
     prompt:"Simplify using the product rule and distributive property.",
