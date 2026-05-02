@@ -118,13 +118,13 @@ function OneAtATimeSignInput({ question, onSubmit, submitted }) {
     }
   };
 
+  const expr = exprs[currentIdx] || {};
+
   if (done) return (
     <div style={{ textAlign:"center",fontSize:20,fontWeight:700,color:"var(--green)",padding:16 }}>
       Submitted! Waiting for reveal...
     </div>
   );
-
-  return (
     <div>
       <div style={{ display:"flex",justifyContent:"space-between",fontSize:20,color:"var(--text3)",marginBottom:8 }}>
         <span>Expression {currentIdx+1} of {exprs.length}</span>
