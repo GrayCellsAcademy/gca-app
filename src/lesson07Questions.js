@@ -90,7 +90,15 @@ export function gradeAlgebra(input, question) {
 
 // - Topic 1: Sign of Product/Quotient -
 export function genSignOfProduct() {
-  let a,b; do{a=randInt(2,7);b=randInt(2,7);}while(a===b);
+  let a,b;
+  // b must be a factor of a, 1 < b < a
+  do {
+    a=randInt(4,9);
+    const factors=[];
+    for(let f=2;f<a;f++) if(a%f===0) factors.push(f);
+    if(factors.length===0) continue;
+    b=randChoice(factors);
+  } while(!b);
   const exprs=shuffle([
     {label:"a*b",    display:a+" x "+b,          latex:a+" \\times "+b,          sign:"+"},
     {label:"-a*b",   display:"-"+a+" x "+b,       latex:"-"+a+" \\times "+b,      sign:"-"},
@@ -318,11 +326,11 @@ export function genSignedVarExpr() {
     if(op1==="/"&&b===0) continue;
     if(op2==="/"&&c===0) continue;
 
-    // Evaluate: coeff*x op1 b op2 c (treating ax as single computed value)
+    // Evaluate using correct precedence: treat ax as a pre-multiplied atom,
+    // then apply op1 and op2 with standard precedence rules
+    // Expression tokens: [axVal, op1, b, op2, c]
     const axVal=coeff*xVal;
-    const r1=evalOp(op1,axVal,b);
-    if(r1===null||!Number.isInteger(r1)) continue;
-    const result=evalOp(op2,r1,c);
+    const result=evalWithPrecedence([axVal, op1, b, op2, c]);
     if(result===null||!Number.isInteger(result)) continue;
     if(Math.abs(result)>99) continue;
 
@@ -331,7 +339,6 @@ export function genSignedVarExpr() {
     let latex,given;
     if(op1==="/"){
       latex="\\dfrac{"+axLatex+"}{"+b+"} "+latexOp(op2)+" "+c;
-      if(r1===null||!Number.isInteger(r1)) continue;
     } else {
       const b2=b<0?"("+b+")":String(b);
       const c2=c<0?"("+c+")":String(c);
