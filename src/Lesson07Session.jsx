@@ -125,6 +125,8 @@ function OneAtATimeSignInput({ question, onSubmit, submitted }) {
       Submitted! Waiting for reveal...
     </div>
   );
+
+  return (
     <div>
       <div style={{ display:"flex",justifyContent:"space-between",fontSize:20,color:"var(--text3)",marginBottom:8 }}>
         <span>Expression {currentIdx+1} of {exprs.length}</span>
