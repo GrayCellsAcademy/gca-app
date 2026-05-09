@@ -9,7 +9,7 @@ import {
 } from "./lesson07Questions";
 
 export const LESSON07_MASTERY_TOPIC_ID = "lesson07-mastery-v1";
-const STREAK = 3;
+const STREAK = 2;
 
 // -- KaTeX --
 function useKaTeX() {
@@ -103,10 +103,15 @@ function SignOfProductMastery({ streak, onCorrect, onWrong }) {
 
   return (
     <div>
+      <div style={{ background:"var(--bg2)",borderRadius:"var(--radius-sm)",padding:"12px 16px",marginBottom:14,fontSize:20,color:"var(--text2)",lineHeight:1.6 }}>
+        For each expression below, decide whether the result is <strong style={{ color:"var(--green)" }}>positive (+)</strong> or <strong style={{ color:"var(--red)" }}>negative (-)</strong>.
+        Remember: same signs - positive result; different signs - negative result.
+        Click <strong>+</strong> or <strong>-</strong> for each row, then click <strong>Submit All</strong>.
+      </div>
       <div style={{ display:"flex",flexDirection:"column",gap:8,marginBottom:12 }}>
         {exprs.map((expr,i) => (
-          <div key={i} style={{ display:"flex",alignItems:"center",gap:10,background:"var(--bg2)",borderRadius:"var(--radius-sm)",padding:"10px 14px" }}>
-            <span style={{ fontFamily:"var(--mono)",fontSize:20,fontWeight:700,flex:1 }}>{expr.display}</span>
+          <div key={i} style={{ display:"flex",alignItems:"center",gap:10,background:"var(--bg2)",borderRadius:"var(--radius-sm)",padding:"8px 14px" }}>
+            <div style={{ flex:1,minWidth:120 }}><KaTeXInline expr={expr.latex} /></div>
             <div style={{ display:"flex",gap:6 }}>
               {["+","-"].map(sym => (
                 <button key={sym} onClick={() => !submitted && set(i,sym)}
@@ -161,6 +166,11 @@ function NegativePowerMastery({ streak, onCorrect, onWrong }) {
 
   return (
     <div>
+      <div style={{ background:"var(--bg2)",borderRadius:"var(--radius-sm)",padding:"12px 16px",marginBottom:14,fontSize:20,color:"var(--text2)",lineHeight:1.6 }}>
+        For each expression, decide whether the result is <strong style={{ color:"var(--green)" }}>positive (+)</strong> or <strong style={{ color:"var(--red)" }}>negative (-)</strong>.
+        Remember: when the exponent is outside the parentheses it applies only to the number, not the sign.
+        An even exponent always gives a positive result; an odd exponent keeps the sign of the base.
+      </div>
       <div style={{ display:"flex",flexDirection:"column",gap:10,marginBottom:12 }}>
         {exprs.map((expr,i) => (
           <div key={i} style={{ display:"flex",alignItems:"center",gap:10,background:"var(--bg2)",borderRadius:"var(--radius-sm)",padding:"10px 14px",flexWrap:"wrap" }}>
@@ -322,11 +332,11 @@ function SignedVarExprMastery({ streak, onCorrect, onWrong }) {
 
 // -- Steps --
 const STEPS = [
-  { id:"sign-product",   label:"Sign of Product/Quotient",        description:"All 8 types, 3 correct sets in a row" },
-  { id:"negative-power", label:"Sign of Negative Base Powers",    description:"All 4 types, 3 correct sets in a row" },
-  { id:"negative-root",  label:"Roots of Negative Numbers",       description:"3 correct in a row" },
-  { id:"signed-ooo",     label:"Order of Operations (Signed)",    description:"3 correct in a row" },
-  { id:"signed-var",     label:"Variable Expressions (Signed)",   description:"3 correct in a row" },
+  { id:"sign-product",   label:"Sign of Product/Quotient",        description:"All 8 types, 2 correct sets in a row" },
+  { id:"negative-power", label:"Sign of Negative Base Powers",    description:"All 4 types, 2 correct sets in a row" },
+  { id:"negative-root",  label:"Roots of Negative Numbers",       description:"2 correct in a row" },
+  { id:"signed-ooo",     label:"Order of Operations (Signed)",    description:"2 correct in a row" },
+  { id:"signed-var",     label:"Variable Expressions (Signed)",   description:"2 correct in a row" },
 ];
 
 // -- Main Player --
