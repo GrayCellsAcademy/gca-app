@@ -97,16 +97,17 @@ function SignOfProductMastery({ streak, onCorrect, onWrong }) {
           </div>
         ))}
       </div>
+      <div style={{ background:"rgba(59,130,246,0.06)",border:"1px solid rgba(59,130,246,0.2)",borderRadius:"var(--radius-sm)",padding:"10px 14px",marginBottom:14,fontSize:20,color:"var(--text2)" }}>
+          Rule: same signs give a positive result; different signs give a negative result.
+        </div>
       <button className="btn btn-primary" style={{ width:"100%",fontSize:20 }} onClick={onCorrect}>Try again</button>
     </div>
   );
 
   return (
     <div>
-      <div style={{ background:"var(--bg2)",borderRadius:"var(--radius-sm)",padding:"12px 16px",marginBottom:14,fontSize:20,color:"var(--text2)",lineHeight:1.6 }}>
-        For each expression below, decide whether the result is <strong style={{ color:"var(--green)" }}>positive (+)</strong> or <strong style={{ color:"var(--red)" }}>negative (-)</strong>.
-        Remember: same signs - positive result; different signs - negative result.
-        Click <strong>+</strong> or <strong>-</strong> for each row, then click <strong>Submit All</strong>.
+      <div style={{ fontSize:20,color:"var(--text2)",marginBottom:14 }}>
+        Select <strong>+</strong> or <strong>-</strong> for the sign of each result, then click <strong>Submit All</strong>.
       </div>
       <div style={{ display:"flex",flexDirection:"column",gap:8,marginBottom:12 }}>
         {exprs.map((expr,i) => (
@@ -160,16 +161,17 @@ function NegativePowerMastery({ streak, onCorrect, onWrong }) {
           </div>
         ))}
       </div>
+      <div style={{ background:"rgba(59,130,246,0.06)",border:"1px solid rgba(59,130,246,0.2)",borderRadius:"var(--radius-sm)",padding:"10px 14px",marginBottom:14,fontSize:20,color:"var(--text2)" }}>
+          Rule: -a^n means the exponent applies only to a (result always negative). (-a)^n means the negative base is raised to the power - even exponent gives positive, odd gives negative.
+        </div>
       <button className="btn btn-primary" style={{ width:"100%",fontSize:20 }} onClick={onCorrect}>Try again</button>
     </div>
   );
 
   return (
     <div>
-      <div style={{ background:"var(--bg2)",borderRadius:"var(--radius-sm)",padding:"12px 16px",marginBottom:14,fontSize:20,color:"var(--text2)",lineHeight:1.6 }}>
-        For each expression, decide whether the result is <strong style={{ color:"var(--green)" }}>positive (+)</strong> or <strong style={{ color:"var(--red)" }}>negative (-)</strong>.
-        Remember: when the exponent is outside the parentheses it applies only to the number, not the sign.
-        An even exponent always gives a positive result; an odd exponent keeps the sign of the base.
+      <div style={{ fontSize:20,color:"var(--text2)",marginBottom:14 }}>
+        Select <strong>+</strong> or <strong>-</strong> for the sign of each result, then click <strong>Submit All</strong>.
       </div>
       <div style={{ display:"flex",flexDirection:"column",gap:10,marginBottom:12 }}>
         {exprs.map((expr,i) => (
