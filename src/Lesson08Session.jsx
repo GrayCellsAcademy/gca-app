@@ -67,9 +67,148 @@ function QuestionDisplay({ question, revealCorrect }) {
 
   if (q.type === "warmup-b") {
     const u = q.unit||"ft";
-    const VW=520, VH=380, pad=55;
 
     if (q.shapeType==="step3") {
+      // Staircase: steps go UP to the LEFT
+      // Left side is full height, bottom is widest, top step is narrowest
+      // Missing: h1 (right riser step 1) and h2 (right riser step 2)
+      // Known: w1(bottom), w1-w2(tread1), w2-w3(tread2), w3(top), h3(step3 right), totalH(left)
+      const VW=560, VH=400, pad=70;
+      const scale=Math.min((VW-2*pad)/q.totalW,(VH-2*pad)/q.totalH)*0.75;
+      const sw1=q.w1*scale, sw2=q.w2*scale, sw3=q.w3*scale;
+      const sh1=q.h1*scale, sh2=q.h2*scale, sh3=q.h3*scale;
+      const th=sh1+sh2+sh3;
+      const ox=pad, oy=pad;
+      const bly=oy+th;
+
+      // Vertices clockwise from BL
+      // BL(ox,bly) -> BR(ox+sw1,bly) -> step1-right(ox+sw1,bly-sh1)
+      // -> tread1(ox+sw2,bly-sh1) -> step2-right(ox+sw2,bly-sh1-sh2)
+      // -> tread2(ox+sw3,bly-sh1-sh2) -> TL-of-top(ox+sw3,oy)
+      // -> TL(ox,oy)
+      const pts=[
+        [ox,        bly],
+        [ox+sw1,    bly],
+        [ox+sw1,    bly-sh1],
+        [ox+sw2,    bly-sh1],
+        [ox+sw2,    bly-sh1-sh2],
+        [ox+sw3,    bly-sh1-sh2],
+        [ox+sw3,    oy],
+        [ox,        oy],
+      ].map(([x,y])=>`${x},${y}`).join(" ");
+
+      const f = "#4b5068";
+      const gap = 18; // distance from shape edge to label
+
+      return (
+        <svg viewBox={`0 0 ${VW} ${VH}`} style={{ width:"100%",maxWidth:560,display:"block",margin:"0 auto" }}>
+          <polygon points={pts} fill="rgba(27,143,255,0.08)" stroke="var(--blue)" strokeWidth="2.5"/>
+
+          {/* Bottom: w1 - below shape */}
+          <text x={ox+sw1/2} y={bly+gap} textAnchor="middle" fontSize="13" fill={f}>{q.w1} {u}</text>
+
+          {/* Left side: totalH - left of shape */}
+          <text x={ox-gap} y={oy+th/2} textAnchor="middle" fontSize="13" fill={f}
+            transform={`rotate(-90,${ox-gap},${oy+th/2})`}>{q.totalH} {u}</text>
+
+          {/* Top of step3: w3 - above shape */}
+          <text x={ox+sw3/2} y={oy-gap/2} textAnchor="middle" fontSize="13" fill={f}>{q.w3} {u}</text>
+
+          {/* Tread 1 (step1 top, going left): w1-w2 - above tread */}
+          <text x={ox+sw2+(sw1-sw2)/2} y={bly-sh1-gap/2} textAnchor="middle" fontSize="13" fill={f}>{q.w1-q.w2} {u}</text>
+
+          {/* Tread 2 (step2 top, going left): w2-w3 - above tread */}
+          <text x={ox+sw3+(sw2-sw3)/2} y={bly-sh1-sh2-gap/2} textAnchor="middle" fontSize="13" fill={f}>{q.w2-q.w3} {u}</text>
+
+          {/* h3: right side of step3 - right of shape */}
+          <text x={ox+sw3+gap} y={oy+sh3/2} textAnchor="middle" fontSize="13" fill={f}
+            transform={`rotate(-90,${ox+sw3+gap},${oy+sh3/2})`}>{q.h3} {u}</text>
+
+          {/* MISSING h1: right riser of step 1 - right of step1 */}
+          <text x={ox+sw1+gap} y={bly-sh1/2} textAnchor="middle" fontSize="13" fill="var(--orange)" fontWeight="bold"
+            transform={`rotate(-90,${ox+sw1+gap},${bly-sh1/2})`}>? {u}</text>
+
+          {/* MISSING h2: right riser of step 2 - right of step2 */}
+          <text x={ox+sw2+gap} y={bly-sh1-sh2/2} textAnchor="middle" fontSize="13" fill="var(--orange)" fontWeight="bold"
+            transform={`rotate(-90,${ox+sw2+gap},${bly-sh1-sh2/2})`}>? {u}</text>
+
+          {revealCorrect&&(
+            <text x={VW/2} y={VH-6} textAnchor="middle" fontSize="13" fontWeight="bold" fill="var(--green)">{q.displayAnswer}</text>
+          )}
+        </svg>
+      );
+    }
+
+    if (q.shapeType==="plus") {
+      // Plus shape: symmetric, so label only unique sides
+      // Known (labeled): ctrW (top), ctrW (bottom), ctrH (left arm), armH (top arm left side only), armW (left arm top only)
+      // Missing: armW on right side of top arm, armH on bottom of right arm
+      // This gives students enough to find everything by symmetry
+      const VW=540, VH=420, pad=70;
+      const scale=Math.min((VW-2*pad)/(2*q.armW+q.ctrW),(VH-2*pad)/(2*q.armH+q.ctrH))*0.78;
+      const aw=q.armW*scale, ah=q.armH*scale, cw=q.ctrW*scale, ch=q.ctrH*scale;
+      const tw=2*aw+cw, th=2*ah+ch;
+      const ox=pad+(VW-2*pad-tw)/2, oy=pad+(VH-2*pad-th)/2;
+
+      // 12-vertex polygon, clockwise from TL of top arm
+      const pts=[
+        [ox+aw,      oy],
+        [ox+aw+cw,   oy],
+        [ox+aw+cw,   oy+ah],
+        [ox+2*aw+cw, oy+ah],
+        [ox+2*aw+cw, oy+ah+ch],
+        [ox+aw+cw,   oy+ah+ch],
+        [ox+aw+cw,   oy+2*ah+ch],
+        [ox+aw,      oy+2*ah+ch],
+        [ox+aw,      oy+ah+ch],
+        [ox,         oy+ah+ch],
+        [ox,         oy+ah],
+        [ox+aw,      oy+ah],
+      ].map(([x,y])=>`${x},${y}`).join(" ");
+
+      const f="#4b5068", gap=20;
+
+      return (
+        <svg viewBox={`0 0 ${VW} ${VH}`} style={{ width:"100%",maxWidth:540,display:"block",margin:"0 auto" }}>
+          <polygon points={pts} fill="rgba(27,143,255,0.08)" stroke="var(--blue)" strokeWidth="2.5"/>
+
+          {/* Top arm top: ctrW */}
+          <text x={ox+aw+cw/2} y={oy-gap/2} textAnchor="middle" fontSize="13" fill={f}>{q.ctrW} {u}</text>
+
+          {/* Bottom arm bottom: ctrW */}
+          <text x={ox+aw+cw/2} y={oy+2*ah+ch+gap} textAnchor="middle" fontSize="13" fill={f}>{q.ctrW} {u}</text>
+
+          {/* Left arm left side: ctrH */}
+          <text x={ox-gap} y={oy+ah+ch/2} textAnchor="middle" fontSize="13" fill={f}
+            transform={`rotate(-90,${ox-gap},${oy+ah+ch/2})`}>{q.ctrH} {u}</text>
+
+          {/* Right arm right side: ctrH */}
+          <text x={ox+2*aw+cw+gap} y={oy+ah+ch/2} textAnchor="middle" fontSize="13" fill={f}
+            transform={`rotate(-90,${ox+2*aw+cw+gap},${oy+ah+ch/2})`}>{q.ctrH} {u}</text>
+
+          {/* Top arm left side: armH (one representative) */}
+          <text x={ox+aw-gap} y={oy+ah/2} textAnchor="middle" fontSize="13" fill={f}
+            transform={`rotate(-90,${ox+aw-gap},${oy+ah/2})`}>{q.armH} {u}</text>
+
+          {/* Left arm top: armW (one representative) */}
+          <text x={ox+aw/2} y={oy+ah-gap/2} textAnchor="middle" fontSize="13" fill={f}>{q.armW} {u}</text>
+
+          {/* MISSING: top arm right side (armH) */}
+          <text x={ox+aw+cw+gap} y={oy+ah/2} textAnchor="middle" fontSize="13" fill="var(--orange)" fontWeight="bold"
+            transform={`rotate(-90,${ox+aw+cw+gap},${oy+ah/2})`}>? {u}</text>
+
+          {/* MISSING: left arm bottom (armW) */}
+          <text x={ox+aw/2} y={oy+ah+ch+gap} textAnchor="middle" fontSize="13" fill="var(--orange)" fontWeight="bold">? {u}</text>
+
+          {revealCorrect&&(
+            <text x={VW/2} y={VH-6} textAnchor="middle" fontSize="13" fontWeight="bold" fill="var(--green)">{q.displayAnswer}</text>
+          )}
+        </svg>
+      );
+    }
+
+    return null;
+  }
       const scale=Math.min((VW-2*pad)/q.totalW,(VH-2*pad)/q.totalH)*0.8;
       const sw1=q.w1*scale, sw2=q.w2*scale, sw3=q.w3*scale;
       const sh1=q.h1*scale, sh2=q.h2*scale, sh3=q.h3*scale;
