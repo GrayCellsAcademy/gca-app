@@ -101,31 +101,22 @@ export function genWarmupB() {
       answer:JSON.stringify({perimeter:p, area}),
     };
   } else {
-    // 3-step staircase shape: 3 decreasing horizontal rectangles stacked
-    // Like stairs going up-right: bottom step widest, top step narrowest
-    // All 2-digit dimensions, missing 2 sides
-    const u = "ft"; // units label
+    // 3-step staircase: steps going up-left (right side is staircase)
+    // Missing sides: h1 and h2 (the two right-side risers) - perpendicular to labeled widths
+    // Known: w1 (bottom), w2, w3 (step widths), h3 (top step height), totalH (full left side)
+    const u = "ft";
     const w1=randInt(30,50), w2=randInt(15,w1-10), w3=randInt(10,w2-5);
     const h1=randInt(10,20), h2=randInt(10,20), h3=randInt(10,20);
     const totalW=w1, totalH=h1+h2+h3;
-    // Area = sum of 3 rectangles
     const area=w1*h1+w2*h2+w3*h3;
-    // Perimeter: trace outline clockwise from BL
-    // BL->BR: w1 (bottom)
-    // BR->up: h1 (right side of step 1)
-    // right->left: w1-w2 (step 1 top going left to step 2 right edge) -- MISSING SIDE 1
-    // up: h2 (right side of step 2)
-    // right->left: w2-w3 (step 2 top going left) -- MISSING SIDE 2
-    // up: h3 (right side of step 3)
-    // left: w3 (top of step 3)
-    // down: totalH (left side, full height)
+    // Perimeter: w1 + h1 + (w1-w2) + h2 + (w2-w3) + h3 + w3 + totalH
     const perimeter = w1 + h1 + (w1-w2) + h2 + (w2-w3) + h3 + w3 + totalH;
     return {
       type:"warmup-b", shapeType:"step3",
-      w1, w2, w3, h1, h2, h3,
-      totalW, totalH,
-      perimeter, area,
-      unit: u,
+      w1, w2, w3, h1, h2, h3, totalW, totalH,
+      // Missing: h1 and h2 (perpendicular risers on right staircase side)
+      missingA: h1, missingB: h2,
+      perimeter, area, unit: u,
       prompt:"Find the perimeter and area of the composite shape. Two sides are not labeled.",
       displayAnswer:`Perimeter: ${perimeter} ft, Area: ${area} sq ft`,
       answer:JSON.stringify({perimeter, area}),

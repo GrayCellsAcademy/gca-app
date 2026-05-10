@@ -66,109 +66,144 @@ function QuestionDisplay({ question, revealCorrect }) {
   }
 
   if (q.type === "warmup-b") {
-    const VW=420, VH=300, pad=40;
-    const u=q.unit||"ft";
+    const u = q.unit||"ft";
+    const VW=520, VH=380, pad=55;
 
     if (q.shapeType==="step3") {
-      // 3-step staircase, draw as single polygon from BL clockwise
-      const scale=Math.min((VW-2*pad)/q.totalW,(VH-2*pad)/q.totalH)*0.85;
+      const scale=Math.min((VW-2*pad)/q.totalW,(VH-2*pad)/q.totalH)*0.8;
       const sw1=q.w1*scale, sw2=q.w2*scale, sw3=q.w3*scale;
       const sh1=q.h1*scale, sh2=q.h2*scale, sh3=q.h3*scale;
-      const totalH=sh1+sh2+sh3;
+      const th=sh1+sh2+sh3;
       const ox=pad+10, oy=pad;
-      // Polygon points (BL origin, y grows downward so BL is bottom)
-      // Going clockwise from BL:
-      const bly=oy+totalH;
+      const bly=oy+th;
+
+      // Polygon points clockwise from BL
       const pts=[
-        `${ox},${bly}`,                           // BL
-        `${ox+sw1},${bly}`,                        // BR
-        `${ox+sw1},${bly-sh1}`,                    // step1 right
-        `${ox+sw2},${bly-sh1}`,                    // step1-2 horizontal (MISSING)
-        `${ox+sw2},${bly-sh1-sh2}`,                // step2 right
-        `${ox+sw3},${bly-sh1-sh2}`,                // step2-3 horizontal (MISSING)
-        `${ox+sw3},${oy}`,                          // step3 right (top)
-        `${ox},${oy}`,                              // TL
+        `${ox},${bly}`,
+        `${ox+sw1},${bly}`,
+        `${ox+sw1},${bly-sh1}`,
+        `${ox+sw2},${bly-sh1}`,
+        `${ox+sw2},${bly-sh1-sh2}`,
+        `${ox+sw3},${bly-sh1-sh2}`,
+        `${ox+sw3},${oy}`,
+        `${ox},${oy}`,
       ].join(" ");
 
-      const miss1x=(sw2+sw1)/2+ox; // midpoint of step1-2 horizontal
-      const miss1y=bly-sh1;
-      const miss2x=(sw3+sw2)/2+ox;
-      const miss2y=bly-sh1-sh2;
+      // Label helper
+      const L = (x,y,txt,rotate,col="#4b5068") => (
+        <text key={txt+x} x={x} y={y} textAnchor="middle" fontSize="13" fill={col}
+          transform={rotate?`rotate(-90,${x},${y})`:undefined}>{txt}</text>
+      );
 
       return (
-        <svg viewBox={`0 0 ${VW} ${VH+20}`} style={{ width:"100%",maxWidth:500,display:"block",margin:"0 auto" }}>
+        <svg viewBox={`0 0 ${VW} ${VH}`} style={{ width:"100%",maxWidth:540,display:"block",margin:"0 auto" }}>
           <polygon points={pts} fill="rgba(27,143,255,0.08)" stroke="var(--blue)" strokeWidth="2.5"/>
+
           {/* Bottom: w1 */}
-          <text x={ox+sw1/2} y={bly+18} textAnchor="middle" fontSize="13" fill="#4b5068">{q.w1} {u}</text>
+          {L(ox+sw1/2, bly+18, `${q.w1} ${u}`)}
           {/* Left: totalH */}
-          <text x={ox-26} y={oy+totalH/2} textAnchor="middle" fontSize="13" fill="#4b5068" transform={`rotate(-90,${ox-26},${oy+totalH/2})`}>{q.totalH} {u}</text>
-          {/* Step1 right: h1 */}
-          <text x={ox+sw1+22} y={bly-sh1/2} textAnchor="middle" fontSize="13" fill="#4b5068" transform={`rotate(-90,${ox+sw1+22},${bly-sh1/2})`}>{q.h1} {u}</text>
-          {/* Step2 right: h2 */}
-          <text x={ox+sw2+22} y={bly-sh1-sh2/2} textAnchor="middle" fontSize="13" fill="#4b5068" transform={`rotate(-90,${ox+sw2+22},${bly-sh1-sh2/2})`}>{q.h2} {u}</text>
-          {/* Step3 top: w3 */}
-          <text x={ox+sw3/2} y={oy-10} textAnchor="middle" fontSize="13" fill="#4b5068">{q.w3} {u}</text>
-          {/* Step3 right: h3 */}
-          <text x={ox+sw3+22} y={oy+sh3/2} textAnchor="middle" fontSize="13" fill="#4b5068" transform={`rotate(-90,${ox+sw3+22},${oy+sh3/2})`}>{q.h3} {u}</text>
-          {/* Missing side 1: step1-2 horizontal */}
-          <text x={miss1x+(sw1-sw2)/2*0.5} y={miss1y-8} textAnchor="middle" fontSize="13" fill="var(--orange)" fontWeight="bold">?</text>
-          {/* Missing side 2: step2-3 horizontal */}
-          <text x={miss2x+(sw2-sw3)/2*0.5} y={miss2y-8} textAnchor="middle" fontSize="13" fill="var(--orange)" fontWeight="bold">?</text>
+          {L(ox-28, oy+th/2, `${q.totalH} ${u}`, true)}
+          {/* Top: w3 */}
+          {L(ox+sw3/2, oy-12, `${q.w3} ${u}`)}
+          {/* Step 1-2 horizontal tread: w1-w2 */}
+          {L(ox+sw2+(sw1-sw2)/2, bly-sh1-10, `${q.w1-q.w2} ${u}`)}
+          {/* Step 2-3 horizontal tread: w2-w3 */}
+          {L(ox+sw3+(sw2-sw3)/2, bly-sh1-sh2-10, `${q.w2-q.w3} ${u}`)}
+          {/* h3: right side of step 3 (known) */}
+          {L(ox+sw3+28, oy+sh3/2, `${q.h3} ${u}`, true)}
+
+          {/* MISSING h1: right riser of step 1 */}
+          {L(ox+sw1+28, bly-sh1/2, `?`, true, "var(--orange)")}
+          {/* MISSING h2: right riser of step 2 */}
+          {L(ox+sw2+28, bly-sh1-sh2/2, `?`, true, "var(--orange)")}
+
           {revealCorrect&&(
-            <text x={VW/2} y={VH+15} textAnchor="middle" fontSize="13" fontWeight="bold" fill="var(--green)">{q.displayAnswer}</text>
+            <text x={VW/2} y={VH-8} textAnchor="middle" fontSize="13" fontWeight="bold" fill="var(--green)">{q.displayAnswer}</text>
           )}
         </svg>
       );
     }
 
     if (q.shapeType==="plus") {
-      // Draw + as a single polygon (no internal lines)
-      const scale=Math.min((VW-2*pad)/(2*q.armW+q.ctrW),(VH-2*pad)/(2*q.armH+q.ctrH))*0.85;
+      const scale=Math.min((VW-2*pad)/(2*q.armW+q.ctrW),(VH-2*pad)/(2*q.armH+q.ctrH))*0.82;
       const aw=q.armW*scale, ah=q.armH*scale, cw=q.ctrW*scale, ch=q.ctrH*scale;
       const tw=2*aw+cw, th=2*ah+ch;
       const ox=pad+(VW-2*pad-tw)/2, oy=pad+(VH-2*pad-th)/2;
-      // + polygon: 12 vertices clockwise from top-left of top arm
-      const tlx=ox+aw, tly=oy;
+
+      // + polygon (12 vertices, clockwise from TL of top arm)
       const pts=[
-        `${ox+aw},${oy}`,              // TL of top arm
-        `${ox+aw+cw},${oy}`,           // TR of top arm
-        `${ox+aw+cw},${oy+ah}`,        // step into right arm
-        `${ox+2*aw+cw},${oy+ah}`,      // TR of right arm
-        `${ox+2*aw+cw},${oy+ah+ch}`,   // BR of right arm
-        `${ox+aw+cw},${oy+ah+ch}`,     // step into bottom arm
-        `${ox+aw+cw},${oy+2*ah+ch}`,   // BR of bottom arm
-        `${ox+aw},${oy+2*ah+ch}`,      // BL of bottom arm
-        `${ox+aw},${oy+ah+ch}`,        // step into left arm
-        `${ox},${oy+ah+ch}`,           // BL of left arm
-        `${ox},${oy+ah}`,              // TL of left arm
-        `${ox+aw},${oy+ah}`,           // step into top arm
+        `${ox+aw},${oy}`,
+        `${ox+aw+cw},${oy}`,
+        `${ox+aw+cw},${oy+ah}`,
+        `${ox+2*aw+cw},${oy+ah}`,
+        `${ox+2*aw+cw},${oy+ah+ch}`,
+        `${ox+aw+cw},${oy+ah+ch}`,
+        `${ox+aw+cw},${oy+2*ah+ch}`,
+        `${ox+aw},${oy+2*ah+ch}`,
+        `${ox+aw},${oy+ah+ch}`,
+        `${ox},${oy+ah+ch}`,
+        `${ox},${oy+ah}`,
+        `${ox+aw},${oy+ah}`,
       ].join(" ");
 
+      // By symmetry: all arms equal, so label representative sides
+      // Top arm: top=ctrW, left=armH (known), right=armH (known)
+      // Left arm: left=armW (known), top & bottom = ctrH sides (known)
+      // Missing: left arm width (top notch) and right arm width (bottom notch) -- 
+      // Actually for + shape: label all known sides on perimeter
+      // Known sides: ctrW (top), armH (top-arm left & right), armW (right of right-arm, left of left-arm)
+      // ctrH (right arm), armW again (bottom of bottom-arm shown), ctrW (bottom)
+      // Missing: inner notch armW on left side of top-arm, and inner notch armH on bottom of right-arm
+
+      const L = (x,y,txt,rotate,col="#4b5068") => (
+        <text key={txt+""+x+""+y} x={x} y={y} textAnchor="middle" fontSize="13" fill={col}
+          transform={rotate?`rotate(-90,${x},${y})`:undefined}>{txt}</text>
+      );
+
       return (
-        <svg viewBox={`0 0 ${VW} ${VH+20}`} style={{ width:"100%",maxWidth:500,display:"block",margin:"0 auto" }}>
+        <svg viewBox={`0 0 ${VW} ${VH}`} style={{ width:"100%",maxWidth:540,display:"block",margin:"0 auto" }}>
           <polygon points={pts} fill="rgba(27,143,255,0.08)" stroke="var(--blue)" strokeWidth="2.5"/>
-          {/* Top arm top: ctrW */}
-          <text x={ox+aw+cw/2} y={oy-10} textAnchor="middle" fontSize="13" fill="#4b5068">{q.ctrW} {u}</text>
-          {/* Left arm left: ctrH */}
-          <text x={ox-26} y={oy+ah+ch/2} textAnchor="middle" fontSize="13" fill="#4b5068" transform={`rotate(-90,${ox-26},${oy+ah+ch/2})`}>{q.ctrH} {u}</text>
-          {/* Top arm height */}
-          <text x={ox+2*aw+cw+22} y={oy+ah/2} textAnchor="middle" fontSize="13" fill="#4b5068" transform={`rotate(-90,${ox+2*aw+cw+22},${oy+ah/2})`}>{q.armH} {u}</text>
-          {/* Right arm width */}
-          <text x={ox+aw+cw+aw/2} y={oy+2*ah+ch+16} textAnchor="middle" fontSize="13" fill="#4b5068">{q.armW} {u}</text>
-          {/* Bottom arm width */}
-          <text x={ox+aw+cw/2} y={oy+2*ah+ch+16} textAnchor="middle" fontSize="13" fill="#4b5068">{q.ctrW} {u}</text>
-          {/* Missing: left arm width (top) */}
-          <text x={ox+aw/2} y={oy+ah-8} textAnchor="middle" fontSize="13" fill="var(--orange)" fontWeight="bold">?</text>
-          {/* Missing: right arm height (bottom step) */}
-          <text x={ox+2*aw+cw+22} y={oy+ah+ch/2} textAnchor="middle" fontSize="13" fill="var(--orange)" fontWeight="bold">?</text>
+
+          {/* Top of top arm: ctrW */}
+          {L(ox+aw+cw/2, oy-12, `${q.ctrW} ${u}`)}
+          {/* Bottom of bottom arm: ctrW */}
+          {L(ox+aw+cw/2, oy+2*ah+ch+18, `${q.ctrW} ${u}`)}
+          {/* Left of left arm: ctrH */}
+          {L(ox-30, oy+ah+ch/2, `${q.ctrH} ${u}`, true)}
+          {/* Right of right arm: ctrH */}
+          {L(ox+2*aw+cw+30, oy+ah+ch/2, `${q.ctrH} ${u}`, true)}
+          {/* Top arm left side: armH */}
+          {L(ox+aw-18, oy+ah/2, `${q.armH} ${u}`, true)}
+          {/* Top arm right side: armH */}
+          {L(ox+aw+cw+18, oy+ah/2, `${q.armH} ${u}`, true)}
+          {/* Bottom arm left: armH */}
+          {L(ox+aw-18, oy+ah+ch+ah/2, `${q.armH} ${u}`, true)}
+          {/* Bottom arm right: armH */}
+          {L(ox+aw+cw+18, oy+ah+ch+ah/2, `${q.armH} ${u}`, true)}
+          {/* Left arm top: armW */}
+          {L(ox+aw/2, oy+ah-12, `${q.armW} ${u}`)}
+          {/* Left arm bottom: armW */}
+          {L(ox+aw/2, oy+ah+ch+12, `${q.armW} ${u}`)}
+          {/* Right arm top: armW */}
+          {L(ox+aw+cw+aw/2, oy+ah-12, `${q.armW} ${u}`)}
+          {/* Right arm bottom: armW */}
+          {L(ox+aw+cw+aw/2, oy+ah+ch+12, `${q.armW} ${u}`)}
+
+          {/* MISSING: left arm left side (inner notch) */}
+          {L(ox-30, oy+ah-ah/3, `?`, true, "var(--orange)")}
+          {/* MISSING: right arm right side (inner notch on opposite side) */}
+          {L(ox+2*aw+cw+30, oy+ah+ch+ah/3, `?`, true, "var(--orange)")}
+
           {revealCorrect&&(
-            <text x={VW/2} y={VH+15} textAnchor="middle" fontSize="13" fontWeight="bold" fill="var(--green)">{q.displayAnswer}</text>
+            <text x={VW/2} y={VH-8} textAnchor="middle" fontSize="13" fontWeight="bold" fill="var(--green)">{q.displayAnswer}</text>
           )}
         </svg>
       );
     }
 
     return null;
+  }
+
   }
 
   if (q.type === "expr-or-equation") {
