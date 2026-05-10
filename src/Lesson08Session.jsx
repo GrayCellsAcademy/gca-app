@@ -204,8 +204,6 @@ function QuestionDisplay({ question, revealCorrect }) {
     return null;
   }
 
-  }
-
   if (q.type === "expr-or-equation") {
     return (
       <div style={{ display:"flex",flexDirection:"column",gap:8 }}>
