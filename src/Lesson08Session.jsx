@@ -66,33 +66,73 @@ function QuestionDisplay({ question, revealCorrect }) {
   }
 
   if (q.type === "warmup-b") {
-    return (
-      <div>
-        <div style={{ fontSize:20,color:"var(--text2)",marginBottom:8 }}>{q.prompt}</div>
-        <div style={{ background:"var(--bg2)",borderRadius:"var(--radius-sm)",padding:16,fontSize:20 }}>
-          {q.shapeType==="step" ? (
-            <div>
-              <div style={{ fontWeight:700,marginBottom:6 }}>Step shape (rectangle with corner removed)</div>
-              <div>Total width: <strong>{q.W}</strong> | Total height: <strong>{q.H}</strong></div>
-              <div>Cut-out: <strong>{q.cW}</strong> wide - <strong>{q.cH}</strong> tall (top-right corner)</div>
-              <div style={{ color:"var(--text3)",marginTop:4 }}>Two sides are missing - you need to find them.</div>
-            </div>
-          ) : (
-            <div>
-              <div style={{ fontWeight:700,marginBottom:6 }}>Plus (+) shape</div>
-              <div>Center: <strong>{q.ctrW}</strong> wide - <strong>{q.ctrH}</strong> tall</div>
-              <div>Arm width: <strong>{q.armW}</strong> | Arm height: <strong>{q.armH}</strong></div>
-              <div style={{ color:"var(--text3)",marginTop:4 }}>Two sides are missing - you need to find them.</div>
-            </div>
+    const W=360, H=240, pad=30;
+    if (q.shapeType==="step") {
+      // Draw step shape: full rect with top-right corner removed
+      const scale=Math.min((W-2*pad)/q.W,(H-2*pad)/q.H);
+      const sw=q.W*scale, sh=q.H*scale;
+      const cw=q.cW*scale, ch=q.cH*scale;
+      const ox=pad, oy=pad;
+      // Points: BL, BR, notch-BR, notch-TL, TR of remaining top, TL
+      const pts=`${ox},${oy+sh} ${ox+sw},${oy+sh} ${ox+sw},${oy+ch} ${ox+sw-cw},${oy+ch} ${ox+sw-cw},${oy} ${ox},${oy}`;
+      const lx=ox+sw/2, ly=oy+sh+18;
+      const rx=ox-18, ry=oy+sh/2;
+      return (
+        <svg viewBox={`0 0 ${W+60} ${H+60}`} style={{ width:"100%",maxWidth:460,display:"block",margin:"0 auto" }}>
+          <polygon points={pts} fill="rgba(27,143,255,0.08)" stroke="var(--blue)" strokeWidth="2.5"/>
+          {/* Bottom label */}
+          <text x={lx} y={ly} textAnchor="middle" fontSize="14" fill="#4b5068">{q.W}</text>
+          {/* Left label */}
+          <text x={rx} y={ry} textAnchor="middle" fontSize="14" fill="#4b5068" transform={`rotate(-90,${rx},${ry})`}>{q.H}</text>
+          {/* Missing side 1: notch width (top of cutout) - shown with dashes */}
+          <line x1={ox+sw-cw} y1={oy+ch} x2={ox+sw} y2={oy+ch} stroke="var(--orange)" strokeWidth="2" strokeDasharray="6,4"/>
+          <text x={ox+sw-cw/2} y={oy+ch-8} textAnchor="middle" fontSize="13" fill="var(--orange)">?</text>
+          {/* Missing side 2: notch height */}
+          <line x1={ox+sw-cw} y1={oy} x2={ox+sw-cw} y2={oy+ch} stroke="var(--orange)" strokeWidth="2" strokeDasharray="6,4"/>
+          <text x={ox+sw-cw+14} y={oy+ch/2} textAnchor="middle" fontSize="13" fill="var(--orange)">?</text>
+          {/* Top label */}
+          <text x={ox+(sw-cw)/2} y={oy-8} textAnchor="middle" fontSize="14" fill="#4b5068">{q.W-q.cW}</text>
+          {/* Right label */}
+          <text x={ox+sw+14} y={oy+ch+sh/3} textAnchor="middle" fontSize="14" fill="#4b5068">{q.H-q.cH}</text>
+          {revealCorrect&&(
+            <text x={W/2} y={H+55} textAnchor="middle" fontSize="14" fontWeight="bold" fill="var(--green)">{q.displayAnswer}</text>
           )}
-        </div>
-        {revealCorrect && (
-          <div style={{ marginTop:10,background:"rgba(16,185,129,0.08)",border:"1px solid rgba(16,185,129,0.2)",borderRadius:"var(--radius-sm)",padding:"10px 14px",fontSize:20 }}>
-            <strong style={{ color:"var(--green)" }}>{q.displayAnswer}</strong>
-          </div>
-        )}
-      </div>
-    );
+        </svg>
+      );
+    } else {
+      // Plus shape
+      const scale=Math.min((W-2*pad)/(2*q.armW+q.ctrW),(H-2*pad)/(2*q.armH+q.ctrH));
+      const aw=q.armW*scale, ah=q.armH*scale, cw=q.ctrW*scale, ch=q.ctrH*scale;
+      const tw=2*aw+cw, th=2*ah+ch;
+      const ox=pad+(W-2*pad-tw)/2, oy=pad+(H-2*pad-th)/2;
+      // + shape: center rect + 4 arms
+      const cx=ox+aw, cy=oy+ah;
+      return (
+        <svg viewBox={`0 0 ${W+60} ${H+60}`} style={{ width:"100%",maxWidth:460,display:"block",margin:"0 auto" }}>
+          {/* Center */}
+          <rect x={cx} y={cy} width={cw} height={ch} fill="rgba(27,143,255,0.08)" stroke="var(--blue)" strokeWidth="2.5"/>
+          {/* Top arm */}
+          <rect x={cx} y={oy} width={cw} height={ah} fill="rgba(27,143,255,0.08)" stroke="var(--blue)" strokeWidth="2.5"/>
+          {/* Bottom arm */}
+          <rect x={cx} y={cy+ch} width={cw} height={ah} fill="rgba(27,143,255,0.08)" stroke="var(--blue)" strokeWidth="2.5"/>
+          {/* Left arm */}
+          <rect x={ox} y={cy} width={aw} height={ch} fill="rgba(27,143,255,0.08)" stroke="var(--blue)" strokeWidth="2.5"/>
+          {/* Right arm */}
+          <rect x={cx+cw} y={cy} width={aw} height={ch} fill="rgba(27,143,255,0.08)" stroke="var(--blue)" strokeWidth="2.5"/>
+          {/* Labels - known sides */}
+          <text x={cx+cw/2} y={oy-8} textAnchor="middle" fontSize="13" fill="#4b5068">{q.ctrW}</text>
+          <text x={ox-14} y={cy+ch/2} textAnchor="middle" fontSize="13" fill="#4b5068" transform={`rotate(-90,${ox-14},${cy+ch/2})`}>{q.ctrH}</text>
+          <text x={cx+cw+aw/2} y={cy+ch+ah+16} textAnchor="middle" fontSize="13" fill="#4b5068">{q.armW}</text>
+          <text x={cx+cw/2} y={cy+ch+ah+16} textAnchor="middle" fontSize="13" fill="#4b5068">{q.armW}</text>
+          {/* Missing sides shown with ? */}
+          <text x={ox+aw/2} y={cy-8} textAnchor="middle" fontSize="13" fill="var(--orange)">?</text>
+          <text x={cx+cw+aw+14} y={cy+ch/2} textAnchor="middle" fontSize="13" fill="var(--orange)">?</text>
+          {revealCorrect&&(
+            <text x={W/2} y={H+55} textAnchor="middle" fontSize="14" fontWeight="bold" fill="var(--green)">{q.displayAnswer}</text>
+          )}
+        </svg>
+      );
+    }
   }
 
   if (q.type === "expr-or-equation") {
@@ -427,7 +467,26 @@ function TeacherLesson08({ session, sessionId, uid }) {
                 style={{ width:70,padding:"6px 10px",fontSize:20,textAlign:"center" }} />
             </div>
             {session.status==="question"&&<button className="btn btn-ghost" onClick={handleReveal}>Reveal</button>}
-            {session.status==="revealing"&&<button className="btn btn-ghost" onClick={handleGenerate}>New Question</button>}
+            {session.status==="revealing"&&(
+              <>
+                <button className="btn btn-ghost" onClick={handleGenerate}>Repeat Topic</button>
+                {currentTopicIdx<LESSON08_TOPICS.length-1&&(
+                  <button className="btn btn-primary" onClick={()=>{
+                    const next=currentTopicIdx+1;
+                    setCurrentTopicIdx(next);
+                    const q=generateLesson08Question(LESSON08_TOPICS[next].id);
+                    const qId="q_"+Date.now().toString(36);
+                    q.id=qId; q.points=POINTS;
+                    revealedRef.current=false; setAnswers([]);
+                    updateDoc(doc(db,"sessions",sessionId),{
+                      status:"question",currentQuestion:q,
+                      timerSeconds:timerInput,timerEndsAt:Date.now()+timerInput*1000,
+                      questionCount:(session.questionCount||0)+1,
+                    });
+                  }}>Next: {LESSON08_TOPICS[currentTopicIdx+1]?.label}</button>
+                )}
+              </>
+            )}
             <button className="btn btn-ghost" style={{ color:"var(--red)" }} onClick={handleEnd}>End</button>
           </div>
         </div>
