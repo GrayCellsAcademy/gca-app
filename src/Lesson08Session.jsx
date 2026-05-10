@@ -611,11 +611,28 @@ function CreateLesson08Session({ user, onCreated }) {
   const handleCreate = async () => {
     setLoading(true);
     try {
-      const { sessionId } = await createClassworkSession(user.id,selectedClass,timer);
-      await updateDoc(doc(db,"sessions",sessionId),{type:"lesson08"});
+      const joinCode = Math.random().toString(36).slice(2,7).toUpperCase();
+      const sessionId = "sess_" + Date.now().toString(36);
+      await setDoc(doc(db, "sessions", sessionId), {
+        id: sessionId,
+        teacherId: user.id,
+        classId: selectedClass,
+        joinCode,
+        type: "lesson08",
+        status: "waiting",
+        currentQuestion: null,
+        questionCount: 0,
+        timerSeconds: timer,
+        timerEndsAt: null,
+        participants: {},
+        createdAt: Date.now(),
+      });
       onCreated(sessionId);
-    } catch(e) { console.error(e); }
-    setLoading(false);
+    } catch(e) {
+      console.error("Session create error:", e);
+      alert("Error creating session: " + e.message);
+      setLoading(false);
+    }
   };
   return (
     <div style={{ maxWidth:480,margin:"0 auto" }}>
