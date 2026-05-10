@@ -91,6 +91,7 @@ function AssignmentRow({ assignment, categories, onUpdate, onRemove, onReset, on
   const topic = getTopic(assignment.topicId);
   const isSession = assignment.isSession || false;
   if (!topic && !isSession) return null;
+  const [showSettings, setShowSettings] = useState(false);
 
   return (
     <div
@@ -100,48 +101,100 @@ function AssignmentRow({ assignment, categories, onUpdate, onRemove, onReset, on
       onDrop={onDrop}
       onDragEnd={onDragEnd}
       style={{
-        display: "flex", alignItems: "center", gap: 10,
-        background: isDragging ? "rgba(232,99,10,0.08)" : "var(--bg2)",
+        background: isDragging ? "rgba(27,143,255,0.08)" : "var(--bg2)",
         border: isDragging ? "2px dashed var(--blue)" : "1px solid var(--border)",
         borderRadius: "var(--radius)", padding: "10px 14px",
         opacity: isDragging ? 0.5 : 1,
-        cursor: "grab", transition: "all 0.15s",
+        transition: "all 0.15s",
       }}>
-      <div style={{ color: "var(--text3)", fontSize: 20, userSelect: "none", cursor: "grab" }}>&#9776;</div>
-      <span style={{ fontSize: 20 }}>{topic?.icon}</span>
-      <div style={{ flex: 1 }}>
-        <div style={{ fontWeight: 700, fontSize: 20 }}>{topic?.title || assignment.topicId}</div>
+      {/* Main row */}
+      <div style={{ display:"flex",alignItems:"center",gap:10,cursor:"grab" }}>
+        <div style={{ color:"var(--text3)",fontSize:20,userSelect:"none",cursor:"grab" }}>&#9776;</div>
+        <span style={{ fontSize:20 }}>{topic?.icon}</span>
+        <div style={{ flex:1 }}>
+          <div style={{ fontWeight:700,fontSize:20 }}>{topic?.title || assignment.topicId}</div>
+          <div style={{ fontSize:19,color:"var(--text3)",marginTop:2,display:"flex",gap:12,flexWrap:"wrap" }}>
+            {assignment.points && <span>{assignment.points} pts</span>}
+            {assignment.dueDate && <span>Due {assignment.dueDate}</span>}
+            {assignment.allowLate && assignment.latePenalty && <span style={{ color:"var(--orange)" }}>{assignment.latePenalty}% late penalty</span>}
+            {assignment.allowLate === false && assignment.dueDate && <span style={{ color:"var(--red)" }}>No late submissions</span>}
+          </div>
+        </div>
+        <button onClick={() => setShowSettings(s=>!s)}
+          style={{ background:"var(--bg3)",border:"1px solid var(--border2)",borderRadius:"var(--radius-sm)",padding:"4px 12px",fontSize:19,cursor:"pointer",fontFamily:"var(--font)",fontWeight:600,color:"var(--text2)",whiteSpace:"nowrap" }}>
+          {showSettings ? "Done" : "Settings"}
+        </button>
+        <button onClick={onReset}
+          style={{ background:"rgba(255,107,0,0.1)",color:"var(--orange)",border:"1px solid rgba(255,107,0,0.3)",borderRadius:"var(--radius-sm)",padding:"4px 10px",fontSize:19,cursor:"pointer",fontFamily:"var(--font)",fontWeight:600,whiteSpace:"nowrap" }}>
+          Reset All
+        </button>
+        <button onClick={onRemove}
+          style={{ background:"rgba(239,68,68,0.1)",color:"var(--red)",border:"1px solid rgba(239,68,68,0.3)",borderRadius:"var(--radius-sm)",padding:"4px 10px",fontSize:19,cursor:"pointer",fontFamily:"var(--font)",fontWeight:600,whiteSpace:"nowrap" }}>
+          Remove
+        </button>
       </div>
 
-      {/* Category selector */}
-      <select
-        value={assignment.categoryId || ""}
-        onChange={e => onUpdate({ categoryId: e.target.value || null })}
-        onMouseDown={e => e.stopPropagation()}
-        style={{ fontSize: 20, padding: "5px 8px", width: 140 }}>
-        <option value="">No category</option>
-        {categories.map(c => (
-          <option key={c.id} value={c.id}>{c.name} ({c.weight}%)</option>
-        ))}
-      </select>
+      {/* Expanded settings */}
+      {showSettings && (
+        <div style={{ marginTop:12,padding:"14px 16px",background:"var(--bg3)",borderRadius:"var(--radius-sm)",display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))",gap:12 }}
+          onMouseDown={e=>e.stopPropagation()}>
 
-      {/* Due date */}
-      <input
-        type="date"
-        value={assignment.dueDate || ""}
-        onChange={e => onUpdate({ dueDate: e.target.value || null })}
-        onMouseDown={e => e.stopPropagation()}
-        style={{ fontSize: 20, padding: "5px 8px", width: 140 }}
-      />
+          {/* Category */}
+          <div>
+            <div style={{ fontSize:19,fontWeight:700,color:"var(--text2)",marginBottom:6 }}>Category</div>
+            <select value={assignment.categoryId||""} onChange={e=>onUpdate({categoryId:e.target.value||null})}
+              style={{ fontSize:19,padding:"6px 10px",width:"100%" }}>
+              <option value="">No category</option>
+              {categories.map(c=><option key={c.id} value={c.id}>{c.name} ({c.weight}%)</option>)}
+            </select>
+          </div>
 
-      <button onClick={onReset}
-        style={{ background: "rgba(251,191,36,0.1)", color: "var(--amber)", border: "1px solid rgba(251,191,36,0.3)", borderRadius: "var(--radius-sm)", padding: "4px 10px", fontSize: 19, cursor: "pointer", fontFamily: "var(--font)", fontWeight: 600, whiteSpace: "nowrap" }}>
-        Reset All
-      </button>
-      <button onClick={onRemove}
-        style={{ background: "rgba(239,68,68,0.1)", color: "var(--red)", border: "1px solid rgba(239,68,68,0.3)", borderRadius: "var(--radius-sm)", padding: "4px 10px", fontSize: 19, cursor: "pointer", fontFamily: "var(--font)", fontWeight: 600, whiteSpace: "nowrap" }}>
-        Remove
-      </button>
+          {/* Points */}
+          <div>
+            <div style={{ fontSize:19,fontWeight:700,color:"var(--text2)",marginBottom:6 }}>Points</div>
+            <input type="number" min={1} max={1000}
+              value={assignment.points||""} placeholder="e.g. 100"
+              onChange={e=>onUpdate({points:parseInt(e.target.value)||null})}
+              style={{ fontSize:19,padding:"6px 10px",width:"100%" }} />
+          </div>
+
+          {/* Due date */}
+          <div>
+            <div style={{ fontSize:19,fontWeight:700,color:"var(--text2)",marginBottom:6 }}>Due Date</div>
+            <input type="date" value={assignment.dueDate||""}
+              onChange={e=>onUpdate({dueDate:e.target.value||null})}
+              style={{ fontSize:19,padding:"6px 10px",width:"100%" }} />
+          </div>
+
+          {/* Late submissions */}
+          <div>
+            <div style={{ fontSize:19,fontWeight:700,color:"var(--text2)",marginBottom:6 }}>Late Submissions</div>
+            <select value={assignment.allowLate===false?"no":assignment.allowLate===true?"yes":""}
+              onChange={e=>onUpdate({allowLate:e.target.value==="yes"?true:e.target.value==="no"?false:null})}
+              style={{ fontSize:19,padding:"6px 10px",width:"100%" }}>
+              <option value="">Not set</option>
+              <option value="yes">Allowed</option>
+              <option value="no">Not allowed</option>
+            </select>
+          </div>
+
+          {/* Late penalty - only show if late allowed */}
+          {assignment.allowLate === true && (
+            <div>
+              <div style={{ fontSize:19,fontWeight:700,color:"var(--text2)",marginBottom:6 }}>Late Credit %</div>
+              <div style={{ display:"flex",alignItems:"center",gap:8 }}>
+                <input type="number" min={0} max={100}
+                  value={assignment.latePenalty!=null?assignment.latePenalty:""}
+                  placeholder="e.g. 50"
+                  onChange={e=>onUpdate({latePenalty:parseInt(e.target.value)||0})}
+                  style={{ fontSize:19,padding:"6px 10px",flex:1 }} />
+                <span style={{ fontSize:19,color:"var(--text3)" }}>% credit</span>
+              </div>
+              <div style={{ fontSize:18,color:"var(--text3)",marginTop:4 }}>Late work earns this % of its score</div>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -164,16 +217,41 @@ function Gradebook({ students, assignments, categories, onResetStudent }) {
   }, [students, assignments]);
 
   if (loading) return <div style={{ display: "flex", justifyContent: "center", padding: 20 }}><div className="spinner" /></div>;
-
-  if (!students.length) return (
-    <p style={{ color: "var(--text3)", fontSize: 20 }}>No students enrolled yet.</p>
-  );
-
-  if (!assignments.length) return (
-    <p style={{ color: "var(--text3)", fontSize: 20 }}>No assignments yet. Add topics above.</p>
-  );
+  if (!students.length) return <p style={{ color: "var(--text3)", fontSize: 20 }}>No students enrolled yet.</p>;
+  if (!assignments.length) return <p style={{ color: "var(--text3)", fontSize: 20 }}>No assignments yet. Add topics above.</p>;
 
   const today = new Date().toISOString().split("T")[0];
+
+  // Compute effective score for a student on an assignment
+  const effectiveScore = (a, p) => {
+    if (!p || p.percentComplete == null) return null;
+    const raw = p.percentComplete;
+    if (!a.dueDate) return raw; // no deadline = no penalty
+    const isLate = p.updatedAt && new Date(p.updatedAt).toISOString().split("T")[0] > a.dueDate;
+    if (!isLate) return raw;
+    if (a.allowLate === false) return 0; // no late allowed = 0
+    if (a.allowLate === true && a.latePenalty != null) return Math.round(raw * a.latePenalty / 100);
+    return raw; // late allowed, no penalty set
+  };
+
+  // Compute total grade using points if set, otherwise category weights
+  const computeGrade = (studentProg) => {
+    // Points-based: if any assignment has points set, use points
+    const hasPoints = assignments.some(a => a.points);
+    if (hasPoints) {
+      let earned = 0, total = 0;
+      for (const a of assignments) {
+        if (!a.points) continue;
+        const p = studentProg[a.topicId];
+        const score = effectiveScore(a, p);
+        if (score !== null) earned += (score / 100) * a.points;
+        total += a.points;
+      }
+      return total > 0 ? Math.round((earned / total) * 100) : null;
+    }
+    // Category-based fallback
+    return calculateGrade(assignments, categories, studentProg);
+  };
 
   return (
     <div style={{ overflowX: "auto" }}>
@@ -183,18 +261,23 @@ function Gradebook({ students, assignments, categories, onResetStudent }) {
             <th style={{ minWidth: 130 }}>Student</th>
             {assignments.map(a => {
               const topic = getTopic(a.topicId);
-              const isSession = a.isSession || false;
-              const displayTitle = isSession ? (a.sessionTitle || "Live Session") : (topic?.title || a.topicId);
               const cat = categories.find(c => c.id === a.categoryId);
               const overdue = a.dueDate && a.dueDate < today;
               return (
-                <th key={a.topicId} style={{ textAlign: "center", minWidth: 110 }}>
-                  <div>{topic?.icon} {topic?.title}</div>
-                  {cat && <div style={{ fontSize: 10, color: "var(--text3)", fontWeight: 400 }}>{cat.name}</div>}
+                <th key={a.topicId} style={{ textAlign: "center", minWidth: 120 }}>
+                  <div>{topic?.icon} {topic?.title || a.topicId}</div>
+                  {a.points && <div style={{ fontSize:11,color:"var(--blue)",fontWeight:700 }}>{a.points} pts</div>}
+                  {cat && <div style={{ fontSize:10,color:"var(--text3)",fontWeight:400 }}>{cat.name}</div>}
                   {a.dueDate && (
-                    <div style={{ fontSize: 10, color: overdue ? "var(--red)" : "var(--text3)", fontWeight: 400 }}>
+                    <div style={{ fontSize:10,color:overdue?"var(--red)":"var(--text3)",fontWeight:400 }}>
                       Due {a.dueDate}
                     </div>
+                  )}
+                  {a.allowLate===true && a.latePenalty!=null && (
+                    <div style={{ fontSize:10,color:"var(--orange)",fontWeight:400 }}>{a.latePenalty}% late</div>
+                  )}
+                  {a.allowLate===false && a.dueDate && (
+                    <div style={{ fontSize:10,color:"var(--red)",fontWeight:400 }}>No late</div>
                   )}
                 </th>
               );
@@ -207,47 +290,53 @@ function Gradebook({ students, assignments, categories, onResetStudent }) {
         <tbody>
           {students.map(s => {
             const studentProg = progress[s.id] || {};
-            const grade = calculateGrade(assignments, categories, studentProg);
+            const grade = computeGrade(studentProg);
             const letter = gradeToLetter(grade);
-            const letterColor = letter === "A" ? "var(--green)" : letter === "B" ? "var(--cyan)" : letter === "C" ? "var(--amber)" : letter === "F" ? "var(--red)" : "var(--text2)";
+            const letterColor = letter==="A"?"var(--green)":letter==="B"?"var(--cyan)":letter==="C"?"var(--amber)":letter==="F"?"var(--red)":"var(--text2)";
 
             return (
               <tr key={s.id}>
-                <td style={{ fontWeight: 600 }}>{s.name}</td>
+                <td style={{ fontWeight:600 }}>{s.name}</td>
                 {assignments.map(a => {
                   const p = studentProg[a.topicId];
-                  const pct = p?.percentComplete ?? null;
-                  const completed = p?.completed;
-                  const overdue = a.dueDate && a.dueDate < today && !completed;
+                  const raw = p?.percentComplete ?? null;
+                  const score = effectiveScore(a, p);
+                  const isLate = a.dueDate && p?.updatedAt && new Date(p.updatedAt).toISOString().split("T")[0] > a.dueDate;
+                  const notAllowed = a.allowLate===false && isLate;
+                  const overdue = a.dueDate && a.dueDate < today && raw===null;
+
                   return (
-                    <td key={a.topicId} style={{ textAlign: "center" }}>
-                      {pct === null ? (
-                        <span style={{ color: overdue ? "var(--red)" : "var(--text3)", fontSize: 19 }}>
-                          {overdue ? "Overdue" : ""}
+                    <td key={a.topicId} style={{ textAlign:"center" }}>
+                      {raw===null ? (
+                        <span style={{ color:overdue?"var(--red)":"var(--text3)",fontSize:19 }}>
+                          {overdue ? (a.allowLate===false?"Locked":"Overdue") : ""}
                         </span>
                       ) : (
-                        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
-                          <span style={{ fontSize: 20, fontWeight: 700, color: completed ? "var(--green)" : "var(--text)" }}>
-                            {pct}%
+                        <div style={{ display:"flex",flexDirection:"column",alignItems:"center",gap:2 }}>
+                          <span style={{ fontSize:20,fontWeight:700,color:notAllowed?"var(--red)":isLate?"var(--orange)":score===100?"var(--green)":"var(--text)" }}>
+                            {score}%
                           </span>
-                          <div style={{ width: 60, height: 4, background: "var(--surface2)", borderRadius: 99, overflow: "hidden" }}>
-                            <div style={{ height: "100%", width: `${pct}%`, background: completed ? "var(--green)" : "var(--blue)", borderRadius: 99 }} />
+                          {isLate && <span style={{ fontSize:11,color:notAllowed?"var(--red)":"var(--orange)",fontWeight:700 }}>{notAllowed?"Not accepted":"Late"}</span>}
+                          <div style={{ width:60,height:4,background:"var(--surface2)",borderRadius:99,overflow:"hidden" }}>
+                            <div style={{ height:"100%",width:`${score}%`,background:notAllowed?"var(--red)":isLate?"var(--orange)":score===100?"var(--green)":"var(--blue)",borderRadius:99 }} />
                           </div>
+                          {a.points && score!==null && (
+                            <span style={{ fontSize:11,color:"var(--text3)" }}>{Math.round(score/100*a.points)}/{a.points}pts</span>
+                          )}
                         </div>
                       )}
                     </td>
                   );
                 })}
-                <td style={{ textAlign: "center", fontWeight: 700, fontSize: 19 }}>
-                  {grade !== null ? `${grade}%` : ""}
+                <td style={{ textAlign:"center",fontWeight:700,fontSize:19 }}>
+                  {grade!==null?`${grade}%`:""}
                 </td>
-                <td style={{ textAlign: "center", fontWeight: 800, fontSize: 20, color: letterColor }}>
+                <td style={{ textAlign:"center",fontWeight:800,fontSize:20,color:letterColor }}>
                   {letter}
                 </td>
-                <td style={{ textAlign: "center" }}>
-                  <button
-                    onClick={() => onResetStudent(s.id, s.name)}
-                    style={{ background: "rgba(251,191,36,0.1)", color: "var(--amber)", border: "1px solid rgba(251,191,36,0.3)", borderRadius: "var(--radius-sm)", padding: "3px 8px", fontSize: 20, cursor: "pointer", fontFamily: "var(--font)", fontWeight: 600, whiteSpace: "nowrap" }}>
+                <td style={{ textAlign:"center" }}>
+                  <button onClick={()=>onResetStudent(s.id,s.name)}
+                    style={{ background:"rgba(255,107,0,0.1)",color:"var(--orange)",border:"1px solid rgba(255,107,0,0.3)",borderRadius:"var(--radius-sm)",padding:"3px 8px",fontSize:20,cursor:"pointer",fontFamily:"var(--font)",fontWeight:600,whiteSpace:"nowrap" }}>
                     Reset
                   </button>
                 </td>
