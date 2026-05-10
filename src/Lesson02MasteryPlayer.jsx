@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef } from "react";
+﻿import { useState, useEffect, useRef } from "react";
+import useActivityTracking from "./core/useActivityTracking";
 import { saveProgress as fbSaveProgress, getProgress } from "./core/firebase";
 import {
   LESSON02_TOPICS, generateLesson02Question, gradeLesson02Answer,
@@ -480,6 +481,7 @@ function GeometryMastery({ masteryData, onSaveProgress, onComplete }) {
 
 // - Main Player -
 export default function Lesson02MasteryPlayer({ user, topic, onHome }) {
+  useActivityTracking(user, "lesson02-mastery-v1", "HW 2 (019)");
   const topicId = topic?.id || LESSON02_MASTERY_TOPIC_ID;
   const [loading, setLoading] = useState(true);
   const [masteryData, setMasteryData] = useState({ activityIdx: 0, streak: 0 });
@@ -548,3 +550,4 @@ export default function Lesson02MasteryPlayer({ user, topic, onHome }) {
     </div>
   );
 }
+

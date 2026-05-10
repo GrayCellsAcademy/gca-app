@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef } from "react";
+﻿import { useState, useEffect, useRef } from "react";
+import useActivityTracking from "./core/useActivityTracking";
 import { saveProgress as fbSaveProgress, getProgress } from "./core/firebase";
 
 export const TIMES_TABLES_6_TOPIC_ID = "times-tables-6-v1";
@@ -316,6 +317,7 @@ function Stage3({ n, onComplete }) {
 }
 
 export default function TimesTablesPlayer6({ user, topic, onHome }) {
+  useActivityTracking(user, "times-tables-6-v1", "Times Table (6)");
   const topicId = topic?.id || TIMES_TABLES_6_TOPIC_ID;
   const [loading, setLoading] = useState(true);
   const [stage, setStage] = useState(1);
@@ -381,3 +383,4 @@ export default function TimesTablesPlayer6({ user, topic, onHome }) {
     </div>
   );
 }
+

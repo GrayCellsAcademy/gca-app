@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef } from "react";
+﻿import { useState, useEffect, useRef } from "react";
+import useActivityTracking from "./core/useActivityTracking";
 import { buildTierQuestions, TIER_COLORS, speak, ADDITION_TOPIC_ID } from "./additionTables";
 import { saveProgress, getProgress } from "./core/firebase";
 
@@ -531,6 +532,7 @@ function CelebrationScreen({ tierNum, isLast, onContinue }) {
 //  Main Player 
 // Now receives `topic` prop from TopicRouter (in addition to user and onHome)
 export default function AdditionTablesPlayer({ user, topic, onHome }) {
+  useActivityTracking(user, "addition-tables-v1", "Addition Table");
   const [screen, setScreen] = useState("loading");
   const [currentTier, setCurrentTier] = useState(1);
   const [masteredTiers, setMasteredTiers] = useState([]);
@@ -672,3 +674,4 @@ export default function AdditionTablesPlayer({ user, topic, onHome }) {
 
   return null;
 }
+

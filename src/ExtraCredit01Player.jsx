@@ -1,4 +1,5 @@
 ﻿import { useState, useEffect } from "react";
+import useActivityTracking from "./core/useActivityTracking";
 import { saveProgress, getProgress } from "./core/firebase";
 import { EC_TOPICS, generateExtraCreditProblem, buildProblemDisplay, gradeAllMissing } from "./extraCredit01";
 
@@ -106,6 +107,7 @@ function StreakBar({ streak, needed }) {
 
 // Main Player
 export default function ExtraCredit01Player({ user, topic, onHome }) {
+  useActivityTracking(user, "extra-credit-01-v1", "Extra Credit 1");
   const topicId = topic?.id || EC_TOPIC_ID;
 
   const [streak, setStreak] = useState(0);
@@ -320,4 +322,5 @@ export default function ExtraCredit01Player({ user, topic, onHome }) {
     </div>
   );
 }
+
 

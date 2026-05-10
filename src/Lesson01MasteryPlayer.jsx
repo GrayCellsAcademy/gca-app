@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef } from "react";
+﻿import { useState, useEffect, useRef } from "react";
+import useActivityTracking from "./core/useActivityTracking";
 import { saveProgress, getProgress } from "./core/firebase";
 import {
   TOPICS, computeCarries, computeBorrows,
@@ -116,6 +117,7 @@ function StreakDots({ current, needed }) {
 
 //  Main Player 
 export default function Lesson01MasteryPlayer({ user, topic, onHome }) {
+  useActivityTracking(user, "lesson01-mastery-v1", "HW 1 (019)");
   const topicId = topic?.id || TOPIC_ID;
 
   // Progress: { topicIdx, subtypeIdx, streak, completed }
@@ -342,4 +344,5 @@ export default function Lesson01MasteryPlayer({ user, topic, onHome }) {
     </div>
   );
 }
+
 

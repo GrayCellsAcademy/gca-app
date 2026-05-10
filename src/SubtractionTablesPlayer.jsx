@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef } from "react";
+﻿import { useState, useEffect, useRef } from "react";
+import useActivityTracking from "./core/useActivityTracking";
 import { saveProgress as fbSaveProgress, getProgress } from "./core/firebase";
 
 export const SUBTRACTION_TOPIC_ID = "subtraction-tables-v1";
@@ -82,6 +83,7 @@ function AnswerInput({ onSubmit }) {
 
 // Main player
 export default function SubtractionTablesPlayer({ user, topic, onHome }) {
+  useActivityTracking(user, "subtraction-tables-v1", "Subtraction Table");
   const topicId = topic?.id || SUBTRACTION_TOPIC_ID;
   const [loading, setLoading] = useState(true);
   const [tierNum, setTierNum] = useState(1);
@@ -295,3 +297,4 @@ export default function SubtractionTablesPlayer({ user, topic, onHome }) {
     </div>
   );
 }
+

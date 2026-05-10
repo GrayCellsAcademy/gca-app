@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef } from "react";
+﻿import { useState, useEffect, useRef } from "react";
+import useActivityTracking from "./core/useActivityTracking";
 import { saveProgress as fbSaveProgress, getProgress } from "./core/firebase";
 import {
   genMultipleSigned, gradeMultipleSigned,
@@ -275,6 +276,7 @@ const TOTAL_STEPS = 12; // 0..11
 
 // - Main Player -
 export default function Lesson06MasteryPlayer({ user, topic, onHome }) {
+  useActivityTracking(user, "lesson06-mastery-v1", "HW 6 (019)");
   useKaTeX();
   const topicId = topic?.id || LESSON06_MASTERY_TOPIC_ID;
   const [loading, setLoading] = useState(true);
@@ -409,3 +411,4 @@ export default function Lesson06MasteryPlayer({ user, topic, onHome }) {
     </div>
   );
 }
+

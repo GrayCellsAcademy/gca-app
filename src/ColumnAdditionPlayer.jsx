@@ -1,4 +1,5 @@
 ﻿import { useState, useEffect, useRef } from "react";
+import useActivityTracking from "./core/useActivityTracking";
 import { saveProgress, getProgress } from "./core/firebase";
 import { genLevel1Problem, genLevel2Problem, genLevel3Problem, getAnswer } from "./columnAddition";
 
@@ -376,6 +377,7 @@ function CelebrationScreen({ level, isLast, onContinue }) {
 
 //  Main Player 
 export default function ColumnAdditionPlayer({ user, topic, onHome }) {
+  useActivityTracking(user, "column-addition-v1", "Column Addition");
   const [screen, setScreen] = useState("loading");
   const [currentLevel, setCurrentLevel] = useState(1);
   const [masteredLevels, setMasteredLevels] = useState([]);
@@ -434,4 +436,5 @@ export default function ColumnAdditionPlayer({ user, topic, onHome }) {
   );
   return null;
 }
+
 

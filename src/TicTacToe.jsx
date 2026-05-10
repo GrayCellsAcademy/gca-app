@@ -1,4 +1,5 @@
 ﻿import { useState, useEffect, useRef, useCallback } from "react";
+import useActivityTracking from "./core/useActivityTracking";
 import {
   createGame, findOrCreateMatch, submitAnswer, placeMark,
   onGameChange, postGameRatings, getRating, getAllRatings,
@@ -523,6 +524,7 @@ function Leaderboard({ currentUid }) {
 
 //  Main TicTacToe Page 
 export default function TicTacToe({ user, onHome }) {
+  useActivityTracking(user, "tictactoe-v1", "Math Tic-Tac-Toe");
   const [view, setView] = useState("lobby"); // lobby | computer | online | leaderboard
   const [gameId, setGameId] = useState(null);
   const [symbol, setSymbol] = useState(null);
@@ -619,5 +621,6 @@ export default function TicTacToe({ user, onHome }) {
     </div>
   );
 }
+
 
 

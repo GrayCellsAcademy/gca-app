@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef } from "react";
+﻿import { useState, useEffect, useRef } from "react";
+import useActivityTracking from "./core/useActivityTracking";
 import { saveProgress as fbSaveProgress, getProgress } from "./core/firebase";
 import {
   genCompareSignedNumbers, genAbsoluteValue, genMultipleMinus,
@@ -521,6 +522,7 @@ const STEPS = [
 
 // - Main Player -
 export default function Lesson05MasteryPlayer({ user, topic, onHome }) {
+  useActivityTracking(user, "lesson05-mastery-v1", "HW 5 (019)");
   useKaTeX();
   const topicId = topic?.id || LESSON05_MASTERY_TOPIC_ID;
   const [loading, setLoading] = useState(true);
@@ -639,3 +641,4 @@ export default function Lesson05MasteryPlayer({ user, topic, onHome }) {
     </div>
   );
 }
+

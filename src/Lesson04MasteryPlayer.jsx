@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef } from "react";
+﻿import { useState, useEffect, useRef } from "react";
+import useActivityTracking from "./core/useActivityTracking";
 import { saveProgress as fbSaveProgress, getProgress } from "./core/firebase";
 import {
   genPower, genSqrt, genCbrt, makeSqrtPool, makeCbrtPool,
@@ -235,6 +236,7 @@ function MasteryActivity({ stepIdx, onComplete, onSave }) {
 
 // -- Main Player --
 export default function Lesson04MasteryPlayer({ user, topic, onHome }) {
+  useActivityTracking(user, "lesson04-mastery-v1", "HW 4 (019)");
   useKaTeX();
   const topicId = topic?.id || LESSON04_MASTERY_TOPIC_ID;
   const [loading, setLoading] = useState(true);
@@ -306,3 +308,4 @@ export default function Lesson04MasteryPlayer({ user, topic, onHome }) {
     </div>
   );
 }
+
