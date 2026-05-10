@@ -20,66 +20,119 @@ function CategoryManager({ categories, onChange }) {
   const [cats, setCats] = useState(categories);
   const [newName, setNewName] = useState("");
   const [newWeight, setNewWeight] = useState("");
+  const [expanded, setExpanded] = useState(null);
 
   const sync = (updated) => { setCats(updated); onChange(updated); };
 
   const addCat = () => {
     if (!newName.trim() || !newWeight) return;
-    sync([...cats, { id: uid4(), name: newName.trim(), weight: Number(newWeight) }]);
+    sync([...cats, {
+      id: uid4(), name: newName.trim(), weight: Number(newWeight),
+      defaultPoints: null, defaultAllowLate: null, defaultLatePenalty: null,
+    }]);
     setNewName(""); setNewWeight("");
   };
 
   const removeCat = (id) => sync(cats.filter(c => c.id !== id));
 
-  const updateWeight = (id, w) =>
-    sync(cats.map(c => c.id === id ? { ...c, weight: Number(w) || 0 } : c));
+  const updateCat = (id, changes) =>
+    sync(cats.map(c => c.id === id ? { ...c, ...changes } : c));
 
   const total = weightTotal(cats);
   const totalOk = total === 100;
 
   return (
     <div>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-        <div style={{ fontSize: 20, fontWeight: 700, color: "var(--text2)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+      <div style={{ display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12 }}>
+        <div style={{ fontSize:20,fontWeight:700,color:"var(--text2)",textTransform:"uppercase",letterSpacing:"0.06em" }}>
           Grade Categories
         </div>
-        <div style={{ fontSize: 20, fontWeight: 700, color: totalOk ? "var(--green)" : "var(--red)" }}>
-          Total: {total}% {totalOk ? "" : "(must equal 100%)"}
+        <div style={{ fontSize:20,fontWeight:700,color:totalOk?"var(--green)":"var(--red)" }}>
+          Total: {total}% {totalOk?"":"(must equal 100%)"}
         </div>
       </div>
 
-      {cats.length === 0 && (
-        <p style={{ fontSize: 20, color: "var(--text3)", marginBottom: 12 }}>
+      {cats.length===0 && (
+        <p style={{ fontSize:20,color:"var(--text3)",marginBottom:12 }}>
           No categories yet. Add one below to enable the gradebook.
         </p>
       )}
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 14 }}>
+      <div style={{ display:"flex",flexDirection:"column",gap:8,marginBottom:14 }}>
         {cats.map(cat => (
-          <div key={cat.id} style={{ display: "flex", alignItems: "center", gap: 10, background: "var(--bg2)", borderRadius: "var(--radius-sm)", padding: "8px 12px" }}>
-            <div style={{ flex: 1, fontWeight: 600, fontSize: 20 }}>{cat.name}</div>
-            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              <input
-                type="number" min={0} max={100} value={cat.weight}
-                onChange={e => updateWeight(cat.id, e.target.value)}
-                style={{ width: 64, padding: "5px 8px", fontSize: 20, textAlign: "center" }}
-              />
-              <span style={{ fontSize: 20, color: "var(--text3)" }}>%</span>
+          <div key={cat.id} style={{ background:"var(--bg2)",borderRadius:"var(--radius-sm)",border:"1px solid var(--border)" }}>
+            {/* Header row */}
+            <div style={{ display:"flex",alignItems:"center",gap:10,padding:"10px 12px" }}>
+              <div style={{ flex:1,fontWeight:700,fontSize:20 }}>{cat.name}</div>
+              {/* Default policies summary */}
+              <div style={{ fontSize:19,color:"var(--text3)",display:"flex",gap:10,flexWrap:"wrap" }}>
+                {cat.defaultPoints && <span>{cat.defaultPoints} pts default</span>}
+                {cat.defaultAllowLate===false && <span style={{ color:"var(--red)" }}>No late</span>}
+                {cat.defaultAllowLate===true && cat.defaultLatePenalty!=null && <span style={{ color:"var(--orange)" }}>{cat.defaultLatePenalty}% late credit</span>}
+              </div>
+              <div style={{ display:"flex",alignItems:"center",gap:6 }}>
+                <input type="number" min={0} max={100} value={cat.weight}
+                  onChange={e=>updateCat(cat.id,{weight:Number(e.target.value)||0})}
+                  style={{ width:64,padding:"5px 8px",fontSize:20,textAlign:"center" }} />
+                <span style={{ fontSize:20,color:"var(--text3)" }}>%</span>
+              </div>
+              <button onClick={()=>setExpanded(expanded===cat.id?null:cat.id)}
+                style={{ background:"var(--bg3)",border:"1px solid var(--border2)",borderRadius:"var(--radius-sm)",padding:"4px 12px",fontSize:19,cursor:"pointer",fontFamily:"var(--font)",fontWeight:600,color:"var(--text2)",whiteSpace:"nowrap" }}>
+                {expanded===cat.id?"Done":"Defaults"}
+              </button>
+              <button onClick={()=>removeCat(cat.id)}
+                style={{ background:"none",border:"none",color:"var(--red)",cursor:"pointer",fontSize:20,padding:"0 4px" }}>x</button>
             </div>
-            <button onClick={() => removeCat(cat.id)}
-              style={{ background: "none", border: "none", color: "var(--red)", cursor: "pointer", fontSize: 20, padding: "0 4px" }}></button>
+
+            {/* Default policy settings */}
+            {expanded===cat.id && (
+              <div style={{ padding:"12px 16px",borderTop:"1px solid var(--border)",background:"var(--bg3)",display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))",gap:12,borderRadius:"0 0 var(--radius-sm) var(--radius-sm)" }}>
+                <div>
+                  <div style={{ fontSize:19,fontWeight:700,color:"var(--text2)",marginBottom:6 }}>Default Points</div>
+                  <input type="number" min={1} max={1000}
+                    value={cat.defaultPoints||""} placeholder="e.g. 100"
+                    onChange={e=>updateCat(cat.id,{defaultPoints:parseInt(e.target.value)||null})}
+                    style={{ fontSize:19,padding:"6px 10px",width:"100%" }} />
+                  <div style={{ fontSize:18,color:"var(--text3)",marginTop:3 }}>Applied to new assignments</div>
+                </div>
+                <div>
+                  <div style={{ fontSize:19,fontWeight:700,color:"var(--text2)",marginBottom:6 }}>Default Late Policy</div>
+                  <select value={cat.defaultAllowLate===false?"no":cat.defaultAllowLate===true?"yes":""}
+                    onChange={e=>updateCat(cat.id,{defaultAllowLate:e.target.value==="yes"?true:e.target.value==="no"?false:null})}
+                    style={{ fontSize:19,padding:"6px 10px",width:"100%" }}>
+                    <option value="">Not set</option>
+                    <option value="yes">Late allowed</option>
+                    <option value="no">No late submissions</option>
+                  </select>
+                </div>
+                {cat.defaultAllowLate===true && (
+                  <div>
+                    <div style={{ fontSize:19,fontWeight:700,color:"var(--text2)",marginBottom:6 }}>Default Late Credit %</div>
+                    <div style={{ display:"flex",alignItems:"center",gap:8 }}>
+                      <input type="number" min={0} max={100}
+                        value={cat.defaultLatePenalty!=null?cat.defaultLatePenalty:""}
+                        placeholder="e.g. 50"
+                        onChange={e=>updateCat(cat.id,{defaultLatePenalty:parseInt(e.target.value)||0})}
+                        style={{ fontSize:19,padding:"6px 10px",flex:1 }} />
+                      <span style={{ fontSize:19,color:"var(--text3)" }}>%</span>
+                    </div>
+                    <div style={{ fontSize:18,color:"var(--text3)",marginTop:3 }}>Late work earns this % of its score</div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         ))}
       </div>
 
       {/* Add category */}
-      <div style={{ display: "flex", gap: 8 }}>
-        <input value={newName} onChange={e => setNewName(e.target.value)}
+      <div style={{ display:"flex",gap:8 }}>
+        <input value={newName} onChange={e=>setNewName(e.target.value)}
           placeholder="Category name (e.g. Drills)"
-          style={{ flex: 1, fontSize: 20, padding: "8px 12px" }} />
-        <input value={newWeight} onChange={e => setNewWeight(e.target.value)}
+          style={{ flex:1,fontSize:20,padding:"8px 12px" }} />
+        <input value={newWeight} onChange={e=>setNewWeight(e.target.value)}
           type="number" min={0} max={100} placeholder="Weight %"
-          style={{ width: 90, fontSize: 20, padding: "8px 12px", textAlign: "center" }} />
+          style={{ width:90,fontSize:20,padding:"8px 12px",textAlign:"center" }} />
         <button className="btn btn-primary btn-sm" onClick={addCat}>+ Add</button>
       </div>
     </div>
@@ -597,6 +650,20 @@ function ClassPanel({ cls, onUpdate }) {
     onUpdate();
   };
 
+  // Apply category defaults to an assignment when category is set
+  const applyCategoryDefaults = async (topicId, categoryId, currentAssignment) => {
+    if (!categoryId) return;
+    const cat = categories.find(c => c.id === categoryId);
+    if (!cat) return;
+    const updates = { categoryId };
+    // Only apply defaults if individual setting not already set
+    if (cat.defaultPoints != null && !currentAssignment.points) updates.points = cat.defaultPoints;
+    if (cat.defaultAllowLate != null && currentAssignment.allowLate == null) updates.allowLate = cat.defaultAllowLate;
+    if (cat.defaultLatePenalty != null && currentAssignment.latePenalty == null) updates.latePenalty = cat.defaultLatePenalty;
+    await updateAssignment(cls.id, topicId, updates);
+    onUpdate();
+  };
+
   const handleResetClass = async (topicId) => {
     const sids = cls.studentIds || [];
     await resetClassProgress(sids, topicId);
@@ -708,7 +775,14 @@ function ClassPanel({ cls, onUpdate }) {
                     key={a.topicId}
                     assignment={a}
                     categories={categories}
-                    onUpdate={updates => handleUpdate(a.topicId, updates)}
+                    onUpdate={updates => {
+                      // If category changed, apply defaults
+                      if (updates.categoryId !== undefined && updates.categoryId !== a.categoryId) {
+                        applyCategoryDefaults(a.topicId, updates.categoryId, a);
+                      } else {
+                        handleUpdate(a.topicId, updates);
+                      }
+                    }}
                     onRemove={() => handleRemove(a.topicId)}
                     onReset={() => {
                       const t = getTopic(a.topicId);
