@@ -66,73 +66,109 @@ function QuestionDisplay({ question, revealCorrect }) {
   }
 
   if (q.type === "warmup-b") {
-    const W=360, H=240, pad=30;
-    if (q.shapeType==="step") {
-      // Draw step shape: full rect with top-right corner removed
-      const scale=Math.min((W-2*pad)/q.W,(H-2*pad)/q.H);
-      const sw=q.W*scale, sh=q.H*scale;
-      const cw=q.cW*scale, ch=q.cH*scale;
-      const ox=pad, oy=pad;
-      // Points: BL, BR, notch-BR, notch-TL, TR of remaining top, TL
-      const pts=`${ox},${oy+sh} ${ox+sw},${oy+sh} ${ox+sw},${oy+ch} ${ox+sw-cw},${oy+ch} ${ox+sw-cw},${oy} ${ox},${oy}`;
-      const lx=ox+sw/2, ly=oy+sh+18;
-      const rx=ox-18, ry=oy+sh/2;
+    const VW=420, VH=300, pad=40;
+    const u=q.unit||"ft";
+
+    if (q.shapeType==="step3") {
+      // 3-step staircase, draw as single polygon from BL clockwise
+      const scale=Math.min((VW-2*pad)/q.totalW,(VH-2*pad)/q.totalH)*0.85;
+      const sw1=q.w1*scale, sw2=q.w2*scale, sw3=q.w3*scale;
+      const sh1=q.h1*scale, sh2=q.h2*scale, sh3=q.h3*scale;
+      const totalH=sh1+sh2+sh3;
+      const ox=pad+10, oy=pad;
+      // Polygon points (BL origin, y grows downward so BL is bottom)
+      // Going clockwise from BL:
+      const bly=oy+totalH;
+      const pts=[
+        `${ox},${bly}`,                           // BL
+        `${ox+sw1},${bly}`,                        // BR
+        `${ox+sw1},${bly-sh1}`,                    // step1 right
+        `${ox+sw2},${bly-sh1}`,                    // step1-2 horizontal (MISSING)
+        `${ox+sw2},${bly-sh1-sh2}`,                // step2 right
+        `${ox+sw3},${bly-sh1-sh2}`,                // step2-3 horizontal (MISSING)
+        `${ox+sw3},${oy}`,                          // step3 right (top)
+        `${ox},${oy}`,                              // TL
+      ].join(" ");
+
+      const miss1x=(sw2+sw1)/2+ox; // midpoint of step1-2 horizontal
+      const miss1y=bly-sh1;
+      const miss2x=(sw3+sw2)/2+ox;
+      const miss2y=bly-sh1-sh2;
+
       return (
-        <svg viewBox={`0 0 ${W+60} ${H+60}`} style={{ width:"100%",maxWidth:460,display:"block",margin:"0 auto" }}>
+        <svg viewBox={`0 0 ${VW} ${VH+20}`} style={{ width:"100%",maxWidth:500,display:"block",margin:"0 auto" }}>
           <polygon points={pts} fill="rgba(27,143,255,0.08)" stroke="var(--blue)" strokeWidth="2.5"/>
-          {/* Bottom label */}
-          <text x={lx} y={ly} textAnchor="middle" fontSize="14" fill="#4b5068">{q.W}</text>
-          {/* Left label */}
-          <text x={rx} y={ry} textAnchor="middle" fontSize="14" fill="#4b5068" transform={`rotate(-90,${rx},${ry})`}>{q.H}</text>
-          {/* Missing side 1: notch width (top of cutout) - shown with dashes */}
-          <line x1={ox+sw-cw} y1={oy+ch} x2={ox+sw} y2={oy+ch} stroke="var(--orange)" strokeWidth="2" strokeDasharray="6,4"/>
-          <text x={ox+sw-cw/2} y={oy+ch-8} textAnchor="middle" fontSize="13" fill="var(--orange)">?</text>
-          {/* Missing side 2: notch height */}
-          <line x1={ox+sw-cw} y1={oy} x2={ox+sw-cw} y2={oy+ch} stroke="var(--orange)" strokeWidth="2" strokeDasharray="6,4"/>
-          <text x={ox+sw-cw+14} y={oy+ch/2} textAnchor="middle" fontSize="13" fill="var(--orange)">?</text>
-          {/* Top label */}
-          <text x={ox+(sw-cw)/2} y={oy-8} textAnchor="middle" fontSize="14" fill="#4b5068">{q.W-q.cW}</text>
-          {/* Right label */}
-          <text x={ox+sw+14} y={oy+ch+sh/3} textAnchor="middle" fontSize="14" fill="#4b5068">{q.H-q.cH}</text>
+          {/* Bottom: w1 */}
+          <text x={ox+sw1/2} y={bly+18} textAnchor="middle" fontSize="13" fill="#4b5068">{q.w1} {u}</text>
+          {/* Left: totalH */}
+          <text x={ox-26} y={oy+totalH/2} textAnchor="middle" fontSize="13" fill="#4b5068" transform={`rotate(-90,${ox-26},${oy+totalH/2})`}>{q.totalH} {u}</text>
+          {/* Step1 right: h1 */}
+          <text x={ox+sw1+22} y={bly-sh1/2} textAnchor="middle" fontSize="13" fill="#4b5068" transform={`rotate(-90,${ox+sw1+22},${bly-sh1/2})`}>{q.h1} {u}</text>
+          {/* Step2 right: h2 */}
+          <text x={ox+sw2+22} y={bly-sh1-sh2/2} textAnchor="middle" fontSize="13" fill="#4b5068" transform={`rotate(-90,${ox+sw2+22},${bly-sh1-sh2/2})`}>{q.h2} {u}</text>
+          {/* Step3 top: w3 */}
+          <text x={ox+sw3/2} y={oy-10} textAnchor="middle" fontSize="13" fill="#4b5068">{q.w3} {u}</text>
+          {/* Step3 right: h3 */}
+          <text x={ox+sw3+22} y={oy+sh3/2} textAnchor="middle" fontSize="13" fill="#4b5068" transform={`rotate(-90,${ox+sw3+22},${oy+sh3/2})`}>{q.h3} {u}</text>
+          {/* Missing side 1: step1-2 horizontal */}
+          <text x={miss1x+(sw1-sw2)/2*0.5} y={miss1y-8} textAnchor="middle" fontSize="13" fill="var(--orange)" fontWeight="bold">?</text>
+          {/* Missing side 2: step2-3 horizontal */}
+          <text x={miss2x+(sw2-sw3)/2*0.5} y={miss2y-8} textAnchor="middle" fontSize="13" fill="var(--orange)" fontWeight="bold">?</text>
           {revealCorrect&&(
-            <text x={W/2} y={H+55} textAnchor="middle" fontSize="14" fontWeight="bold" fill="var(--green)">{q.displayAnswer}</text>
-          )}
-        </svg>
-      );
-    } else {
-      // Plus shape
-      const scale=Math.min((W-2*pad)/(2*q.armW+q.ctrW),(H-2*pad)/(2*q.armH+q.ctrH));
-      const aw=q.armW*scale, ah=q.armH*scale, cw=q.ctrW*scale, ch=q.ctrH*scale;
-      const tw=2*aw+cw, th=2*ah+ch;
-      const ox=pad+(W-2*pad-tw)/2, oy=pad+(H-2*pad-th)/2;
-      // + shape: center rect + 4 arms
-      const cx=ox+aw, cy=oy+ah;
-      return (
-        <svg viewBox={`0 0 ${W+60} ${H+60}`} style={{ width:"100%",maxWidth:460,display:"block",margin:"0 auto" }}>
-          {/* Center */}
-          <rect x={cx} y={cy} width={cw} height={ch} fill="rgba(27,143,255,0.08)" stroke="var(--blue)" strokeWidth="2.5"/>
-          {/* Top arm */}
-          <rect x={cx} y={oy} width={cw} height={ah} fill="rgba(27,143,255,0.08)" stroke="var(--blue)" strokeWidth="2.5"/>
-          {/* Bottom arm */}
-          <rect x={cx} y={cy+ch} width={cw} height={ah} fill="rgba(27,143,255,0.08)" stroke="var(--blue)" strokeWidth="2.5"/>
-          {/* Left arm */}
-          <rect x={ox} y={cy} width={aw} height={ch} fill="rgba(27,143,255,0.08)" stroke="var(--blue)" strokeWidth="2.5"/>
-          {/* Right arm */}
-          <rect x={cx+cw} y={cy} width={aw} height={ch} fill="rgba(27,143,255,0.08)" stroke="var(--blue)" strokeWidth="2.5"/>
-          {/* Labels - known sides */}
-          <text x={cx+cw/2} y={oy-8} textAnchor="middle" fontSize="13" fill="#4b5068">{q.ctrW}</text>
-          <text x={ox-14} y={cy+ch/2} textAnchor="middle" fontSize="13" fill="#4b5068" transform={`rotate(-90,${ox-14},${cy+ch/2})`}>{q.ctrH}</text>
-          <text x={cx+cw+aw/2} y={cy+ch+ah+16} textAnchor="middle" fontSize="13" fill="#4b5068">{q.armW}</text>
-          <text x={cx+cw/2} y={cy+ch+ah+16} textAnchor="middle" fontSize="13" fill="#4b5068">{q.armW}</text>
-          {/* Missing sides shown with ? */}
-          <text x={ox+aw/2} y={cy-8} textAnchor="middle" fontSize="13" fill="var(--orange)">?</text>
-          <text x={cx+cw+aw+14} y={cy+ch/2} textAnchor="middle" fontSize="13" fill="var(--orange)">?</text>
-          {revealCorrect&&(
-            <text x={W/2} y={H+55} textAnchor="middle" fontSize="14" fontWeight="bold" fill="var(--green)">{q.displayAnswer}</text>
+            <text x={VW/2} y={VH+15} textAnchor="middle" fontSize="13" fontWeight="bold" fill="var(--green)">{q.displayAnswer}</text>
           )}
         </svg>
       );
     }
+
+    if (q.shapeType==="plus") {
+      // Draw + as a single polygon (no internal lines)
+      const scale=Math.min((VW-2*pad)/(2*q.armW+q.ctrW),(VH-2*pad)/(2*q.armH+q.ctrH))*0.85;
+      const aw=q.armW*scale, ah=q.armH*scale, cw=q.ctrW*scale, ch=q.ctrH*scale;
+      const tw=2*aw+cw, th=2*ah+ch;
+      const ox=pad+(VW-2*pad-tw)/2, oy=pad+(VH-2*pad-th)/2;
+      // + polygon: 12 vertices clockwise from top-left of top arm
+      const tlx=ox+aw, tly=oy;
+      const pts=[
+        `${ox+aw},${oy}`,              // TL of top arm
+        `${ox+aw+cw},${oy}`,           // TR of top arm
+        `${ox+aw+cw},${oy+ah}`,        // step into right arm
+        `${ox+2*aw+cw},${oy+ah}`,      // TR of right arm
+        `${ox+2*aw+cw},${oy+ah+ch}`,   // BR of right arm
+        `${ox+aw+cw},${oy+ah+ch}`,     // step into bottom arm
+        `${ox+aw+cw},${oy+2*ah+ch}`,   // BR of bottom arm
+        `${ox+aw},${oy+2*ah+ch}`,      // BL of bottom arm
+        `${ox+aw},${oy+ah+ch}`,        // step into left arm
+        `${ox},${oy+ah+ch}`,           // BL of left arm
+        `${ox},${oy+ah}`,              // TL of left arm
+        `${ox+aw},${oy+ah}`,           // step into top arm
+      ].join(" ");
+
+      return (
+        <svg viewBox={`0 0 ${VW} ${VH+20}`} style={{ width:"100%",maxWidth:500,display:"block",margin:"0 auto" }}>
+          <polygon points={pts} fill="rgba(27,143,255,0.08)" stroke="var(--blue)" strokeWidth="2.5"/>
+          {/* Top arm top: ctrW */}
+          <text x={ox+aw+cw/2} y={oy-10} textAnchor="middle" fontSize="13" fill="#4b5068">{q.ctrW} {u}</text>
+          {/* Left arm left: ctrH */}
+          <text x={ox-26} y={oy+ah+ch/2} textAnchor="middle" fontSize="13" fill="#4b5068" transform={`rotate(-90,${ox-26},${oy+ah+ch/2})`}>{q.ctrH} {u}</text>
+          {/* Top arm height */}
+          <text x={ox+2*aw+cw+22} y={oy+ah/2} textAnchor="middle" fontSize="13" fill="#4b5068" transform={`rotate(-90,${ox+2*aw+cw+22},${oy+ah/2})`}>{q.armH} {u}</text>
+          {/* Right arm width */}
+          <text x={ox+aw+cw+aw/2} y={oy+2*ah+ch+16} textAnchor="middle" fontSize="13" fill="#4b5068">{q.armW} {u}</text>
+          {/* Bottom arm width */}
+          <text x={ox+aw+cw/2} y={oy+2*ah+ch+16} textAnchor="middle" fontSize="13" fill="#4b5068">{q.ctrW} {u}</text>
+          {/* Missing: left arm width (top) */}
+          <text x={ox+aw/2} y={oy+ah-8} textAnchor="middle" fontSize="13" fill="var(--orange)" fontWeight="bold">?</text>
+          {/* Missing: right arm height (bottom step) */}
+          <text x={ox+2*aw+cw+22} y={oy+ah+ch/2} textAnchor="middle" fontSize="13" fill="var(--orange)" fontWeight="bold">?</text>
+          {revealCorrect&&(
+            <text x={VW/2} y={VH+15} textAnchor="middle" fontSize="13" fontWeight="bold" fill="var(--green)">{q.displayAnswer}</text>
+          )}
+        </svg>
+      );
+    }
+
+    return null;
   }
 
   if (q.type === "expr-or-equation") {
