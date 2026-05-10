@@ -244,65 +244,6 @@ function QuestionDisplay({ question, revealCorrect }) {
       const tw=2*aw+cw, th=2*ah+ch;
       const ox=pad+(VW-2*pad-tw)/2, oy=pad+(VH-2*pad-th)/2;
 
-      // 12-vertex polygon, clockwise from TL of top arm
-      const pts=[
-        [ox+aw,      oy],
-        [ox+aw+cw,   oy],
-        [ox+aw+cw,   oy+ah],
-        [ox+2*aw+cw, oy+ah],
-        [ox+2*aw+cw, oy+ah+ch],
-        [ox+aw+cw,   oy+ah+ch],
-        [ox+aw+cw,   oy+2*ah+ch],
-        [ox+aw,      oy+2*ah+ch],
-        [ox+aw,      oy+ah+ch],
-        [ox,         oy+ah+ch],
-        [ox,         oy+ah],
-        [ox+aw,      oy+ah],
-      ].map(([x,y])=>`${x},${y}`).join(" ");
-
-      const f="#4b5068", gap=20;
-
-      return (
-        <svg viewBox={`0 0 ${VW} ${VH}`} style={{ width:"100%",maxWidth:540,display:"block",margin:"0 auto" }}>
-          <polygon points={pts} fill="rgba(27,143,255,0.08)" stroke="var(--blue)" strokeWidth="2.5"/>
-
-          {/* Top arm top: ctrW */}
-          <text x={ox+aw+cw/2} y={oy-gap/2} textAnchor="middle" fontSize="13" fill={f}>{q.ctrW} {u}</text>
-
-          {/* Bottom arm bottom: ctrW */}
-          <text x={ox+aw+cw/2} y={oy+2*ah+ch+gap} textAnchor="middle" fontSize="13" fill={f}>{q.ctrW} {u}</text>
-
-          {/* Left arm left side: ctrH */}
-          <text x={ox-gap} y={oy+ah+ch/2} textAnchor="middle" fontSize="13" fill={f}
-            transform={`rotate(-90,${ox-gap},${oy+ah+ch/2})`}>{q.ctrH} {u}</text>
-
-          {/* Right arm right side: ctrH */}
-          <text x={ox+2*aw+cw+gap} y={oy+ah+ch/2} textAnchor="middle" fontSize="13" fill={f}
-            transform={`rotate(-90,${ox+2*aw+cw+gap},${oy+ah+ch/2})`}>{q.ctrH} {u}</text>
-
-          {/* Top arm left side: armH (one representative) */}
-          <text x={ox+aw-gap} y={oy+ah/2} textAnchor="middle" fontSize="13" fill={f}
-            transform={`rotate(-90,${ox+aw-gap},${oy+ah/2})`}>{q.armH} {u}</text>
-
-          {/* Left arm top: armW (one representative) */}
-          <text x={ox+aw/2} y={oy+ah-gap/2} textAnchor="middle" fontSize="13" fill={f}>{q.armW} {u}</text>
-
-          {/* MISSING: top arm right side (armH) */}
-          <text x={ox+aw+cw+gap} y={oy+ah/2} textAnchor="middle" fontSize="13" fill="var(--orange)" fontWeight="bold"
-            transform={`rotate(-90,${ox+aw+cw+gap},${oy+ah/2})`}>? {u}</text>
-
-          {/* MISSING: left arm bottom (armW) */}
-          <text x={ox+aw/2} y={oy+ah+ch+gap} textAnchor="middle" fontSize="13" fill="var(--orange)" fontWeight="bold">? {u}</text>
-
-          {revealCorrect&&(
-            <text x={VW/2} y={VH-6} textAnchor="middle" fontSize="13" fontWeight="bold" fill="var(--green)">{q.displayAnswer}</text>
-          )}
-        </svg>
-      );
-    }
-
-    return null;
-  }
 
   if (q.type === "expr-or-equation") {
     return (
