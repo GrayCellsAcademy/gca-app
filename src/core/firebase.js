@@ -7,7 +7,8 @@ import {
   onAuthStateChanged,
 } from "firebase/auth";
 import {
-  getFirestore,
+  initializeFirestore,
+  memoryLocalCache,
   doc,
   getDoc,
   setDoc,
@@ -35,7 +36,9 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
-export const db = getFirestore(app);
+export const db = initializeFirestore(app, {
+  localCache: memoryLocalCache(),
+});
 
 //  Auth 
 export const DEV_CODE = "GCA_DEV_2025";
