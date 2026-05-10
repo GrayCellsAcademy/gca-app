@@ -85,6 +85,12 @@ function SignOfProductMastery({ streak, onCorrect, onWrong }) {
     else { setWrong(true); onWrong(); }
   };
 
+  const handleReset = () => {
+    setAnswers(exprs.map(() => ""));
+    setSubmitted(false);
+    setWrong(false);
+  };
+
   if (wrong) return (
     <div>
       <div style={{ textAlign:"center",fontSize:22,fontWeight:800,color:"var(--red)",marginBottom:12 }}>Incorrect</div>
@@ -100,7 +106,7 @@ function SignOfProductMastery({ streak, onCorrect, onWrong }) {
       <div style={{ background:"rgba(59,130,246,0.06)",border:"1px solid rgba(59,130,246,0.2)",borderRadius:"var(--radius-sm)",padding:"10px 14px",marginBottom:14,fontSize:20,color:"var(--text2)" }}>
           Rule: same signs give a positive result; different signs give a negative result.
         </div>
-      <button className="btn btn-primary" style={{ width:"100%",fontSize:20 }} onClick={onCorrect}>Try again</button>
+      <button className="btn btn-primary" style={{ width:"100%",fontSize:20 }} onClick={handleReset}>Try again</button>
     </div>
   );
 
@@ -148,6 +154,12 @@ function NegativePowerMastery({ streak, onCorrect, onWrong }) {
     else { setWrong(true); onWrong(); }
   };
 
+  const handleReset = () => {
+    setAnswers(exprs.map(() => ""));
+    setSubmitted(false);
+    setWrong(false);
+  };
+
   if (wrong) return (
     <div>
       <div style={{ textAlign:"center",fontSize:22,fontWeight:800,color:"var(--red)",marginBottom:12 }}>Incorrect</div>
@@ -162,9 +174,10 @@ function NegativePowerMastery({ streak, onCorrect, onWrong }) {
         ))}
       </div>
       <div style={{ background:"rgba(59,130,246,0.06)",border:"1px solid rgba(59,130,246,0.2)",borderRadius:"var(--radius-sm)",padding:"10px 14px",marginBottom:14,fontSize:20,color:"var(--text2)" }}>
-          Rule: -a^n means the exponent applies only to a (result always negative). (-a)^n means the negative base is raised to the power - even exponent gives positive, odd gives negative.
+          <div style={{ marginBottom:6 }}><KaTeXInline expr="-a^n" /> means the exponent applies only to <em>a</em> - result is always negative.</div>
+          <div><KaTeXInline expr="(-a)^n" /> means the negative base is raised to the power - even exponent gives positive, odd gives negative.</div>
         </div>
-      <button className="btn btn-primary" style={{ width:"100%",fontSize:20 }} onClick={onCorrect}>Try again</button>
+      <button className="btn btn-primary" style={{ width:"100%",fontSize:20 }} onClick={handleReset}>Try again</button>
     </div>
   );
 
@@ -197,12 +210,13 @@ function NegativePowerMastery({ streak, onCorrect, onWrong }) {
 // -- Activity 4: Roots of Negative Numbers --
 function NegativeRootMastery({ streak, onCorrect, onWrong }) {
   useKaTeX();
+  const [remountKey, setRemountKey] = useState(0);
   const [question] = useState(() => genNegativeRoot());
   const [val, setVal] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [wrong, setWrong] = useState(false);
   const ref = useRef(null);
-  useEffect(() => { setVal(""); setTimeout(()=>ref.current?.focus(),80); }, []);
+  useEffect(() => { setVal(""); setTimeout(()=>ref.current?.focus(),80); }, [remountKey]);
 
   const submit = (v) => {
     const ans = v || val.trim();
@@ -222,7 +236,7 @@ function NegativeRootMastery({ streak, onCorrect, onWrong }) {
           {question.isUndefined ? "Undefined - square root of a negative is undefined." : question.answer+" - cube root of a negative is negative."}
         </div>
       </div>
-      <button className="btn btn-primary" style={{ width:"100%",fontSize:20 }} onClick={onCorrect}>Try again</button>
+      <button className="btn btn-primary" style={{ width:"100%",fontSize:20 }} onClick={handleRetry}>Try again</button>
     </div>
   );
 
@@ -245,12 +259,13 @@ function NegativeRootMastery({ streak, onCorrect, onWrong }) {
 // -- Activity 5: Order of Operations with Signed Numbers --
 function SignedOoOMastery({ streak, onCorrect, onWrong }) {
   useKaTeX();
+  const [remountKey, setRemountKey] = useState(0);
   const [question] = useState(() => genSignedOoO());
   const [val, setVal] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [wrong, setWrong] = useState(false);
   const ref = useRef(null);
-  useEffect(() => { setVal(""); setTimeout(()=>ref.current?.focus(),80); }, []);
+  useEffect(() => { setVal(""); setTimeout(()=>ref.current?.focus(),80); }, [remountKey]);
 
   const submit = () => {
     if (!val.trim()) return;
@@ -258,6 +273,7 @@ function SignedOoOMastery({ streak, onCorrect, onWrong }) {
     if (gradeSignedOoO(val.trim(), question)) { onCorrect(); }
     else { setWrong(true); onWrong(); }
   };
+  const handleRetry = () => { setWrong(false); setSubmitted(false); setVal(""); setRemountKey(k=>k+1); };
 
   if (wrong) return (
     <div>
@@ -267,7 +283,7 @@ function SignedOoOMastery({ streak, onCorrect, onWrong }) {
         <div style={{ fontSize:20,color:"var(--text3)",marginBottom:4 }}>Correct answer</div>
         <div style={{ fontSize:26,fontWeight:800,color:"var(--green)",fontFamily:"var(--mono)" }}>{question.result}</div>
       </div>
-      <button className="btn btn-primary" style={{ width:"100%",fontSize:20 }} onClick={onCorrect}>Try again</button>
+      <button className="btn btn-primary" style={{ width:"100%",fontSize:20 }} onClick={handleRetry}>Try again</button>
     </div>
   );
 
@@ -289,12 +305,13 @@ function SignedOoOMastery({ streak, onCorrect, onWrong }) {
 // -- Activity 6: Variable Expressions with Signed Values --
 function SignedVarExprMastery({ streak, onCorrect, onWrong }) {
   useKaTeX();
+  const [remountKey, setRemountKey] = useState(0);
   const [question] = useState(() => genSignedVarExpr());
   const [val, setVal] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [wrong, setWrong] = useState(false);
   const ref = useRef(null);
-  useEffect(() => { setVal(""); setTimeout(()=>ref.current?.focus(),80); }, []);
+  useEffect(() => { setVal(""); setTimeout(()=>ref.current?.focus(),80); }, [remountKey]);
 
   const submit = () => {
     if (!val.trim()) return;
@@ -302,6 +319,7 @@ function SignedVarExprMastery({ streak, onCorrect, onWrong }) {
     if (gradeSignedVarExpr(val.trim(), question)) { onCorrect(); }
     else { setWrong(true); onWrong(); }
   };
+  const handleRetry = () => { setWrong(false); setSubmitted(false); setVal(""); setRemountKey(k=>k+1); };
 
   if (wrong) return (
     <div>
@@ -312,7 +330,7 @@ function SignedVarExprMastery({ streak, onCorrect, onWrong }) {
         <div style={{ fontSize:20,color:"var(--text3)",marginBottom:4 }}>Correct answer</div>
         <div style={{ fontSize:26,fontWeight:800,color:"var(--green)",fontFamily:"var(--mono)" }}>{question.result}</div>
       </div>
-      <button className="btn btn-primary" style={{ width:"100%",fontSize:20 }} onClick={onCorrect}>Try again</button>
+      <button className="btn btn-primary" style={{ width:"100%",fontSize:20 }} onClick={handleRetry}>Try again</button>
     </div>
   );
 
