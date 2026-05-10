@@ -391,3 +391,38 @@ export async function resetStudentProgress(uid, topicId) {
 export async function resetClassProgress(studentIds, topicId) {
   await Promise.all(studentIds.map(uid => resetStudentProgress(uid, topicId)));
 }
+
+//  Activity Tracking
+export async function startActivity(uid, topicId, topicTitle, classId) {
+  const startedAt = Date.now();
+  const docId = uid + "_" + topicId.replace(/[^a-z0-9]/gi,"_") + "_" + startedAt;
+  await setDoc(doc(db, "activityLog", docId), {
+    uid, topicId, topicTitle: topicTitle || topicId,
+    classId: classId || null,
+    startedAt, endedAt: null, durationMs: null,
+  });
+  return docId;
+}
+
+export async function endActivity(docId) {
+  if (!docId) return;
+  try {
+    const snap = await getDoc(doc(db, "activityLog", docId));
+    if (!snap.exists()) return;
+    const { startedAt } = snap.data();
+    const endedAt = Date.now();
+    await updateDoc(doc(db, "activityLog", docId), {
+      endedAt, durationMs: endedAt - startedAt,
+    });
+  } catch {}
+}
+
+export async function getStudentActivity(uid, since) {
+  const constraints = [where("uid", "==", uid)];
+  if (since) constraints.push(where("startedAt", ">=", since));
+  const q = query(collection(db, "activityLog"), ...constraints);
+  const snap = await getDocs(q);
+  return snap.docs
+    .map(d => ({ id: d.id, ...d.data() }))
+    .sort((a, b) => b.startedAt - a.startedAt);
+}

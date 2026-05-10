@@ -4,7 +4,7 @@ import {
   assignTopicToClass, unassignTopicFromClass, reorderTopics,
   updateAssignment, saveCategories, getClassProgress,
   normalizeAssignments, calculateGrade, gradeToLetter,
-  resetStudentProgress, resetClassProgress,
+  resetStudentProgress, resetClassProgress, getStudentActivity,
 } from "../core/firebase";
 import { getPublishedTopics, getTopic } from "../registry";
 
@@ -322,10 +322,145 @@ function ResetDialog({ topicTitle, targetName, onConfirm, onCancel }) {
   );
 }
 
+// -- Helpers --
+function fmtTime(ts) {
+  if (!ts) return "--";
+  const d = new Date(ts);
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric" }) + "  " +
+    d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+}
+function fmtDuration(ms) {
+  if (!ms) return "--";
+  const m = Math.floor(ms / 60000);
+  const s = Math.floor((ms % 60000) / 1000);
+  if (m === 0) return s + "s";
+  return m + "m " + s + "s";
+}
+
+// -- Student Activity View --
+function StudentActivityView({ student, onBack }) {
+  const [filter, setFilter] = useState("week"); // week | all
+  const [activities, setActivities] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [expanded, setExpanded] = useState(null);
+
+  useEffect(() => {
+    const load = async () => {
+      setLoading(true);
+      const since = filter === "week" ? Date.now() - 7 * 24 * 60 * 60 * 1000 : null;
+      const acts = await getStudentActivity(student.id, since);
+      setActivities(acts);
+      setLoading(false);
+    };
+    load();
+  }, [student.id, filter]);
+
+  return (
+    <div>
+      <div style={{ display:"flex",alignItems:"center",gap:12,marginBottom:20 }}>
+        <button className="btn btn-ghost btn-sm" onClick={onBack}>Back to Roster</button>
+        <div style={{ fontWeight:800,fontSize:22 }}>{student.name}</div>
+        <div style={{ color:"var(--text3)",fontSize:20 }}>{student.email}</div>
+      </div>
+
+      <div style={{ display:"flex",gap:8,marginBottom:16 }}>
+        {[["week","Last 7 Days"],["all","All Time"]].map(([id,label])=>(
+          <button key={id} onClick={()=>setFilter(id)}
+            style={{ padding:"8px 18px",borderRadius:"var(--radius-sm)",border:"none",background:filter===id?"var(--blue)":"var(--bg2)",color:filter===id?"#fff":"var(--text2)",fontFamily:"var(--font)",fontWeight:700,fontSize:20,cursor:"pointer" }}>
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {loading ? (
+        <div style={{ display:"flex",justifyContent:"center",padding:40 }}><div className="spinner"/></div>
+      ) : activities.length === 0 ? (
+        <div className="card" style={{ textAlign:"center",padding:"40px 20px",color:"var(--text3)",fontSize:20 }}>
+          No activity recorded{filter==="week"?" in the last 7 days":""}.
+        </div>
+      ) : (
+        <div style={{ display:"flex",flexDirection:"column",gap:6 }}>
+          {activities.map(act => (
+            <div key={act.id} className="card" style={{ padding:"14px 18px" }}>
+              <div style={{ display:"flex",alignItems:"center",justifyContent:"space-between",cursor:"pointer" }}
+                onClick={()=>setExpanded(expanded===act.id?null:act.id)}>
+                <div>
+                  <div style={{ fontWeight:700,fontSize:20,color:"var(--text)" }}>{act.topicTitle}</div>
+                  <div style={{ fontSize:20,color:"var(--text3)",marginTop:2 }}>
+                    {fmtTime(act.startedAt)} &nbsp;-&nbsp;
+                    {act.endedAt ? fmtDuration(act.durationMs) : <span style={{ color:"var(--orange)" }}>In progress</span>}
+                  </div>
+                </div>
+                <div style={{ fontSize:20,color:"var(--blue)",fontWeight:700 }}>
+                  {expanded===act.id ? "Hide" : "Details"}
+                </div>
+              </div>
+
+              {expanded===act.id && (
+                <div style={{ marginTop:14,background:"var(--bg3)",borderRadius:"var(--radius-sm)",padding:"12px 16px",display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:12 }}>
+                  <div>
+                    <div style={{ fontSize:20,color:"var(--text3)",marginBottom:4 }}>Started</div>
+                    <div style={{ fontSize:20,fontWeight:700 }}>{fmtTime(act.startedAt)}</div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize:20,color:"var(--text3)",marginBottom:4 }}>Ended</div>
+                    <div style={{ fontSize:20,fontWeight:700 }}>{act.endedAt ? fmtTime(act.endedAt) : <span style={{ color:"var(--orange)" }}>In progress</span>}</div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize:20,color:"var(--text3)",marginBottom:4 }}>Time Worked</div>
+                    <div style={{ fontSize:20,fontWeight:700,color:"var(--blue)" }}>{fmtDuration(act.durationMs)}</div>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// -- Roster View --
+function RosterView({ cls, students }) {
+  const [selectedStudent, setSelectedStudent] = useState(null);
+
+  if (selectedStudent) {
+    return <StudentActivityView student={selectedStudent} onBack={()=>setSelectedStudent(null)} />;
+  }
+
+  return (
+    <div>
+      <div style={{ fontSize:20,color:"var(--text3)",marginBottom:16 }}>
+        {students.length} student{students.length!==1?"s":""} enrolled. Click a student to view their activity.
+      </div>
+      {students.length === 0 ? (
+        <div style={{ textAlign:"center",padding:"30px 20px",color:"var(--text3)",fontSize:20 }}>
+          No students enrolled yet.
+        </div>
+      ) : (
+        <div style={{ display:"flex",flexDirection:"column",gap:6 }}>
+          {students.map(s => (
+            <div key={s.id} onClick={()=>setSelectedStudent(s)}
+              style={{ display:"flex",alignItems:"center",justifyContent:"space-between",background:"var(--bg2)",borderRadius:"var(--radius-sm)",padding:"14px 18px",cursor:"pointer",border:"1px solid var(--border)",transition:"all 0.15s" }}
+              onMouseEnter={e=>e.currentTarget.style.borderColor="var(--blue)"}
+              onMouseLeave={e=>e.currentTarget.style.borderColor="var(--border)"}>
+              <div>
+                <div style={{ fontWeight:700,fontSize:20 }}>{s.name}</div>
+                <div style={{ fontSize:20,color:"var(--text3)" }}>{s.email}</div>
+              </div>
+              <div style={{ color:"var(--blue)",fontWeight:700,fontSize:20 }}>View Activity -</div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 //  Class Panel 
 function ClassPanel({ cls, onUpdate }) {
   const [expanded, setExpanded] = useState(false);
-  const [tab, setTab] = useState("assignments"); // assignments | gradebook
+  const [tab, setTab] = useState("assignments"); // assignments | gradebook | roster
   const [students, setStudents] = useState([]);
   const [studentsLoaded, setStudentsLoaded] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -448,8 +583,8 @@ function ClassPanel({ cls, onUpdate }) {
 
           {/* Tab bar */}
           <div style={{ display: "flex", gap: 4, background: "var(--bg2)", borderRadius: "var(--radius)", padding: 4, marginBottom: 20, width: "fit-content" }}>
-            {[["assignments", " Assignments"], ["gradebook", " Gradebook"]].map(([id, label]) => (
-              <button key={id} onClick={() => { setTab(id); if (id === "gradebook") loadStudents(); }}
+            {[["assignments", " Assignments"], ["gradebook", " Gradebook"], ["roster", " Roster"]].map(([id, label]) => (
+              <button key={id} onClick={() => { setTab(id); if (id === "gradebook" || id === "roster") loadStudents(); }}
                 style={{ padding: "8px 18px", borderRadius: "var(--radius-sm)", border: "none", background: tab === id ? "var(--blue)" : "transparent", color: tab === id ? "#fff" : "var(--text2)", fontFamily: "var(--font)", fontWeight: 600, fontSize: 20, cursor: "pointer", transition: "all 0.15s" }}>
                 {label}
               </button>
@@ -534,6 +669,14 @@ function ClassPanel({ cls, onUpdate }) {
                   setResetDialog({ uid, name, all: false, topicId: null, topicTitle: "all assignments" });
                 }}
               />
+            )
+          )}
+
+          {tab === "roster" && (
+            loading ? (
+              <div style={{ display: "flex", justifyContent: "center", padding: 20 }}><div className="spinner" /></div>
+            ) : (
+              <RosterView cls={cls} students={students} />
             )
           )}
         </div>
