@@ -7,6 +7,7 @@ export default function DevHome({ user, onLogout }) {
   const [classes, setClasses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState("overview"); // overview | users | classes
+  const [roleFilter, setRoleFilter] = useState("all");
 
   const load = async () => {
     setLoading(true);
@@ -128,7 +129,20 @@ export default function DevHome({ user, onLogout }) {
             {/* Users */}
             {tab==="users" && (
               <div className="card" style={{animation:"fadeUp 0.3s ease"}}>
-                <h3 style={{fontSize:16,fontWeight:700,marginBottom:16}}>All Users</h3>
+                <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16,flexWrap:"wrap",gap:10}}>
+                  <h3 style={{fontSize:16,fontWeight:700,margin:0}}>All Users</h3>
+                  <div style={{display:"flex",gap:6}}>
+                    {["all","student","teacher","developer"].map(r=>{
+                      const count = r==="all" ? users.length : users.filter(u=>u.role===r).length;
+                      return (
+                        <button key={r} onClick={()=>setRoleFilter(r)}
+                          style={{padding:"5px 12px",borderRadius:99,border:"2px solid "+(roleFilter===r?"var(--blue)":"var(--border)"),background:roleFilter===r?"rgba(59,130,246,0.12)":"var(--surface)",color:roleFilter===r?"var(--blue)":"var(--text2)",fontWeight:700,fontSize:13,cursor:"pointer",fontFamily:"var(--font)"}}>
+                          {r==="all"?"All":r.charAt(0).toUpperCase()+r.slice(1)+"s"} ({count})
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
                 <table className="data-table">
                   <thead>
                     <tr>
@@ -140,7 +154,7 @@ export default function DevHome({ user, onLogout }) {
                     </tr>
                   </thead>
                   <tbody>
-                    {users.map(u=>(
+                    {users.filter(u=>roleFilter==="all"||u.role===roleFilter).map(u=>(
                       <tr key={u.id}>
                         <td style={{fontWeight:600}}>{u.name}</td>
                         <td style={{color:"var(--text2)",fontSize:13}}>{u.email}</td>
