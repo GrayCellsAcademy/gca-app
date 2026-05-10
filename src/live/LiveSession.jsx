@@ -7,6 +7,7 @@ import Lesson04Session, { Lesson04TeacherView, Lesson04StudentView } from "../Le
 import Lesson05Session, { Lesson05TeacherView, Lesson05StudentView } from "../Lesson05Session";
 import Lesson06Session, { Lesson06TeacherView, Lesson06StudentView } from "../Lesson06Session";
 import Lesson07Session, { Lesson07TeacherView, Lesson07StudentView } from "../Lesson07Session";
+import Lesson08Session, { Lesson08TeacherView, Lesson08StudentView } from "../Lesson08Session";
 
 // Join a session by code (student flow)
 async function findSessionByCode(code) {
@@ -190,6 +191,14 @@ export default function LiveSession({ user, onHome }) {
                     <div>
                       <div style={{ fontWeight: 800, fontSize: 20, marginBottom: 4 }}>(7) Signed Multiplication, Powers, and Roots</div>
                       <div style={{ color: "var(--text2)", fontSize: 20 }}>Signs of products, negative base powers, roots of negatives, signed OoO and variable expressions.</div>
+                    </div>
+                  </div>
+                  <div className="card" onClick={() => setView("lesson08")}
+                    style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 16 }}>
+                    <div style={{ fontSize: 20, fontWeight: 800, color: "var(--blue)", minWidth: 36 }}>L8</div>
+                    <div>
+                      <div style={{ fontWeight: 800, fontSize: 20, marginBottom: 4 }}>(8) Equations and Speed/Distance/Time</div>
+                      <div style={{ color: "var(--text2)", fontSize: 20 }}>One-step equations, expression vs equation, identifying solutions, and d = s-t problems.</div>
                     </div>
                   </div>
             </>
