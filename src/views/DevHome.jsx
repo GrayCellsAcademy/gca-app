@@ -57,6 +57,9 @@ export default function DevHome({ user, onLogout }) {
               <div style={{fontWeight:700,fontSize:15}}>{user.name}</div>
               <div style={{color:"var(--purple)",fontSize:12,fontWeight:600}}>Developer</div>
             </div>
+            <button className="btn btn-ghost btn-sm" onClick={load} disabled={loading}>
+              {loading ? "..." : "Refresh"}
+            </button>
             <button className="btn btn-ghost btn-sm" onClick={onLogout}>Log Out</button>
           </div>
         </div>
