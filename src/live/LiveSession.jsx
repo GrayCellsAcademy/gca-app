@@ -70,6 +70,11 @@ export default function LiveSession({ user, onHome }) {
         ? <Lesson07TeacherView session={session} sessionId={sessionId} uid={user.id} />
         : <Lesson07StudentView session={session} sessionId={sessionId} uid={user.id} />;
     }
+    if (session.type === "lesson08") {
+      return user.role === "teacher"
+        ? <Lesson08TeacherView session={session} sessionId={sessionId} uid={user.id} />
+        : <Lesson08StudentView session={session} sessionId={sessionId} uid={user.id} />;
+    }
   }
 
   // Lesson session views (teacher creates)
@@ -79,6 +84,7 @@ export default function LiveSession({ user, onHome }) {
   if (view === "lesson05") return <Lesson05Session user={user} onHome={() => setView("menu")} />;
   if (view === "lesson06") return <Lesson06Session user={user} onHome={() => setView("menu")} />;
   if (view === "lesson07") return <Lesson07Session user={user} onHome={() => setView("menu")} />;
+  if (view === "lesson08") return <Lesson08Session user={user} onHome={() => setView("menu")} />;
 
   // Student join flow
   if (view === "join") {
