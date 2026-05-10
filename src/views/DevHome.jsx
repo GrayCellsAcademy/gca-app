@@ -20,9 +20,15 @@ export default function DevHome({ user, onLogout }) {
   useEffect(()=>{ load(); },[]);
 
   const handleDeleteUser = async (uid) => {
-    if (!confirm("Delete this user's data from Firestore? (Auth account stays  delete that separately in Firebase Console)")) return;
-    await deleteUser(uid);
-    load();
+    if (!uid) { alert("Error: no user ID found."); return; }
+    if (!confirm("Delete this user? This removes their Firestore data.\n\nUID: " + uid)) return;
+    try {
+      await deleteUser(uid);
+      alert("Deleted successfully.");
+      load();
+    } catch(e) {
+      alert("Delete failed: " + e.message);
+    }
   };
 
   const students = users.filter(u=>u.role==="student");
