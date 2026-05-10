@@ -69,11 +69,105 @@ function QuestionDisplay({ question, revealCorrect }) {
     const u = q.unit||"ft";
 
     if (q.shapeType==="step3") {
-      // Staircase: steps go UP to the LEFT
-      // Left side is full height, bottom is widest, top step is narrowest
-      // Missing: h1 (right riser step 1) and h2 (right riser step 2)
-      // Known: w1(bottom), w1-w2(tread1), w2-w3(tread2), w3(top), h3(step3 right), totalH(left)
-      const VW=560, VH=400, pad=70;
+      const VW=580, VH=420, pad=75;
+      const scale=Math.min((VW-2*pad)/q.totalW,(VH-2*pad)/q.totalH)*0.72;
+      const sw1=q.w1*scale, sw2=q.w2*scale, sw3=q.w3*scale;
+      const sh1=q.h1*scale, sh2=q.h2*scale, sh3=q.h3*scale;
+      const th=sh1+sh2+sh3;
+      const ox=pad, oy=pad;
+      const bly=oy+th;
+      const pts=[
+        [ox,     bly],[ox+sw1,bly],[ox+sw1,bly-sh1],
+        [ox+sw2, bly-sh1],[ox+sw2,bly-sh1-sh2],
+        [ox+sw3, bly-sh1-sh2],[ox+sw3,oy],[ox,oy],
+      ].map(([x,y])=>`${x},${y}`).join(" ");
+      const f="#4b5068", g=22;
+      return (
+        <svg viewBox={`0 0 ${VW} ${VH}`} style={{ width:"100%",maxWidth:580,display:"block",margin:"0 auto" }}>
+          <polygon points={pts} fill="rgba(27,143,255,0.08)" stroke="var(--blue)" strokeWidth="2.5"/>
+          {/* Bottom w1 */}
+          <text x={ox+sw1/2} y={bly+g} textAnchor="middle" fontSize="13" fill={f}>{q.w1} {u}</text>
+          {/* Left totalH */}
+          <text x={ox-g} y={oy+th/2} textAnchor="middle" fontSize="13" fill={f} transform={`rotate(-90,${ox-g},${oy+th/2})`}>{q.totalH} {u}</text>
+          {/* Top w3 */}
+          <text x={ox+sw3/2} y={oy-8} textAnchor="middle" fontSize="13" fill={f}>{q.w3} {u}</text>
+          {/* Tread 1: w1-w2, above tread */}
+          <text x={ox+sw2+(sw1-sw2)/2} y={bly-sh1-8} textAnchor="middle" fontSize="13" fill={f}>{q.w1-q.w2} {u}</text>
+          {/* Tread 2: w2-w3, above tread */}
+          <text x={ox+sw3+(sw2-sw3)/2} y={bly-sh1-sh2-8} textAnchor="middle" fontSize="13" fill={f}>{q.w2-q.w3} {u}</text>
+          {/* h3 right side of step3 */}
+          <text x={ox+sw3+g} y={oy+sh3/2} textAnchor="middle" fontSize="13" fill={f} transform={`rotate(-90,${ox+sw3+g},${oy+sh3/2})`}>{q.h3} {u}</text>
+          {/* MISSING h1: far right riser (step 1) - rightmost vertical */}
+          <text x={ox+sw1+g} y={bly-sh1/2} textAnchor="middle" fontSize="13" fill="var(--orange)" fontWeight="bold" transform={`rotate(-90,${ox+sw1+g},${bly-sh1/2})`}>?</text>
+          {/* MISSING h2: step2 right riser - middle vertical */}
+          <text x={ox+sw2+g} y={bly-sh1-sh2/2} textAnchor="middle" fontSize="13" fill="var(--orange)" fontWeight="bold" transform={`rotate(-90,${ox+sw2+g},${bly-sh1-sh2/2})`}>?</text>
+          {revealCorrect&&(
+            <text x={VW/2} y={VH-6} textAnchor="middle" fontSize="13" fontWeight="bold" fill="var(--green)">{q.displayAnswer}</text>
+          )}
+        </svg>
+      );
+    }
+
+    if (q.shapeType==="plus") {
+      // Label ALL 10 known sides (12 total - 2 missing)
+      // Missing: top-arm RIGHT side (armH) and bottom-arm LEFT side (armH) - these are perpendicular to ctrW
+      const VW=580, VH=460, pad=75;
+      const scale=Math.min((VW-2*pad)/(2*q.armW+q.ctrW),(VH-2*pad)/(2*q.armH+q.ctrH))*0.75;
+      const aw=q.armW*scale, ah=q.armH*scale, cw=q.ctrW*scale, ch=q.ctrH*scale;
+      const tw=2*aw+cw, th=2*ah+ch;
+      const ox=pad+(VW-2*pad-tw)/2, oy=pad+(VH-2*pad-th)/2;
+      // 12 vertices CW from TL of top arm
+      const pts=[
+        [ox+aw,      oy],          // 0 TL top-arm
+        [ox+aw+cw,   oy],          // 1 TR top-arm
+        [ox+aw+cw,   oy+ah],       // 2 inner-right top
+        [ox+2*aw+cw, oy+ah],       // 3 TR right-arm
+        [ox+2*aw+cw, oy+ah+ch],    // 4 BR right-arm
+        [ox+aw+cw,   oy+ah+ch],    // 5 inner-right bottom
+        [ox+aw+cw,   oy+2*ah+ch],  // 6 BR bottom-arm
+        [ox+aw,      oy+2*ah+ch],  // 7 BL bottom-arm
+        [ox+aw,      oy+ah+ch],    // 8 inner-left bottom
+        [ox,         oy+ah+ch],    // 9 BL left-arm
+        [ox,         oy+ah],       // 10 TL left-arm
+        [ox+aw,      oy+ah],       // 11 inner-left top
+      ].map(([x,y])=>`${x},${y}`).join(" ");
+      const f="#4b5068", g=22;
+      return (
+        <svg viewBox={`0 0 ${VW} ${VH}`} style={{ width:"100%",maxWidth:580,display:"block",margin:"0 auto" }}>
+          <polygon points={pts} fill="rgba(27,143,255,0.08)" stroke="var(--blue)" strokeWidth="2.5"/>
+          {/* Side 0-1: top of top-arm = ctrW */}
+          <text x={ox+aw+cw/2} y={oy-8} textAnchor="middle" fontSize="12" fill={f}>{q.ctrW} {u}</text>
+          {/* Side 1-2: RIGHT of top-arm = armH  MISSING */}
+          <text x={ox+aw+cw+g} y={oy+ah/2} textAnchor="middle" fontSize="12" fill="var(--orange)" fontWeight="bold" transform={`rotate(-90,${ox+aw+cw+g},${oy+ah/2})`}>?</text>
+          {/* Side 2-3: top of right-arm = armW */}
+          <text x={ox+aw+cw+aw/2} y={oy+ah-8} textAnchor="middle" fontSize="12" fill={f}>{q.armW} {u}</text>
+          {/* Side 3-4: right of right-arm = ctrH */}
+          <text x={ox+2*aw+cw+g} y={oy+ah+ch/2} textAnchor="middle" fontSize="12" fill={f} transform={`rotate(-90,${ox+2*aw+cw+g},${oy+ah+ch/2})`}>{q.ctrH} {u}</text>
+          {/* Side 4-5: bottom of right-arm = armW */}
+          <text x={ox+aw+cw+aw/2} y={oy+ah+ch+g} textAnchor="middle" fontSize="12" fill={f}>{q.armW} {u}</text>
+          {/* Side 5-6: right of bottom-arm = armH */}
+          <text x={ox+aw+cw+g} y={oy+ah+ch+ah/2} textAnchor="middle" fontSize="12" fill={f} transform={`rotate(-90,${ox+aw+cw+g},${oy+ah+ch+ah/2})`}>{q.armH} {u}</text>
+          {/* Side 6-7: bottom of bottom-arm = ctrW */}
+          <text x={ox+aw+cw/2} y={oy+2*ah+ch+g} textAnchor="middle" fontSize="12" fill={f}>{q.ctrW} {u}</text>
+          {/* Side 7-8: LEFT of bottom-arm = armH  MISSING */}
+          <text x={ox+aw-g} y={oy+ah+ch+ah/2} textAnchor="middle" fontSize="12" fill="var(--orange)" fontWeight="bold" transform={`rotate(-90,${ox+aw-g},${oy+ah+ch+ah/2})`}>?</text>
+          {/* Side 8-9: bottom of left-arm = armW */}
+          <text x={ox+aw/2} y={oy+ah+ch+g} textAnchor="middle" fontSize="12" fill={f}>{q.armW} {u}</text>
+          {/* Side 9-10: left of left-arm = ctrH */}
+          <text x={ox-g} y={oy+ah+ch/2} textAnchor="middle" fontSize="12" fill={f} transform={`rotate(-90,${ox-g},${oy+ah+ch/2})`}>{q.ctrH} {u}</text>
+          {/* Side 10-11: top of left-arm = armW */}
+          <text x={ox+aw/2} y={oy+ah-8} textAnchor="middle" fontSize="12" fill={f}>{q.armW} {u}</text>
+          {/* Side 11-0: LEFT of top-arm = armH */}
+          <text x={ox+aw-g} y={oy+ah/2} textAnchor="middle" fontSize="12" fill={f} transform={`rotate(-90,${ox+aw-g},${oy+ah/2})`}>{q.armH} {u}</text>
+          {revealCorrect&&(
+            <text x={VW/2} y={VH-6} textAnchor="middle" fontSize="13" fontWeight="bold" fill="var(--green)">{q.displayAnswer}</text>
+          )}
+        </svg>
+      );
+    }
+
+    return null;
+  }
       const scale=Math.min((VW-2*pad)/q.totalW,(VH-2*pad)/q.totalH)*0.75;
       const sw1=q.w1*scale, sw2=q.w2*scale, sw3=q.w3*scale;
       const sh1=q.h1*scale, sh2=q.h2*scale, sh3=q.h3*scale;
@@ -408,30 +502,53 @@ function MixedDSTInput({ question, onSubmit, submitted }) {
   );
 }
 
-// Warmup B (perimeter + area)
-function WarmupBInput({ onSubmit, submitted }) {
+// Warmup B: perimeter + area with unit dropdowns
+function WarmupBInput({ question, onSubmit, submitted }) {
   const [perim, setPerim] = useState("");
   const [area, setArea] = useState("");
-  const allDone = perim.trim()&&area.trim();
+  const [perimUnit, setPerimUnit] = useState("ft");
+  const [areaUnit, setAreaUnit] = useState("sq ft");
+  const units = ["ft","in","yd","m","cm"];
+  const areaUnits = ["sq ft","sq in","sq yd","sq m","sq cm"];
+  const allDone = perim.trim() && area.trim();
+  const handleSubmit = () => {
+    onSubmit(JSON.stringify({
+      perimeter: parseInt(perim),
+      perimUnit,
+      area: parseInt(area),
+      areaUnit,
+    }));
+  };
   return (
     <div>
-      <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:12 }}>
+      <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr",gap:14,marginBottom:14 }}>
         <div>
-          <div style={{ fontSize:20,fontWeight:700,color:"var(--text2)",marginBottom:6 }}>Perimeter (linear units)</div>
-          <input value={perim} onChange={e=>setPerim(e.target.value.replace(/[^0-9]/g,""))}
-            disabled={submitted} inputMode="numeric"
-            style={{ textAlign:"center",fontSize:24,fontFamily:"var(--mono)",fontWeight:700,padding:"10px",width:"100%" }} />
+          <div style={{ fontSize:20,fontWeight:700,color:"var(--text2)",marginBottom:6 }}>Perimeter</div>
+          <div style={{ display:"flex",gap:6 }}>
+            <input value={perim} onChange={e=>setPerim(e.target.value.replace(/[^0-9]/g,""))}
+              disabled={submitted} inputMode="numeric"
+              style={{ textAlign:"center",fontSize:22,fontFamily:"var(--mono)",fontWeight:700,padding:"8px",flex:1,minWidth:0 }} />
+            <select value={perimUnit} onChange={e=>setPerimUnit(e.target.value)} disabled={submitted}
+              style={{ fontSize:18,padding:"8px 6px",width:70 }}>
+              {units.map(u=><option key={u} value={u}>{u}</option>)}
+            </select>
+          </div>
         </div>
         <div>
-          <div style={{ fontSize:20,fontWeight:700,color:"var(--text2)",marginBottom:6 }}>Area (square units)</div>
-          <input value={area} onChange={e=>setArea(e.target.value.replace(/[^0-9]/g,""))}
-            disabled={submitted} inputMode="numeric"
-            style={{ textAlign:"center",fontSize:24,fontFamily:"var(--mono)",fontWeight:700,padding:"10px",width:"100%" }} />
+          <div style={{ fontSize:20,fontWeight:700,color:"var(--text2)",marginBottom:6 }}>Area</div>
+          <div style={{ display:"flex",gap:6 }}>
+            <input value={area} onChange={e=>setArea(e.target.value.replace(/[^0-9]/g,""))}
+              disabled={submitted} inputMode="numeric"
+              style={{ textAlign:"center",fontSize:22,fontFamily:"var(--mono)",fontWeight:700,padding:"8px",flex:1,minWidth:0 }} />
+            <select value={areaUnit} onChange={e=>setAreaUnit(e.target.value)} disabled={submitted}
+              style={{ fontSize:18,padding:"8px 6px",width:90 }}>
+              {areaUnits.map(u=><option key={u} value={u}>{u}</option>)}
+            </select>
+          </div>
         </div>
       </div>
       <button className="btn btn-primary" style={{ width:"100%",fontSize:20 }}
-        onClick={()=>onSubmit(JSON.stringify({perimeter:parseInt(perim),area:parseInt(area)}))}
-        disabled={submitted||!allDone}>Submit</button>
+        onClick={handleSubmit} disabled={submitted||!allDone}>Submit</button>
     </div>
   );
 }

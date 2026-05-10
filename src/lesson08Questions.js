@@ -67,8 +67,8 @@ export function genWarmupB() {
   if (type==="plus") {
     // + shape: 3x3 grid of unit cells, outer arms
     // Arms: top, bottom, left, right each w wide, h tall
-    const armW=randInt(10,30), armH=randInt(10,30);
-    const ctrW=randInt(15,40), ctrH=randInt(15,40);
+    const armW=randInt(15,28), armH=randInt(15,28);
+    const ctrW=randInt(20,36), ctrH=randInt(20,36);
     // total width = armW + ctrW + armW = 2*armW+ctrW
     // total height = armH + ctrH + armH
     const totalW=2*armW+ctrW, totalH=2*armH+ctrH;
@@ -105,8 +105,8 @@ export function genWarmupB() {
     // Missing sides: h1 and h2 (the two right-side risers) - perpendicular to labeled widths
     // Known: w1 (bottom), w2, w3 (step widths), h3 (top step height), totalH (full left side)
     const u = "ft";
-    const w1=randInt(30,50), w2=randInt(15,w1-10), w3=randInt(10,w2-5);
-    const h1=randInt(10,20), h2=randInt(10,20), h3=randInt(10,20);
+    const w1=randInt(35,55), w2=randInt(18,w1-12), w3=randInt(12,w2-6);
+    const h1=randInt(12,22), h2=randInt(12,22), h3=randInt(12,22);
     const totalW=w1, totalH=h1+h2+h3;
     const area=w1*h1+w2*h2+w3*h3;
     // Perimeter: w1 + h1 + (w1-w2) + h2 + (w2-w3) + h3 + w3 + totalH
@@ -127,7 +127,11 @@ export function genWarmupB() {
 export function gradeWarmupB(input, question) {
   try {
     const parsed = typeof input==="string" ? JSON.parse(input) : input;
-    return parsed.perimeter===question.perimeter && parsed.area===question.area;
+    const u = question.unit || "ft";
+    const sqU = "sq " + u;
+    const perimOk = parsed.perimeter === question.perimeter && parsed.perimUnit === u;
+    const areaOk = parsed.area === question.area && parsed.areaUnit === sqU;
+    return perimOk && areaOk;
   } catch { return false; }
 }
 
