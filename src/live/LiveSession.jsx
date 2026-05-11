@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { setDoc, doc, onSnapshot, collection, query, where } from "firebase/firestore";
 import { db, getTeacherClasses, onSessionChange } from "../core/firebase";
+import Lesson01Session, { Lesson01TeacherView, Lesson01StudentView } from "../Lesson01Session";
 import Lesson02Session, { Lesson02TeacherView, Lesson02StudentView } from "../Lesson02Session";
 import Lesson03Session, { Lesson03TeacherView, Lesson03StudentView } from "../Lesson03Session";
 import Lesson04Session, { Lesson04TeacherView, Lesson04StudentView } from "../Lesson04Session";
@@ -40,6 +41,11 @@ export default function LiveSession({ user, onHome }) {
 
   // Route existing session by type
   if (session && sessionId) {
+    if (session.type === "lesson01") {
+      return user.role === "teacher"
+        ? <Lesson01TeacherView session={session} sessionId={sessionId} uid={user.id} />
+        : <Lesson01StudentView session={session} sessionId={sessionId} uid={user.id} />;
+    }
     if (session.type === "lesson02") {
       return user.role === "teacher"
         ? <Lesson02TeacherView session={session} sessionId={sessionId} uid={user.id} />
@@ -78,6 +84,7 @@ export default function LiveSession({ user, onHome }) {
   }
 
   // Lesson session views (teacher creates)
+  if (view === "lesson01") return <Lesson01Session user={user} onHome={() => setView("menu")} />;
   if (view === "lesson02") return <Lesson02Session user={user} onHome={() => setView("menu")} />;
   if (view === "lesson03") return <Lesson03Session user={user} onHome={() => setView("menu")} />;
   if (view === "lesson04") return <Lesson04Session user={user} onHome={() => setView("menu")} />;
@@ -151,6 +158,14 @@ export default function LiveSession({ user, onHome }) {
 
           {user.role === "teacher" && (
             <>
+                  <div className="card" onClick={() => setView("lesson01")}
+                    style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 16 }}>
+                    <div style={{ fontSize: 20, fontWeight: 800, color: "var(--blue)", minWidth: 36 }}>L1</div>
+                    <div>
+                      <div style={{ fontWeight: 800, fontSize: 20, marginBottom: 4 }}>(1) Column Addition and Subtraction</div>
+                      <div style={{ color: "var(--text2)", fontSize: 20 }}>Column addition and subtraction with and without carrying/borrowing.</div>
+                    </div>
+                  </div>
                   <div className="card" onClick={() => setView("lesson02")}
                     style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 16 }}>
                     <div style={{ fontSize: 20, fontWeight: 800, color: "var(--blue)", minWidth: 36 }}>L2</div>
