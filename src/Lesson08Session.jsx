@@ -170,18 +170,8 @@ function QuestionDisplay({ question, revealCorrect }) {
   }
 
   if (q.type === "expr-or-equation") {
-    // Full display handled by ExprOrEqInput; show reveal only
-    if (!revealCorrect) return null;
-    return (
-      <div style={{ display:"flex",flexDirection:"column",gap:8 }}>
-        {q.items.map((item,i) => (
-          <div key={i} style={{ display:"flex",alignItems:"center",justifyContent:"space-between",background:"var(--bg2)",borderRadius:"var(--radius-sm)",padding:"10px 16px" }}>
-            <KaTeXInline expr={item.latex} />
-            <span style={{ fontWeight:800,fontSize:20,color:item.type==="equation"?"var(--blue)":"var(--orange)",marginLeft:12 }}>{item.type}</span>
-          </div>
-        ))}
-      </div>
-    );
+    // Handled entirely by ExprOrEqInput (including reveal)
+    return null;
   }
 
   if (q.type === "identify-solutions") {
@@ -198,18 +188,8 @@ function QuestionDisplay({ question, revealCorrect }) {
   }
 
   if (q.type === "identify-formula") {
-    // Full display handled by IdentifyFormulaInput; show reveal only
-    if (!revealCorrect) return null;
-    return (
-      <div style={{ display:"flex",flexDirection:"column",gap:8 }}>
-        {q.problems.map((p,i) => (
-          <div key={i} style={{ background:"var(--bg2)",borderRadius:"var(--radius-sm)",padding:"10px 16px",fontSize:20 }}>
-            <strong>Find {p.ask}:</strong> {p.given}
-            <span style={{ color:"var(--blue)",fontWeight:700,marginLeft:12 }}>{p.correct}</span>
-          </div>
-        ))}
-      </div>
-    );
+    // Handled entirely by IdentifyFormulaInput (including reveal)
+    return null;
   }
 
   if (q.type === "solve-distance" || q.type === "solve-speed" || q.type === "solve-time") {
@@ -267,25 +247,32 @@ function ExprOrEqInput({ question, onSubmit, submitted }) {
   const [answers, setAnswers] = useState(question.items.map(()=>""));
   const allDone = answers.every(a=>a!=="");
   const set = (i,v) => setAnswers(prev=>prev.map((x,j)=>j===i?v:x));
+  const correct = JSON.parse(question.answer);
   return (
     <div>
       <div style={{ display:"flex",flexDirection:"column",gap:8,marginBottom:12 }}>
         {question.items.map((item,i) => (
           <div key={i} style={{ display:"flex",alignItems:"center",gap:10,background:"var(--bg2)",borderRadius:"var(--radius-sm)",padding:"10px 14px",flexWrap:"wrap" }}>
             <div style={{ flex:1,minWidth:120 }}><KaTeXInline expr={item.latex} /></div>
-            <div style={{ display:"flex",gap:8 }}>
-              {["expression","equation"].map(opt=>(
-                <button key={opt} onClick={()=>!submitted&&set(i,opt)}
-                  style={{ padding:"6px 14px",borderRadius:"var(--radius-sm)",border:"2px solid "+(answers[i]===opt?"var(--blue)":"var(--border)"),background:answers[i]===opt?"rgba(27,143,255,0.15)":"var(--surface)",fontFamily:"var(--font)",fontSize:20,fontWeight:700,cursor:"pointer",color:answers[i]===opt?"var(--blue)":"var(--text)",textTransform:"capitalize" }}>
-                  {opt}
-                </button>
-              ))}
-            </div>
+            {submitted ? (
+              <span style={{ fontWeight:800,fontSize:20,color:correct[i]==="equation"?"var(--blue)":"var(--orange)" }}>{correct[i]}</span>
+            ) : (
+              <div style={{ display:"flex",gap:8 }}>
+                {["expression","equation"].map(opt=>(
+                  <button key={opt} onClick={()=>!submitted&&set(i,opt)}
+                    style={{ padding:"6px 14px",borderRadius:"var(--radius-sm)",border:"2px solid "+(answers[i]===opt?"var(--blue)":"var(--border)"),background:answers[i]===opt?"rgba(27,143,255,0.15)":"var(--surface)",fontFamily:"var(--font)",fontSize:20,fontWeight:700,cursor:"pointer",color:answers[i]===opt?"var(--blue)":"var(--text)",textTransform:"capitalize" }}>
+                    {opt}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         ))}
       </div>
-      <button className="btn btn-primary" style={{ width:"100%",fontSize:20 }}
-        onClick={()=>onSubmit(JSON.stringify(answers))} disabled={submitted||!allDone}>Submit All</button>
+      {!submitted && (
+        <button className="btn btn-primary" style={{ width:"100%",fontSize:20 }}
+          onClick={()=>onSubmit(JSON.stringify(answers))} disabled={!allDone}>Submit All</button>
+      )}
     </div>
   );
 }
@@ -325,25 +312,32 @@ function IdentifyFormulaInput({ question, onSubmit, submitted }) {
   const [answers, setAnswers] = useState(question.problems.map(()=>""));
   const allDone = answers.every(a=>a!=="");
   const set = (i,v) => setAnswers(prev=>prev.map((x,j)=>j===i?v:x));
+  const correct = JSON.parse(question.answer);
   return (
     <div>
       <div style={{ display:"flex",flexDirection:"column",gap:8,marginBottom:12 }}>
         {question.problems.map((p,i) => (
           <div key={i} style={{ display:"flex",alignItems:"center",gap:10,background:"var(--bg2)",borderRadius:"var(--radius-sm)",padding:"10px 14px",flexWrap:"wrap" }}>
             <div style={{ flex:1,fontSize:20 }}><strong>Find {p.ask}:</strong> {p.given}</div>
-            <div style={{ display:"flex",gap:8 }}>
-              {["Multiply","Divide"].map(op=>(
-                <button key={op} onClick={()=>!submitted&&set(i,op)}
-                  style={{ padding:"6px 16px",borderRadius:"var(--radius-sm)",border:"2px solid "+(answers[i]===op?"var(--blue)":"var(--border)"),background:answers[i]===op?"rgba(27,143,255,0.15)":"var(--surface)",fontFamily:"var(--font)",fontSize:20,fontWeight:700,cursor:"pointer",color:answers[i]===op?"var(--blue)":"var(--text)" }}>
-                  {op}
-                </button>
-              ))}
-            </div>
+            {submitted ? (
+              <span style={{ fontWeight:800,fontSize:20,color:"var(--blue)" }}>{correct[i]}</span>
+            ) : (
+              <div style={{ display:"flex",gap:8 }}>
+                {["Multiply","Divide"].map(op=>(
+                  <button key={op} onClick={()=>!submitted&&set(i,op)}
+                    style={{ padding:"6px 16px",borderRadius:"var(--radius-sm)",border:"2px solid "+(answers[i]===op?"var(--blue)":"var(--border)"),background:answers[i]===op?"rgba(27,143,255,0.15)":"var(--surface)",fontFamily:"var(--font)",fontSize:20,fontWeight:700,cursor:"pointer",color:answers[i]===op?"var(--blue)":"var(--text)" }}>
+                    {op}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         ))}
       </div>
-      <button className="btn btn-primary" style={{ width:"100%",fontSize:20 }}
-        onClick={()=>onSubmit(JSON.stringify(answers))} disabled={submitted||!allDone}>Submit All</button>
+      {!submitted && (
+        <button className="btn btn-primary" style={{ width:"100%",fontSize:20 }}
+          onClick={()=>onSubmit(JSON.stringify(answers))} disabled={!allDone}>Submit All</button>
+      )}
     </div>
   );
 }
