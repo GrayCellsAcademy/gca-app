@@ -170,12 +170,14 @@ function QuestionDisplay({ question, revealCorrect }) {
   }
 
   if (q.type === "expr-or-equation") {
+    // Full display handled by ExprOrEqInput; show reveal only
+    if (!revealCorrect) return null;
     return (
       <div style={{ display:"flex",flexDirection:"column",gap:8 }}>
         {q.items.map((item,i) => (
           <div key={i} style={{ display:"flex",alignItems:"center",justifyContent:"space-between",background:"var(--bg2)",borderRadius:"var(--radius-sm)",padding:"10px 16px" }}>
             <KaTeXInline expr={item.latex} />
-            {revealCorrect && <span style={{ fontWeight:800,fontSize:20,color:item.type==="equation"?"var(--blue)":"var(--orange)",marginLeft:12 }}>{item.type}</span>}
+            <span style={{ fontWeight:800,fontSize:20,color:item.type==="equation"?"var(--blue)":"var(--orange)",marginLeft:12 }}>{item.type}</span>
           </div>
         ))}
       </div>
@@ -196,12 +198,14 @@ function QuestionDisplay({ question, revealCorrect }) {
   }
 
   if (q.type === "identify-formula") {
+    // Full display handled by IdentifyFormulaInput; show reveal only
+    if (!revealCorrect) return null;
     return (
       <div style={{ display:"flex",flexDirection:"column",gap:8 }}>
         {q.problems.map((p,i) => (
           <div key={i} style={{ background:"var(--bg2)",borderRadius:"var(--radius-sm)",padding:"10px 16px",fontSize:20 }}>
             <strong>Find {p.ask}:</strong> {p.given}
-            {revealCorrect && <span style={{ color:"var(--blue)",fontWeight:700,marginLeft:12 }}>{p.correct}</span>}
+            <span style={{ color:"var(--blue)",fontWeight:700,marginLeft:12 }}>{p.correct}</span>
           </div>
         ))}
       </div>
