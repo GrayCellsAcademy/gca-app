@@ -364,7 +364,7 @@ export function genSolveDistance() {
       latex:`${s} \\text{ ft/s} \\times ${t} \\text{ s} = ? \\text{ inches}`,
       answer:String(dInches), displayAnswer:String(dInches)+" inches",
       solution:dInches, needsConversion:true,
-      workingHint:`${s} - ${t} = ${dFeet} feet = ${dFeet} - 12 = ${dInches} inches`,
+      workingHint:`${s} x ${t} = ${dFeet} feet; ${dFeet} x 12 = ${dInches} inches`,
     };
   } else {
     return {
@@ -373,7 +373,7 @@ export function genSolveDistance() {
       latex:`${s} \\times ${t} = ?`,
       answer:String(d), displayAnswer:String(d)+" miles",
       solution:d, needsConversion:false,
-      workingHint:`${s} - ${t} = ${d}`,
+      workingHint:`${s} x ${t} = ${d}`,
     };
   }
 }
@@ -394,7 +394,7 @@ export function genSolveSpeed() {
       prompt:`A vehicle travels ${dFeet} feet in ${t} seconds. What is its speed in inches per second?`,
       answer:String(sInches), displayAnswer:String(sInches)+" inches/sec",
       solution:sInches, needsConversion:true,
-      workingHint:`${dFeet} ft = ${dInches} inches; ${dInches} - ${t} = ${sInches} in/s`,
+      workingHint:`${dFeet} ft = ${dInches} in; ${dInches} / ${t} = ${sInches} in/s`,
     };
   } else {
     return {
@@ -402,7 +402,7 @@ export function genSolveSpeed() {
       prompt:`A vehicle travels ${d} miles in ${t} hours. What is its speed in miles per hour?`,
       answer:String(s), displayAnswer:String(s)+" mph",
       solution:s, needsConversion:false,
-      workingHint:`${d} - ${t} = ${s}`,
+      workingHint:`${d} / ${t} = ${s}`,
     };
   }
 }
@@ -423,7 +423,7 @@ export function genSolveTime() {
       prompt:`A vehicle travels ${dInches} inches at ${s} feet per second. How many seconds does it take?`,
       answer:String(t), displayAnswer:String(t)+" seconds",
       solution:t, needsConversion:true,
-      workingHint:`${dInches} inches = ${d} feet; ${d} - ${s} = ${t} seconds`,
+      workingHint:`${dInches} in = ${d} ft; ${d} / ${s} = ${t} seconds`,
     };
   } else {
     return {
@@ -431,7 +431,7 @@ export function genSolveTime() {
       prompt:`A vehicle travels ${d} miles at ${s} miles per hour. How many hours does it take?`,
       answer:String(t), displayAnswer:String(t)+" hours",
       solution:t, needsConversion:false,
-      workingHint:`${d} - ${s} = ${t}`,
+      workingHint:`${d} / ${s} = ${t}`,
     };
   }
 }
