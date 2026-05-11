@@ -69,8 +69,8 @@ function QuestionDisplay({ question, revealCorrect }) {
     const u = q.unit||"ft";
 
     if (q.shapeType==="step3") {
-      const VW=580, VH=420, pad=75;
-      const scale=Math.min((VW-2*pad)/q.totalW,(VH-2*pad)/q.totalH)*0.72;
+      const VW=600, VH=440, pad=80;
+      const scale=Math.min((VW-2*pad)/q.totalW,(VH-2*pad)/q.totalH)*0.70;
       const sw1=q.w1*scale, sw2=q.w2*scale, sw3=q.w3*scale;
       const sh1=q.h1*scale, sh2=q.h2*scale, sh3=q.h3*scale;
       const th=sh1+sh2+sh3;
@@ -81,25 +81,25 @@ function QuestionDisplay({ question, revealCorrect }) {
         [ox+sw2, bly-sh1],[ox+sw2,bly-sh1-sh2],
         [ox+sw3, bly-sh1-sh2],[ox+sw3,oy],[ox,oy],
       ].map(([x,y])=>`${x},${y}`).join(" ");
-      const f="#4b5068", g=22;
+      const f="#4b5068", g=24;
       return (
-        <svg viewBox={`0 0 ${VW} ${VH}`} style={{ width:"100%",maxWidth:580,display:"block",margin:"0 auto" }}>
+        <svg viewBox={`0 0 ${VW} ${VH}`} style={{ width:"100%",maxWidth:600,display:"block",margin:"0 auto" }}>
           <polygon points={pts} fill="rgba(27,143,255,0.08)" stroke="var(--blue)" strokeWidth="2.5"/>
-          {/* Bottom w1 */}
+          {/* Bottom: w1 */}
           <text x={ox+sw1/2} y={bly+g} textAnchor="middle" fontSize="13" fill={f}>{q.w1} {u}</text>
-          {/* Left totalH */}
+          {/* Left: totalH */}
           <text x={ox-g} y={oy+th/2} textAnchor="middle" fontSize="13" fill={f} transform={`rotate(-90,${ox-g},${oy+th/2})`}>{q.totalH} {u}</text>
-          {/* Top w3 */}
-          <text x={ox+sw3/2} y={oy-8} textAnchor="middle" fontSize="13" fill={f}>{q.w3} {u}</text>
-          {/* Tread 1: w1-w2, above tread */}
-          <text x={ox+sw2+(sw1-sw2)/2} y={bly-sh1-8} textAnchor="middle" fontSize="13" fill={f}>{q.w1-q.w2} {u}</text>
-          {/* Tread 2: w2-w3, above tread */}
-          <text x={ox+sw3+(sw2-sw3)/2} y={bly-sh1-sh2-8} textAnchor="middle" fontSize="13" fill={f}>{q.w2-q.w3} {u}</text>
-          {/* h3 right side of step3 */}
+          {/* Top: w3 */}
+          <text x={ox+sw3/2} y={oy-10} textAnchor="middle" fontSize="13" fill={f}>{q.w3} {u}</text>
+          {/* Tread1: w1-w2 (KNOWN horizontal) */}
+          <text x={ox+sw2+(sw1-sw2)/2} y={bly-sh1-10} textAnchor="middle" fontSize="13" fill={f}>{q.w1-q.w2} {u}</text>
+          {/* Riser1: h1 (KNOWN vertical - rightmost) */}
+          <text x={ox+sw1+g} y={bly-sh1/2} textAnchor="middle" fontSize="13" fill={f} transform={`rotate(-90,${ox+sw1+g},${bly-sh1/2})`}>{q.h1} {u}</text>
+          {/* Riser3: h3 (KNOWN vertical - top step) */}
           <text x={ox+sw3+g} y={oy+sh3/2} textAnchor="middle" fontSize="13" fill={f} transform={`rotate(-90,${ox+sw3+g},${oy+sh3/2})`}>{q.h3} {u}</text>
-          {/* MISSING h1: far right riser (step 1) - rightmost vertical */}
-          <text x={ox+sw1+g} y={bly-sh1/2} textAnchor="middle" fontSize="13" fill="var(--orange)" fontWeight="bold" transform={`rotate(-90,${ox+sw1+g},${bly-sh1/2})`}>?</text>
-          {/* MISSING h2: step2 right riser - middle vertical */}
+          {/* MISSING tread2: w2-w3 (HORIZONTAL) */}
+          <text x={ox+sw3+(sw2-sw3)/2} y={bly-sh1-sh2-10} textAnchor="middle" fontSize="13" fill="var(--orange)" fontWeight="bold">?</text>
+          {/* MISSING riser2: h2 (VERTICAL - middle step right side) */}
           <text x={ox+sw2+g} y={bly-sh1-sh2/2} textAnchor="middle" fontSize="13" fill="var(--orange)" fontWeight="bold" transform={`rotate(-90,${ox+sw2+g},${bly-sh1-sh2/2})`}>?</text>
           {revealCorrect&&(
             <text x={VW/2} y={VH-6} textAnchor="middle" fontSize="13" fontWeight="bold" fill="var(--green)">{q.displayAnswer}</text>

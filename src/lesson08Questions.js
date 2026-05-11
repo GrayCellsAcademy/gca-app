@@ -101,21 +101,26 @@ export function genWarmupB() {
       answer:JSON.stringify({perimeter:p, area}),
     };
   } else {
-    // 3-step staircase: steps going up-left (right side is staircase)
-    // Missing sides: h1 and h2 (the two right-side risers) - perpendicular to labeled widths
-    // Known: w1 (bottom), w2, w3 (step widths), h3 (top step height), totalH (full left side)
+    // 3-step staircase: steps going up-left
+    // Missing: (w2-w3) = tread2 (HORIZONTAL) and h2 = riser2 (VERTICAL) -- truly perpendicular
+    // Known: w1(bottom), (w1-w2)=tread1, w3(top), h1(riser1), h3(riser3), totalH(left)
     const u = "ft";
-    const w1=randInt(35,55), w2=randInt(18,w1-12), w3=randInt(12,w2-6);
-    const h1=randInt(12,22), h2=randInt(12,22), h3=randInt(12,22);
+    let w1,w2,w3,h1,h2,h3;
+    do {
+      w1=randInt(40,58); w2=randInt(24,w1-14); w3=randInt(13,w2-10);
+      h1=randInt(14,24); h2=randInt(14,24); h3=randInt(14,24);
+    } while(
+      (w1-w2)<14||(w2-w3)<13||   // treads too small for labels
+      Math.abs(h1-h2)<5||Math.abs(h2-h3)<5 // risers too similar in height
+    );
     const totalW=w1, totalH=h1+h2+h3;
     const area=w1*h1+w2*h2+w3*h3;
-    // Perimeter: w1 + h1 + (w1-w2) + h2 + (w2-w3) + h3 + w3 + totalH
     const perimeter = w1 + h1 + (w1-w2) + h2 + (w2-w3) + h3 + w3 + totalH;
     return {
       type:"warmup-b", shapeType:"step3",
       w1, w2, w3, h1, h2, h3, totalW, totalH,
-      // Missing: h1 and h2 (perpendicular risers on right staircase side)
-      missingA: h1, missingB: h2,
+      missingTread: w2-w3,  // horizontal - shown as ? on tread2
+      missingRiser: h2,     // vertical   - shown as ? on riser2
       perimeter, area, unit: u,
       prompt:"Find the perimeter and area of the composite shape. Two sides are not labeled.",
       displayAnswer:`Perimeter: ${perimeter} ft, Area: ${area} sq ft`,
