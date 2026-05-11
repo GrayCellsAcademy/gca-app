@@ -212,7 +212,7 @@ function QuestionDisplay({ question, revealCorrect }) {
         {q.problems.map((p,i) => (
           <div key={i} style={{ background:"var(--bg2)",borderRadius:"var(--radius-sm)",padding:"10px 16px",fontSize:20 }}>
             {p.prompt}
-            {revealCorrect && <div style={{ color:"var(--green)",fontWeight:700 }}>- {p.displayAnswer} <span style={{ color:"var(--text3)",fontWeight:400,fontSize:19 }}>({p.workingHint})</span></div>}
+            {revealCorrect && <div style={{ color:"var(--green)",fontWeight:700,marginTop:4 }}>Answer: {p.displayAnswer} <span style={{ color:"var(--text3)",fontWeight:400,fontSize:19 }}>({p.workingHint})</span></div>}
           </div>
         ))}
       </div>
