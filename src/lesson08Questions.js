@@ -191,16 +191,24 @@ export function gradeExprOrEquation(input, question) {
 // - Topic 1: Identifying Solutions -
 export function genIdentifySolutions() {
   const isQuadratic=Math.random()<0.5;
+  // Helper to format coefficient (suppress 1 and -1)
+  const fmtCoeff=(n,v)=>{
+    if(n===1) return `+ ${v}`;
+    if(n===-1) return `- ${v}`;
+    if(n>0) return `+ ${n}${v}`;
+    return `- ${Math.abs(n)}${v}`;
+  };
+
   if(isQuadratic){
-    // Two nonzero integer roots r1, r2 between -5 and 5
     let r1,r2;
     do{ r1=randInt(-5,5); r2=randInt(-5,5); }while(r1===0||r2===0||r1===r2);
-    // (x-r1)(x-r2) = x^2 - (r1+r2)x + r1*r2
     const b=-(r1+r2), c=r1*r2;
-    const bStr=b===0?"":b>0?`+ ${b}x`:`- ${Math.abs(b)}x`;
+    const bStr=b===0?"":fmtCoeff(b,"x");
     const cStr=c===0?"":c>0?`+ ${c}`:`- ${Math.abs(c)}`;
     const latex=`x^2 ${bStr} ${cStr} = 0`;
-    const options=shuffle([-5,-4,-3,-2,-1,1,2,3,4,5]);
+    // Pick 5 options: both roots + 3 non-roots
+    const nonRoots=shuffle([-5,-4,-3,-2,-1,1,2,3,4,5].filter(n=>n!==r1&&n!==r2));
+    const options=shuffle([r1,r2,...nonRoots.slice(0,3)]);
     const answers=options.map(o=>({value:o, isSolution:o===r1||o===r2}));
     return {
       type:"identify-solutions", equationType:"quadratic",
@@ -210,13 +218,11 @@ export function genIdentifySolutions() {
       prompt:"Select whether each value is a solution or not a solution.",
     };
   } else {
-    // Cubic: three nonzero roots between -3 and 3
     let roots;
     do{
       const pool=shuffle([-3,-2,-1,1,2,3]);
       roots=[pool[0],pool[1],pool[2]];
     }while(new Set(roots).size!==3);
-    // x^3 - (r1+r2+r3)x^2 + (r1r2+r1r3+r2r3)x - r1r2r3
     const [r1,r2,r3]=roots;
     const a=-(r1+r2+r3);
     const b=r1*r2+r1*r3+r2*r3;
@@ -228,7 +234,9 @@ export function genIdentifySolutions() {
       return coeff>0?`+ ${coeff}${varStr}`:`- ${Math.abs(coeff)}${varStr}`;
     };
     const latex=`x^3 ${fmt(a,"x^2")} ${fmt(b,"x")} ${c===0?"":c>0?`+ ${c}`:`- ${Math.abs(c)}`} = 0`;
-    const options=shuffle([-3,-2,-1,1,2,3]);
+    // Pick 5 options: all 3 roots + 2 non-roots
+    const nonRoots=shuffle([-3,-2,-1,1,2,3].filter(n=>!roots.includes(n)));
+    const options=shuffle([...roots,...nonRoots.slice(0,2)]);
     const answers=options.map(o=>({value:o, isSolution:roots.includes(o)}));
     return {
       type:"identify-solutions", equationType:"cubic",
