@@ -174,15 +174,20 @@ function QuestionDisplay({ question, revealCorrect, topicId }) {
 }
 
 // -- Answer Inputs --
-function TextInput({ onSubmit, submitted, placeholder, allowNeg }) {
+function TextInput({ onSubmit, submitted, placeholder, allowNeg, allowEq }) {
   const [val, setVal] = useState("");
   const ref = useRef(null);
   useEffect(() => { setVal(""); setTimeout(()=>ref.current?.focus(),80); }, [submitted]);
   const submit = () => { if (val.trim()) onSubmit(val.trim()); };
+  const filter = allowEq
+    ? (v) => v.replace(/[^0-9\-\+\=xa-z\s]/gi,"")
+    : allowNeg
+    ? (v) => v.replace(/[^0-9\-,a-z\s]/gi,"")
+    : (v) => v.replace(/[^0-9a-z\s\.]/gi,"");
   return (
     <div style={{ display:"flex",gap:8,justifyContent:"center" }}>
       <input ref={ref} value={val}
-        onChange={e=>setVal(allowNeg?e.target.value.replace(/[^0-9\-,a-z\s]/gi,""):e.target.value)}
+        onChange={e=>setVal(filter(e.target.value))}
         onKeyDown={e=>e.key==="Enter"&&submit()} disabled={submitted}
         placeholder={placeholder||""}
         style={{ textAlign:"center",fontSize:24,fontFamily:"var(--mono)",fontWeight:700,padding:"10px",width:220 }} />
@@ -313,7 +318,7 @@ function AnswerInput({ question, onSubmit, submitted, topicId }) {
     if (topicId==="two-step-result") return (
       <div>
         <div style={{ fontSize:20,color:"var(--text3)",marginBottom:6 }}>Enter the equation after the first step (e.g. 2x=8)</div>
-        <TextInput onSubmit={onSubmit} submitted={submitted} allowNeg />
+        <TextInput onSubmit={onSubmit} submitted={submitted} allowEq placeholder="e.g. 2x=8" />
       </div>
     );
     return <TextInput onSubmit={onSubmit} submitted={submitted} allowNeg placeholder="Enter x value" />;
@@ -323,7 +328,7 @@ function AnswerInput({ question, onSubmit, submitted, topicId }) {
     if (topicId==="dist-expand") return (
       <div>
         <div style={{ fontSize:20,color:"var(--text3)",marginBottom:6 }}>Expand the left side only (e.g. 6x+15)</div>
-        <TextInput onSubmit={onSubmit} submitted={submitted} allowNeg />
+        <TextInput onSubmit={onSubmit} submitted={submitted} allowEq placeholder="e.g. 6x+15" />
       </div>
     );
     return <TextInput onSubmit={onSubmit} submitted={submitted} allowNeg placeholder="Enter x value" />;
