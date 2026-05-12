@@ -11,11 +11,13 @@ import TimesTablesPlayer45 from "./TimesTablesPlayer45";
 import TimesTablesPlayer6 from "./TimesTablesPlayer6";
 import TimesTablesPlayer7 from "./TimesTablesPlayer7";
 import TimesTablesPlayer8 from "./TimesTablesPlayer8";
+import TimesTablesPlayer9 from "./TimesTablesPlayer9";
 import Lesson03MasteryPlayer from "./Lesson03MasteryPlayer";
 import Lesson04MasteryPlayer from "./Lesson04MasteryPlayer";
 import Lesson05MasteryPlayer from "./Lesson05MasteryPlayer";
 import Lesson06MasteryPlayer from "./Lesson06MasteryPlayer";
 import Lesson07MasteryPlayer from "./Lesson07MasteryPlayer";
+import Lesson08MasteryPlayer from "./Lesson08MasteryPlayer";
 
 export const TOPICS = {
   "addition-tables-v1": {
@@ -88,6 +90,13 @@ export const TOPICS = {
     subject: "math", gradeLevel: "6+", icon: "", type: "drill", status: "published", order: 11,
     Player: TimesTablesPlayer8,
   },
+  "times-tables-9-v1": {
+    id: "times-tables-9-v1",
+    title: "Times Table (9)",
+    description: "Master the 9s times table.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "drill", status: "published", order: 12,
+    Player: TimesTablesPlayer9,
+  },
   "lesson04-mastery-v1": {
     id: "lesson04-mastery-v1",
     title: "HW 4 (019)",
@@ -113,8 +122,15 @@ export const TOPICS = {
     id: "lesson07-mastery-v1",
     title: "HW 7 (019)",
     description: "Sign of products, negative base powers, roots of negatives, signed OoO and variable expressions.",
-    subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 15,
+    subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 16,
     Player: Lesson07MasteryPlayer,
+  },
+  "lesson08-mastery-v1": {
+    id: "lesson08-mastery-v1",
+    title: "HW 8 (019)",
+    description: "Expression vs equation, identifying solutions, one-step equations, and speed/distance/time.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 17,
+    Player: Lesson08MasteryPlayer,
   },
   "review-homework-v1": {
     id: "review-homework-v1",
