@@ -89,17 +89,23 @@ function QuestionDisplay({ question, revealCorrect, topicId }) {
   const q = question;
 
   if (q.type === "warmup-a") {
-    // Rectangle with L and W labeled
-    const VW=480, VH=300, pad=70;
-    const scale=Math.min((VW-2*pad)/q.L,(VH-2*pad)/q.W)*0.85;
+    const VW=520, VH=360, pad=75;
+    const scale=Math.min((VW-2*pad)/q.L,(VH-2*pad)/q.W)*0.82;
     const rw=q.L*scale, rh=q.W*scale;
     const ox=(VW-rw)/2, oy=(VH-rh)/2;
+    const f="#4b5068", g=26;
     return (
       <div style={{ textAlign:"center" }}>
-        <svg viewBox={`0 0 ${VW} ${VH}`} style={{ width:"100%",maxWidth:480,display:"block",margin:"0 auto" }}>
+        <svg viewBox={`0 0 ${VW} ${VH}`} style={{ width:"100%",maxWidth:520,display:"block",margin:"0 auto" }}>
           <rect x={ox} y={oy} width={rw} height={rh} fill="rgba(27,143,255,0.07)" stroke="var(--blue)" strokeWidth="2.5"/>
-          <text x={ox+rw/2} y={oy+rh+28} textAnchor="middle" fontSize="15" fill="#4b5068" fontWeight="700">{q.L} {q.unit}</text>
-          <text x={ox-36} y={oy+rh/2} textAnchor="middle" fontSize="15" fill="#4b5068" fontWeight="700" transform={`rotate(-90,${ox-36},${oy+rh/2})`}>{q.W} {q.unit}</text>
+          {/* Bottom: L */}
+          <text x={ox+rw/2} y={oy+rh+g} textAnchor="middle" fontSize="15" fill={f} fontWeight="700">{q.L} {q.unit}</text>
+          {/* Top: L */}
+          <text x={ox+rw/2} y={oy-10} textAnchor="middle" fontSize="15" fill={f} fontWeight="700">{q.L} {q.unit}</text>
+          {/* Left: W */}
+          <text x={ox-g} y={oy+rh/2} textAnchor="middle" fontSize="15" fill={f} fontWeight="700" transform={`rotate(-90,${ox-g},${oy+rh/2})`}>{q.W} {q.unit}</text>
+          {/* Right: W */}
+          <text x={ox+rw+g} y={oy+rh/2} textAnchor="middle" fontSize="15" fill={f} fontWeight="700" transform={`rotate(-90,${ox+rw+g},${oy+rh/2})`}>{q.W} {q.unit}</text>
         </svg>
         {revealCorrect && <div style={{ fontSize:22,fontWeight:800,color:"var(--green)",marginTop:8 }}>P = {q.displayAnswer}</div>}
       </div>
@@ -127,32 +133,32 @@ function QuestionDisplay({ question, revealCorrect, topicId }) {
   }
 
   if (q.type === "rect-missing") {
-    // Rectangle with one known side and P, missing side shown as ?
-    const VW=480, VH=320, pad=75;
-    const scale=Math.min((VW-2*pad)/q.L,(VH-2*pad)/q.W)*0.82;
+    const VW=520, VH=360, pad=80;
+    const scale=Math.min((VW-2*pad)/q.L,(VH-2*pad)/q.W)*0.80;
     const rw=q.L*scale, rh=q.W*scale;
     const ox=(VW-rw)/2, oy=(VH-rh)/2;
-    const f="#4b5068";
+    const f="#4b5068", g=26;
+    // Known side label, missing side as ?
+    const Llabel = q.knownLabel==="L" ? `${q.knownVal} ${q.unit}` : "?";
+    const Wlabel = q.knownLabel==="W" ? `${q.knownVal} ${q.unit}` : "?";
+    const Lcol = q.knownLabel==="L" ? f : "var(--orange)";
+    const Wcol = q.knownLabel==="W" ? f : "var(--orange)";
     return (
       <div style={{ textAlign:"center" }}>
-        <svg viewBox={`0 0 ${VW} ${VH}`} style={{ width:"100%",maxWidth:480,display:"block",margin:"0 auto" }}>
+        <svg viewBox={`0 0 ${VW} ${VH}`} style={{ width:"100%",maxWidth:520,display:"block",margin:"0 auto" }}>
           <rect x={ox} y={oy} width={rw} height={rh} fill="rgba(27,143,255,0.07)" stroke="var(--blue)" strokeWidth="2.5"/>
-          {/* P label at top */}
-          <text x={VW/2} y={oy-18} textAnchor="middle" fontSize="14" fill={f} fontWeight="700">P = {q.P} {q.unit}</text>
-          {/* Known side */}
-          {q.knownLabel==="L" ? (
-            <text x={ox+rw/2} y={oy+rh+28} textAnchor="middle" fontSize="14" fill={f} fontWeight="700">L = {q.knownVal} {q.unit}</text>
-          ) : (
-            <text x={ox-36} y={oy+rh/2} textAnchor="middle" fontSize="14" fill={f} fontWeight="700" transform={`rotate(-90,${ox-36},${oy+rh/2})`}>W = {q.knownVal} {q.unit}</text>
-          )}
-          {/* Missing side */}
-          {q.missingLabel==="L" ? (
-            <text x={ox+rw/2} y={oy+rh+28} textAnchor="middle" fontSize="14" fill="var(--orange)" fontWeight="800">L = ?</text>
-          ) : (
-            <text x={ox+rw+28} y={oy+rh/2} textAnchor="middle" fontSize="14" fill="var(--orange)" fontWeight="800" transform={`rotate(-90,${ox+rw+28},${oy+rh/2})`}>W = ?</text>
-          )}
+          {/* P at top center */}
+          <text x={VW/2} y={oy-12} textAnchor="middle" fontSize="15" fill={f} fontWeight="700">P = {q.P} {q.unit}</text>
+          {/* Bottom: L */}
+          <text x={ox+rw/2} y={oy+rh+g} textAnchor="middle" fontSize="15" fill={Lcol} fontWeight="700">{Llabel}</text>
+          {/* Top: L */}
+          <text x={ox+rw/2} y={oy-30} textAnchor="middle" fontSize="15" fill={Lcol} fontWeight="700">{Llabel}</text>
+          {/* Left: W */}
+          <text x={ox-g} y={oy+rh/2} textAnchor="middle" fontSize="15" fill={Wcol} fontWeight="700" transform={`rotate(-90,${ox-g},${oy+rh/2})`}>{Wlabel}</text>
+          {/* Right: W */}
+          <text x={ox+rw+g} y={oy+rh/2} textAnchor="middle" fontSize="15" fill={Wcol} fontWeight="700" transform={`rotate(-90,${ox+rw+g},${oy+rh/2})`}>{Wlabel}</text>
           {revealCorrect && (
-            <text x={VW/2} y={VH-8} textAnchor="middle" fontSize="14" fontWeight="bold" fill="var(--green)">{q.missingLabel} = {q.displayAnswer}</text>
+            <text x={VW/2} y={VH-6} textAnchor="middle" fontSize="14" fontWeight="bold" fill="var(--green)">{q.missingLabel} = {q.displayAnswer}</text>
           )}
         </svg>
         <div style={{ fontSize:20,color:"var(--text2)",marginTop:4 }}>Formula: 2L + 2W = P</div>
@@ -245,11 +251,15 @@ function RectSubInput({ question, onSubmit, submitted }) {
   const [clickedP, setClickedP] = useState(false);
   const [clickedKnown, setClickedKnown] = useState(false);
   const allDone = clickedP && clickedKnown;
-  const VW=480, VH=320, pad=75;
-  const scale=Math.min((VW-2*pad)/question.L,(VH-2*pad)/question.W)*0.82;
-  const rw=question.L*scale, rh=question.W*scale;
-  const ox=(VW-rw)/2, oy=(VH-rh)/2;
-  const f="#4b5068";
+      const VW=520, VH=360, pad=80;
+      const scale=Math.min((VW-2*pad)/question.L,(VH-2*pad)/question.W)*0.80;
+      const rw=question.L*scale, rh=question.W*scale;
+      const ox=(VW-rw)/2, oy=(VH-rh)/2;
+      const f="#4b5068", g=26;
+      const Llabel = question.knownLabel==="L" ? `${question.knownVal} ${question.unit}` : "?";
+      const Wlabel = question.knownLabel==="W" ? `${question.knownVal} ${question.unit}` : "?";
+      const Lcol = question.knownLabel==="L" ? f : "var(--orange)";
+      const Wcol = question.knownLabel==="W" ? f : "var(--orange)";
 
   return (
     <div>
@@ -270,19 +280,13 @@ function RectSubInput({ question, onSubmit, submitted }) {
         </span>
       </div>
       {/* Rectangle */}
-      <svg viewBox={`0 0 ${VW} ${VH}`} style={{ width:"100%",maxWidth:480,display:"block",margin:"0 auto 12px" }}>
+      <svg viewBox={`0 0 ${VW} ${VH}`} style={{ width:"100%",maxWidth:520,display:"block",margin:"0 auto 12px" }}>
         <rect x={ox} y={oy} width={rw} height={rh} fill="rgba(27,143,255,0.07)" stroke="var(--blue)" strokeWidth="2.5"/>
-        <text x={VW/2} y={oy-18} textAnchor="middle" fontSize="14" fill={f} fontWeight="700">P = {question.P} {question.unit}</text>
-        {question.knownLabel==="L"?(
-          <text x={ox+rw/2} y={oy+rh+28} textAnchor="middle" fontSize="14" fill={f} fontWeight="700">L = {question.knownVal} {question.unit}</text>
-        ):(
-          <text x={ox-36} y={oy+rh/2} textAnchor="middle" fontSize="14" fill={f} fontWeight="700" transform={`rotate(-90,${ox-36},${oy+rh/2})`}>W = {question.knownVal} {question.unit}</text>
-        )}
-        {question.missingLabel==="L"?(
-          <text x={ox+rw/2} y={oy+rh+28} textAnchor="middle" fontSize="14" fill="var(--orange)" fontWeight="800">L = ?</text>
-        ):(
-          <text x={ox+rw+28} y={oy+rh/2} textAnchor="middle" fontSize="14" fill="var(--orange)" fontWeight="800" transform={`rotate(-90,${ox+rw+28},${oy+rh/2})`}>W = ?</text>
-        )}
+        <text x={VW/2} y={oy-12} textAnchor="middle" fontSize="15" fill={f} fontWeight="700">P = {question.P} {question.unit}</text>
+        <text x={ox+rw/2} y={oy+rh+g} textAnchor="middle" fontSize="15" fill={Lcol} fontWeight="700">{Llabel}</text>
+        <text x={ox+rw/2} y={oy-30} textAnchor="middle" fontSize="15" fill={Lcol} fontWeight="700">{Llabel}</text>
+        <text x={ox-g} y={oy+rh/2} textAnchor="middle" fontSize="15" fill={Wcol} fontWeight="700" transform={`rotate(-90,${ox-g},${oy+rh/2})`}>{Wlabel}</text>
+        <text x={ox+rw+g} y={oy+rh/2} textAnchor="middle" fontSize="15" fill={Wcol} fontWeight="700" transform={`rotate(-90,${ox+rw+g},${oy+rh/2})`}>{Wlabel}</text>
       </svg>
       <button className="btn btn-primary" style={{ width:"100%",fontSize:20 }}
         onClick={()=>onSubmit(JSON.stringify({P:question.P,known:question.knownVal}))}
