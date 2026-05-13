@@ -120,7 +120,11 @@ function QuestionDisplay({ question, revealCorrect, topicId }) {
     return (
       <div style={{ textAlign:"center" }}>
         <KaTeXBlock expr={q.latex} />
-        {revealCorrect && <div style={{ fontSize:20,color:"var(--green)",fontWeight:700,marginTop:8 }}>Answer: {q.displayAnswer}</div>}
+        {revealCorrect && (
+          <div style={{ fontSize:20,color:"var(--green)",fontWeight:700,marginTop:8 }}>
+            Answer: {topicId==="two-step-result" ? q.simplifiedAnswer : q.displayAnswer}
+          </div>
+        )}
       </div>
     );
   }
@@ -540,7 +544,11 @@ function TeacherLesson09({ session, sessionId, uid }) {
                 {session.status==="revealing"&&(
                   <div style={{ marginTop:12,background:"rgba(22,163,74,0.06)",border:"1px solid rgba(22,163,74,0.2)",borderRadius:"var(--radius-sm)",padding:"12px 16px" }}>
                     <div style={{ fontSize:20,color:"var(--text3)",marginBottom:4 }}>Correct answer</div>
-                    <div style={{ fontSize:22,fontWeight:800,color:"var(--green)",fontFamily:"var(--mono)" }}>{question.displayAnswer}</div>
+                    <div style={{ fontSize:22,fontWeight:800,color:"var(--green)",fontFamily:"var(--mono)" }}>
+                      {question._topicId==="two-step-result" ? question.simplifiedAnswer :
+                       question._topicId==="dist-expand" ? question.expandedAnswer :
+                       question.displayAnswer}
+                    </div>
                   </div>
                 )}
                 <div style={{ height:6,background:"var(--surface2)",borderRadius:99,overflow:"hidden",marginTop:12 }}>
@@ -639,7 +647,13 @@ function StudentLesson09({ session, sessionId, uid }) {
               <div style={{ fontSize:22,fontWeight:800,color:result.correct?"var(--green)":"var(--red)" }}>
                 {result.correct?"Correct! +"+POINTS+" pts":"Incorrect"}
                 {!result.correct&&question?.displayAnswer&&(
-                  <div style={{ marginTop:8,fontSize:20,color:"var(--green)",fontWeight:400 }}>Answer: <strong style={{ fontFamily:"var(--mono)" }}>{question.displayAnswer}</strong></div>
+                  <div style={{ marginTop:8,fontSize:20,color:"var(--green)",fontWeight:400 }}>
+                    Answer: <strong style={{ fontFamily:"var(--mono)" }}>
+                      {question._topicId==="two-step-result" ? question.simplifiedAnswer :
+                       question._topicId==="dist-expand" ? question.expandedAnswer :
+                       question.displayAnswer}
+                    </strong>
+                  </div>
                 )}
               </div>
             ):(
