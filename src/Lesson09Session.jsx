@@ -133,6 +133,11 @@ function QuestionDisplay({ question, revealCorrect, topicId }) {
     if (topicId==="dist-solve-after") {
       return <div style={{ textAlign:"center" }}><KaTeXBlock expr={q.expandedLatex} /></div>;
     }
+    if (topicId==="dist-expand") {
+      // Show only the unexpanded expression (LHS), no equation
+      const lhs = q.latex.split("=")[0].trim();
+      return <div style={{ textAlign:"center" }}><KaTeXBlock expr={lhs} /></div>;
+    }
     return <div style={{ textAlign:"center" }}><KaTeXBlock expr={q.latex} /></div>;
   }
 
