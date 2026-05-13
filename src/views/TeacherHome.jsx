@@ -632,9 +632,9 @@ function ClassPanel({ cls, onUpdate }) {
     setExpanded(e => !e);
   };
 
-  const handleCatChange = (updated) => {
+  const handleCatChange = async (updated) => {
     setCategories(updated);
-    setCatDirty(true);
+    await saveCategories(cls.id, updated);
   };
 
   const saveCategoriesToDB = async () => {
