@@ -142,12 +142,11 @@ function QuestionDisplay({ question, revealCorrect, topicId }) {
   }
 
   if (q.type === "rect-missing") {
-    const VW=520, VH=360, pad=80;
-    const scale=Math.min((VW-2*pad)/q.L,(VH-2*pad)/q.W)*0.80;
+    const VW=520, VH=340, pad=80;
+    const scale=Math.min((VW-2*pad)/q.L,(VH-2*pad)/q.W)*0.75;
     const rw=q.L*scale, rh=q.W*scale;
-    const ox=(VW-rw)/2, oy=(VH-rh)/2;
+    const ox=(VW-rw)/2, oy=pad;
     const f="#4b5068", g=26;
-    // Known side label, missing side as ?
     const Llabel = q.knownLabel==="L" ? `${q.knownVal} ${q.unit}` : "?";
     const Wlabel = q.knownLabel==="W" ? `${q.knownVal} ${q.unit}` : "?";
     const Lcol = q.knownLabel==="L" ? f : "var(--orange)";
@@ -156,21 +155,24 @@ function QuestionDisplay({ question, revealCorrect, topicId }) {
       <div style={{ textAlign:"center" }}>
         <svg viewBox={`0 0 ${VW} ${VH}`} style={{ width:"100%",maxWidth:520,display:"block",margin:"0 auto" }}>
           <rect x={ox} y={oy} width={rw} height={rh} fill="rgba(27,143,255,0.07)" stroke="var(--blue)" strokeWidth="2.5"/>
-          {/* P at top center */}
-          <text x={VW/2} y={oy-12} textAnchor="middle" fontSize="15" fill={f} fontWeight="700">P = {q.P} {q.unit}</text>
           {/* Bottom: L */}
           <text x={ox+rw/2} y={oy+rh+g} textAnchor="middle" fontSize="15" fill={Lcol} fontWeight="700">{Llabel}</text>
           {/* Top: L */}
-          <text x={ox+rw/2} y={oy-30} textAnchor="middle" fontSize="15" fill={Lcol} fontWeight="700">{Llabel}</text>
+          <text x={ox+rw/2} y={oy-10} textAnchor="middle" fontSize="15" fill={Lcol} fontWeight="700">{Llabel}</text>
           {/* Left: W */}
           <text x={ox-g} y={oy+rh/2} textAnchor="middle" fontSize="15" fill={Wcol} fontWeight="700" transform={`rotate(-90,${ox-g},${oy+rh/2})`}>{Wlabel}</text>
           {/* Right: W */}
           <text x={ox+rw+g} y={oy+rh/2} textAnchor="middle" fontSize="15" fill={Wcol} fontWeight="700" transform={`rotate(-90,${ox+rw+g},${oy+rh/2})`}>{Wlabel}</text>
           {revealCorrect && (
-            <text x={VW/2} y={VH-6} textAnchor="middle" fontSize="14" fontWeight="bold" fill="var(--green)">{q.missingLabel} = {q.displayAnswer}</text>
+            <text x={VW/2} y={oy+rh+g+22} textAnchor="middle" fontSize="14" fontWeight="bold" fill="var(--green)">{q.missingLabel} = {q.displayAnswer}</text>
           )}
         </svg>
-        <div style={{ fontSize:20,color:"var(--text2)",marginTop:4 }}>Formula: 2L + 2W = P</div>
+        {/* Perimeter shown as labelled annotation below shape */}
+        <div style={{ display:"inline-flex",alignItems:"center",gap:10,marginTop:8,background:"var(--bg2)",borderRadius:"var(--radius-sm)",padding:"8px 18px",border:"1px solid var(--border2)" }}>
+          <span style={{ fontSize:20,color:"var(--text3)",fontWeight:600 }}>Perimeter:</span>
+          <span style={{ fontSize:22,fontWeight:800,fontFamily:"var(--mono)",color:"var(--blue)" }}>P = {q.P} {q.unit}</span>
+        </div>
+        <div style={{ fontSize:20,color:"var(--text2)",marginTop:8 }}>Formula: 2L + 2W = P</div>
       </div>
     );
   }
@@ -294,14 +296,17 @@ function RectSubInput({ question, onSubmit, submitted }) {
         </span>
       </div>
       {/* Rectangle */}
-      <svg viewBox={`0 0 ${VW} ${VH}`} style={{ width:"100%",maxWidth:520,display:"block",margin:"0 auto 12px" }}>
+      <svg viewBox={`0 0 ${VW} ${VH}`} style={{ width:"100%",maxWidth:520,display:"block",margin:"0 auto 8px" }}>
         <rect x={ox} y={oy} width={rw} height={rh} fill="rgba(27,143,255,0.07)" stroke="var(--blue)" strokeWidth="2.5"/>
-        <text x={VW/2} y={oy-12} textAnchor="middle" fontSize="15" fill={f} fontWeight="700">P = {question.P} {question.unit}</text>
         <text x={ox+rw/2} y={oy+rh+g} textAnchor="middle" fontSize="15" fill={Lcol} fontWeight="700">{Llabel}</text>
-        <text x={ox+rw/2} y={oy-30} textAnchor="middle" fontSize="15" fill={Lcol} fontWeight="700">{Llabel}</text>
+        <text x={ox+rw/2} y={oy-10} textAnchor="middle" fontSize="15" fill={Lcol} fontWeight="700">{Llabel}</text>
         <text x={ox-g} y={oy+rh/2} textAnchor="middle" fontSize="15" fill={Wcol} fontWeight="700" transform={`rotate(-90,${ox-g},${oy+rh/2})`}>{Wlabel}</text>
         <text x={ox+rw+g} y={oy+rh/2} textAnchor="middle" fontSize="15" fill={Wcol} fontWeight="700" transform={`rotate(-90,${ox+rw+g},${oy+rh/2})`}>{Wlabel}</text>
       </svg>
+      <div style={{ display:"inline-flex",alignItems:"center",gap:10,marginBottom:14,background:"var(--bg2)",borderRadius:"var(--radius-sm)",padding:"8px 18px",border:"1px solid var(--border2)" }}>
+        <span style={{ fontSize:20,color:"var(--text3)",fontWeight:600 }}>Perimeter:</span>
+        <span style={{ fontSize:22,fontWeight:800,fontFamily:"var(--mono)",color:"var(--blue)" }}>P = {question.P} {question.unit}</span>
+      </div>
       <button className="btn btn-primary" style={{ width:"100%",fontSize:20 }}
         onClick={()=>onSubmit(JSON.stringify({P:question.P,known:question.knownVal}))}
         disabled={submitted||!allDone}>Submit Substitution</button>
