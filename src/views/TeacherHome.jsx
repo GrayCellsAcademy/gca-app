@@ -607,6 +607,7 @@ function ClassPanel({ cls, onUpdate }) {
   const [studentsLoaded, setStudentsLoaded] = useState(false);
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState(cls.categories || []);
+  useEffect(() => { setCategories(cls.categories || []); }, [cls.id]);
   const [catDirty, setCatDirty] = useState(false);
   const [saving, setSaving] = useState(false);
   const [resetDialog, setResetDialog] = useState(null);
@@ -635,6 +636,7 @@ function ClassPanel({ cls, onUpdate }) {
   const handleCatChange = async (updated) => {
     setCategories(updated);
     await saveCategories(cls.id, updated);
+    onUpdate();
   };
 
   const saveCategoriesToDB = async () => {
