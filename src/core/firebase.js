@@ -5,6 +5,7 @@ import {
   signInWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
+  sendPasswordResetEmail,
 } from "firebase/auth";
 import {
   initializeFirestore,
@@ -60,6 +61,10 @@ export async function loginUser(email, password) {
 }
 
 export async function logoutUser() { await signOut(auth); }
+
+export async function resetPassword(email) {
+  await sendPasswordResetEmail(auth, email.trim());
+}
 
 export function onAuthChange(cb) { return onAuthStateChanged(auth, cb); }
 

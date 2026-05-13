@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { getAllUsers, getAllClasses, deleteUser } from "../core/firebase";
+import { getAllUsers, getAllClasses, deleteUser, resetPassword } from "../core/firebase";
 
 export default function DevHome({ user, onLogout }) {
   const [users, setUsers] = useState([]);
@@ -19,6 +19,16 @@ export default function DevHome({ user, onLogout }) {
   };
 
   useEffect(() => { load(); }, []);
+
+  const handleResetPassword = async (email, name) => {
+    if (!confirm(`Send password reset email to ${name} (${email})?`)) return;
+    try {
+      await resetPassword(email);
+      alert(`Reset email sent to ${email}`);
+    } catch(e) {
+      alert("Failed: " + e.message);
+    }
+  };
 
   const handleDeleteUser = async (uid) => {
     if (!uid) { alert("Error: no user ID found."); return; }
@@ -190,9 +200,18 @@ export default function DevHome({ user, onLogout }) {
                             {u.id?.slice(0, 12)}...
                           </td>
                           <td>
-                            {u.id !== user.id && (
-                              <button className="btn btn-danger btn-sm" onClick={() => handleDeleteUser(u.id)}>Delete</button>
-                            )}
+                            <div style={{ display:"flex", gap:6 }}>
+                              {u.email && (
+                                <button className="btn btn-ghost btn-sm"
+                                  style={{ color:"var(--blue)", borderColor:"var(--blue)", fontSize:18 }}
+                                  onClick={() => handleResetPassword(u.email, u.name)}>
+                                  Reset PW
+                                </button>
+                              )}
+                              {u.id !== user.id && (
+                                <button className="btn btn-danger btn-sm" onClick={() => handleDeleteUser(u.id)}>Delete</button>
+                              )}
+                            </div>
                           </td>
                         </tr>
                       );
