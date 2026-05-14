@@ -569,7 +569,7 @@ export default function AdditionTablesPlayer({ user, topic, onHome }) {
   // Save using universal schema  stores topic-specific data inside `data`
   const saveCurrentProgress = async (tier, mastered) => {
     const completed = mastered.length === TOTAL_TIERS;
-    const percentComplete = Math.round((mastered.length / TOTAL_TIERS) * 100);
+    const percentComplete = Math.min(100, Math.round((mastered.length / TOTAL_TIERS) * 100));
     await saveProgress(user.id, topicId, {
       started: true,
       completed,
@@ -589,7 +589,7 @@ export default function AdditionTablesPlayer({ user, topic, onHome }) {
   };
 
   const handleTierComplete = async () => {
-    const newMastered = [...masteredTiers, currentTier];
+    const newMastered = [...new Set([...masteredTiers, currentTier])];
     setMasteredTiers(newMastered);
     const isLast = currentTier === TOTAL_TIERS;
     await saveCurrentProgress(isLast ? currentTier : currentTier+1, newMastered);
@@ -674,4 +674,5 @@ export default function AdditionTablesPlayer({ user, topic, onHome }) {
 
   return null;
 }
+
 
