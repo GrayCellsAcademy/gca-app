@@ -101,20 +101,21 @@ function RectPerimMastery({ onCorrect, onWrong }) {
     if (correct) onCorrect(); else onWrong();
   };
 
-  const VW = 460, VH = 280, pad = 65;
-  const scale = Math.min((VW - 2*pad) / q.L, (VH - 2*pad) / q.W) * 0.82;
-  const rw = q.L * scale, rh = q.W * scale;
+  const VW = 520, VH = 340, pad = 70;
+  const minL = Math.max(q.L, 20), minW = Math.max(q.W, 20);
+  const scale = Math.min((VW - 2*pad) / minL, (VH - 2*pad) / minW) * 0.80;
+  const rw = minL * scale, rh = minW * scale;
   const ox = (VW - rw) / 2, oy = (VH - rh) / 2;
-  const f = "#4b5068", g = 24;
+  const f = "#4b5068", g = 28;
 
   return (
     <div>
-      <svg viewBox={`0 0 ${VW} ${VH}`} style={{ width: "100%", maxWidth: 460, display: "block", margin: "0 auto" }}>
+      <svg viewBox={`0 0 ${VW} ${VH}`} style={{ width: "100%", maxWidth: 520, display: "block", margin: "0 auto" }}>
         <rect x={ox} y={oy} width={rw} height={rh} fill="rgba(27,143,255,0.07)" stroke="var(--blue)" strokeWidth="2.5" />
-        <text x={ox+rw/2} y={oy+rh+g} textAnchor="middle" fontSize="14" fill={f} fontWeight="700">{q.L} {q.unit}</text>
-        <text x={ox+rw/2} y={oy-8} textAnchor="middle" fontSize="14" fill={f} fontWeight="700">{q.L} {q.unit}</text>
-        <text x={ox-g} y={oy+rh/2} textAnchor="middle" fontSize="14" fill={f} fontWeight="700" transform={`rotate(-90,${ox-g},${oy+rh/2})`}>{q.W} {q.unit}</text>
-        <text x={ox+rw+g} y={oy+rh/2} textAnchor="middle" fontSize="14" fill={f} fontWeight="700" transform={`rotate(-90,${ox+rw+g},${oy+rh/2})`}>{q.W} {q.unit}</text>
+        {/* Bottom: L - midpoint of bottom side */}
+        <text x={ox+rw/2} y={oy+rh+g} textAnchor="middle" fontSize="15" fill={f} fontWeight="700">{q.L} {q.unit}</text>
+        {/* Left: W - midpoint of left side */}
+        <text x={ox-g} y={oy+rh/2} textAnchor="middle" fontSize="15" fill={f} fontWeight="700" transform={`rotate(-90,${ox-g},${oy+rh/2})`}>{q.W} {q.unit}</text>
       </svg>
       <div style={{ fontSize: 20, color: "var(--text3)", textAlign: "center", marginBottom: 10 }}>Enter perimeter with units (e.g. 48 ft)</div>
       {feedback ? (
@@ -139,11 +140,12 @@ function RectMissingSideMastery({ onCorrect, onWrong }) {
     if (correct) onCorrect(); else onWrong();
   };
 
-  const VW = 460, VH = 280, pad = 65;
-  const scale = Math.min((VW - 2*pad) / q.L, (VH - 2*pad) / q.W) * 0.80;
-  const rw = q.L * scale, rh = q.W * scale;
+  const VW = 520, VH = 340, pad = 70;
+  const minL = Math.max(q.L, 20), minW = Math.max(q.W, 20);
+  const scale = Math.min((VW - 2*pad) / minL, (VH - 2*pad) / minW) * 0.80;
+  const rw = minL * scale, rh = minW * scale;
   const ox = (VW - rw) / 2, oy = (VH - rh) / 2;
-  const f = "#4b5068", g = 24;
+  const f = "#4b5068", g = 28;
   const Llabel = q.knownLabel === "L" ? `${q.knownVal} ${q.unit}` : "?";
   const Wlabel = q.knownLabel === "W" ? `${q.knownVal} ${q.unit}` : "?";
   const Lcol = q.knownLabel === "L" ? f : "var(--orange)";
@@ -151,12 +153,12 @@ function RectMissingSideMastery({ onCorrect, onWrong }) {
 
   return (
     <div>
-      <svg viewBox={`0 0 ${VW} ${VH}`} style={{ width: "100%", maxWidth: 460, display: "block", margin: "0 auto" }}>
+      <svg viewBox={`0 0 ${VW} ${VH}`} style={{ width: "100%", maxWidth: 520, display: "block", margin: "0 auto" }}>
         <rect x={ox} y={oy} width={rw} height={rh} fill="rgba(27,143,255,0.07)" stroke="var(--blue)" strokeWidth="2.5" />
-        <text x={ox+rw/2} y={oy+rh+g} textAnchor="middle" fontSize="14" fill={Lcol} fontWeight="700">{Llabel}</text>
-        <text x={ox+rw/2} y={oy-8} textAnchor="middle" fontSize="14" fill={Lcol} fontWeight="700">{Llabel}</text>
-        <text x={ox-g} y={oy+rh/2} textAnchor="middle" fontSize="14" fill={Wcol} fontWeight="700" transform={`rotate(-90,${ox-g},${oy+rh/2})`}>{Wlabel}</text>
-        <text x={ox+rw+g} y={oy+rh/2} textAnchor="middle" fontSize="14" fill={Wcol} fontWeight="700" transform={`rotate(-90,${ox+rw+g},${oy+rh/2})`}>{Wlabel}</text>
+        {/* Bottom: L - midpoint of bottom side */}
+        <text x={ox+rw/2} y={oy+rh+g} textAnchor="middle" fontSize="15" fill={Lcol} fontWeight="700">{Llabel}</text>
+        {/* Left: W - midpoint of left side */}
+        <text x={ox-g} y={oy+rh/2} textAnchor="middle" fontSize="15" fill={Wcol} fontWeight="700" transform={`rotate(-90,${ox-g},${oy+rh/2})`}>{Wlabel}</text>
       </svg>
       <div style={{ display: "inline-flex", alignItems: "center", gap: 10, margin: "8px auto 10px", display: "flex", justifyContent: "center" }}>
         <span style={{ fontSize: 20, color: "var(--text3)", fontWeight: 600 }}>Perimeter:</span>

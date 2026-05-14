@@ -50,7 +50,7 @@ function gradeEquation(input, expected) {
 const LENGTH_UNITS = ["cm","mm","m","km","in","ft","yd","mi"];
 
 export function genWarmupA() {
-  const L=randInt(10,99), W=randInt(10,99);
+  const L=randInt(20,60), W=randInt(20,60);
   const unit=randChoice(LENGTH_UNITS);
   const perimeter=2*L+2*W;
   return {
@@ -252,7 +252,7 @@ export function gradeDistEqSolve(input, question) {
 export function genRectMissingSide() {
   const unit=randChoice(LENGTH_UNITS);
   // Pick L and W (2-digit), ensure perimeter is even
-  const L=randInt(10,49), W=randInt(10,49);
+  const L=randInt(20,55), W=randInt(20,55);
   const P=2*L+2*W; // always even
   // Randomly which side is missing
   const missingL=Math.random()<0.5;
