@@ -10,6 +10,7 @@ import Lesson06Session, { Lesson06TeacherView, Lesson06StudentView } from "../Le
 import Lesson07Session, { Lesson07TeacherView, Lesson07StudentView } from "../Lesson07Session";
 import Lesson08Session, { Lesson08TeacherView, Lesson08StudentView } from "../Lesson08Session";
 import Lesson09Session, { Lesson09TeacherView, Lesson09StudentView } from "../Lesson09Session";
+import Lesson10Session, { Lesson10TeacherView, Lesson10StudentView } from "../Lesson10Session";
 
 // Join a session by code (student flow)
 async function findSessionByCode(code) {
@@ -87,6 +88,11 @@ export default function LiveSession({ user, onHome }) {
         ? <Lesson09TeacherView session={session} sessionId={sessionId} uid={user.id} />
         : <Lesson09StudentView session={session} sessionId={sessionId} uid={user.id} />;
     }
+    if (session.type === "lesson10") {
+      return user.role === "teacher"
+        ? <Lesson10TeacherView session={session} sessionId={sessionId} uid={user.id} />
+        : <Lesson10StudentView session={session} sessionId={sessionId} uid={user.id} />;
+    }
   }
 
   // Lesson session views (teacher creates)
@@ -99,6 +105,7 @@ export default function LiveSession({ user, onHome }) {
   if (view === "lesson07") return <Lesson07Session user={user} onHome={() => setView("menu")} />;
   if (view === "lesson08") return <Lesson08Session user={user} onHome={() => setView("menu")} />;
   if (view === "lesson09") return <Lesson09Session user={user} onHome={() => setView("menu")} />;
+  if (view === "lesson10") return <Lesson10Session user={user} onHome={() => setView("menu")} />;
 
   // Student join flow
   if (view === "join") {
@@ -235,6 +242,14 @@ export default function LiveSession({ user, onHome }) {
                     <div>
                       <div style={{ fontWeight: 800, fontSize: 20, marginBottom: 4 }}>(9) Two-Step Equations and More</div>
                       <div style={{ color: "var(--text2)", fontSize: 20 }}>Two-step equations, distributive property, rectangle missing sides, and power equations.</div>
+                    </div>
+                  </div>
+                  <div className="card" onClick={() => setView("lesson10")}
+                    style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 16 }}>
+                    <div style={{ fontSize: 20, fontWeight: 800, color: "var(--blue)", minWidth: 36 }}>L10</div>
+                    <div>
+                      <div style={{ fontWeight: 800, fontSize: 20, marginBottom: 4 }}>(10) Linear Equations</div>
+                      <div style={{ color: "var(--text2)", fontSize: 20 }}>Multiple variable occurrences, variables on both sides, no solution, and radical equations.</div>
                     </div>
                   </div>
             </>
