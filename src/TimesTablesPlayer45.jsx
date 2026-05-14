@@ -411,7 +411,7 @@ export default function TimesTablesPlayer45({ user, topic, onHome }) {
   };
 
   const handleTableComplete = async () => {
-    const newMastered = [...masteredTables, TABLES[tableIdx]];
+    const newMastered = [...new Set([...masteredTables, TABLES[tableIdx]])];
     const nextIdx = tableIdx + 1;
     const done = nextIdx >= TABLES.length;
     await save(nextIdx, newMastered, done);
@@ -464,4 +464,5 @@ export default function TimesTablesPlayer45({ user, topic, onHome }) {
     </div>
   );
 }
+
 
