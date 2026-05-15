@@ -178,16 +178,24 @@ function WarmupCInput({ question, onSubmit, submitted }) {
   const [answers, setAnswers] = useState(question.eqs.map(()=>""));
   const allDone = answers.every(a=>a.trim()!=="");
   const set = (i,v) => setAnswers(prev=>prev.map((x,j)=>j===i?v:x));
-  const correct = JSON.parse(question.answer||"null");
+
   return (
     <div>
-      <div style={{ display:"flex",flexDirection:"column",gap:10,marginBottom:12 }}>
+      <div style={{ display:"flex",flexDirection:"column",gap:12,marginBottom:14 }}>
         {question.eqs.map((eq,i)=>(
           <div key={i} style={{ background:"var(--bg2)",borderRadius:"var(--radius-sm)",padding:"12px 16px" }}>
             <KaTeXBlock expr={eq.latex} />
-            <input value={answers[i]} onChange={e=>set(i,e.target.value.replace(/[^0-9\-,a-z\s]/gi,""))}
-              disabled={submitted} placeholder={i===1?"no solution":"-n,n or n"}
-              style={{ textAlign:"center",fontSize:22,fontFamily:"var(--mono)",fontWeight:700,padding:"8px",width:"100%" }} />
+            <div style={{ display:"flex",gap:8,marginTop:8 }}>
+              <input value={answers[i]==="no solution"?"":answers[i]}
+                onChange={e=>set(i,e.target.value.replace(/[^0-9\-,]/g,""))}
+                disabled={submitted||answers[i]==="no solution"}
+                placeholder={eq.noSol?"-":"-n,n or n"}
+                style={{ textAlign:"center",fontSize:22,fontFamily:"var(--mono)",fontWeight:700,padding:"8px",flex:1,opacity:answers[i]==="no solution"?0.4:1 }} />
+              <button onClick={()=>!submitted&&set(i,answers[i]==="no solution"?"":"no solution")}
+                style={{ padding:"8px 14px",borderRadius:"var(--radius-sm)",border:"2px solid "+(answers[i]==="no solution"?"var(--red)":"var(--border)"),background:answers[i]==="no solution"?"rgba(239,68,68,0.12)":"var(--surface)",fontFamily:"var(--font)",fontSize:19,fontWeight:700,cursor:"pointer",color:answers[i]==="no solution"?"var(--red)":"var(--text2)",whiteSpace:"nowrap" }}>
+                No Solution
+              </button>
+            </div>
           </div>
         ))}
       </div>

@@ -98,22 +98,25 @@ export function gradeWarmupB(input,q){
 
 // - Warm-up C: Four power equations -
 export function genWarmupC() {
-  const base=randChoice([4,8,16,27,64]);
-  // Always use 8 for clean demo, or randomize
-  const b=randChoice([4,8,16,25,27,64]);
-  const sqrtB=Math.round(Math.sqrt(b));
-  const cbrtB=Math.round(Math.cbrt(b));
-  const eqs=[
-    {latex:`x^2 = ${b}`,  answer:`-${sqrtB},${sqrtB}`, displayAnswer:`x = -${sqrtB} or ${sqrtB}`},
-    {latex:`x^2 = -${b}`, answer:"no solution",         displayAnswer:"No real solution"},
-    {latex:`x^3 = ${b}`,  answer:String(cbrtB),         displayAnswer:`x = ${cbrtB}`},
-    {latex:`x^3 = -${b}`, answer:String(-cbrtB),        displayAnswer:`x = -${cbrtB}`},
+  // x^2: roots between 1 and 12 - pick root, square it
+  const sqrtVal = randInt(1,12);
+  const sqB = sqrtVal * sqrtVal;
+  // x^3: roots between -5 and 5, excluding 0 and 1 and -1
+  const cbrtPool = [-5,-4,-3,-2,2,3,4,5];
+  const cbrtVal = randChoice(cbrtPool);
+  const cbB = cbrtVal * cbrtVal * cbrtVal; // positive cube
+
+  const eqs = [
+    { latex:`x^2 = ${sqB}`,   answer:`-${sqrtVal},${sqrtVal}`, displayAnswer:`x = -${sqrtVal} or x = ${sqrtVal}`, noSol:false },
+    { latex:`x^2 = -${sqB}`,  answer:"no solution",             displayAnswer:"No real solution",                  noSol:true  },
+    { latex:`x^3 = ${cbB}`,   answer:String(cbrtVal),           displayAnswer:`x = ${cbrtVal}`,                    noSol:false },
+    { latex:`x^3 = -${cbB}`,  answer:String(-cbrtVal),          displayAnswer:`x = -${cbrtVal}`,                   noSol:false },
   ];
-  const shuffled=shuffle(eqs);
+  const shuffled = shuffle(eqs);
   return {
-    type:"warmup-c", b, sqrtB, cbrtB, eqs:shuffled,
+    type:"warmup-c", sqB, sqrtVal, cbB, cbrtVal, eqs:shuffled,
     answer:JSON.stringify(shuffled.map(e=>e.answer)),
-    prompt:"Solve each equation. Comma-separate two solutions, or type 'no solution'.",
+    prompt:"Solve each equation. Enter solutions comma-separated, or press No Solution.",
   };
 }
 
@@ -121,6 +124,7 @@ export function gradeWarmupCItem(input, eq) {
   const s=String(input).trim().toLowerCase().replace(/\s/g,"");
   const ans=eq.answer.toLowerCase().replace(/\s/g,"");
   if(s===ans) return true;
+  if(ans==="nosolution") return s==="nosolution";
   // Accept reversed order for two solutions
   if(ans.includes(",")) {
     const parts=ans.split(","); const rParts=parts.slice().reverse().join(",");
