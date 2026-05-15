@@ -734,8 +734,8 @@ function MasterySection({ masteryData, onSave, onComplete }) {
 
         {/* Question display */}
         {isMul && (
-          <div style={{ display: "flex", justifyContent: "center", marginBottom: 14 }}>
-            <ColumnMultiplyWork a={question.a} b={question.b} />
+          <div style={{ display: "flex", justifyContent: "center", marginBottom: 14, fontFamily: "var(--mono)", fontSize: 28, fontWeight: 700 }}>
+            {question.a} x {question.b} = ?
           </div>
         )}
         {isDiv && (
@@ -843,7 +843,7 @@ export default function Lesson03MasteryPlayer({ user, topic, onHome }) {
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <div style={{ width: 40, height: 40, borderRadius: 12, background: "linear-gradient(135deg,var(--blue),var(--purple))", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 800, color: "#fff" }}>L3</div>
             <div>
-              <div style={{ fontWeight: 800, fontSize: 17 }}>HW 7 (019): Multiply, Divide & Area Mastery</div>
+              <div style={{ fontWeight: 800, fontSize: 17 }}>HW 3 (019): Multiply, Divide & Area Mastery</div>
               <div style={{ color: "var(--text3)", fontSize: 12 }}>3 correct in a row to advance each topic</div>
             </div>
           </div>
@@ -859,4 +859,5 @@ export default function Lesson03MasteryPlayer({ user, topic, onHome }) {
     </div>
   );
 }
+
 
