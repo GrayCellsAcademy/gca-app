@@ -659,7 +659,8 @@ function wrongResetStep(step) {
   const s = MASTERY_STEPS[step];
   if (s.group === "mul") return step - s.subIdx; // back to start of mul group
   if (s.group === "div") return 3; // back to standard division
-  return 5; // back to rectangle area
+  if (s.subIdx === 2) return 7; // composite wrong -> back to composite
+  return 5; // rectangle or square wrong -> back to rectangle
 }
 
 function MasterySection({ masteryData, onSave, onComplete }) {
@@ -862,6 +863,7 @@ export default function Lesson03MasteryPlayer({ user, topic, onHome }) {
     </div>
   );
 }
+
 
 
 
