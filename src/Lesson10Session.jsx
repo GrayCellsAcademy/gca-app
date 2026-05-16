@@ -603,6 +603,9 @@ function TeacherLesson10({ session, sessionId, uid }) {
   // Correct answer for reveal
   const correctAnswerText = () => {
     if (!question) return "";
+    if (question.type==="warmup-c") {
+      return question.eqs.map(eq=>eq.displayAnswer).join(" | ");
+    }
     if (question.type==="simplify-then-solve") return stage===0?question.simplifiedLHS:`x = ${question.x}`;
     if (question.type==="both-sides") {
       if (stage===1) return `${question.aStr} or ${question.cStr} (either valid)`;

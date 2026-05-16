@@ -190,7 +190,7 @@ export function genBothSides() {
     const aStr=a===1?"x":a===-1?"-x":`${a}x`;
     const bStr=b>=0?`+ ${b}`:`- ${Math.abs(b)}`;
     const cStr=c===1?"x":c===-1?"-x":`${c}x`;
-    const dStr=d>=0?String(d):`${d}`;
+    const dStr=d>=0?`+ ${d}`:`- ${Math.abs(d)}`;
     const latex=`${aStr} ${bStr} = ${cStr} ${dStr}`;
 
     // After eliminating cx term: (a-c)x + b = d
