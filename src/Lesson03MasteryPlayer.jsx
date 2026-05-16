@@ -755,7 +755,7 @@ function MasterySection({ masteryData, onSave, onComplete }) {
         {result ? (
           <div style={{ marginTop: 14 }}>
             <div style={{ textAlign: "center", fontSize: 18, fontWeight: 800, color: result.correct ? "var(--green)" : "var(--red)", marginBottom: 10 }}>
-              {result.correct ? "Correct! " + currentStreak + "/" + MASTERY_STREAK : "Incorrect - streak reset"}
+              {result.correct ? "Correct!" : "Incorrect - streak reset"}
             </div>
             {/* Show worked solution on wrong */}
             {!result.correct && (
@@ -767,7 +767,7 @@ function MasterySection({ masteryData, onSave, onComplete }) {
                   <div style={{ fontSize: 14, color: "var(--green)", fontFamily: "var(--mono)", fontWeight: 700 }}>
                     <div>Area = {question.area} sq {question.unit}</div>
                     {question.type === "rectangle-area" && question.areaYd !== null && <div>or {question.areaYd} sq yd</div>}
-                    {question.type === "composite-area" && question.missingAnswers && (
+                    {question.type === "composite-area" && question.missingAnswers && question.missingAnswers.length >= 2 && (
                       <div style={{ fontSize: 13, color: "var(--text2)", marginTop: 4 }}>
                         Missing sides: {question.missingAnswers[0].length} {question.unit} and {question.missingAnswers[1].length} {question.unit}
                       </div>
@@ -863,6 +863,7 @@ export default function Lesson03MasteryPlayer({ user, topic, onHome }) {
     </div>
   );
 }
+
 
 
 
