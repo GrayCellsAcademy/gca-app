@@ -649,7 +649,7 @@ function gradeMasteryAnswer(input, question) {
   if (t === "rectangle-area") return gradeRectangleArea(input, question);
   if (t === "square-area") return gradeSquareArea(input, question);
   if (t === "composite-area") {
-    try { const ans = JSON.parse(input); return parseInt(ans.area) === question.area; }
+    try { const ans = JSON.parse(input); return parseInt(ans.value ?? ans.area) === question.area; }
     catch { return parseInt(String(input).replace(/[^0-9]/g,""), 10) === question.area; }
   }
   return false;
@@ -863,6 +863,7 @@ export default function Lesson03MasteryPlayer({ user, topic, onHome }) {
     </div>
   );
 }
+
 
 
 
