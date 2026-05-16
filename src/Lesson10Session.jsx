@@ -189,7 +189,7 @@ function WarmupCInput({ question, onSubmit, submitted }) {
               <input value={answers[i]==="no solution"?"":answers[i]}
                 onChange={e=>set(i,e.target.value.replace(/[^0-9\-,]/g,""))}
                 disabled={submitted||answers[i]==="no solution"}
-                placeholder={eq.noSol?"-":"-n,n or n"}
+                placeholder=""
                 style={{ textAlign:"center",fontSize:22,fontFamily:"var(--mono)",fontWeight:700,padding:"8px",flex:1,opacity:answers[i]==="no solution"?0.4:1 }} />
               <button onClick={()=>!submitted&&set(i,answers[i]==="no solution"?"":"no solution")}
                 style={{ padding:"8px 14px",borderRadius:"var(--radius-sm)",border:"2px solid "+(answers[i]==="no solution"?"var(--red)":"var(--border)"),background:answers[i]==="no solution"?"rgba(239,68,68,0.12)":"var(--surface)",fontFamily:"var(--font)",fontSize:19,fontWeight:700,cursor:"pointer",color:answers[i]==="no solution"?"var(--red)":"var(--text2)",whiteSpace:"nowrap" }}>
@@ -332,7 +332,7 @@ function AnswerInput({ question, onSubmit, submitted, topicId, stage, extra }) {
   if (question.type==="simplify-then-solve") {
     if (stage===0) return (
       <div>
-        <div style={{ fontSize:20,color:"var(--text3)",marginBottom:6 }}>Simplify the left side only (e.g. 8x-12)</div>
+        <div style={{ fontSize:20,color:"var(--text3)",marginBottom:6 }}>Simplify the left side of the equation only. Do not solve.</div>
         <TextInput onSubmit={onSubmit} submitted={submitted} allowEq placeholder="e.g. 8x-12" wide />
       </div>
     );
@@ -353,7 +353,7 @@ function AnswerInput({ question, onSubmit, submitted, topicId, stage, extra }) {
   if (question.type==="both-sides-simplify") {
     if (stage===0) return (
       <div>
-        <div style={{ fontSize:20,color:"var(--text3)",marginBottom:6 }}>Simplify the left side (e.g. 10x+3)</div>
+        <div style={{ fontSize:20,color:"var(--text3)",marginBottom:6 }}>Simplify the left side of the equation only. Do not solve.</div>
         <TextInput onSubmit={onSubmit} submitted={submitted} allowEq placeholder="e.g. 10x+3" wide />
       </div>
     );
