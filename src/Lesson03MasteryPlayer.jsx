@@ -688,16 +688,11 @@ function MasterySection({ masteryData, onSave, onComplete }) {
       const newStreak = currentStreak + 1;
       setCurrentStreak(newStreak);
       if (newStreak >= MASTERY_STREAK) {
-        const nextStep = globalStep + 1;
-        if (nextStep >= MASTERY_STEPS.length) {
-          await onSave({ globalStep: nextStep, streak: 0 });
-          onComplete();
-        } else {
-          await onSave({ globalStep: nextStep, streak: 0 });
-        }
+        setResult({ correct: true, advance: true });
+        await onSave({ globalStep: globalStep + 1, streak: 0 });
       } else {
         await onSave({ globalStep, streak: newStreak });
-        setResult({ correct: true });
+        setResult({ correct: true, advance: false });
       }
     } else {
       const resetStep = wrongResetStep(globalStep);
@@ -868,6 +863,7 @@ export default function Lesson03MasteryPlayer({ user, topic, onHome }) {
     </div>
   );
 }
+
 
 
 
