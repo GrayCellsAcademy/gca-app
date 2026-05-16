@@ -770,8 +770,13 @@ function MasterySection({ masteryData, onSave, onComplete }) {
                 {isDiv && <LongDivisionWork dividend={question.dividend} divisor={question.divisor} quotient={question.quotient} remainder={question.remainder} />}
                 {isArea && (
                   <div style={{ fontSize: 14, color: "var(--green)", fontFamily: "var(--mono)", fontWeight: 700 }}>
-                    {question.displayAnswer}
-                    {question.type === "rectangle-area" && question.areaYd !== null && " or " + question.areaYd + " sq yd"}
+                    <div>Area = {question.area} sq {question.unit}</div>
+                    {question.type === "rectangle-area" && question.areaYd !== null && <div>or {question.areaYd} sq yd</div>}
+                    {question.type === "composite-area" && question.missingAnswers && (
+                      <div style={{ fontSize: 13, color: "var(--text2)", marginTop: 4 }}>
+                        Missing sides: {question.missingAnswers[0].length} {question.unit} and {question.missingAnswers[1].length} {question.unit}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -863,6 +868,7 @@ export default function Lesson03MasteryPlayer({ user, topic, onHome }) {
     </div>
   );
 }
+
 
 
 
