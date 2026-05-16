@@ -1,4 +1,4 @@
-// Lesson 3 - Multiplication, Division, and Area  Question Generators
+﻿// Lesson 3 - Multiplication, Division, and Area  Question Generators
 
 function randInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -520,6 +520,29 @@ export function gradeCompositeArea(input, question) {
     );
   } catch { return false; }
 }
+// Mastery version: all sides shown, student enters area only
+export function genCompositeShapeAreaMastery() {
+  const shapeData = genCompositeArea();
+  const { sides, area, unit } = shapeData;
+  return {
+    type: "composite-area",
+    ...shapeData,
+    hideIndices: [],
+    missingAnswers: [],
+    answer: JSON.stringify({ value: area, unit: "sq " + unit }),
+    displayAnswer: area + " sq " + unit,
+    prompt: "All sides are labeled. Find the area of the composite shape.",
+    activityType: "composite-area",
+  };
+}
+
+export function gradeCompositeAreaMastery(input, question) {
+  try {
+    const ans = JSON.parse(input);
+    const val = parseInt(ans.value ?? ans.area);
+    return val === question.area;
+  } catch { return parseInt(String(input).replace(/[^0-9]/g,""), 10) === question.area; }
+}
 
 // - Master generator and grader -
 
@@ -570,3 +593,4 @@ export function gradeLesson03Answer(input, question) {
     default: return false;
   }
 }
+

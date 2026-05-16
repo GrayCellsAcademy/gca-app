@@ -4,9 +4,9 @@ import { saveProgress as fbSaveProgress, getProgress } from "./core/firebase";
 import {
   genColMultiplyStage1, genColMultiplyStage2, genColMultiplyStage3,
   genLongDivision, genLongDivisionZeroMiddle,
-  genRectangleArea, genSquareArea, genCompositeShapeArea,
+  genRectangleArea, genSquareArea, genCompositeShapeArea, genCompositeShapeAreaMastery,
   gradeColMultiply, gradeLongDivision, gradeRectangleArea,
-  gradeSquareArea, gradeCompositeArea,
+  gradeSquareArea, gradeCompositeArea, gradeCompositeAreaMastery,
 } from "./lesson03Questions";
 
 export const LESSON03_MASTERY_TOPIC_ID = "lesson03-mastery-v1";
@@ -638,7 +638,7 @@ function genMasteryQuestion(step) {
   // area
   if (s.subIdx === 0) return genRectangleArea();
   if (s.subIdx === 1) return genSquareArea();
-  return genCompositeShapeArea();
+  return genCompositeShapeAreaMastery();
 }
 
 function gradeMasteryAnswer(input, question) {
@@ -868,6 +868,7 @@ export default function Lesson03MasteryPlayer({ user, topic, onHome }) {
     </div>
   );
 }
+
 
 
 
