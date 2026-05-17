@@ -313,7 +313,7 @@ export function gradeBothSidesSimplifyFinal(input,q){ return parseInt(String(inp
 
 // - Topic 4: No solution / All real numbers -
 export function genNoSolutionQuestion() {
-  // Stage 1: trivial cases (a=a - all real, a=b - no solution)
+  // Stage 1: trivial cases (a=a → all real, a=b → no solution)
   const a=randInt(2,20);
   const b=randInt(2,20); const bDiff=b===a?b+1:b;
   const trivial=[
@@ -321,27 +321,30 @@ export function genNoSolutionQuestion() {
     {latex:`${a} = ${bDiff}`, answer:"no solution", displayAnswer:"No solution"},
   ];
 
-  // Stage 2: variable terms cancel, no simplification
-  // a*x + b = a*x + c (b-c - no solution) or a*x + b = a*x + b (- all real)
+  // Stage 2: variable terms cancel, no simplification needed — 50/50 all real vs no solution
   const ca=randInt(2,8);
-  const cb=randInt(-15,15);
-  const allReal=Math.random()<0.5;
-  const cc=allReal?cb:cb+(Math.random()<0.5?randInt(1,10):-randInt(1,10));
-  const stage2Latex=ca===1?`x + ${cb} = x + ${cc}`:`${ca}x + ${cb} = ${ca}x + ${cc}`;
-  const stage2Answer=allReal?"all real numbers":"no solution";
+  const cb=randInt(2,15); // keep positive to avoid +(-n)
+  const allReal2=Math.random()<0.5;
+  const cc=allReal2?cb:cb+randInt(1,8); // different constant for no solution
+  // Format cleanly: avoid + negative
+  const stage2Latex=`${ca}x + ${cb} = ${ca}x + ${cc}`;
+  const stage2Answer=allReal2?"all real numbers":"no solution";
 
-  // Stage 3: needs one simplification step per side first
-  // e.g. 2(x+3)=2x+6 - all real; 2(x+3)=2x+8 - no solution
-  const sa=randInt(2,5), sb=randInt(1,8);
+  // Stage 3: needs one simplification per side — 50/50
+  // All real: a(bx+c) = abx + ac
+  // No solution: a(bx+c) = abx + (ac+k) where k≠0
+  const sa=randInt(2,5), sb=randInt(2,6), sc=randInt(1,8);
   const allReal3=Math.random()<0.5;
-  const sc=allReal3?sa*sb:sa*sb+(Math.random()<0.5?1:-1)*randInt(1,5);
-  const stage3Latex=`${sa}(x + ${sb}) = ${sa}x + ${sc}`;
+  const lhsExpanded=sa*sc; // sa*(sbx+sc) → sa*sb*x + sa*sc
+  const rhsConst3=allReal3?lhsExpanded:lhsExpanded+randInt(1,6);
+  // LHS: sa(sbx + sc), RHS: sa*sb*x + rhsConst3
+  const stage3Latex=`${sa}(${sb}x + ${sc}) = ${sa*sb}x + ${rhsConst3}`;
   const stage3Answer=allReal3?"all real numbers":"no solution";
 
   return {
     type:"no-solution",
     trivial, trivial_a:a, trivial_b:bDiff,
-    stage2Latex, stage2Answer, stage2AllReal:allReal,
+    stage2Latex, stage2Answer, stage2AllReal:allReal2,
     stage3Latex, stage3Answer, stage3AllReal:allReal3,
     prompt:"",
   };

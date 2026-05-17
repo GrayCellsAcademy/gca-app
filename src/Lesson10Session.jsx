@@ -139,20 +139,13 @@ function QuestionDisplay({ question, revealCorrect, topicId, stage }) {
     return <div style={{ textAlign:"center" }}><KaTeXBlock expr={q.latex} /></div>;
   }
 
-  // Both sides with simplification
+  // Both sides with simplification - 3 stages: LHS, RHS, solve
   if (q.type==="both-sides-simplify") {
     if (stage===0) return <div style={{ textAlign:"center" }}><KaTeXBlock expr={q.latex} /><div style={{ fontSize:20,color:"var(--text2)",marginTop:4 }}>Simplify the LEFT side only.</div></div>;
     if (stage===1) return <div style={{ textAlign:"center" }}><KaTeXBlock expr={q.latex} /><div style={{ fontSize:20,color:"var(--text2)",marginTop:4 }}>Now simplify the RIGHT side only.</div></div>;
-    if (stage===2) {
-      const simplified = `${q.simplifiedLHS} = ${q.simplifiedRHS}`;
-      return <div style={{ textAlign:"center" }}><KaTeXBlock expr={simplified} /><div style={{ fontSize:20,color:"var(--text2)",marginTop:4 }}>Which variable term will you eliminate?</div></div>;
-    }
-    if (stage===3) {
-      const simplified = `${q.simplifiedLHS} = ${q.simplifiedRHS}`;
-      return <div style={{ textAlign:"center" }}><KaTeXBlock expr={simplified} /></div>;
-    }
-    if (stage===4) return <div style={{ textAlign:"center" }}><KaTeXBlock expr={q.resultEq} /></div>;
-    return <div style={{ textAlign:"center" }}><KaTeXBlock expr={q.latex} /></div>;
+    // Stage 2: show fully simplified equation, student solves
+    const simplified = `${q.simplifiedLHS} = ${q.simplifiedRHS}`;
+    return <div style={{ textAlign:"center" }}><KaTeXBlock expr={simplified} /></div>;
   }
 
   // No solution - handled by input component
@@ -346,15 +339,8 @@ function AnswerInput({ question, onSubmit, submitted, topicId, stage, extra }) {
     );
     if (stage===1) return (
       <div>
-        <div style={{ fontSize:20,color:"var(--text3)",marginBottom:6 }}>Simplify the right side (e.g. 5x+9)</div>
+        <div style={{ fontSize:20,color:"var(--text3)",marginBottom:6 }}>Simplify the right side of the equation only. Do not solve.</div>
         <TextInput onSubmit={onSubmit} submitted={submitted} allowEq placeholder="e.g. 5x+9" wide />
-      </div>
-    );
-    if (stage===2) return <BothSidesElimInput question={{ aStr:question.aStr, cStr:question.eStr }} onSubmit={onSubmit} submitted={submitted} />;
-    if (stage===3) return (
-      <div>
-        <div style={{ fontSize:20,color:"var(--text3)",marginBottom:6 }}>Write the resulting equation</div>
-        <TextInput onSubmit={onSubmit} submitted={submitted} allowEq placeholder="e.g. 5x=6" wide />
       </div>
     );
     return <TextInput onSubmit={onSubmit} submitted={submitted} allowNeg placeholder="Enter x value" />;
@@ -426,8 +412,6 @@ function gradeAnswer(input, question, topicId, stage, extra) {
   if (q.type==="both-sides-simplify") {
     if (stage===0) return gradeLesson10Answer(input,q,"lhs");
     if (stage===1) return gradeLesson10Answer(input,q,"rhs");
-    if (stage===2) return gradeLesson10Answer(input,q,"elim");
-    if (stage===3) return gradeLesson10Answer(input,q,"result");
     return gradeLesson10Answer(input,q,"");
   }
 
@@ -576,7 +560,7 @@ function TeacherLesson10({ session, sessionId, uid }) {
     if (!question) return "";
     if (question.type==="simplify-then-solve") return stage===0?"Stage 1: Simplify LHS":"Stage 2: Solve";
     if (question.type==="both-sides") return ["Stage 1: Choose Term to Eliminate","Stage 2: Write Result Equation","Stage 3: Solve"][stage-1]||"";
-    if (question.type==="both-sides-simplify") return ["Stage 1: Simplify LHS","Stage 2: Simplify RHS","Stage 3: Choose Term","Stage 4: Write Result","Stage 5: Solve"][stage]||"";
+    if (question.type==="both-sides-simplify") return ["Stage 1: Simplify LHS","Stage 2: Simplify RHS","Stage 3: Solve"][stage]||"";
     if (question.type==="no-solution") return ["Stage 1: Trivial Cases","Stage 2: No Simplification","Stage 3: After Simplification"][stage]||"";
     if (question.type==="radical-equations") return stage===0?"Stage 1: Identify Type":"Stage 2: Solve Equations ("+eqIdx+"/6)";
     return "";
@@ -593,8 +577,6 @@ function TeacherLesson10({ session, sessionId, uid }) {
     if (question.type==="both-sides-simplify") {
       if (stage===0) return question.simplifiedLHS;
       if (stage===1) return question.simplifiedRHS;
-      if (stage===2) return `${question.aStr} or ${question.eStr}`;
-      if (stage===3) return question.resultEq;
       return `x = ${question.x}`;
     }
     if (question.type==="no-solution") {
@@ -612,7 +594,7 @@ function TeacherLesson10({ session, sessionId, uid }) {
     if (!question) return false;
     if (question.type==="simplify-then-solve") return stage===0;
     if (question.type==="both-sides") return false;
-    if (question.type==="both-sides-simplify") return stage<4;
+    if (question.type==="both-sides-simplify") return stage<2;
     if (question.type==="no-solution") return stage<2;
     if (question.type==="radical-equations") return stage===0;
     return false;
@@ -791,7 +773,7 @@ function StudentLesson10({ session, sessionId, uid }) {
     if (!question) return "";
     if (question.type==="simplify-then-solve") return stage===0?"Simplify the left side":"Solve for x";
     if (question.type==="both-sides") return "Solve for x";
-    if (question.type==="both-sides-simplify") return ["Simplify left side","Simplify right side","Choose term to eliminate","Write resulting equation","Solve for x"][stage]||"";
+    if (question.type==="both-sides-simplify") return ["Simplify left side","Simplify right side","Solve for x"][stage]||"";
     if (question.type==="no-solution") return ["Identify trivial cases","Variables cancel - what type?","After simplification - what type?"][stage]||"";
     if (question.type==="radical-equations") return stage===0?"Identify solution types":"Solve: equation "+(eqIdx+1)+" of 6";
     return "";
