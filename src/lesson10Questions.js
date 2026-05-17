@@ -173,6 +173,31 @@ export function genSimplifyThenSolve() {
 export function gradeSimplifyLHS(input,q){ return gradeExpr(input, q.simplifiedLHS); }
 export function gradeSimplifyThenSolve(input,q){ return parseInt(String(input).replace(/\s/g,""),10)===q.x; }
 
+// Helpers for clean latex formatting
+function fmtTerm(coeff, varStr) {
+  // Returns e.g. "3x", "-3x", "x", "-x", "" for 0
+  if (coeff===0) return "";
+  if (varStr) {
+    if (coeff===1) return varStr;
+    if (coeff===-1) return "-"+varStr;
+    return `${coeff}${varStr}`;
+  }
+  return String(coeff);
+}
+
+function fmtConst(n) {
+  // Returns e.g. "+ 5", "- 5", "" for 0
+  if (n===0) return "";
+  return n>0 ? `+ ${n}` : `- ${Math.abs(n)}`;
+}
+
+function fmtEq(lhsCoeff, lhsVar, lhsConst, rhsCoeff, rhsVar, rhsConst) {
+  // Builds "ax + b = cx + d" skipping zero terms
+  const lhs = [fmtTerm(lhsCoeff,lhsVar), fmtConst(lhsConst)].filter(Boolean).join(" ") || "0";
+  const rhs = [fmtTerm(rhsCoeff,rhsVar), fmtConst(rhsConst)].filter(Boolean).join(" ") || "0";
+  return `${lhs} = ${rhs}`;
+}
+
 // - Topic 2: Variables on both sides -
 // Form: ax + b = cx + d
 export function genBothSides() {
@@ -186,26 +211,21 @@ export function genBothSides() {
     if(Math.abs(d)>50) continue;
     if(!Number.isInteger(d)) continue;
 
-    // Build latex: ax+b=cx+d
-    const aStr=a===1?"x":a===-1?"-x":`${a}x`;
-    const bStr=b>=0?`+ ${b}`:`- ${Math.abs(b)}`;
-    const cStr=c===1?"x":c===-1?"-x":`${c}x`;
-    const dStr=d>=0?`+ ${d}`:`- ${Math.abs(d)}`;
-    const latex=`${aStr} ${bStr} = ${cStr} ${dStr}`;
+    // Build clean latex: skip "+ 0" terms
+    const latex = fmtEq(a,"x",b, c,"x",d);
 
-    // After eliminating cx term: (a-c)x + b = d
+    // After eliminating cx: (a-c)x + b = d
     const newCoeff=a-c;
-    const newConstStr=b>=0?`+ ${b}`:`- ${Math.abs(b)}`;
-    const resultEqA=`${newCoeff}x ${newConstStr} = ${d}`;
+    const resultEqA = fmtEq(newCoeff,"x",b, 0,"",d);
 
-    // After eliminating ax term: b = (c-a)x + d
+    // After eliminating ax: b = (c-a)x + d
     const newCoeffB=c-a;
-    const resultEqB=`${b} = ${newCoeffB}x ${d>=0?`+ ${d}`:`- ${Math.abs(d)}`}`;
+    const resultEqB = fmtEq(0,"",b, newCoeffB,"x",d);
 
     return {
       type:"both-sides", latex, a, b, c, d, x,
-      aStr, cStr,
-      resultEqA, resultEqB, // after eliminating cx or ax respectively
+      aStr:fmtTerm(a,"x"), cStr:fmtTerm(c,"x"),
+      resultEqA, resultEqB,
       answer:String(x), displayAnswer:`x = ${x}`,
       prompt:"",
     };
@@ -254,11 +274,15 @@ export function genBothSidesSimplify() {
     const rhs1=rhsConst-d2;
 
     const cStr=sign1>=0?`${b}x + ${c}`:`${b}x - ${c}`;
-    const latex=`${a}(${cStr}) + ${d}x = ${e}x + ${d2} + ${rhs1}`;
+    const dStr=d>=0?`+ ${d}x`:`- ${Math.abs(d)}x`;
+    // RHS: ex + d2 + rhs1 - format d2 and rhs1 cleanly
+    const d2Str=d2>=0?`+ ${d2}`:`- ${Math.abs(d2)}`;
+    const rhs1Str=rhs1>=0?`+ ${rhs1}`:`- ${Math.abs(rhs1)}`;
+    const latex=`${a}(${cStr}) + ${d}x = ${e}x ${d2Str} ${rhs1Str}`;
 
     const lhsConstStr=lhsConst===0?"":lhsConst>0?`+ ${lhsConst}`:`- ${Math.abs(lhsConst)}`;
     const simplifiedLHS=`${lhsCoeff}x ${lhsConstStr}`.trim();
-    const simplifiedRHS=`${e}x + ${rhsConst}`;
+    const simplifiedRHS=rhsConst>=0?`${e}x + ${rhsConst}`:`${e}x - ${Math.abs(rhsConst)}`;
 
     // After eliminating smaller coeff
     const newCoeff=lhsCoeff-e;
