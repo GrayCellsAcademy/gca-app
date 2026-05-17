@@ -13,6 +13,7 @@ import TimesTablesPlayer7 from "./TimesTablesPlayer7";
 import TimesTablesPlayer8 from "./TimesTablesPlayer8";
 import TimesTablesPlayer9 from "./TimesTablesPlayer9";
 import DivisionTablesPlayer from "./DivisionTablesPlayer";
+import DivisionTablesPlayer67 from "./DivisionTablesPlayer67";
 import Lesson03MasteryPlayer from "./Lesson03MasteryPlayer";
 import Lesson04MasteryPlayer from "./Lesson04MasteryPlayer";
 import Lesson05MasteryPlayer from "./Lesson05MasteryPlayer";
@@ -20,6 +21,7 @@ import Lesson06MasteryPlayer from "./Lesson06MasteryPlayer";
 import Lesson07MasteryPlayer from "./Lesson07MasteryPlayer";
 import Lesson08MasteryPlayer from "./Lesson08MasteryPlayer";
 import Lesson09MasteryPlayer from "./Lesson09MasteryPlayer";
+import Lesson10MasteryPlayer from "./Lesson10MasteryPlayer";
 
 export const TOPICS = {
   "addition-tables-v1": {
@@ -106,6 +108,13 @@ export const TOPICS = {
     subject: "math", gradeLevel: "6+", icon: "", type: "drill", status: "published", order: 13,
     Player: DivisionTablesPlayer,
   },
+  "division-tables-67-v1": {
+    id: "division-tables-67-v1",
+    title: "Division Tables (6-7)",
+    description: "Master dividing by 6 and 7.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "drill", status: "published", order: 14,
+    Player: DivisionTablesPlayer67,
+  },
   "lesson04-mastery-v1": {
     id: "lesson04-mastery-v1",
     title: "HW 4 (019)",
@@ -147,6 +156,13 @@ export const TOPICS = {
     description: "Rectangle perimeter/missing side, two-step equations, distributive property, and power equations.",
     subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 18,
     Player: Lesson09MasteryPlayer,
+  },
+  "lesson10-mastery-v1": {
+    id: "lesson10-mastery-v1",
+    title: "HW 10 (019)",
+    description: "Linear equations with simplification, variables on both sides, no solution, and radical equations.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 19,
+    Player: Lesson10MasteryPlayer,
   },
   "review-homework-v1": {
     id: "review-homework-v1",
