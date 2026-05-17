@@ -176,7 +176,7 @@ function BothSidesMastery({ onCorrect, onWrong }) {
     if (correct) onCorrect(); else onWrong();
   };
 
-  const resultEq = eliminatedA ? q.resultEqA : q.resultEqB;
+  const resultEq = eliminatedA ? q.resultEqB : q.resultEqA;
 
   return (
     <div>

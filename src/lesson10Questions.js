@@ -151,13 +151,13 @@ export function genSimplifyThenSolve() {
     if(Math.abs(e)>50) continue;
 
     // Build latex
-    const cStr=sign1>=0?`${b}x + ${c}`:`${b}x - ${c}`;
+    const cStr=sign1>=0?`${fmtX(b)} + ${c}`:`${fmtX(b)} - ${c}`;
     const dStr=sign2>=0?`+ ${d}x`:`- ${d}x`;
     const latex=`${a}(${cStr}) ${dStr} = ${e}`;
 
     // Simplified LHS: coeff*x + constant
     const constStr=constant===0?"":constant>0?`+ ${constant}`:`- ${Math.abs(constant)}`;
-    const simplifiedLHS=`${coeff}x ${constStr}`.trim();
+    const simplifiedLHS=(fmtX(coeff)+" "+constStr).trim();
     const simplifiedEq=`${simplifiedLHS} = ${e}`;
 
     return {
@@ -196,6 +196,14 @@ function fmtEq(lhsCoeff, lhsVar, lhsConst, rhsCoeff, rhsVar, rhsConst) {
   const lhs = [fmtTerm(lhsCoeff,lhsVar), fmtConst(lhsConst)].filter(Boolean).join(" ") || "0";
   const rhs = [fmtTerm(rhsCoeff,rhsVar), fmtConst(rhsConst)].filter(Boolean).join(" ") || "0";
   return `${lhs} = ${rhs}`;
+}
+
+// Format "Nx" suppressing coefficient of 1 or -1
+function fmtX(n) {
+  if(n===0) return "";
+  if(n===1) return "x";
+  if(n===-1) return "-x";
+  return `${n}x`;
 }
 
 // - Topic 2: Variables on both sides -
@@ -240,8 +248,9 @@ export function gradeBothSidesElimChoice(input,q){
 }
 
 export function gradeBothSidesResult(input,q,eliminatedA){
-  // Grade the resulting equation after elimination
-  const expected = eliminatedA ? q.resultEqA : q.resultEqB;
+  // eliminatedA=true means student eliminated left side (aStr) - result is resultEqB
+  // eliminatedA=false means student eliminated right side (cStr) - result is resultEqA
+  const expected = eliminatedA ? q.resultEqB : q.resultEqA;
   return gradeEquation(input, expected);
 }
 
@@ -273,8 +282,8 @@ export function genBothSidesSimplify() {
     // Make RHS require simplification: e*x + d2 + (rhsConst-d2) - need two terms
     const rhs1=rhsConst-d2;
 
-    const cStr=sign1>=0?`${b}x + ${c}`:`${b}x - ${c}`;
-    const dStr=d>=0?`+ ${d}x`:`- ${Math.abs(d)}x`;
+    const cStr=sign1>=0?`${fmtX(b)} + ${c}`:`${fmtX(b)} - ${c}`;
+    const dStr=`+ ${fmtX(d)}`;
     // RHS: ex + d2 + rhs1 - format d2 and rhs1 cleanly
     const d2Str=d2>=0?`+ ${d2}`:`- ${Math.abs(d2)}`;
     const rhs1Str=rhs1>=0?`+ ${rhs1}`:`- ${Math.abs(rhs1)}`;
@@ -282,18 +291,18 @@ export function genBothSidesSimplify() {
 
     const lhsConstStr=lhsConst===0?"":lhsConst>0?`+ ${lhsConst}`:`- ${Math.abs(lhsConst)}`;
     const simplifiedLHS=`${lhsCoeff}x ${lhsConstStr}`.trim();
-    const simplifiedRHS=rhsConst>=0?`${e}x + ${rhsConst}`:`${e}x - ${Math.abs(rhsConst)}`;
+    const simplifiedRHS=rhsConst===0?fmtX(e):rhsConst>0?`${fmtX(e)} + ${rhsConst}`:`${fmtX(e)} - ${Math.abs(rhsConst)}`;
 
     // After eliminating smaller coeff
     const newCoeff=lhsCoeff-e;
     const newConstStr=lhsConst>=0?`- ${lhsConst}`:`+ ${Math.abs(lhsConst)}`;
-    const resultEq=`${newCoeff}x = ${rhsConst-lhsConst}`;
+    const resultEq=`${fmtX(newCoeff)} = ${rhsConst-lhsConst}`;
 
     return {
       type:"both-sides-simplify", latex, x,
       simplifiedLHS, simplifiedRHS,
       lhsCoeff, lhsConst, e, rhsConst,
-      aStr:`${lhsCoeff}x`, eStr:`${e}x`,
+      aStr:fmtX(lhsCoeff), eStr:fmtX(e),
       resultEq,
       answer:String(x), displayAnswer:`x = ${x}`,
       prompt:"",
@@ -313,7 +322,7 @@ export function gradeBothSidesSimplifyFinal(input,q){ return parseInt(String(inp
 
 // - Topic 4: No solution / All real numbers -
 export function genNoSolutionQuestion() {
-  // Stage 1: trivial cases (a=a → all real, a=b → no solution)
+  // Stage 1: trivial cases (a=a - all real, a=b - no solution)
   const a=randInt(2,20);
   const b=randInt(2,20); const bDiff=b===a?b+1:b;
   const trivial=[
@@ -321,7 +330,7 @@ export function genNoSolutionQuestion() {
     {latex:`${a} = ${bDiff}`, answer:"no solution", displayAnswer:"No solution"},
   ];
 
-  // Stage 2: variable terms cancel, no simplification needed — 50/50 all real vs no solution
+  // Stage 2: variable terms cancel, no simplification needed - 50/50 all real vs no solution
   const ca=randInt(2,8);
   const cb=randInt(2,15); // keep positive to avoid +(-n)
   const allReal2=Math.random()<0.5;
@@ -330,12 +339,12 @@ export function genNoSolutionQuestion() {
   const stage2Latex=`${ca}x + ${cb} = ${ca}x + ${cc}`;
   const stage2Answer=allReal2?"all real numbers":"no solution";
 
-  // Stage 3: needs one simplification per side — 50/50
+  // Stage 3: needs one simplification per side - 50/50
   // All real: a(bx+c) = abx + ac
-  // No solution: a(bx+c) = abx + (ac+k) where k≠0
+  // No solution: a(bx+c) = abx + (ac+k) where k-0
   const sa=randInt(2,5), sb=randInt(2,6), sc=randInt(1,8);
   const allReal3=Math.random()<0.5;
-  const lhsExpanded=sa*sc; // sa*(sbx+sc) → sa*sb*x + sa*sc
+  const lhsExpanded=sa*sc; // sa*(sbx+sc) - sa*sb*x + sa*sc
   const rhsConst3=allReal3?lhsExpanded:lhsExpanded+randInt(1,6);
   // LHS: sa(sbx + sc), RHS: sa*sb*x + rhsConst3
   const stage3Latex=`${sa}(${sb}x + ${sc}) = ${sa*sb}x + ${rhsConst3}`;
