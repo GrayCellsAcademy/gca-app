@@ -273,6 +273,7 @@ export function genBothSidesSimplify() {
     const lhsCoeff=a*b+d;
     const lhsConst=a*sign1*c;
     if(Math.abs(lhsCoeff)<2||Math.abs(lhsCoeff)>9) continue;
+    if(lhsConst===0) continue; // LHS must have a constant term to simplify
 
     let e, rhsConst, latex, simplifiedRHS;
 
@@ -288,6 +289,7 @@ export function genBothSidesSimplify() {
       rhsConst=lhsConst+num;
       const k1=randInt(1,8);
       const k2=rhsConst-k1;
+      if(k2===0) continue; // avoid trivial + 0
       const k1Str=k1>=0?`+ ${k1}`:`- ${Math.abs(k1)}`;
       const k2Str=k2>=0?`+ ${k2}`:`- ${Math.abs(k2)}`;
       latex=`${a}(${sign1>=0?`${fmtX(b)} + ${c}`:`${fmtX(b)} - ${c}`}) + ${fmtX(d)} = ${fmtX(e)} ${k1Str} ${k2Str}`;
@@ -310,7 +312,7 @@ export function genBothSidesSimplify() {
       const e1=randInt(1,5), e2=randInt(1,4);
       e=e1+e2;
       if(e===lhsCoeff) continue;
-      const k=randInt(-15,15);
+      const k=randInt(-15,15); if(k===0) continue;
       const num=k-lhsConst;
       const den=lhsCoeff-e;
       if(den===0||num%den!==0) continue;

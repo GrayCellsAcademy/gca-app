@@ -336,28 +336,36 @@ function NoSolutionMastery({ onCorrect, onWrong }) {
 // -- Activity 6: sqrt(x) = a --
 function SqrtMastery({ onCorrect, onWrong }) {
   useKaTeX();
-  const PERFECT_SQUARES = [0,1,4,9,16,25,36,49,64,81,100];
-  const genQ = () => {
-    const type = Math.random() < 0.33 ? "neg" : Math.random() < 0.5 ? "zero" : "pos";
-    if (type === "pos") {
-      const root = Math.floor(Math.random() * 10) + 1; // 1-10
-      const a = root;
-      return { latex: `\\sqrt{x} = ${a}`, solution: a * a, answer: String(a * a), isNoSol: false };
-    } else if (type === "neg") {
-      const a = Math.floor(Math.random() * 9) + 1; // 1-9
-      return { latex: `\\sqrt{x} = -${a}`, solution: null, answer: "no solution", isNoSol: true };
-    } else {
-      return { latex: `\\sqrt{x} = 0`, solution: 0, answer: "0", isNoSol: false };
+  // Zero case shown once at start, then only pos/neg
+  const [seenZero, setSeenZero] = useState(false);
+  const genQ = (allowZero) => {
+    if (allowZero && Math.random() < 0.2) {
+      return { latex:`\\sqrt{x} = 0`, solution:0, answer:"0", isNoSol:false, isZero:true };
     }
+    const type = Math.random() < 0.5 ? "neg" : "pos";
+    if (type === "pos") {
+      const root = Math.floor(Math.random() * 10) + 1;
+      return { latex:`\\sqrt{x} = ${root}`, solution:root*root, answer:String(root*root), isNoSol:false, isZero:false };
+    }
+    const a = Math.floor(Math.random() * 9) + 1;
+    return { latex:`\\sqrt{x} = -${a}`, solution:null, answer:"no solution", isNoSol:true, isZero:false };
   };
-  const [q] = useState(() => genQ());
+  const [q, setQ] = useState(() => genQ(true));
   const [feedback, setFeedback] = useState(null);
 
   const handleSubmit = (val) => {
     const s = val.trim().toLowerCase().replace(/\s/g, "");
     const correct = q.isNoSol ? (s === "nosolution" || s === "no solution") : parseInt(s) === q.solution;
     setFeedback({ correct });
-    if (correct) onCorrect(); else onWrong();
+    if (correct) {
+      if (q.isZero) { setSeenZero(true); }
+      onCorrect();
+    } else onWrong();
+  };
+
+  const handleNext = () => {
+    setFeedback(null);
+    setQ(genQ(!seenZero));
   };
 
   return (
@@ -369,9 +377,9 @@ function SqrtMastery({ onCorrect, onWrong }) {
       {feedback ? (
         <FeedbackBanner correct={feedback.correct}
           message={feedback.correct ? null : `Answer: ${q.isNoSol ? "no solution" : `x = ${q.solution}`}`}
-          onNext={() => setFeedback(null)} />
+          onNext={handleNext} />
       ) : (
-        <TextInput onSubmit={handleSubmit} allowNeg placeholder={q.isNoSol ? "no solution" : "Enter x"} />
+        <TextInput key={q.latex} onSubmit={handleSubmit} allowNeg placeholder={q.isNoSol ? "no solution" : "Enter x"} />
       )}
     </div>
   );
@@ -380,21 +388,26 @@ function SqrtMastery({ onCorrect, onWrong }) {
 // -- Activity 7: cbrt(x) = a --
 function CbrtMastery({ onCorrect, onWrong }) {
   useKaTeX();
-  const CUBES = [-125,-64,-27,-8,-1,0,1,8,27,64,125];
-  const genQ = () => {
-    const a = CUBES[Math.floor(Math.random() * CUBES.length)];
-    const root = Math.round(Math.cbrt(a));
-    const aStr = a < 0 ? `(${a})` : String(a);
-    return { latex: `\\sqrt[3]{x} = ${a >= 0 ? a : a}`, a, root, answer: String(root) };
+  const CUBES_NONZERO = [-125,-64,-27,-8,-1,1,8,27,64,125];
+  const [seenZero, setSeenZero] = useState(false);
+  const genQ = (allowZero) => {
+    if (allowZero && Math.random() < 0.2) {
+      return { a:0, root:0, isZero:true };
+    }
+    const a = CUBES_NONZERO[Math.floor(Math.random() * CUBES_NONZERO.length)];
+    return { a, root:Math.round(Math.cbrt(a)), isZero:false };
   };
-  const [q] = useState(() => genQ());
+  const [q, setQ] = useState(() => genQ(true));
   const [feedback, setFeedback] = useState(null);
 
   const handleSubmit = (val) => {
     const correct = parseInt(val.trim()) === q.root;
     setFeedback({ correct });
-    if (correct) onCorrect(); else onWrong();
+    if (correct) { if (q.isZero) setSeenZero(true); onCorrect(); }
+    else onWrong();
   };
+
+  const handleNext = () => { setFeedback(null); setQ(genQ(!seenZero)); };
 
   return (
     <div>
@@ -403,9 +416,9 @@ function CbrtMastery({ onCorrect, onWrong }) {
       {feedback ? (
         <FeedbackBanner correct={feedback.correct}
           message={feedback.correct ? null : `x = ${q.root}`}
-          onNext={() => setFeedback(null)} />
+          onNext={handleNext} />
       ) : (
-        <TextInput onSubmit={handleSubmit} allowNeg placeholder="Enter x" />
+        <TextInput key={String(q.a)} onSubmit={handleSubmit} allowNeg placeholder="Enter x" />
       )}
     </div>
   );
