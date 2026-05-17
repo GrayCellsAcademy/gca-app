@@ -367,8 +367,6 @@ function AnswerInput({ question, onSubmit, submitted, topicId, stage, extra }) {
   }
 
   if (question.type==="radical-equations") {
-    if (stage===0) return <RadicalTypeInput question={question} onSubmit={onSubmit} submitted={submitted} />;
-    // Stage 1: solve individual equations (teacher cycles, eqIdx passed via extra)
     const eqIdx = extra?.eqIdx || 0;
     const eq = question.eqs[eqIdx];
     return (
@@ -427,12 +425,6 @@ function gradeAnswer(input, question, topicId, stage, extra) {
   }
 
   if (q.type==="radical-equations") {
-    if (stage===0) {
-      try {
-        const answers = JSON.parse(input);
-        return q.eqs.every((eq,i) => gradeRadicalType(answers[i]||"",eq));
-      } catch { return false; }
-    }
     const eqIdx = extra?.eqIdx||0;
     return gradeRadicalSolve(input, q.eqs[eqIdx]);
   }
@@ -562,7 +554,7 @@ function TeacherLesson10({ session, sessionId, uid }) {
     if (question.type==="both-sides") return ["Stage 1: Choose Term to Eliminate","Stage 2: Write Result Equation","Stage 3: Solve"][stage-1]||"";
     if (question.type==="both-sides-simplify") return ["Stage 1: Simplify LHS","Stage 2: Simplify RHS","Stage 3: Solve"][stage]||"";
     if (question.type==="no-solution") return ["Stage 1: Trivial Cases","Stage 2: No Simplification","Stage 3: After Simplification"][stage]||"";
-    if (question.type==="radical-equations") return stage===0?"Stage 1: Identify Type":"Stage 2: Solve Equations ("+eqIdx+"/6)";
+    if (question.type==="radical-equations") return "Solve equation "+(eqIdx+1)+" of 6";
     return "";
   };
 
@@ -584,7 +576,7 @@ function TeacherLesson10({ session, sessionId, uid }) {
       if (stage===1) return question.stage2Answer;
       return question.stage3Answer;
     }
-    if (question.type==="radical-equations"&&stage===1) {
+    if (question.type==="radical-equations") {
       return question.eqs[eqIdx]?.displayAnswer||"";
     }
     return question.displayAnswer||"";
@@ -596,11 +588,11 @@ function TeacherLesson10({ session, sessionId, uid }) {
     if (question.type==="both-sides") return false;
     if (question.type==="both-sides-simplify") return stage<2;
     if (question.type==="no-solution") return stage<2;
-    if (question.type==="radical-equations") return stage===0;
+    if (question.type==="radical-equations") return false;
     return false;
   };
 
-  const hasNextEq = question?.type==="radical-equations"&&stage===1&&eqIdx<(question.eqs?.length||0)-1;
+  const hasNextEq = question?.type==="radical-equations"&&eqIdx<(question.eqs?.length||0)-1;
 
   return (
     <div style={{ maxWidth:1100,margin:"0 auto" }}>
@@ -775,7 +767,7 @@ function StudentLesson10({ session, sessionId, uid }) {
     if (question.type==="both-sides") return "Solve for x";
     if (question.type==="both-sides-simplify") return ["Simplify left side","Simplify right side","Solve for x"][stage]||"";
     if (question.type==="no-solution") return ["Identify trivial cases","Variables cancel - what type?","After simplification - what type?"][stage]||"";
-    if (question.type==="radical-equations") return stage===0?"Identify solution types":"Solve: equation "+(eqIdx+1)+" of 6";
+    if (question.type==="radical-equations") return "Solve for x - equation "+(eqIdx+1)+" of 6";
     return "";
   };
 
