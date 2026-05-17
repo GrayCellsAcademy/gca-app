@@ -134,14 +134,8 @@ function QuestionDisplay({ question, revealCorrect, topicId, stage }) {
     return <div style={{ textAlign:"center" }}><KaTeXBlock expr={q.latex} /></div>;
   }
 
-  // Both sides
+  // Both sides - just show equation, student solves directly
   if (q.type==="both-sides") {
-    if (stage===1) return <div style={{ textAlign:"center" }}><KaTeXBlock expr={q.latex} /><div style={{ fontSize:20,color:"var(--text2)",marginTop:4 }}>Which variable term will you eliminate?</div></div>;
-    if (stage===2) return <div style={{ textAlign:"center" }}><KaTeXBlock expr={q.latex} /></div>;
-    if (stage===3) {
-      const eq = q._eliminatedA ? q.resultEqA : q.resultEqB;
-      return <div style={{ textAlign:"center" }}><KaTeXBlock expr={eq} /></div>;
-    }
     return <div style={{ textAlign:"center" }}><KaTeXBlock expr={q.latex} /></div>;
   }
 
@@ -340,13 +334,6 @@ function AnswerInput({ question, onSubmit, submitted, topicId, stage, extra }) {
   }
 
   if (question.type==="both-sides") {
-    if (stage===1) return <BothSidesElimInput question={question} onSubmit={onSubmit} submitted={submitted} />;
-    if (stage===2) return (
-      <div>
-        <div style={{ fontSize:20,color:"var(--text3)",marginBottom:6 }}>Write the resulting equation (e.g. 3x+3=9)</div>
-        <TextInput onSubmit={onSubmit} submitted={submitted} allowEq placeholder="e.g. 3x+3=9" wide />
-      </div>
-    );
     return <TextInput onSubmit={onSubmit} submitted={submitted} allowNeg placeholder="Enter x value" />;
   }
 
@@ -433,11 +420,6 @@ function gradeAnswer(input, question, topicId, stage, extra) {
   }
 
   if (q.type==="both-sides") {
-    if (stage===1) return gradeLesson10Answer(input,q,"elim");
-    if (stage===2) {
-      q._eliminatedA = extra?.eliminatedA;
-      return gradeLesson10Answer(input,q,"result");
-    }
     return gradeLesson10Answer(input,q,"");
   }
 
@@ -607,11 +589,7 @@ function TeacherLesson10({ session, sessionId, uid }) {
       return question.eqs.map(eq=>eq.displayAnswer).join(" | ");
     }
     if (question.type==="simplify-then-solve") return stage===0?question.simplifiedLHS:`x = ${question.x}`;
-    if (question.type==="both-sides") {
-      if (stage===1) return `${question.aStr} or ${question.cStr} (either valid)`;
-      if (stage===2) return eliminatedA?question.resultEqA:question.resultEqB;
-      return `x = ${question.x}`;
-    }
+    if (question.type==="both-sides") return `x = ${question.x}`;
     if (question.type==="both-sides-simplify") {
       if (stage===0) return question.simplifiedLHS;
       if (stage===1) return question.simplifiedRHS;
@@ -633,7 +611,7 @@ function TeacherLesson10({ session, sessionId, uid }) {
   const hasNextStage = () => {
     if (!question) return false;
     if (question.type==="simplify-then-solve") return stage===0;
-    if (question.type==="both-sides") return stage<3;
+    if (question.type==="both-sides") return false;
     if (question.type==="both-sides-simplify") return stage<4;
     if (question.type==="no-solution") return stage<2;
     if (question.type==="radical-equations") return stage===0;
@@ -812,7 +790,7 @@ function StudentLesson10({ session, sessionId, uid }) {
   const stageLabelStudent = () => {
     if (!question) return "";
     if (question.type==="simplify-then-solve") return stage===0?"Simplify the left side":"Solve for x";
-    if (question.type==="both-sides") return ["Choose term to eliminate","Write resulting equation","Solve for x"][stage-1]||"";
+    if (question.type==="both-sides") return "Solve for x";
     if (question.type==="both-sides-simplify") return ["Simplify left side","Simplify right side","Choose term to eliminate","Write resulting equation","Solve for x"][stage]||"";
     if (question.type==="no-solution") return ["Identify trivial cases","Variables cancel - what type?","After simplification - what type?"][stage]||"";
     if (question.type==="radical-equations") return stage===0?"Identify solution types":"Solve: equation "+(eqIdx+1)+" of 6";
