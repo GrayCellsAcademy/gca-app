@@ -259,53 +259,102 @@ export function gradeBothSidesSolve(input,q){
 }
 
 // - Topic 3: Variables on both sides with simplification -
-// Form: a(bx-c)+dx = ex+f OR similar with simplification needed on each side
+// Three structure variants to give variety:
+// A: LHS = a(bx-c)+dx, RHS = ex + k1 + k2  (combine constants on right)
+// B: LHS = a(bx-c)+dx, RHS = e1x + e2x + k  (combine x terms on right)
+// C: LHS = a(bx-c)+dx, RHS = e(fx+g)         (distribute on right)
 export function genBothSidesSimplify() {
+  const variant = randChoice(["A","B","C"]);
+
   for(let attempt=0;attempt<400;attempt++){
     const a=randInt(2,4), b=randInt(2,5), c=randInt(1,8), d=randInt(1,5);
-    const e=randInt(2,9), f=randInt(-20,20);
     const sign1=Math.random()<0.5?1:-1;
-    // LHS: a(bx-c)+dx = (ab+d)x - ac
+    // LHS: a(bx-c)+dx - lhsCoeff*x + lhsConst
     const lhsCoeff=a*b+d;
     const lhsConst=a*sign1*c;
     if(Math.abs(lhsCoeff)<2||Math.abs(lhsCoeff)>9) continue;
-    if(lhsCoeff===e) continue; // would give no solution or all reals
-    // x = (f - lhsConst) / (lhsCoeff - e)
-    const num=f-lhsConst;
+
+    let e, rhsConst, latex, simplifiedRHS;
+
+    if(variant==="A") {
+      // RHS: ex + k1 + k2 where k1+k2=rhsConst
+      e=randInt(2,8);
+      if(e===lhsCoeff) continue;
+      const num=randInt(-15,15)-lhsConst;
+      const den=lhsCoeff-e;
+      if(den===0||num%den!==0) continue;
+      const x=num/den;
+      if(!Number.isInteger(x)||x===0||Math.abs(x)>9) continue;
+      rhsConst=lhsConst+num;
+      const k1=randInt(1,8);
+      const k2=rhsConst-k1;
+      const k1Str=k1>=0?`+ ${k1}`:`- ${Math.abs(k1)}`;
+      const k2Str=k2>=0?`+ ${k2}`:`- ${Math.abs(k2)}`;
+      latex=`${a}(${sign1>=0?`${fmtX(b)} + ${c}`:`${fmtX(b)} - ${c}`}) + ${fmtX(d)} = ${fmtX(e)} ${k1Str} ${k2Str}`;
+      simplifiedRHS=rhsConst===0?fmtX(e):rhsConst>0?`${fmtX(e)} + ${rhsConst}`:`${fmtX(e)} - ${Math.abs(rhsConst)}`;
+      const newCoeff=lhsCoeff-e;
+      const resultEq=`${fmtX(newCoeff)} = ${rhsConst-lhsConst}`;
+      const lhsConstStr=lhsConst===0?"":lhsConst>0?`+ ${lhsConst}`:`- ${Math.abs(lhsConst)}`;
+      const simplifiedLHS=(`${fmtX(lhsCoeff)} ${lhsConstStr}`).trim();
+      return {
+        type:"both-sides-simplify", latex, x,
+        simplifiedLHS, simplifiedRHS,
+        lhsCoeff, lhsConst, e, rhsConst,
+        aStr:fmtX(lhsCoeff), eStr:fmtX(e),
+        resultEq, answer:String(x), displayAnswer:`x = ${x}`, prompt:"",
+      };
+    }
+
+    if(variant==="B") {
+      // RHS: e1x + e2x + k where (e1+e2)x+k is the simplified form
+      const e1=randInt(1,5), e2=randInt(1,4);
+      e=e1+e2;
+      if(e===lhsCoeff) continue;
+      const k=randInt(-15,15);
+      const num=k-lhsConst;
+      const den=lhsCoeff-e;
+      if(den===0||num%den!==0) continue;
+      const x=num/den;
+      if(!Number.isInteger(x)||x===0||Math.abs(x)>9) continue;
+      rhsConst=k;
+      const kStr=k>=0?`+ ${k}`:`- ${Math.abs(k)}`;
+      latex=`${a}(${sign1>=0?`${fmtX(b)} + ${c}`:`${fmtX(b)} - ${c}`}) + ${fmtX(d)} = ${fmtX(e1)} + ${fmtX(e2)} ${kStr}`;
+      simplifiedRHS=k===0?fmtX(e):k>0?`${fmtX(e)} + ${k}`:`${fmtX(e)} - ${Math.abs(k)}`;
+      const newCoeff=lhsCoeff-e;
+      const resultEq=`${fmtX(newCoeff)} = ${k-lhsConst}`;
+      const lhsConstStr=lhsConst===0?"":lhsConst>0?`+ ${lhsConst}`:`- ${Math.abs(lhsConst)}`;
+      const simplifiedLHS=(`${fmtX(lhsCoeff)} ${lhsConstStr}`).trim();
+      return {
+        type:"both-sides-simplify", latex, x,
+        simplifiedLHS, simplifiedRHS,
+        lhsCoeff, lhsConst, e, rhsConst,
+        aStr:fmtX(lhsCoeff), eStr:fmtX(e),
+        resultEq, answer:String(x), displayAnswer:`x = ${x}`, prompt:"",
+      };
+    }
+
+    // Variant C: RHS = f2(f3x + g) - distribute on right
+    const f2=randInt(2,4), f3=randInt(2,5), g=randInt(1,8);
+    e=f2*f3;
+    if(e===lhsCoeff) continue;
+    rhsConst=f2*g;
+    const num=rhsConst-lhsConst;
     const den=lhsCoeff-e;
     if(den===0||num%den!==0) continue;
     const x=num/den;
     if(!Number.isInteger(x)||x===0||Math.abs(x)>9) continue;
-    // RHS: ex+f (already simplified)
-    const d2=randInt(1,4); // extra term on RHS for "simplification"
-    const rhsConst=f;
-    // Make RHS require simplification: e*x + d2 + (rhsConst-d2) - need two terms
-    const rhs1=rhsConst-d2;
-
-    const cStr=sign1>=0?`${fmtX(b)} + ${c}`:`${fmtX(b)} - ${c}`;
-    const dStr=`+ ${fmtX(d)}`;
-    // RHS: ex + d2 + rhs1 - format d2 and rhs1 cleanly
-    const d2Str=d2>=0?`+ ${d2}`:`- ${Math.abs(d2)}`;
-    const rhs1Str=rhs1>=0?`+ ${rhs1}`:`- ${Math.abs(rhs1)}`;
-    const latex=`${a}(${cStr}) + ${d}x = ${e}x ${d2Str} ${rhs1Str}`;
-
-    const lhsConstStr=lhsConst===0?"":lhsConst>0?`+ ${lhsConst}`:`- ${Math.abs(lhsConst)}`;
-    const simplifiedLHS=`${lhsCoeff}x ${lhsConstStr}`.trim();
-    const simplifiedRHS=rhsConst===0?fmtX(e):rhsConst>0?`${fmtX(e)} + ${rhsConst}`:`${fmtX(e)} - ${Math.abs(rhsConst)}`;
-
-    // After eliminating smaller coeff
+    latex=`${a}(${sign1>=0?`${fmtX(b)} + ${c}`:`${fmtX(b)} - ${c}`}) + ${fmtX(d)} = ${f2}(${fmtX(f3)} + ${g})`;
+    simplifiedRHS=`${fmtX(e)} + ${rhsConst}`;
     const newCoeff=lhsCoeff-e;
-    const newConstStr=lhsConst>=0?`- ${lhsConst}`:`+ ${Math.abs(lhsConst)}`;
     const resultEq=`${fmtX(newCoeff)} = ${rhsConst-lhsConst}`;
-
+    const lhsConstStr=lhsConst===0?"":lhsConst>0?`+ ${lhsConst}`:`- ${Math.abs(lhsConst)}`;
+    const simplifiedLHS=(`${fmtX(lhsCoeff)} ${lhsConstStr}`).trim();
     return {
       type:"both-sides-simplify", latex, x,
       simplifiedLHS, simplifiedRHS,
       lhsCoeff, lhsConst, e, rhsConst,
       aStr:fmtX(lhsCoeff), eStr:fmtX(e),
-      resultEq,
-      answer:String(x), displayAnswer:`x = ${x}`,
-      prompt:"",
+      resultEq, answer:String(x), displayAnswer:`x = ${x}`, prompt:"",
     };
   }
   return {type:"both-sides-simplify",latex:"3(2x + 1) + 4x = 5x + 3 + 6",x:1,simplifiedLHS:"10x + 3",simplifiedRHS:"5x + 9",lhsCoeff:10,lhsConst:3,e:5,rhsConst:9,aStr:"10x",eStr:"5x",resultEq:"5x = 6",answer:"1",displayAnswer:"x = 1",prompt:""};
