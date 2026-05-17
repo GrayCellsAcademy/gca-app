@@ -238,90 +238,50 @@ function BothSidesSimplifyMastery({ onCorrect, onWrong }) {
   const [q] = useState(() => genBothSidesSimplify());
   const [stage, setStage] = useState(0);
   const [feedback, setFeedback] = useState(null);
-  const [choice, setChoice] = useState("");
 
   const stageLabels = [
     "Stage 1: Simplify left side",
     "Stage 2: Simplify right side",
-    "Stage 3: Choose term to eliminate",
-    "Stage 4: Write resulting equation",
-    "Stage 5: Solve for x",
+    "Stage 3: Solve for x",
   ];
 
   const handleSubmit = (val) => {
     let correct = false;
     if (stage === 0) correct = gradeBothSidesSimplifyLHS(val, q);
     else if (stage === 1) correct = gradeBothSidesSimplifyRHS(val, q);
-    else if (stage === 3) correct = gradeBothSidesSimplifyResult(val, q);
-    else if (stage === 4) correct = gradeBothSidesSimplifyFinal(val, q);
+    else correct = gradeBothSidesSimplifyFinal(val, q);
     setFeedback({ correct, stage });
     if (!correct) onWrong();
-    if (correct && stage === 4) onCorrect();
-  };
-
-  const handleElimSubmit = () => {
-    const correct = gradeBothSidesSimplifyElim(choice, q);
-    setFeedback({ correct, stage: 2 });
-    if (!correct) onWrong();
-  };
-
-  const nextStage = () => {
-    setStage(s => s + 1);
-    setFeedback(null);
-    setChoice("");
+    if (correct && stage === 2) onCorrect();
   };
 
   const wrongMessages = [
     `Simplified LHS: ${q.simplifiedLHS}`,
     `Simplified RHS: ${q.simplifiedRHS}`,
-    `Eliminate either ${q.aStr} or ${q.eStr}`,
-    `Result: ${q.resultEq}`,
     `x = ${q.x}`,
   ];
 
   const displayExpr = () => {
     if (stage === 0 || stage === 1) return q.latex;
-    if (stage === 2 || stage === 3) return `${q.simplifiedLHS} = ${q.simplifiedRHS}`;
-    return q.resultEq;
+    return `${q.simplifiedLHS} = ${q.simplifiedRHS}`;
   };
 
   return (
     <div>
       <div style={{ fontSize: 20, color: "var(--text3)", marginBottom: 6, fontWeight: 600 }}>{stageLabels[stage]}</div>
       <KaTeXBlock expr={displayExpr()} />
-
-      {stage === 2 ? (
-        !feedback ? (
-          <div>
-            <div style={{ display: "flex", gap: 12, justifyContent: "center", marginBottom: 12 }}>
-              {[q.aStr, q.eStr].map(opt => (
-                <button key={opt} onClick={() => setChoice(opt)}
-                  style={{ padding: "12px 24px", borderRadius: "var(--radius-sm)", border: "2px solid " + (choice === opt ? "var(--blue)" : "var(--border)"), background: choice === opt ? "rgba(27,143,255,0.15)" : "var(--surface)", fontFamily: "var(--mono)", fontSize: 22, fontWeight: 800, cursor: "pointer", color: choice === opt ? "var(--blue)" : "var(--text)" }}>
-                  {opt}
-                </button>
-              ))}
-            </div>
-            <button className="btn btn-primary" style={{ width: "100%", fontSize: 20 }}
-              onClick={handleElimSubmit} disabled={!choice}>Submit</button>
-          </div>
-        ) : (
-          <FeedbackBanner correct={feedback.correct}
-            message={feedback.correct ? null : wrongMessages[2]}
-            onNext={() => { if (feedback.correct) nextStage(); else setFeedback(null); }}
-            nextLabel={feedback.correct ? "Next Stage" : "Try Again"} />
-        )
-      ) : !feedback ? (
+      {!feedback ? (
         <div>
           {stage < 2 && <div style={{ fontSize: 20, color: "var(--text3)", marginBottom: 6 }}>Do not solve - simplify only.</div>}
           <TextInput key={`stage${stage}`} onSubmit={handleSubmit}
-            allowEq={stage < 4} allowNeg={stage === 4}
-            placeholder={stage === 4 ? "Enter x" : "e.g. 10x+3"} wide={stage < 4} />
+            allowEq={stage < 2} allowNeg={stage === 2}
+            placeholder={stage === 2 ? "Enter x" : "e.g. 10x+3"} wide={stage < 2} />
         </div>
       ) : (
         <FeedbackBanner correct={feedback.correct}
           message={feedback.correct ? null : wrongMessages[stage]}
-          onNext={() => { if (feedback.correct) { if (stage < 4) nextStage(); } else setFeedback(null); }}
-          nextLabel={feedback.correct ? (stage < 4 ? "Next Stage" : "Next Problem") : "Try Again"} />
+          onNext={() => { if (feedback.correct && stage < 2) { setStage(s=>s+1); setFeedback(null); } else setFeedback(null); }}
+          nextLabel={feedback.correct ? (stage < 2 ? "Next Stage" : "Next Problem") : "Try Again"} />
       )}
     </div>
   );
