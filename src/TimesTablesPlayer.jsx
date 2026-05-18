@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useRef } from "react";
+-import { useState, useEffect, useRef } from "react";
 import useActivityTracking from "./core/useActivityTracking";
 import { saveProgress as fbSaveProgress, getProgress } from "./core/firebase";
 
@@ -44,7 +44,7 @@ function WrongPanel({ n, b, correct, onContinue }) {
   );
 }
 
-function Stage1({ n, onComplete }) {
+function Stage1({ n, onComplete, timerDisabled=false }) {
   const [started, setStarted] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const [bestTime, setBestTime] = useState(null);
@@ -452,7 +452,7 @@ function TableSession({ n, masteredTables, onComplete }) {
           </div>
         ))}
       </div>
-      {stage === 1 && <Stage1 key={n+"-s1"} n={n} onComplete={() => setStage(2)} />}
+      {stage === 1 && <Stage1 timerDisabled={timerDisabled} key={n+"-s1"} n={n} onComplete={() => setStage(2)} />}
       {stage === 2 && <Stage2 key={n+"-s2"} n={n} onComplete={() => setStage(3)} />}
       {stage === 3 && <Stage3 key={n+"-s3"} n={n} masteredTables={masteredTables} onComplete={onComplete} />}
     </div>
@@ -460,7 +460,8 @@ function TableSession({ n, masteredTables, onComplete }) {
 }
 
 export default function TimesTablesPlayer({ user, topic, onHome }) {
-  const timerDisabled = user?.timerDisabled || false;
+  const [timerDisabled, setTimerDisabled] = useState(user?.timerDisabled || false);
+  useEffect(() => { getUser(user.id).then(u => setTimerDisabled(u?.timerDisabled || false)); }, []);
   useActivityTracking(user, "times-tables-v1", "Times Table (2 & 3)");
   const topicId = topic?.id || TIMES_TABLES_TOPIC_ID;
   const [loading, setLoading] = useState(true);

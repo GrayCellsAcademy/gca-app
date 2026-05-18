@@ -1,7 +1,7 @@
-﻿import { useState, useEffect, useRef } from "react";
+-import { useState, useEffect, useRef } from "react";
 import useActivityTracking from "./core/useActivityTracking";
 import { buildTierQuestions, TIER_COLORS, speak, ADDITION_TOPIC_ID } from "./additionTables";
-import { saveProgress, getProgress } from "./core/firebase";
+import { saveProgress, getProgress, getUser } from "./core/firebase";
 
 const QUESTION_TIME = 15;
 
@@ -275,7 +275,7 @@ function TierIntroScreen({ tierNum, masteredTiers, onStart }) {
 }
 
 //  Question Screen 
-function QuestionScreen({ tierNum, questions, onComplete, onHome, onReviewLesson }) {
+function QuestionScreen({ tierNum, questions, onComplete, onHome, onReviewLesson, timerDisabled=false }) {
   const [qs, setQs] = useState(questions);
   const [idx, setIdx] = useState(0);
   const [input, setInput] = useState("");
@@ -300,7 +300,7 @@ function QuestionScreen({ tierNum, questions, onComplete, onHome, onReviewLesson
     clearInterval(timerRef.current);
     setTimer(QUESTION_TIME);
     let t = QUESTION_TIME;
-    timerRef.current = setInterval(()=>{
+    if (!timerDisabled) timerRef.current = setInterval(()=>{
       t--;
       setTimer(t);
       if (t <= 0) {
@@ -408,7 +408,7 @@ function QuestionScreen({ tierNum, questions, onComplete, onHome, onReviewLesson
       <div className="card" style={{textAlign:"center",position:"relative"}}>
         {/* Timer */}
         <div style={{position:"absolute",top:16,right:16}}>
-          {!wrong && <CountdownRing seconds={timer} total={QUESTION_TIME}/>}
+          {!wrong && !timerDisabled && <CountdownRing seconds={timer} total={QUESTION_TIME}/>}
         </div>
 
         {/* Streak dots */}
@@ -533,6 +533,8 @@ function CelebrationScreen({ tierNum, isLast, onContinue }) {
 // Now receives `topic` prop from TopicRouter (in addition to user and onHome)
 export default function AdditionTablesPlayer({ user, topic, onHome }) {
   useActivityTracking(user, "addition-tables-v1", "Addition Table");
+  const [timerDisabled, setTimerDisabled] = useState(user?.timerDisabled || false);
+  useEffect(() => { getUser(user.id).then(u => setTimerDisabled(u?.timerDisabled || false)); }, []);
   const [screen, setScreen] = useState("loading");
   const [currentTier, setCurrentTier] = useState(1);
   const [masteredTiers, setMasteredTiers] = useState([]);
@@ -629,7 +631,7 @@ export default function AdditionTablesPlayer({ user, topic, onHome }) {
   );
 
   if (screen === "questions") return (
-    <QuestionScreen
+    <QuestionScreen timerDisabled={timerDisabled}
       tierNum={currentTier}
       questions={questions}
       onComplete={handleTierComplete}
