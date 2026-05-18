@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from "react";
-import { saveProgress, getProgress } from "./core/firebase";
+﻿import { useState, useEffect, useRef } from "react";
+import { saveProgress, getProgress, getUser } from "./core/firebase";
 import useActivityTracking from "./core/useActivityTracking";
 
 export const DIVISION_TABLES_TOPIC_ID = "division-tables-v1";
@@ -289,3 +289,4 @@ export default function DivisionTablesPlayer({ user, topic, onHome }) {
     </div>
   );
 }
+
