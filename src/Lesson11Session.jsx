@@ -125,25 +125,23 @@ function QuestionDisplay({ question: q, revealCorrect, extra }) {
     <div style={{ textAlign:"center" }}><KaTeX expr={q.latex} block /></div>
   );
 
-  if (q.type==="is-solution") return (
-    <div style={{ display:"flex",flexDirection:"column",gap:8 }}>
-      {q.statements.map((s,i)=>(
-        <div key={i} style={{ background:"var(--bg2)",borderRadius:"var(--radius-sm)",padding:"10px 14px",display:"flex",alignItems:"center",justifyContent:"space-between" }}>
-          <KaTeX expr={s.latex} />
-          {revealCorrect&&<span style={{ fontWeight:800,fontSize:20,color:s.answer?"var(--green)":"var(--red)",marginLeft:12 }}>{s.answer?"Yes":"No"}</span>}
-        </div>
-      ))}
-    </div>
-  );
+  if (q.type==="is-solution") {
+    if (!revealCorrect) return null; // shown via AnswerInput during answering
+    return (
+      <div style={{ display:"flex",flexDirection:"column",gap:8 }}>
+        {q.statements.map((s,i)=>(
+          <div key={i} style={{ background:"var(--bg2)",borderRadius:"var(--radius-sm)",padding:"10px 14px",display:"flex",alignItems:"center",justifyContent:"space-between" }}>
+            <KaTeX expr={s.latex} />
+            <span style={{ fontWeight:800,fontSize:20,color:s.answer?"var(--green)":"var(--red)",marginLeft:12 }}>{s.answer?"Yes":"No"}</span>
+          </div>
+        ))}
+      </div>
+    );
+  }
 
   if (q.type==="solution-set") return (
     <div style={{ textAlign:"center" }}>
       <KaTeX expr={q.latex} block />
-      <div style={{ display:"flex",gap:16,justifyContent:"center",marginTop:8 }}>
-        {q.options.map((n,i)=>(
-          <div key={i} style={{ fontSize:26,fontWeight:800,fontFamily:"var(--mono)" }}>{n}</div>
-        ))}
-      </div>
       {revealCorrect&&<div style={{ marginTop:8,fontSize:20,color:"var(--green)",fontWeight:700 }}>{q.displayAnswer}</div>}
     </div>
   );
@@ -162,27 +160,33 @@ function QuestionDisplay({ question: q, revealCorrect, extra }) {
     </div>
   );
 
-  if (q.type==="sign-flip") return (
-    <div style={{ display:"flex",flexDirection:"column",gap:8 }}>
-      {q.items.map((item,i)=>(
-        <div key={i} style={{ background:"var(--bg2)",borderRadius:"var(--radius-sm)",padding:"10px 14px",display:"flex",alignItems:"center",justifyContent:"space-between" }}>
-          <KaTeX expr={item.latex} />
-          {revealCorrect&&<span style={{ fontWeight:800,fontSize:20,color:item.flips?"var(--orange)":"var(--green)",marginLeft:12 }}>{item.flips?"Flip":"No flip"}</span>}
-        </div>
-      ))}
-    </div>
-  );
+  if (q.type==="sign-flip") {
+    if (!revealCorrect) return null;
+    return (
+      <div style={{ display:"flex",flexDirection:"column",gap:8 }}>
+        {q.items.map((item,i)=>(
+          <div key={i} style={{ background:"var(--bg2)",borderRadius:"var(--radius-sm)",padding:"10px 14px",display:"flex",alignItems:"center",justifyContent:"space-between" }}>
+            <KaTeX expr={item.latex} />
+            <span style={{ fontWeight:800,fontSize:20,color:item.flips?"var(--orange)":"var(--green)",marginLeft:12 }}>{item.flips?"Flip":"No flip"}</span>
+          </div>
+        ))}
+      </div>
+    );
+  }
 
-  if (q.type==="one-step-ineqs") return (
-    <div style={{ display:"flex",flexDirection:"column",gap:8 }}>
-      {q.items.map((item,i)=>(
-        <div key={i} style={{ background:"var(--bg2)",borderRadius:"var(--radius-sm)",padding:"10px 14px",display:"flex",alignItems:"center",justifyContent:"space-between" }}>
-          <KaTeX expr={item.latex} />
-          {revealCorrect&&<span style={{ fontWeight:800,fontSize:20,color:"var(--green)",marginLeft:12 }}>{item.display}</span>}
-        </div>
-      ))}
-    </div>
-  );
+  if (q.type==="one-step-ineqs") {
+    if (!revealCorrect) return null;
+    return (
+      <div style={{ display:"flex",flexDirection:"column",gap:8 }}>
+        {q.items.map((item,i)=>(
+          <div key={i} style={{ background:"var(--bg2)",borderRadius:"var(--radius-sm)",padding:"10px 14px",display:"flex",alignItems:"center",justifyContent:"space-between" }}>
+            <KaTeX expr={item.latex} />
+            <span style={{ fontWeight:800,fontSize:20,color:"var(--green)",marginLeft:12 }}>{item.display}</span>
+          </div>
+        ))}
+      </div>
+    );
+  }
 
   if (q.type==="two-step-ineq") return (
     <div style={{ textAlign:"center" }}>
@@ -191,16 +195,19 @@ function QuestionDisplay({ question: q, revealCorrect, extra }) {
     </div>
   );
 
-  if (q.type==="special-cases") return (
-    <div style={{ display:"flex",flexDirection:"column",gap:8 }}>
-      {q.items.map((item,i)=>(
-        <div key={i} style={{ background:"var(--bg2)",borderRadius:"var(--radius-sm)",padding:"10px 14px",display:"flex",alignItems:"center",justifyContent:"space-between" }}>
-          <KaTeX expr={item.latex} />
-          {revealCorrect&&<span style={{ fontWeight:800,fontSize:20,color:item.allReal?"var(--green)":"var(--red)",marginLeft:12 }}>{item.allReal?"All real":"No solution"}</span>}
-        </div>
-      ))}
-    </div>
-  );
+  if (q.type==="special-cases") {
+    if (!revealCorrect) return null;
+    return (
+      <div style={{ display:"flex",flexDirection:"column",gap:8 }}>
+        {q.items.map((item,i)=>(
+          <div key={i} style={{ background:"var(--bg2)",borderRadius:"var(--radius-sm)",padding:"10px 14px",display:"flex",alignItems:"center",justifyContent:"space-between" }}>
+            <KaTeX expr={item.latex} />
+            <span style={{ fontWeight:800,fontSize:20,color:item.allReal?"var(--green)":"var(--red)",marginLeft:12 }}>{item.allReal?"All real":"No solution"}</span>
+          </div>
+        ))}
+      </div>
+    );
+  }
 
   if (q.type==="solve-classify") return (
     <div style={{ textAlign:"center" }}>
@@ -334,15 +341,28 @@ function OneStepGrid({ items, onSubmit, submitted }) {
   const [answers, setAnswers] = useState(items.map(()=>""));
   const allDone = answers.every(a=>a.trim()!=="");
   const set = (i,v) => setAnswers(prev=>prev.map((x,j)=>j===i?v:x));
+  const SYMS = [">","<",">=","<="];
+  const SYM_DISPLAY = {">":">","<":"<",">=":"-","<=":"-"};
+  const insertSym = (i,sym) => {
+    const pretty = sym===">="?"-":sym==="<="?"-":sym;
+    set(i, "x " + pretty + " ");
+  };
   return (
     <div>
+      <div style={{ display:"flex",gap:6,justifyContent:"center",marginBottom:10,flexWrap:"wrap" }}>
+        {[">","<","-","-"].map(sym=>(
+          <div key={sym} style={{ fontSize:18,color:"var(--text3)",fontFamily:"var(--mono)" }}>
+            Type <strong>{sym}</strong> as: {sym==="-"?"<=":(sym==="-"?">=":sym)}
+          </div>
+        ))}
+      </div>
       <div style={{ display:"flex",flexDirection:"column",gap:8,marginBottom:12 }}>
         {items.map((item,i)=>(
-          <div key={i} style={{ display:"flex",alignItems:"center",justifyContent:"space-between",background:"var(--bg2)",borderRadius:"var(--radius-sm)",padding:"10px 14px",gap:10,flexWrap:"wrap" }}>
-            <KaTeX expr={item.latex} />
+          <div key={i} style={{ background:"var(--bg2)",borderRadius:"var(--radius-sm)",padding:"10px 14px" }}>
+            <div style={{ marginBottom:6 }}><KaTeX expr={item.latex} /></div>
             <input value={answers[i]} onChange={e=>set(i,e.target.value)}
-              disabled={submitted} placeholder="e.g. x > 3"
-              style={{ textAlign:"center",fontSize:20,fontFamily:"var(--mono)",fontWeight:700,padding:"6px 10px",width:120,borderRadius:"var(--radius-sm)",border:"1px solid var(--border)",background:"var(--surface)" }} />
+              disabled={submitted} placeholder="e.g. x > 3 or x >= 5"
+              style={{ textAlign:"center",fontSize:20,fontFamily:"var(--mono)",fontWeight:700,padding:"6px 10px",width:"100%",borderRadius:"var(--radius-sm)",border:"1px solid var(--border)",background:"var(--surface)" }} />
           </div>
         ))}
       </div>

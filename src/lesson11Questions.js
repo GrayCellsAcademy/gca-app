@@ -45,8 +45,8 @@ export function genWarmupB() {
     const d=a*x+b-c*x;
     if(Math.abs(d)>30||!Number.isInteger(d)) continue;
     const aStr=`${a}x`, bStr=b>=0?`+ ${b}`:`- ${Math.abs(b)}`;
-    const cStr=`${c}x`, dStr=d>=0?String(d):`${d}`;
-    return { type:"warmup-b", latex:`${aStr} ${bStr} = ${cStr} + ${dStr}`, solution:x, answer:String(x), displayAnswer:`x = ${x}` };
+    const cStr=`${c}x`, dStr=d>=0?`+ ${d}`:`- ${Math.abs(d)}`;
+    return { type:"warmup-b", latex:`${aStr} ${bStr} = ${cStr} ${dStr}`, solution:x, answer:String(x), displayAnswer:`x = ${x}` };
   }
   return { type:"warmup-b", latex:"5x - 3 = 2x + 9", solution:4, answer:"4", displayAnswer:"x = 4" };
 }
