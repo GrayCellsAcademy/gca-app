@@ -1,4 +1,4 @@
--import { useState, useEffect, useRef } from "react";
+﻿import { useState, useEffect, useRef } from "react";
 import useActivityTracking from "./core/useActivityTracking";
 import { buildTierQuestions, TIER_COLORS, speak, ADDITION_TOPIC_ID } from "./additionTables";
 import { saveProgress, getProgress, getUser } from "./core/firebase";
@@ -676,5 +676,6 @@ export default function AdditionTablesPlayer({ user, topic, onHome }) {
 
   return null;
 }
+
 
 
