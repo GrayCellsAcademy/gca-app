@@ -5,6 +5,7 @@ import {
   updateAssignment, saveCategories, getClassProgress,
   normalizeAssignments, calculateGrade, gradeToLetter,
   resetStudentProgress, resetClassProgress, getStudentActivity,
+  updateUser,
 } from "../core/firebase";
 import { getPublishedTopics, getTopic } from "../registry";
 
@@ -565,6 +566,20 @@ function StudentActivityView({ student, onBack }) {
 // -- Roster View --
 function RosterView({ cls, students }) {
   const [selectedStudent, setSelectedStudent] = useState(null);
+  const [timerDisabled, setTimerDisabled] = useState({});
+
+  useEffect(() => {
+    const map = {};
+    students.forEach(s => { map[s.id] = s.timerDisabled || false; });
+    setTimerDisabled(map);
+  }, [students]);
+
+  const toggleTimer = async (e, student) => {
+    e.stopPropagation();
+    const newVal = !timerDisabled[student.id];
+    setTimerDisabled(prev => ({ ...prev, [student.id]: newVal }));
+    await updateUser(student.id, { timerDisabled: newVal });
+  };
 
   if (selectedStudent) {
     return <StudentActivityView student={selectedStudent} onBack={()=>setSelectedStudent(null)} />;
@@ -590,7 +605,18 @@ function RosterView({ cls, students }) {
                 <div style={{ fontWeight:700,fontSize:20 }}>{s.name}</div>
                 <div style={{ fontSize:20,color:"var(--text3)" }}>{s.email}</div>
               </div>
-              <div style={{ color:"var(--blue)",fontWeight:700,fontSize:20 }}>View Activity -</div>
+              <div style={{ display:"flex",alignItems:"center",gap:12 }}>
+                <div onClick={e=>toggleTimer(e,s)}
+                  style={{ display:"flex",alignItems:"center",gap:8,padding:"6px 12px",borderRadius:"var(--radius-sm)",background:timerDisabled[s.id]?"rgba(239,68,68,0.1)":"rgba(22,163,74,0.1)",border:"1px solid "+(timerDisabled[s.id]?"rgba(239,68,68,0.3)":"rgba(22,163,74,0.3)"),cursor:"pointer" }}>
+                  <div style={{ width:36,height:20,borderRadius:99,background:timerDisabled[s.id]?"var(--red)":"var(--green)",position:"relative",transition:"background 0.2s" }}>
+                    <div style={{ position:"absolute",top:2,left:timerDisabled[s.id]?2:18,width:16,height:16,borderRadius:"50%",background:"#fff",transition:"left 0.2s" }}/>
+                  </div>
+                  <span style={{ fontSize:19,fontWeight:600,color:timerDisabled[s.id]?"var(--red)":"var(--green)",whiteSpace:"nowrap" }}>
+                    {timerDisabled[s.id]?"Timer OFF":"Timer ON"}
+                  </span>
+                </div>
+                <div style={{ color:"var(--blue)",fontWeight:700,fontSize:20 }}>Activity -</div>
+              </div>
             </div>
           ))}
         </div>

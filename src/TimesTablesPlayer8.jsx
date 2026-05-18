@@ -98,6 +98,7 @@ function Stage3({ onComplete }) {
 }
 
 export default function TimesTablesPlayer8({ user, topic, onHome }) {
+  const timerDisabled = user?.timerDisabled || false;
   useActivityTracking(user, "times-tables-8-v1", "Times Table (8)");
   const topicId=topic?.id||TIMES_TABLES_7_TOPIC_ID;
   const [loading,setLoading]=useState(true);
@@ -109,5 +110,6 @@ export default function TimesTablesPlayer8({ user, topic, onHome }) {
   if(completed)return(<div style={{maxWidth:520,margin:"0 auto",textAlign:"center"}}><div className="card"><div style={{fontSize:48,fontWeight:900,color:"var(--amber)",marginBottom:16}}>100%</div><h2 style={{fontSize:24,fontWeight:800,marginBottom:8}}>8s Table Mastered!</h2><button className="btn btn-primary btn-lg" style={{width:"100%"}} onClick={onHome}>Back to Home</button></div></div>);
   return(<div style={{minHeight:"100vh",background:"var(--bg)",padding:"clamp(16px,3vw,32px)"}} className="dot-bg"><div style={{maxWidth:600,margin:"0 auto"}}><div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:20,flexWrap:"wrap",gap:12}}><div style={{display:"flex",alignItems:"center",gap:12}}><div style={{width:40,height:40,borderRadius:12,background:"linear-gradient(135deg,var(--blue),var(--cyan))",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,fontWeight:900,color:"#fff"}}>x8</div><div><div style={{fontWeight:800,fontSize:22}}>Times Table (7)</div><div style={{fontSize:20,color:"var(--text3)"}}>3 stages to master</div></div></div><button className="btn btn-ghost btn-sm" onClick={onHome}>Back to Home</button></div><div style={{display:"flex",gap:8,marginBottom:24}}>{[1,2,3].map(s=><div key={s} style={{flex:1,padding:"8px 12px",borderRadius:"var(--radius-sm)",textAlign:"center",background:s<stage?"rgba(16,185,129,0.08)":s===stage?"rgba(232,99,10,0.08)":"var(--surface)",border:"1px solid "+(s<stage?"rgba(16,185,129,0.3)":s===stage?"rgba(232,99,10,0.3)":"var(--border)")}}><div style={{fontSize:20,fontWeight:700,color:s<stage?"var(--green)":s===stage?"var(--blue)":"var(--text3)"}}>{s<stage?"done":"Stage "+s}</div></div>)}</div>{stage===1&&<Stage1 onComplete={()=>save(2,false)}/>}{stage===2&&<Stage2 onComplete={()=>save(3,false)}/>}{stage===3&&<Stage3 onComplete={()=>save(3,true)}/>}</div></div>);
 }
+
 
 

@@ -308,7 +308,7 @@ function Stage3({ n, masteredTables, onComplete }) {
     setTimeout(() => inputRef.current?.focus(), 80);
     clearInterval(timerRef.current);
     setTimeLeft(TT_TIMER);
-    timerRef.current = setInterval(() => {
+    if (!timerDisabled) timerRef.current = setInterval(() => {
       setTimeLeft(t => {
         if (t <= 1) { clearInterval(timerRef.current); handleTimeout(); return 0; }
         return t - 1;
@@ -460,6 +460,7 @@ function TableSession({ n, masteredTables, onComplete }) {
 }
 
 export default function TimesTablesPlayer({ user, topic, onHome }) {
+  const timerDisabled = user?.timerDisabled || false;
   useActivityTracking(user, "times-tables-v1", "Times Table (2 & 3)");
   const topicId = topic?.id || TIMES_TABLES_TOPIC_ID;
   const [loading, setLoading] = useState(true);
@@ -543,5 +544,6 @@ export default function TimesTablesPlayer({ user, topic, onHome }) {
     </div>
   );
 }
+
 
 

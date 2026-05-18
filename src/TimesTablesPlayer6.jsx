@@ -225,7 +225,7 @@ function Stage3({ n, onComplete }) {
     if(intro||done||wrongPanel) return;
     setInput(""); setTimeout(()=>inputRef.current?.focus(),80);
     clearInterval(timerRef.current); setTimeLeft(TT_TIMER);
-    timerRef.current = setInterval(()=>setTimeLeft(t=>{ if(t<=1){ clearInterval(timerRef.current); handleTimeout(); return 0; } return t-1; }),1000);
+    if (!timerDisabled) timerRef.current = setInterval(()=>setTimeLeft(t=>{ if(t<=1){ clearInterval(timerRef.current); handleTimeout(); return 0; } return t-1; }),1000);
     return ()=>clearInterval(timerRef.current);
   }, [qIdx,intro,done,wrongPanel]);
 
@@ -317,6 +317,7 @@ function Stage3({ n, onComplete }) {
 }
 
 export default function TimesTablesPlayer6({ user, topic, onHome }) {
+  const timerDisabled = user?.timerDisabled || false;
   useActivityTracking(user, "times-tables-6-v1", "Times Table (6)");
   const topicId = topic?.id || TIMES_TABLES_6_TOPIC_ID;
   const [loading, setLoading] = useState(true);
@@ -383,5 +384,6 @@ export default function TimesTablesPlayer6({ user, topic, onHome }) {
     </div>
   );
 }
+
 
 
