@@ -218,8 +218,8 @@ export function genTwoStepIneq() {
 export function genTwoStepIneqItem(idx) {
   const pool=[
     { type:"two-step-ineq", latex:"2x + 5 > 13",      answer:{sym:">",val:4},   display:"x > 4",   displayLatex:"x > 4",       flips:false },
-    { type:"two-step-ineq", latex:"-3x - 4 \leq 11", answer:{sym:">=",val:-5}, display:"x >= -5", displayLatex:"x \geq -5", flips:true  },
-    { type:"two-step-ineq", latex:"4x - 7 \geq 9",   answer:{sym:">=",val:4},  display:"x >= 4",  displayLatex:"x \geq 4",  flips:false },
+    { type:"two-step-ineq", latex:"-3x - 4 \\leq 11", answer:{sym:">=",val:-5}, display:"x >= -5", displayLatex:"x \\geq -5", flips:true  },
+    { type:"two-step-ineq", latex:"4x - 7 \\geq 9",   answer:{sym:">=",val:4},  display:"x >= 4",  displayLatex:"x \\geq 4",  flips:false },
   ];
   const item = pool[idx] || pool[0];
   return { ...item, displayAnswer: item.display };

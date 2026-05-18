@@ -767,8 +767,18 @@ function StudentLesson11({ session, sessionId, uid }) {
         {question&&<QuestionDisplay question={question} revealCorrect={session.status==="revealing"} />}
         {session.status==="revealing"?(
           <div style={{ textAlign:"center",marginTop:12 }}>
-            {result?<div style={{ fontSize:22,fontWeight:800,color:result.correct?"var(--green)":"var(--red)" }}>{result.correct?"Correct! +"+POINTS+" pts":"Incorrect"}</div>
-              :<div style={{ color:"var(--text3)",fontSize:20 }}>No answer submitted.</div>}
+            {result?(
+              <div>
+                <div style={{ fontSize:22,fontWeight:800,color:result.correct?"var(--green)":"var(--red)",marginBottom:result.correct?0:10 }}>
+                  {result.correct?"Correct! +"+POINTS+" pts":"Incorrect"}
+                </div>
+                {!result.correct&&(
+                  <div style={{ fontSize:20,color:"var(--text2)",background:"var(--bg2)",borderRadius:"var(--radius-sm)",padding:"8px 14px",marginTop:6 }}>
+                    Your answer: <span style={{ fontFamily:"var(--mono)",fontWeight:700,color:"var(--red)" }}>{String(result.answer).slice(0,40)}</span>
+                  </div>
+                )}
+              </div>
+            ):<div style={{ color:"var(--text3)",fontSize:20 }}>No answer submitted.</div>}
           </div>
         ):submitted?(
           <div style={{ textAlign:"center",marginTop:12 }}>
