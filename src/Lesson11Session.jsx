@@ -341,27 +341,23 @@ function OneStepGrid({ items, onSubmit, submitted }) {
   const [answers, setAnswers] = useState(items.map(()=>""));
   const allDone = answers.every(a=>a.trim()!=="");
   const set = (i,v) => setAnswers(prev=>prev.map((x,j)=>j===i?v:x));
-  const SYMS = [">","<",">=","<="];
-  const SYM_DISPLAY = {">":">","<":"<",">=":"-","<=":"-"};
-  const insertSym = (i,sym) => {
-    const pretty = sym===">="?"-":sym==="<="?"-":sym;
-    set(i, "x " + pretty + " ");
-  };
+  const addSym = (i,sym) => set(i, answers[i].includes("x") ? answers[i].trimEnd()+" "+sym+" " : "x "+sym+" ");
   return (
     <div>
-      <div style={{ display:"flex",gap:6,justifyContent:"center",marginBottom:10,flexWrap:"wrap" }}>
-        {[">","<","-","-"].map(sym=>(
-          <div key={sym} style={{ fontSize:18,color:"var(--text3)",fontFamily:"var(--mono)" }}>
-            Type <strong>{sym}</strong> as: {sym==="-"?"<=":(sym==="-"?">=":sym)}
-          </div>
-        ))}
-      </div>
-      <div style={{ display:"flex",flexDirection:"column",gap:8,marginBottom:12 }}>
+      <div style={{ display:"flex",flexDirection:"column",gap:10,marginBottom:12 }}>
         {items.map((item,i)=>(
           <div key={i} style={{ background:"var(--bg2)",borderRadius:"var(--radius-sm)",padding:"10px 14px" }}>
             <div style={{ marginBottom:6 }}><KaTeX expr={item.latex} /></div>
+            <div style={{ display:"flex",gap:6,marginBottom:6 }}>
+              {[">","<",">=","<="].map(sym=>(
+                <button key={sym} onClick={()=>!submitted&&addSym(i,sym)}
+                  style={{ padding:"5px 12px",borderRadius:"var(--radius-sm)",border:"1px solid var(--border2)",background:"var(--surface)",fontSize:20,fontWeight:800,fontFamily:"var(--mono)",cursor:"pointer",color:"var(--blue)" }}>
+                  {sym}
+                </button>
+              ))}
+            </div>
             <input value={answers[i]} onChange={e=>set(i,e.target.value)}
-              disabled={submitted} placeholder="e.g. x > 3 or x >= 5"
+              disabled={submitted} placeholder="e.g. x > 3"
               style={{ textAlign:"center",fontSize:20,fontFamily:"var(--mono)",fontWeight:700,padding:"6px 10px",width:"100%",borderRadius:"var(--radius-sm)",border:"1px solid var(--border)",background:"var(--surface)" }} />
           </div>
         ))}
@@ -435,6 +431,39 @@ function ClassifyInput({ onSubmit, submitted }) {
   );
 }
 
+// Inequality symbol helper bar - inserts symbol at cursor position
+function IneqInput({ onSubmit, submitted, placeholder }) {
+  const [val, setVal] = useState("");
+  const ref = useRef(null);
+  useEffect(() => { setVal(""); setTimeout(()=>ref.current?.focus(),80); }, [submitted]);
+  const submit = () => { if(val.trim()) onSubmit(val.trim()); };
+  const addSym = (sym) => {
+    if(submitted) return;
+    setVal(v => v.includes("x") ? v.trimEnd()+" "+sym+" " : "x "+sym+" ");
+    setTimeout(()=>ref.current?.focus(),0);
+  };
+  return (
+    <div>
+      <div style={{ display:"flex",gap:8,justifyContent:"center",marginBottom:8 }}>
+        {[">","<",">=","<="].map(sym=>(
+          <button key={sym} onClick={()=>addSym(sym)}
+            style={{ padding:"8px 16px",borderRadius:"var(--radius-sm)",border:"1px solid var(--border2)",background:"var(--surface)",fontSize:22,fontWeight:800,fontFamily:"var(--mono)",cursor:"pointer",color:"var(--blue)" }}>
+            {sym}
+          </button>
+        ))}
+      </div>
+      <div style={{ display:"flex",gap:8,justifyContent:"center" }}>
+        <input ref={ref} value={val} onChange={e=>setVal(e.target.value)}
+          onKeyDown={e=>e.key==="Enter"&&submit()} disabled={submitted}
+          placeholder={placeholder||"e.g. x > 3"}
+          style={{ textAlign:"center",fontSize:22,fontFamily:"var(--mono)",fontWeight:700,padding:"10px",width:220 }} />
+        <button className="btn btn-primary" style={{ fontSize:20,padding:"10px 20px" }}
+          onMouseDown={e=>{e.preventDefault();submit();}} disabled={submitted||!val.trim()}>OK</button>
+      </div>
+    </div>
+  );
+}
+
 function AnswerInput({ question, onSubmit, submitted }) {
   if (!question) return null;
   const t = question.type;
@@ -444,7 +473,7 @@ function AnswerInput({ question, onSubmit, submitted }) {
   if(t==="number-line-match") return <NumberLineChoice question={question} onSubmit={onSubmit} submitted={submitted} />;
   if(t==="sign-flip") return <FlipGrid items={question.items} onSubmit={onSubmit} submitted={submitted} />;
   if(t==="one-step-ineqs") return <OneStepGrid items={question.items} onSubmit={onSubmit} submitted={submitted} />;
-  if(t==="two-step-ineq") return <TextInput onSubmit={onSubmit} submitted={submitted} placeholder="e.g. x > 4" />;
+  if(t==="two-step-ineq") return <IneqInput onSubmit={onSubmit} submitted={submitted} placeholder="e.g. x > 4" />;
   if(t==="special-cases") return <AllRealGrid items={question.items} onSubmit={onSubmit} submitted={submitted} />;
   if(t==="solve-classify") return <ClassifyInput onSubmit={onSubmit} submitted={submitted} />;
   return null;

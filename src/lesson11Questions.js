@@ -133,7 +133,7 @@ export function gradeSolutionSet(input, q) {
 export function genNumberLineMatch() {
   const syms=["<",">","<=",">="];
   const sym=randChoice(syms);
-  const val=randInt(-6,6);
+  const vals=[-3,-2,-1,1,2,3]; const val=vals[Math.floor(Math.random()*vals.length)];
   const symDisplay={"<":"<",">":">","<=":"-",">=":"-"}[sym];
   const symLatex={"<":"<",">":">","<=":"\\leq",">=":"\\geq"}[sym];
   // Correct: right circle (open/closed) + right direction
