@@ -532,6 +532,7 @@ function CelebrationScreen({ tierNum, isLast, onContinue }) {
 //  Main Player 
 // Now receives `topic` prop from TopicRouter (in addition to user and onHome)
 export default function AdditionTablesPlayer({ user, topic, onHome }) {
+  const timerDisabled = user?.timerDisabled || false; {
   useActivityTracking(user, "addition-tables-v1", "Addition Table");
   const [screen, setScreen] = useState("loading");
   const [currentTier, setCurrentTier] = useState(1);
@@ -674,5 +675,7 @@ export default function AdditionTablesPlayer({ user, topic, onHome }) {
 
   return null;
 }
+
+
 
 

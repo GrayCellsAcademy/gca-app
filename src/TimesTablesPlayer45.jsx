@@ -61,7 +61,8 @@ function Stage1({ n, onComplete }) {
 
   const startTimer = () => {
     startRef.current = Date.now();
-    timerRef.current = setInterval(() => {
+    if (timerDisabled) return;
+      timerRef.current = setInterval(() => {
       setElapsed(Math.floor((Date.now() - startRef.current) / 1000));
     }, 200);
   };
@@ -262,7 +263,8 @@ function Stage3({ n, reviewTables, onComplete }) {
     setTimeout(() => inputRef.current?.focus(), 80);
     clearInterval(timerRef.current);
     setTimeLeft(TT_TIMER);
-    timerRef.current = setInterval(() => {
+    if (timerDisabled) return;
+      timerRef.current = setInterval(() => {
       setTimeLeft(t => {
         if (t <= 1) { clearInterval(timerRef.current); handleTimeout(); return 0; }
         return t - 1;
@@ -381,6 +383,7 @@ function TableSession({ n, onComplete }) {
 }
 
 export default function TimesTablesPlayer45({ user, topic, onHome }) {
+  const timerDisabled = user?.timerDisabled || false; {
   useActivityTracking(user, "times-tables-45-v1", "Times Table (4 & 5)");
   const topicId = topic?.id || TIMES_TABLES_45_TOPIC_ID;
   const [loading, setLoading] = useState(true);
@@ -464,5 +467,7 @@ export default function TimesTablesPlayer45({ user, topic, onHome }) {
     </div>
   );
 }
+
+
 
 
