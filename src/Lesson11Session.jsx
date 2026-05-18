@@ -181,7 +181,7 @@ function QuestionDisplay({ question: q, revealCorrect, extra }) {
         {q.items.map((item,i)=>(
           <div key={i} style={{ background:"var(--bg2)",borderRadius:"var(--radius-sm)",padding:"10px 14px",display:"flex",alignItems:"center",justifyContent:"space-between" }}>
             <KaTeX expr={item.latex} />
-            <span style={{ fontWeight:800,fontSize:20,color:"var(--green)",marginLeft:12 }}>{item.display}</span>
+            <span style={{ fontWeight:800,fontSize:20,color:"var(--green)",marginLeft:12,fontFamily:"var(--mono)" }}>{item.display}</span>
           </div>
         ))}
       </div>
@@ -191,7 +191,9 @@ function QuestionDisplay({ question: q, revealCorrect, extra }) {
   if (q.type==="two-step-ineq") return (
     <div style={{ textAlign:"center" }}>
       <KaTeX expr={q.latex} block />
-      {revealCorrect&&<div style={{ fontSize:20,color:"var(--green)",fontWeight:700,marginTop:8 }}>{q.display||q.displayAnswer}</div>}
+      {revealCorrect&&<div style={{ fontSize:20,color:"var(--green)",fontWeight:700,marginTop:8 }}>
+        {q.displayLatex?<KaTeX expr={q.displayLatex} />:(q.display||q.displayAnswer)}
+      </div>}
     </div>
   );
 

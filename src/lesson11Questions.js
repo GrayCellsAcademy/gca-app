@@ -26,6 +26,7 @@ function ineqEqual(a, b) {
 export function genWarmupA() {
   for (let i=0;i<200;i++) {
     const a=randInt(2,9), b=randInt(-20,20);
+    if(b===0) continue; // no zero constant
     const x=randInt(-9,9); if(x===0) continue;
     const c=a*x+b;
     if(Math.abs(c)>50) continue;
@@ -41,9 +42,10 @@ export function gradeWarmupA(input,q){ return parseInt(String(input).replace(/\s
 export function genWarmupB() {
   for (let i=0;i<300;i++) {
     const a=randInt(2,9), c=randInt(2,9); if(a===c) continue;
-    const b=randInt(-15,15), x=randInt(-9,9); if(x===0) continue;
+    const b=randInt(-15,15); if(b===0) continue; // no zero constant
+    const x=randInt(-9,9); if(x===0) continue;
     const d=a*x+b-c*x;
-    if(Math.abs(d)>30||!Number.isInteger(d)) continue;
+    if(d===0||Math.abs(d)>30||!Number.isInteger(d)) continue; // no zero rhs constant
     const aStr=`${a}x`, bStr=b>=0?`+ ${b}`:`- ${Math.abs(b)}`;
     const cStr=`${c}x`, dStr=d>=0?`+ ${d}`:`- ${Math.abs(d)}`;
     return { type:"warmup-b", latex:`${aStr} ${bStr} = ${cStr} ${dStr}`, solution:x, answer:String(x), displayAnswer:`x = ${x}` };
@@ -186,8 +188,8 @@ export function gradeSignFlipItem(answer, idx, q) {
 export function genOneStepIneqs() {
   const items=shuffle([
     { latex:"x + 7 > 10",         answer:{sym:">",val:3},   display:"x > 3",   flips:false },
-    { latex:"x - 4 \\leq 3",      answer:{sym:"<=",val:7},  display:"x - 7",   flips:false },
-    { latex:"3x \\geq 15",        answer:{sym:">=",val:5},  display:"x - 5",   flips:false },
+    { latex:"x - 4 \\leq 3",      answer:{sym:"<=",val:7},  display:"x <= 7",  flips:false },
+    { latex:"3x \\geq 15",        answer:{sym:">=",val:5},  display:"x >= 5",  flips:false },
     { latex:"-2x < 8",            answer:{sym:">",val:-4},  display:"x > -4",  flips:true  },
   ]);
   return { type:"one-step-ineqs", items, prompt:"Solve each inequality. Enter answer as e.g. x > 3 or x - -4." };
@@ -208,18 +210,19 @@ export function genTwoStepIneq() {
   // One of 3 fixed problems, or random
   const pool=[
     { latex:"2x + 5 > 13",         answer:{sym:">",val:4},   display:"x > 4",   flips:false },
-    { latex:"-3x - 4 \\leq 11",    answer:{sym:">=",val:-5}, display:"x - -5",  flips:true  },
-    { latex:"4x - 7 \\geq 9",      answer:{sym:">=",val:4},  display:"x - 4",   flips:false },
+    { latex:"-3x - 4 \\leq 11",    answer:{sym:">=",val:-5}, display:"x >= -5",  flips:true  },
+    { latex:"4x - 7 \\geq 9",      answer:{sym:">=",val:4},  display:"x >= 4",   flips:false },
   ];
   return { type:"two-step-ineq", pool, currentIdx:0, prompt:"Solve the inequality." };
 }
 export function genTwoStepIneqItem(idx) {
   const pool=[
-    { latex:"2x + 5 > 13",         answer:{sym:">",val:4},   display:"x > 4",   flips:false },
-    { latex:"-3x - 4 \\leq 11",    answer:{sym:">=",val:-5}, display:"x \\geq -5", display2:"x - -5", flips:true  },
-    { latex:"4x - 7 \\geq 9",      answer:{sym:">=",val:4},  display:"x - 4",   flips:false },
+    { type:"two-step-ineq", latex:"2x + 5 > 13",      answer:{sym:">",val:4},   display:"x > 4",   displayLatex:"x > 4",       flips:false },
+    { type:"two-step-ineq", latex:"-3x - 4 \leq 11", answer:{sym:">=",val:-5}, display:"x >= -5", displayLatex:"x \geq -5", flips:true  },
+    { type:"two-step-ineq", latex:"4x - 7 \geq 9",   answer:{sym:">=",val:4},  display:"x >= 4",  displayLatex:"x \geq 4",  flips:false },
   ];
-  return pool[idx] || pool[0];
+  const item = pool[idx] || pool[0];
+  return { ...item, displayAnswer: item.display };
 }
 export function gradeTwoStepIneq(input, item) {
   const parsed=parseIneq(input);
@@ -231,7 +234,7 @@ export function genSpecialCases() {
   const items=shuffle([
     { latex:"x + 2 < x + 5",       allReal:true,  simplifies:"2 < 5 (true)"  },
     { latex:"x + 5 < x + 2",       allReal:false, simplifies:"5 < 2 (false)" },
-    { latex:"2x + 3 \\leq 2x + 3", allReal:true,  simplifies:"3 - 3 (true)"  },
+    { latex:"2x + 3 \\leq 2x + 3", allReal:true,  simplifies:"3 <= 3 (true)"  },
     { latex:"2x + 3 > 2x + 5",     allReal:false, simplifies:"3 > 5 (false)" },
   ]);
   return { type:"special-cases", items, prompt:"For each, select All Real Numbers or No Solution." };
