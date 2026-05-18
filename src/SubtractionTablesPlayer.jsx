@@ -83,7 +83,6 @@ function AnswerInput({ onSubmit }) {
 
 // Main player
 export default function SubtractionTablesPlayer({ user, topic, onHome }) {
-  const timerDisabled = user?.timerDisabled || false; {
   useActivityTracking(user, "subtraction-tables-v1", "Subtraction Table");
   const topicId = topic?.id || SUBTRACTION_TOPIC_ID;
   const [loading, setLoading] = useState(true);
@@ -128,8 +127,7 @@ export default function SubtractionTablesPlayer({ user, topic, onHome }) {
   const startTimer = () => {
     clearInterval(timerRef.current);
     setTimeLeft(SUB_TIMER);
-    if (timerDisabled) return;
-      timerRef.current = setInterval(() => {
+    timerRef.current = setInterval(() => {
       setTimeLeft(t => {
         if (t <= 1) { clearInterval(timerRef.current); handleWrong(); return 0; }
         return t - 1;
@@ -299,7 +297,5 @@ export default function SubtractionTablesPlayer({ user, topic, onHome }) {
     </div>
   );
 }
-
-
 
 

@@ -317,7 +317,6 @@ function Stage3({ n, onComplete }) {
 }
 
 export default function TimesTablesPlayer6({ user, topic, onHome }) {
-  const timerDisabled = user?.timerDisabled || false; {
   useActivityTracking(user, "times-tables-6-v1", "Times Table (6)");
   const topicId = topic?.id || TIMES_TABLES_6_TOPIC_ID;
   const [loading, setLoading] = useState(true);
@@ -384,7 +383,5 @@ export default function TimesTablesPlayer6({ user, topic, onHome }) {
     </div>
   );
 }
-
-
 
 

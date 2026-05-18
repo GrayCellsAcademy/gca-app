@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { saveProgress, getProgress } from "./core/firebase";
 import useActivityTracking from "./core/useActivityTracking";
 
@@ -56,7 +56,6 @@ function TimerBar({ duration, onExpire, key: _key }) {
 const DIVISORS = [6, 7];
 
 export default function DivisionTablesPlayer({ user, topic, onHome }) {
-  const timerDisabled = user?.timerDisabled || false; {
   useActivityTracking(user, DIVISION_TABLES_67_TOPIC_ID, "Division Tables (6-7)");
   const topicId = topic?.id || DIVISION_TABLES_67_TOPIC_ID;
 
@@ -241,7 +240,7 @@ export default function DivisionTablesPlayer({ user, topic, onHome }) {
 
         <div className="card">
           {phase === "question" && (
-            <TimerBar key={timerKey} duration={timerDisabled ? 999 : 10} onExpire={handleTimeout} />
+            <TimerBar key={timerKey} duration={10} onExpire={handleTimeout} />
           )}
 
           {/* Question */}
@@ -290,5 +289,3 @@ export default function DivisionTablesPlayer({ user, topic, onHome }) {
     </div>
   );
 }
-
-
