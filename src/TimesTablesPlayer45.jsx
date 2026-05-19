@@ -1,6 +1,5 @@
 ﻿import { useState, useEffect, useRef } from "react";
-import useActivityTracking from "./core/useActivityTracking";
-import { saveProgress as fbSaveProgress, getProgress, getUser } from "./core/firebase";
+import { saveProgress as fbSaveProgress, getProgress } from "./core/firebase";
 
 export const TIMES_TABLES_45_TOPIC_ID = "times-tables-45-v1";
 
@@ -46,7 +45,7 @@ function WrongPanel({ n, b, correct, onContinue }) {
   );
 }
 
-function Stage1({ n, onComplete, timerDisabled=false }) {
+function Stage1({ n, onComplete }) {
   const [started, setStarted] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const [bestTime, setBestTime] = useState(null);
@@ -153,7 +152,7 @@ function Stage1({ n, onComplete, timerDisabled=false }) {
   );
 }
 
-function Stage2({ n, onComplete, timerDisabled=false }) {
+function Stage2({ n, onComplete }) {
   const [qIdx, setQIdx] = useState(0);
   const [passes, setPasses] = useState(0);
   const [input, setInput] = useState("");
@@ -262,7 +261,7 @@ function Stage3({ n, reviewTables, onComplete }) {
     setTimeout(() => inputRef.current?.focus(), 80);
     clearInterval(timerRef.current);
     setTimeLeft(TT_TIMER);
-    if (!timerDisabled) timerRef.current = setInterval(() => {
+    timerRef.current = setInterval(() => {
       setTimeLeft(t => {
         if (t <= 1) { clearInterval(timerRef.current); handleTimeout(); return 0; }
         return t - 1;
@@ -373,16 +372,14 @@ function TableSession({ n, onComplete }) {
           </div>
         ))}
       </div>
-      {stage===1 && <Stage1 timerDisabled={timerDisabled} key={n+"-s1"} n={n} onComplete={() => setStage(2)} />}
-      {stage===2 && <Stage2 timerDisabled={timerDisabled} key={n+"-s2"} n={n} onComplete={() => setStage(3)} />}
-      {stage===3 && <Stage3 timerDisabled={timerDisabled} key={n+"-s3"} n={n} reviewTables={reviewTables} onComplete={onComplete} />}
+      {stage===1 && <Stage1 key={n+"-s1"} n={n} onComplete={() => setStage(2)} />}
+      {stage===2 && <Stage2 key={n+"-s2"} n={n} onComplete={() => setStage(3)} />}
+      {stage===3 && <Stage3 key={n+"-s3"} n={n} reviewTables={reviewTables} onComplete={onComplete} />}
     </div>
   );
 }
 
 export default function TimesTablesPlayer45({ user, topic, onHome }) {
-  const timerDisabled = user?.timerDisabled || false;
-  useActivityTracking(user, "times-tables-45-v1", "Times Table (4 & 5)");
   const topicId = topic?.id || TIMES_TABLES_45_TOPIC_ID;
   const [loading, setLoading] = useState(true);
   const [tableIdx, setTableIdx] = useState(0);
@@ -412,7 +409,7 @@ export default function TimesTablesPlayer45({ user, topic, onHome }) {
   };
 
   const handleTableComplete = async () => {
-    const newMastered = [...new Set([...masteredTables, TABLES[tableIdx]])];
+    const newMastered = [...masteredTables, TABLES[tableIdx]];
     const nextIdx = tableIdx + 1;
     const done = nextIdx >= TABLES.length;
     await save(nextIdx, newMastered, done);
@@ -460,13 +457,9 @@ export default function TimesTablesPlayer45({ user, topic, onHome }) {
             );
           })}
         </div>
-        <TableSession timerDisabled={timerDisabled} key={n} n={n} onComplete={handleTableComplete} />
+        <TableSession key={n} n={n} onComplete={handleTableComplete} />
       </div>
     </div>
   );
 }
-
-
-
-
 
