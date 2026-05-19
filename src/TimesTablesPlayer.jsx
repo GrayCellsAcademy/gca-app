@@ -1,6 +1,6 @@
 ﻿import { useState, useEffect, useRef } from "react";
 import useActivityTracking from "./core/useActivityTracking";
-import { saveProgress as fbSaveProgress, getProgress } from "./core/firebase";
+import { saveProgress as fbSaveProgress, getProgress, getUser } from "./core/firebase";
 
 export const TIMES_TABLES_TOPIC_ID = "times-tables-v1";
 
@@ -545,6 +545,7 @@ export default function TimesTablesPlayer({ user, topic, onHome }) {
     </div>
   );
 }
+
 
 
 
