@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useRef } from "react";
+-import { useState, useEffect, useRef } from "react";
 import useActivityTracking from "./core/useActivityTracking";
 import { saveProgress as fbSaveProgress, getProgress } from "./core/firebase";
 
@@ -169,7 +169,7 @@ function Stage1({ n, onComplete, timerDisabled=false }) {
   );
 }
 
-function Stage2({ n, onComplete }) {
+function Stage2({ n, onComplete, timerDisabled=false }) {
   const [qIdx, setQIdx] = useState(0);
   const [passes, setPasses] = useState(0);
   const [input, setInput] = useState("");
@@ -287,7 +287,7 @@ function buildStage3Questions(n, masteredTables) {
   return shuffle([...current,...review]);
 }
 
-function Stage3({ n, masteredTables, onComplete }) {
+function Stage3({ n, masteredTables, onComplete, timerDisabled=false }) {
   const [intro, setIntro] = useState(true);
   const [done, setDone] = useState(false);
   const [questions, setQuestions] = useState(() => buildStage3Questions(n, masteredTables));
@@ -441,7 +441,7 @@ function Stage3({ n, masteredTables, onComplete }) {
   );
 }
 
-function TableSession({ n, masteredTables, onComplete }) {
+function TableSession({ n, masteredTables, onComplete, timerDisabled=false }) {
   const [stage, setStage] = useState(1);
   return (
     <div>
@@ -453,8 +453,8 @@ function TableSession({ n, masteredTables, onComplete }) {
         ))}
       </div>
       {stage === 1 && <Stage1 timerDisabled={timerDisabled} key={n+"-s1"} n={n} onComplete={() => setStage(2)} />}
-      {stage === 2 && <Stage2 key={n+"-s2"} n={n} onComplete={() => setStage(3)} />}
-      {stage === 3 && <Stage3 key={n+"-s3"} n={n} masteredTables={masteredTables} onComplete={onComplete} />}
+      {stage === 2 && <Stage2 timerDisabled={timerDisabled} key={n+"-s2"} n={n} onComplete={() => setStage(3)} />}
+      {stage === 3 && <Stage3 timerDisabled={timerDisabled} key={n+"-s3"} n={n} masteredTables={masteredTables} onComplete={onComplete} />}
     </div>
   );
 }
@@ -540,7 +540,7 @@ export default function TimesTablesPlayer({ user, topic, onHome }) {
             );
           })}
         </div>
-        <TableSession key={n} n={n} masteredTables={masteredTables} onComplete={handleTableComplete} />
+        <TableSession timerDisabled={timerDisabled} key={n} n={n} masteredTables={masteredTables} onComplete={handleTableComplete} />
       </div>
     </div>
   );
