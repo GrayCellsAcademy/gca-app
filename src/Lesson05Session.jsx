@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useRef } from "react";
+-import { useState, useEffect, useRef } from "react";
 import { setDoc, doc, updateDoc } from "firebase/firestore";
 import {
   createClassworkSession, onSessionChange, onClassworkAnswersChange,
@@ -800,26 +800,77 @@ function StudentLesson05({ session, sessionId, uid }) {
         {question && (
           <>
             <div style={{ fontSize:15,fontWeight:700,marginBottom:12,color:"var(--text)" }}>{question.prompt}</div>
-            <QuestionDisplay question={question} revealCorrect={session.status==="revealing"} />
+            {!(session.status==="revealing" && ["signed-act1","signed-act2","signed-act3","signed-act4"].includes(question?.type)) && (
+              <QuestionDisplay question={question} revealCorrect={session.status==="revealing"} />
+            )}
           </>
         )}
         {session.status==="revealing" ? (
-          <div style={{ textAlign:"center",marginTop:12 }}>
-            {result ? (
-              <>
-                <div style={{ fontSize:20,fontWeight:800,color:result.correct?"var(--green)":"var(--red)",marginBottom:6 }}>
-                  {result.correct?"Correct! +"+POINTS+" pts":"Incorrect"}
-                </div>
-                <div style={{ fontSize:19,color:"var(--text2)",marginBottom:4 }}>Your answer: <strong style={{ fontFamily:"var(--mono)",color:result.correct?"var(--green)":"var(--red)" }}>{String(result.answer).slice(0,30)}</strong></div>
-                {!result.correct && question?.displayAnswer && (
-                  <div style={{ marginTop:8 }}>
-                    <div style={{ color:"var(--green)",fontSize:15,marginBottom:4 }}>Correct: <strong style={{ fontFamily:"var(--mono)" }}>{question.displayAnswer}</strong></div>
-                    <RevealCalculation question={question} />
+          <div style={{ marginTop:12 }}>
+            {result ? (() => {
+              const isMulti = ["signed-act1","signed-act2","signed-act3","signed-act4"].includes(question?.type);
+              if (isMulti) {
+                // Parse student answers and show per-item comparison
+                let studentAnswers = [];
+                try { studentAnswers = JSON.parse(result.answer); } catch {}
+                let correctAnswers = [];
+                try { correctAnswers = JSON.parse(question?.answer||"[]"); } catch {}
+                return (
+                  <div>
+                    <div style={{ textAlign:"center",fontSize:20,fontWeight:800,color:result.correct?"var(--green)":"var(--red)",marginBottom:10 }}>
+                      {result.correct?"Correct! +"+POINTS+" pts":"Incorrect"}
+                    </div>
+                    <div style={{ display:"flex",flexDirection:"column",gap:5 }}>
+                      {(question?.exprs||[]).map((expr,i) => {
+                        const sa = studentAnswers[i]||{};
+                        const ca = correctAnswers[i]||{};
+                        const isAct4 = question.type==="signed-act4";
+                        let itemCorrect = false;
+                        let studentStr = "", correctStr = "";
+                        if (isAct4) {
+                          itemCorrect = parseInt(sa)===expr.result;
+                          studentStr = String(sa);
+                          correctStr = String(expr.result);
+                        } else {
+                          const n1ok = sa.num1===ca.num1, n2ok = sa.num2===ca.num2;
+                          const aok = !ca.addOrSub || sa.addOrSub===ca.addOrSub;
+                          const sok = !ca.ansSign || sa.ansSign===ca.ansSign;
+                          itemCorrect = n1ok&&n2ok&&aok&&sok;
+                          studentStr = [sa.num1,sa.num2,sa.addOrSub,sa.ansSign].filter(Boolean).join(" ");
+                          correctStr = [ca.num1,ca.num2,ca.addOrSub,ca.ansSign].filter(Boolean).join(" ");
+                        }
+                        return (
+                          <div key={i} style={{ background:"var(--bg2)",borderRadius:"var(--radius-sm)",padding:"6px 12px",display:"flex",alignItems:"center",gap:10,flexWrap:"wrap",border:"1px solid "+(itemCorrect?"rgba(22,163,74,0.2)":"rgba(239,68,68,0.2)") }}>
+                            <span style={{ fontFamily:"var(--mono)",fontSize:18,fontWeight:700,flex:1,minWidth:100 }}>{expr.display}</span>
+                            <span style={{ fontSize:18,color:"var(--text3)" }}>You:</span>
+                            <span style={{ fontFamily:"var(--mono)",fontSize:18,fontWeight:700,color:itemCorrect?"var(--green)":"var(--red)" }}>{studentStr||"-"}</span>
+                            {!itemCorrect&&<><span style={{ fontSize:18,color:"var(--text3)" }}>Correct:</span><span style={{ fontFamily:"var(--mono)",fontSize:18,fontWeight:700,color:"var(--green)" }}>{correctStr}</span></>}
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
-                )}
-              </>
-            ) : (
-              <div>
+                );
+              }
+              // Single-item question
+              return (
+                <div style={{ textAlign:"center" }}>
+                  <div style={{ fontSize:20,fontWeight:800,color:result.correct?"var(--green)":"var(--red)",marginBottom:6 }}>
+                    {result.correct?"Correct! +"+POINTS+" pts":"Incorrect"}
+                  </div>
+                  <div style={{ fontSize:19,color:"var(--text2)",marginBottom:4 }}>
+                    Your answer: <strong style={{ fontFamily:"var(--mono)",color:result.correct?"var(--green)":"var(--red)" }}>{String(result.answer).slice(0,30)}</strong>
+                  </div>
+                  {!result.correct && question?.displayAnswer && (
+                    <div style={{ marginTop:8 }}>
+                      <div style={{ color:"var(--green)",fontSize:15,marginBottom:4 }}>Correct: <strong style={{ fontFamily:"var(--mono)" }}>{question.displayAnswer}</strong></div>
+                      <RevealCalculation question={question} />
+                    </div>
+                  )}
+                </div>
+              );
+            })() : (
+              <div style={{ textAlign:"center" }}>
                 <div style={{ color:"var(--text3)",marginBottom:4 }}>No answer submitted.</div>
                 {question?.displayAnswer && <div style={{ color:"var(--green)",fontSize:15 }}>Correct: <strong style={{ fontFamily:"var(--mono)" }}>{question.displayAnswer}</strong></div>}
               </div>
