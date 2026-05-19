@@ -1,6 +1,6 @@
 ﻿import { useState, useEffect, useRef } from "react";
 import useActivityTracking from "./core/useActivityTracking";
-import { saveProgress as fbSaveProgress, getProgress } from "./core/firebase";
+import { saveProgress as fbSaveProgress, getProgress, getUser } from "./core/firebase";
 
 export const TIMES_TABLES_6_TOPIC_ID = "times-tables-6-v1";
 
@@ -45,7 +45,7 @@ function WrongPanel({ n, b, correct, onContinue }) {
   );
 }
 
-function Stage1({ n, onComplete }) {
+function Stage1({ n, onComplete, timerDisabled=false }) {
   const [started, setStarted] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const [bestTime, setBestTime] = useState(null);
@@ -130,7 +130,7 @@ function Stage1({ n, onComplete }) {
   );
 }
 
-function Stage2({ n, onComplete }) {
+function Stage2({ n, onComplete, timerDisabled=false }) {
   const [intro, setIntro] = useState(true);
   const [done, setDone] = useState(false);
   const [qIdx, setQIdx] = useState(0);
@@ -384,6 +384,7 @@ export default function TimesTablesPlayer6({ user, topic, onHome }) {
     </div>
   );
 }
+
 
 
 

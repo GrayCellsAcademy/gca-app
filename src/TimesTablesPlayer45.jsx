@@ -1,6 +1,6 @@
 ﻿import { useState, useEffect, useRef } from "react";
 import useActivityTracking from "./core/useActivityTracking";
-import { saveProgress as fbSaveProgress, getProgress } from "./core/firebase";
+import { saveProgress as fbSaveProgress, getProgress, getUser } from "./core/firebase";
 
 export const TIMES_TABLES_45_TOPIC_ID = "times-tables-45-v1";
 
@@ -46,7 +46,7 @@ function WrongPanel({ n, b, correct, onContinue }) {
   );
 }
 
-function Stage1({ n, onComplete }) {
+function Stage1({ n, onComplete, timerDisabled=false }) {
   const [started, setStarted] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const [bestTime, setBestTime] = useState(null);
@@ -153,7 +153,7 @@ function Stage1({ n, onComplete }) {
   );
 }
 
-function Stage2({ n, onComplete }) {
+function Stage2({ n, onComplete, timerDisabled=false }) {
   const [qIdx, setQIdx] = useState(0);
   const [passes, setPasses] = useState(0);
   const [input, setInput] = useState("");
@@ -373,9 +373,9 @@ function TableSession({ n, onComplete }) {
           </div>
         ))}
       </div>
-      {stage===1 && <Stage1 key={n+"-s1"} n={n} onComplete={() => setStage(2)} />}
-      {stage===2 && <Stage2 key={n+"-s2"} n={n} onComplete={() => setStage(3)} />}
-      {stage===3 && <Stage3 key={n+"-s3"} n={n} reviewTables={reviewTables} onComplete={onComplete} />}
+      {stage===1 && <Stage1 timerDisabled={timerDisabled} key={n+"-s1"} n={n} onComplete={() => setStage(2)} />}
+      {stage===2 && <Stage2 timerDisabled={timerDisabled} key={n+"-s2"} n={n} onComplete={() => setStage(3)} />}
+      {stage===3 && <Stage3 timerDisabled={timerDisabled} key={n+"-s3"} n={n} reviewTables={reviewTables} onComplete={onComplete} />}
     </div>
   );
 }
@@ -460,11 +460,12 @@ export default function TimesTablesPlayer45({ user, topic, onHome }) {
             );
           })}
         </div>
-        <TableSession key={n} n={n} onComplete={handleTableComplete} />
+        <TableSession timerDisabled={timerDisabled} key={n} n={n} onComplete={handleTableComplete} />
       </div>
     </div>
   );
 }
+
 
 
 
