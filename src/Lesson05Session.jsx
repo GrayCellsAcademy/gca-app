@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+﻿import { useState, useEffect, useRef } from "react";
 import { setDoc, doc, updateDoc } from "firebase/firestore";
 import {
   createClassworkSession, onSessionChange, onClassworkAnswersChange,
@@ -917,3 +917,4 @@ export default function Lesson05Session({ user, onHome }) {
 }
 
 export { TeacherLesson05 as Lesson05TeacherView, StudentLesson05 as Lesson05StudentView };
+
