@@ -810,6 +810,7 @@ function StudentLesson05({ session, sessionId, uid }) {
                 <div style={{ fontSize:20,fontWeight:800,color:result.correct?"var(--green)":"var(--red)",marginBottom:6 }}>
                   {result.correct?"Correct! +"+POINTS+" pts":"Incorrect"}
                 </div>
+                <div style={{ fontSize:19,color:"var(--text2)",marginBottom:4 }}>Your answer: <strong style={{ fontFamily:"var(--mono)",color:result.correct?"var(--green)":"var(--red)" }}>{String(result.answer).slice(0,30)}</strong></div>
                 {!result.correct && question?.displayAnswer && (
                   <div style={{ marginTop:8 }}>
                     <div style={{ color:"var(--green)",fontSize:15,marginBottom:4 }}>Correct: <strong style={{ fontFamily:"var(--mono)" }}>{question.displayAnswer}</strong></div>
