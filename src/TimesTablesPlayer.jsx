@@ -64,6 +64,7 @@ function Stage1({ n, onComplete, timerDisabled=false }) {
     }, 200);
   };
   const stopTimer = () => clearInterval(timerRef.current);
+  const handleRetry = () => { setStarted(false); setDone(false); setIdx(0); setInput(""); setElapsed(0); };
   useEffect(() => () => clearInterval(timerRef.current), []);
 
   // Start timer when student hits Start button
@@ -545,6 +546,7 @@ export default function TimesTablesPlayer({ user, topic, onHome }) {
     </div>
   );
 }
+
 
 
 
