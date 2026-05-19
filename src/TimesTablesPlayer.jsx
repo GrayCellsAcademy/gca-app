@@ -1,4 +1,4 @@
--import { useState, useEffect, useRef } from "react";
+﻿import { useState, useEffect, useRef } from "react";
 import useActivityTracking from "./core/useActivityTracking";
 import { saveProgress as fbSaveProgress, getProgress } from "./core/firebase";
 
@@ -545,6 +545,7 @@ export default function TimesTablesPlayer({ user, topic, onHome }) {
     </div>
   );
 }
+
 
 
 
