@@ -208,7 +208,7 @@ function buildStage3Questions(n) {
   return shuffle([...current,...review]);
 }
 
-function Stage3({ n, onComplete }) {
+function Stage3({ n, onComplete, timerDisabled=false }) {
   const [intro, setIntro] = useState(true);
   const [done, setDone] = useState(false);
   const [questions, setQuestions] = useState(()=>buildStage3Questions(n));
@@ -384,6 +384,7 @@ export default function TimesTablesPlayer6({ user, topic, onHome }) {
     </div>
   );
 }
+
 
 
 
