@@ -3,7 +3,7 @@ import { saveProgress as fbSaveProgress, getProgress } from "./core/firebase";
 
 export const LESSON11_MASTERY_TOPIC_ID = "lesson11-mastery-v1";
 
-const STREAK3 = 3;
+const STREAK3 = 2;
 const STREAK5 = 5;
 
 // - Helpers -
@@ -137,8 +137,9 @@ function CheckSolutionMastery({ onCorrect, onWrong }) {
       </div>
       {feedback ? (
         <FeedbackBanner correct={feedback.correct}
-          message={feedback.correct ? null : `x = ${q.testVal}: ${q.isSolution?"Yes, it is":"No, it is not"} a solution to ${q.inequality}`}
-          onNext={()=>{ setFeedback(null); setQ(genCheckSolution()); }} />
+          message={feedback.correct ? `x = ${q.testVal} ${q.isSolution?"satisfies":"does not satisfy"} ${q.inequality}` : `x = ${q.testVal}: ${q.isSolution?"Yes, it is":"No, it is not"} a solution to ${q.inequality}`}
+          onNext={()=>{ setFeedback(null); setQ(genCheckSolution()); }}
+          nextLabel="Next Problem" />
       ) : (
         <div style={{ display:"flex",gap:12,justifyContent:"center" }}>
           {["Yes","No"].map(opt=>(
@@ -210,8 +211,9 @@ function OneStepIneqMastery({ typeIdx, onCorrect, onWrong }) {
       <div style={{ textAlign:"center",fontSize:28,fontWeight:800,fontFamily:"var(--mono)",marginBottom:16 }}>{q.latex.replace(/\\leq/g,"\u2264").replace(/\\geq/g,"\u2265")}</div>
       {feedback ? (
         <FeedbackBanner correct={feedback.correct}
-          message={feedback.correct ? null : `${q.workHint} - Back to Type 1`}
-          onNext={()=>{ setFeedback(null); setQ(genOneStepIneq(typeIdx)); }} />
+          message={feedback.correct ? `Answer: ${q.display}` : `${q.workHint} - Back to Type 1`}
+          onNext={()=>{ setFeedback(null); setQ(genOneStepIneq(typeIdx)); }}
+          nextLabel="Next Problem" />
       ) : (
         <IneqInput key={q.latex} onSubmit={handleSubmit} placeholder={`e.g. x ${symDisplay(q.answer.sym)} ${q.answer.val}`} />
       )}
@@ -262,8 +264,9 @@ function TwoStepIneqMastery({ onCorrect, onWrong }) {
       </div>
       {feedback ? (
         <FeedbackBanner correct={feedback.correct}
-          message={feedback.correct ? null : q.workHint}
-          onNext={()=>{ setFeedback(null); setQ(genTwoStepIneq()); }} />
+          message={feedback.correct ? `Answer: ${q.display}` : q.workHint}
+          onNext={()=>{ setFeedback(null); setQ(genTwoStepIneq()); }}
+          nextLabel="Next Problem" />
       ) : (
         <IneqInput key={q.latex} onSubmit={handleSubmit} placeholder={`e.g. x > 3`} />
       )}
@@ -310,8 +313,9 @@ function SpecialCaseMastery({ onCorrect, onWrong }) {
       <div style={{ textAlign:"center",fontSize:22,fontWeight:800,fontFamily:"var(--mono)",marginBottom:16 }}>{q.latex}</div>
       {feedback ? (
         <FeedbackBanner correct={feedback.correct}
-          message={feedback.correct ? null : `Answer: ${q.displayAnswer}`}
-          onNext={()=>{ setFeedback(null); setQ(genSpecialCase()); }} />
+          message={`Answer: ${q.displayAnswer}`}
+          onNext={()=>{ setFeedback(null); setQ(genSpecialCase()); }}
+          nextLabel="Next Problem" />
       ) : (
         <div style={{ display:"flex",gap:10,justifyContent:"center" }}>
           {["all real numbers","no solution"].map(opt=>(
@@ -367,8 +371,9 @@ function MixedIneqMastery({ onCorrect, onWrong }) {
       </div>
       {feedback ? (
         <FeedbackBanner correct={feedback.correct}
-          message={feedback.correct ? null : (q.isSpecial ? `Answer: ${q.displayAnswer}` : (q.workHint||`Answer: ${q.display}`))}
-          onNext={()=>{ setFeedback(null); setQ(genMixedIneq()); }} />
+          message={q.isSpecial ? `Answer: ${q.displayAnswer}` : (q.workHint||`Answer: ${q.display}`)}
+          onNext={()=>{ setFeedback(null); setQ(genMixedIneq()); }}
+          nextLabel="Next Problem" />
       ) : q.isSpecial ? (
         <div style={{ display:"flex",gap:10,justifyContent:"center" }}>
           {["all real numbers","no solution"].map(opt=>(
