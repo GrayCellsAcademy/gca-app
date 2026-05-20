@@ -78,12 +78,21 @@ export function gradeWarmupB(input,q){
 
 // - Warm-up C: Division by 8 or 9 -
 export function genWarmupC() {
-  const divisor=Math.random()<0.5?8:9;
-  const quotient=randInt(1,9);
-  const dividend=divisor*quotient;
-  return {type:"warmup-c",dividend,divisor,quotient,display:`${dividend} \u00f7 ${divisor} = ?`,answer:String(quotient),displayAnswer:String(quotient)};
+  // Two types: 0/n = 0, or n/0 = undefined (no solution / undefined)
+  const type=Math.random()<0.5?"zero-dividend":"zero-divisor";
+  if(type==="zero-dividend"){
+    const n=randInt(2,9);
+    return {type:"warmup-c",subtype:"zero-dividend",display:`0 \u00f7 ${n} = ?`,answer:"0",displayAnswer:"0",hint:"0 divided by any nonzero number equals 0"};
+  } else {
+    const n=randInt(2,9);
+    return {type:"warmup-c",subtype:"zero-divisor",display:`${n} \u00f7 0 = ?`,answer:"undefined",displayAnswer:"Undefined",hint:"Division by zero is undefined"};
+  }
 }
-export function gradeWarmupC(input,q){ return parseInt(String(input).replace(/\s/g,""),10)===q.quotient; }
+export function gradeWarmupC(input,q){
+  const s=String(input).trim().toLowerCase().replace(/\s/g,"");
+  if(q.subtype==="zero-dividend") return s==="0";
+  return s==="undefined"||s==="notdefined"||s==="nodefinition";
+}
 
 // - Topic 1: Divisible by 2, 5, or 10? -
 function gen3or4DigitNum(avoid=[]) {
@@ -387,7 +396,6 @@ export function generateLesson12Question(topicId){
     case "div-46":         return genDivisibility46();
     case "mixed-rules":    return genMixedRules();
     case "prime-composite":return genPrimeComposite();
-    case "factor-tree":    return genFactorTree();
     case "pf-mc":          return genPFMultipleChoice();
     case "pf-free":        return genPFFreeResponse();
     default:               return genWarmupA();
@@ -408,7 +416,6 @@ export function gradeLesson12Answer(input,question){
       // All items must be correct - graded per-item in session
       return false; // use per-item graders
     case "missing-digit":  return gradeMissingDigit(input,question);
-    case "factor-tree":    return gradeFactorTree(input,question);
     case "pf-mc":          return gradePFMultipleChoice(input,question);
     case "pf-free":        return gradePFFreeResponse(input,question);
     default:               return false;

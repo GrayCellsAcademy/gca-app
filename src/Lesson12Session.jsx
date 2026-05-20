@@ -11,6 +11,33 @@ import {
 
 const POINTS = 5;
 
+// -- KaTeX --
+function useKaTeX() {
+  useEffect(() => {
+    if (window.katex) return;
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = "https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css";
+    document.head.appendChild(link);
+    const s = document.createElement("script");
+    s.src = "https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js";
+    s.async = true;
+    document.head.appendChild(s);
+  }, []);
+}
+function KaTeXSpan({ expr }) {
+  const ref = useRef(null);
+  useEffect(() => {
+    const go = () => {
+      if (window.katex && ref.current) {
+        try { window.katex.render(expr, ref.current, { throwOnError: false }); } catch {}
+      } else setTimeout(go, 100);
+    };
+    go();
+  });
+  return <span ref={ref} style={{ fontSize: 22 }} />;
+}
+
 // -- Timer --
 function TimerBar({ endsAt, totalSeconds, onExpired }) {
   const [rem, setRem] = useState(totalSeconds);
@@ -92,6 +119,40 @@ function TextInput({ onSubmit, submitted, placeholder }) {
   );
 }
 
+
+// -- Inequality input with symbol buttons --
+function IneqInput({ onSubmit, submitted, placeholder }) {
+  const [val, setVal] = useState("");
+  const ref = useRef(null);
+  useEffect(() => { setVal(""); setTimeout(() => ref.current?.focus(), 80); }, [submitted]);
+  const addSym = (sym) => {
+    if (submitted) return;
+    setVal(v => v.includes("x") ? v.trimEnd() + " " + sym + " " : "x " + sym + " ");
+    setTimeout(() => ref.current?.focus(), 0);
+  };
+  const submit = () => { if (val.trim()) onSubmit(val.trim()); };
+  return (
+    <div>
+      <div style={{ display: "flex", gap: 8, justifyContent: "center", marginBottom: 8 }}>
+        {[">","<",">=","<="].map(sym => (
+          <button key={sym} onClick={() => addSym(sym)}
+            style={{ padding: "8px 16px", borderRadius: "var(--radius-sm)", border: "1px solid var(--border2)", background: "var(--surface)", fontSize: 22, fontWeight: 800, fontFamily: "var(--mono)", cursor: "pointer", color: "var(--blue)" }}>
+            {sym}
+          </button>
+        ))}
+      </div>
+      <div style={{ display: "flex", gap: 8, justifyContent: "center" }}>
+        <input ref={ref} value={val} onChange={e => setVal(e.target.value)}
+          onKeyDown={e => e.key === "Enter" && submit()} disabled={submitted}
+          placeholder={placeholder || "e.g. x > 3"}
+          style={{ textAlign: "center", fontSize: 22, fontFamily: "var(--mono)", fontWeight: 700, padding: "10px", width: 220 }} />
+        <button className="btn btn-primary" style={{ fontSize: 20, padding: "10px 20px" }}
+          onMouseDown={e => { e.preventDefault(); submit(); }} disabled={submitted || !val.trim()}>OK</button>
+      </div>
+    </div>
+  );
+}
+
 // -- Question Display --
 function QuestionDisplay({ question: q, revealCorrect }) {
   if (!q) return null;
@@ -113,7 +174,8 @@ function QuestionDisplay({ question: q, revealCorrect }) {
   if (q.type === "warmup-c") return (
     <div style={{ textAlign: "center" }}>
       <div style={{ fontSize: 32, fontWeight: 900, fontFamily: "var(--mono)", marginBottom: 8 }}>{q.display}</div>
-      {revealCorrect && <div style={{ fontSize: 22, color: "var(--green)", fontWeight: 700 }}>{q.displayAnswer}</div>}
+      {revealCorrect && <div style={{ fontSize: 22, color: "var(--green)", fontWeight: 700, marginBottom: 4 }}>{q.displayAnswer}</div>}
+      {revealCorrect && q.hint && <div style={{ fontSize: 19, color: "var(--text2)" }}>{q.hint}</div>}
     </div>
   );
 
@@ -172,7 +234,9 @@ function QuestionDisplay({ question: q, revealCorrect }) {
   if (q.type === "pf-mc") return (
     <div style={{ textAlign: "center" }}>
       <div style={{ fontSize: 36, fontWeight: 900, fontFamily: "var(--mono)", marginBottom: 12 }}>{q.n}</div>
-      {revealCorrect && <div style={{ fontSize: 22, color: "var(--green)", fontWeight: 700, marginBottom: 8 }}>{q.displayAnswer}</div>}
+      {revealCorrect && <div style={{ fontSize: 22, color: "var(--green)", fontWeight: 700, marginBottom: 8 }}>
+        <KaTeXSpan expr={q.displayAnswer.replace(/\^(\d+)/g,"^{$1}").replace(/ x /g," \\times ")} />
+      </div>}
     </div>
   );
 
@@ -180,7 +244,9 @@ function QuestionDisplay({ question: q, revealCorrect }) {
     <div style={{ textAlign: "center" }}>
       <div style={{ fontSize: 36, fontWeight: 900, fontFamily: "var(--mono)", marginBottom: 8 }}>{q.n}</div>
       <div style={{ fontSize: 20, color: "var(--text3)", marginBottom: 8 }}>Use ^ for exponents and - or * for multiplication</div>
-      {revealCorrect && <div style={{ fontSize: 22, color: "var(--green)", fontWeight: 700 }}>{q.displayAnswer}</div>}
+      {revealCorrect && <div style={{ fontSize: 22, color: "var(--green)", fontWeight: 700 }}>
+        <KaTeXSpan expr={q.displayAnswer.replace(/\^(\d+)/g,"^{$1}").replace(/ x /g," \\times ")} />
+      </div>}
     </div>
   );
 
@@ -324,15 +390,30 @@ function PrimeCompositeInput({ question, onSubmit, submitted }) {
   );
 }
 
+function PFMCInput({ question, onSubmit, submitted }) {
+  useKaTeX();
+  const [selected, setSelected] = useState("");
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+      {question.options.map((opt, i) => {
+        const katexExpr = opt.replace(/\^(\d+)/g,"^{$1}").replace(/ x /g," \\times ");
+        const isSelected = selected === opt;
+        return (
+          <button key={i} onClick={() => { if (!submitted) { setSelected(opt); onSubmit(opt); } }}
+            style={{ padding: "10px 16px", borderRadius: "var(--radius-sm)", border: "2px solid " + (isSelected ? "var(--blue)" : "var(--border)"), background: isSelected ? "rgba(27,143,255,0.12)" : "var(--surface)", fontSize: 20, fontWeight: 700, cursor: "pointer", textAlign: "left", display: "flex", alignItems: "center", gap: 10 }}>
+            <span style={{ fontFamily: "var(--mono)", color: "var(--text3)" }}>{String.fromCharCode(65 + i)})</span>
+            <KaTeXSpan expr={katexExpr} />
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 function AnswerInput({ question, onSubmit, submitted }) {
   if (!question) return null;
   const t = question.type;
-  if (t === "warmup-a") return (
-    <div>
-      <div style={{ fontSize: 20, color: "var(--text3)", marginBottom: 6, textAlign: "center" }}>Enter solution as inequality (e.g. x &gt;= -3)</div>
-      <TextInput onSubmit={onSubmit} submitted={submitted} placeholder="e.g. x >= 3" />
-    </div>
-  );
+  if (t === "warmup-a") return <IneqInput onSubmit={onSubmit} submitted={submitted} placeholder="e.g. x >= -3" />;
   if (t === "warmup-b") return (
     <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
       {["All Real Numbers", "No Solution"].map(opt => (
@@ -343,25 +424,21 @@ function AnswerInput({ question, onSubmit, submitted }) {
       ))}
     </div>
   );
-  if (t === "warmup-c") return <TextInput onSubmit={onSubmit} submitted={submitted} placeholder="Enter answer" />;
+  if (t === "warmup-c") return (
+    <div>
+      <div style={{ fontSize: 20, color: "var(--text3)", marginBottom: 8, textAlign: "center" }}>Enter 0, or type "undefined" if undefined</div>
+      <TextInput onSubmit={onSubmit} submitted={submitted} placeholder="0 or undefined" />
+    </div>
+  );
   if (t === "div-2510") return <Div2510Input question={question} onSubmit={onSubmit} submitted={submitted} />;
   if (t === "div-39") return <Div39Input question={question} onSubmit={onSubmit} submitted={submitted} />;
   if (t === "missing-digit") return <MissingDigitInput question={question} onSubmit={onSubmit} submitted={submitted} />;
   if (t === "div-46") return <Div46Input question={question} onSubmit={onSubmit} submitted={submitted} />;
   if (t === "mixed-rules") return <MixedRulesInput question={question} onSubmit={onSubmit} submitted={submitted} />;
   if (t === "prime-composite") return <PrimeCompositeInput question={question} onSubmit={onSubmit} submitted={submitted} />;
-  if (t === "factor-tree") return (
-    <SingleSelect options={["A","B","C","D"]} selected={""} onSelect={onSubmit} disabled={submitted} />
-  );
+
   if (t === "pf-mc") return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-      {question.options.map((opt, i) => (
-        <button key={i} onClick={() => !submitted && onSubmit(opt)}
-          style={{ padding: "10px 16px", borderRadius: "var(--radius-sm)", border: "2px solid var(--border)", background: "var(--surface)", fontFamily: "var(--mono)", fontSize: 20, fontWeight: 700, cursor: "pointer", textAlign: "left" }}>
-          {String.fromCharCode(65 + i)}) {opt}
-        </button>
-      ))}
-    </div>
+    <PFMCInput question={question} onSubmit={onSubmit} submitted={submitted} />
   );
   if (t === "pf-free") return (
     <div>
@@ -380,7 +457,6 @@ function gradeAnswer(input, question) {
   if (t === "warmup-b") return gradeWarmupB(input, question);
   if (t === "warmup-c") return gradeWarmupC(input, question);
   if (t === "missing-digit") return gradeMissingDigit(input, question);
-  if (t === "factor-tree") return gradeFactorTree(input, question);
   if (t === "pf-mc") return gradePFMultipleChoice(input, question);
   if (t === "pf-free") return gradePFFreeResponse(input, question);
   // Multi-item: all items must be correct
@@ -661,7 +737,7 @@ function StudentLesson12({ session, sessionId, uid }) {
                       Your answer: <strong style={{ fontFamily: "var(--mono)", color: result.correct ? "var(--green)" : "var(--red)" }}>{String(result.answer).slice(0, 30)}</strong>
                     </div>
                     {!result.correct && question?.displayAnswer && (
-                      <div style={{ marginTop: 8, fontSize: 20, color: "var(--green)", fontWeight: 700 }}>Correct: {question.displayAnswer}</div>
+                      <div style={{ marginTop: 8, fontSize: 20, color: "var(--green)", fontWeight: 700 }}>Correct: {["pf-mc","pf-free"].includes(question?.type) ? <KaTeXSpan expr={question.displayAnswer.replace(/\^(\d+)/g,"^{$1}").replace(/ x /g," \\times ")} /> : question.displayAnswer}</div>
                     )}
                   </div>
                 )}
