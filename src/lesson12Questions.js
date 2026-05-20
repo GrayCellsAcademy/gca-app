@@ -78,20 +78,36 @@ export function gradeWarmupB(input,q){
 
 // - Warm-up C: Division by 8 or 9 -
 export function genWarmupC() {
-  // Two types: 0/n = 0, or n/0 = undefined (no solution / undefined)
-  const type=Math.random()<0.5?"zero-dividend":"zero-divisor";
-  if(type==="zero-dividend"){
-    const n=randInt(2,9);
-    return {type:"warmup-c",subtype:"zero-dividend",display:`0 \u00f7 ${n} = ?`,answer:"0",displayAnswer:"0",hint:"0 divided by any nonzero number equals 0"};
-  } else {
-    const n=randInt(2,9);
-    return {type:"warmup-c",subtype:"zero-divisor",display:`${n} \u00f7 0 = ?`,answer:"undefined",displayAnswer:"Undefined",hint:"Division by zero is undefined"};
-  }
+  const a=randInt(2,9);
+  let b; do{b=randInt(2,9);}while(b===a);
+  const types=["zero-num","zero-den"];
+  const type1=randChoice(types), type2=randChoice(types);
+  const style1=Math.random()<0.5?"fraction":"standard";
+  const style2=style1==="fraction"?"standard":"fraction";
+  const makeProb=(type,n,style)=>{
+    const num=type==="zero-num"?0:n;
+    const den=type==="zero-num"?n:0;
+    const isUndef=type==="zero-den";
+    const latex=style==="fraction"
+      ?`\\dfrac{${num}}{${den}}`
+      :`${num} \\div ${den}`;
+    return {num,den,style,latex,answer:isUndef?"undefined":"0",isUndefined:isUndef};
+  };
+  const prob1=makeProb(type1,a,style1);
+  const prob2=makeProb(type2,b,style2);
+  return {
+    type:"warmup-c", prob1, prob2,
+    answer:JSON.stringify({ans1:prob1.answer,ans2:prob2.answer}),
+    displayAnswer:`Expr 1: ${prob1.answer}, Expr 2: ${prob2.answer}`,
+    prompt:"Evaluate each expression. Enter a number or press UNDEFINED.",
+  };
 }
 export function gradeWarmupC(input,q){
-  const s=String(input).trim().toLowerCase().replace(/\s/g,"");
-  if(q.subtype==="zero-dividend") return s==="0";
-  return s==="undefined"||s==="notdefined"||s==="nodefinition";
+  try {
+    const ans=JSON.parse(input);
+    const norm=s=>String(s).trim().toLowerCase().replace(/\s/g,"");
+    return norm(ans.ans1)===norm(q.prob1.answer)&&norm(ans.ans2)===norm(q.prob2.answer);
+  } catch { return false; }
 }
 
 // - Topic 1: Divisible by 2, 5, or 10? -

@@ -25,17 +25,17 @@ function useKaTeX() {
     document.head.appendChild(s);
   }, []);
 }
-function KaTeXSpan({ expr }) {
+function KaTeXSpan({ expr, block }) {
   const ref = useRef(null);
   useEffect(() => {
     const go = () => {
       if (window.katex && ref.current) {
-        try { window.katex.render(expr, ref.current, { throwOnError: false }); } catch {}
+        try { window.katex.render(expr, ref.current, { throwOnError: false, displayMode: !!block }); } catch {}
       } else setTimeout(go, 100);
     };
     go();
   });
-  return <span ref={ref} style={{ fontSize: 22 }} />;
+  return block ? <div ref={ref} style={{ fontSize: 26, margin: "6px 0" }} /> : <span ref={ref} style={{ fontSize: 22 }} />;
 }
 
 // -- Timer --
@@ -172,10 +172,14 @@ function QuestionDisplay({ question: q, revealCorrect }) {
   );
 
   if (q.type === "warmup-c") return (
-    <div style={{ textAlign: "center" }}>
-      <div style={{ fontSize: 32, fontWeight: 900, fontFamily: "var(--mono)", marginBottom: 8 }}>{q.display}</div>
-      {revealCorrect && <div style={{ fontSize: 22, color: "var(--green)", fontWeight: 700, marginBottom: 4 }}>{q.displayAnswer}</div>}
-      {revealCorrect && q.hint && <div style={{ fontSize: 19, color: "var(--text2)" }}>{q.hint}</div>}
+    <div style={{ display: "flex", gap: 40, justifyContent: "center", alignItems: "center", flexWrap: "wrap", padding: "10px 0" }}>
+      {[q.prob1, q.prob2].map((p, i) => (
+        <div key={i} style={{ textAlign: "center", minWidth: 120 }}>
+          <div style={{ fontSize: 20, color: "var(--text3)", marginBottom: 8, fontWeight: 600 }}>Expression {i + 1}</div>
+          <KaTeXSpan expr={p.latex} block />
+          {revealCorrect && <div style={{ fontSize: 20, fontWeight: 800, color: "var(--green)", marginTop: 6 }}>{p.answer}</div>}
+        </div>
+      ))}
     </div>
   );
 
@@ -390,6 +394,35 @@ function PrimeCompositeInput({ question, onSubmit, submitted }) {
   );
 }
 
+function DivZeroTwoInput({ question, onSubmit, submitted }) {
+  const [ans1, setAns1] = useState("");
+  const [ans2, setAns2] = useState("");
+  const ref = useRef(null);
+  useEffect(() => { setAns1(""); setAns2(""); setTimeout(() => ref.current?.focus(), 80); }, [question?.id]);
+  const handleSubmit = () => {
+    if (!ans1.trim() || !ans2.trim()) return;
+    onSubmit(JSON.stringify({ ans1: ans1.trim().toLowerCase(), ans2: ans2.trim().toLowerCase() }));
+  };
+  const inputStyle = { textAlign: "center", fontSize: 22, fontFamily: "var(--mono)", fontWeight: 700, padding: "10px", width: "100%" };
+  return (
+    <div>
+      <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 10 }}>
+        {[{ val: ans1, set: setAns1, ref }, { val: ans2, set: setAns2, ref: null }].map((item, i) => (
+          <div key={i} style={{ flex: 1, minWidth: 140 }}>
+            <div style={{ fontSize: 20, color: "var(--text3)", marginBottom: 4 }}>Expression {i + 1}</div>
+            <input ref={item.ref} style={inputStyle} value={item.val}
+              onChange={e => item.set(e.target.value)} disabled={submitted} />
+            <button className="btn btn-ghost btn-sm" style={{ width: "100%", marginTop: 4, fontSize: 19 }}
+              onClick={() => item.set("undefined")} disabled={submitted}>UNDEFINED</button>
+          </div>
+        ))}
+      </div>
+      <button className="btn btn-primary" style={{ width: "100%", fontSize: 20 }} onClick={handleSubmit}
+        disabled={submitted || !ans1.trim() || !ans2.trim()}>Submit Both</button>
+    </div>
+  );
+}
+
 function PFMCInput({ question, onSubmit, submitted }) {
   useKaTeX();
   const [selected, setSelected] = useState("");
@@ -424,12 +457,7 @@ function AnswerInput({ question, onSubmit, submitted }) {
       ))}
     </div>
   );
-  if (t === "warmup-c") return (
-    <div>
-      <div style={{ fontSize: 20, color: "var(--text3)", marginBottom: 8, textAlign: "center" }}>Enter 0, or type "undefined" if undefined</div>
-      <TextInput onSubmit={onSubmit} submitted={submitted} placeholder="0 or undefined" />
-    </div>
-  );
+  if (t === "warmup-c") return <DivZeroTwoInput question={question} onSubmit={onSubmit} submitted={submitted} />;
   if (t === "div-2510") return <Div2510Input question={question} onSubmit={onSubmit} submitted={submitted} />;
   if (t === "div-39") return <Div39Input question={question} onSubmit={onSubmit} submitted={submitted} />;
   if (t === "missing-digit") return <MissingDigitInput question={question} onSubmit={onSubmit} submitted={submitted} />;
