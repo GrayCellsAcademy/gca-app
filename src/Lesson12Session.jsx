@@ -153,6 +153,33 @@ function IneqInput({ onSubmit, submitted, placeholder }) {
   );
 }
 
+// Shows plain text immediately, upgrades to KaTeX when library loads
+function DivZeroExpr({ latex, fallback }) {
+  const ref = useRef(null);
+  const [rendered, setRendered] = useState(false);
+  useEffect(() => {
+    if (!latex) return;
+    const tryRender = () => {
+      if (window.katex && ref.current) {
+        try {
+          window.katex.render(latex, ref.current, { throwOnError: false, displayMode: true });
+          setRendered(true);
+        } catch {}
+      } else {
+        setTimeout(tryRender, 200);
+      }
+    };
+    tryRender();
+  }, [latex]);
+  return (
+    <div style={{ minHeight: 50, display: "flex", alignItems: "center", justifyContent: "center" }}>
+      {rendered
+        ? <div ref={ref} />
+        : <div style={{ fontSize: 28, fontFamily: "var(--mono)", fontWeight: 900 }}>{fallback}</div>}
+    </div>
+  );
+}
+
 // -- Question Display --
 function QuestionDisplay({ question: q, revealCorrect }) {
   if (!q) return null;
@@ -173,26 +200,26 @@ function QuestionDisplay({ question: q, revealCorrect }) {
 
 
   if (q.type === "warmup-c") {
-    // Rebuild latex from plain text since Firestore strips backslashes
-    const toLatex = (d) => {
-      if (!d) return "";
-      if (d.includes("/")) {
-        const [num, den] = d.replace(/\s/g,"").split("/");
-        return `\\dfrac{${num}}{${den}}`;
-      }
-      return d.replace(" div ", " \\div ");
-    };
     const displays = [q.display1, q.display2];
     const answers = [q.ans1, q.ans2];
     return (
       <div style={{ display: "flex", gap: 60, justifyContent: "center", alignItems: "center", flexWrap: "wrap", padding: "10px 0" }}>
-        {displays.map((d, i) => (
-          <div key={i} style={{ textAlign: "center", minWidth: 120 }}>
-            <div style={{ fontSize: 20, color: "var(--text3)", marginBottom: 8, fontWeight: 600 }}>Expression {i + 1}</div>
-            <KaTeXSpan expr={toLatex(d)} block />
-            {revealCorrect && <div style={{ fontSize: 20, fontWeight: 800, color: "var(--green)", marginTop: 6 }}>{answers[i]}</div>}
-          </div>
-        ))}
+        {displays.map((d, i) => {
+          let latex = "";
+          if (d && d.includes(" / ")) {
+            const parts = d.trim().split(" / ");
+            latex = `\\dfrac{${parts[0]}}{${parts[1]}}`;
+          } else if (d && d.includes(" div ")) {
+            latex = d.replace(" div ", " \\div ");
+          }
+          return (
+            <div key={i} style={{ textAlign: "center", minWidth: 120 }}>
+              <div style={{ fontSize: 20, color: "var(--text3)", marginBottom: 8, fontWeight: 600 }}>Expression {i + 1}</div>
+              <DivZeroExpr latex={latex} fallback={d} />
+              {revealCorrect && <div style={{ fontSize: 20, fontWeight: 800, color: "var(--green)", marginTop: 6 }}>{answers[i]}</div>}
+            </div>
+          );
+        })}
       </div>
     );
   }
