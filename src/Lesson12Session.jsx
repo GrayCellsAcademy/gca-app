@@ -171,15 +171,22 @@ function QuestionDisplay({ question: q, revealCorrect }) {
     </div>
   );
 
+
   if (q.type === "warmup-c") {
-    const latexes = [q.latex1 || q.prob1?.latex, q.latex2 || q.prob2?.latex];
-    const answers = [q.ans1 || q.prob1?.answer, q.ans2 || q.prob2?.answer];
+    // Use display1/display2 as plain text fallback, latex1/latex2 for KaTeX
+    const exprs = [
+      { latex: q.latex1, display: q.display1 },
+      { latex: q.latex2, display: q.display2 },
+    ];
+    const answers = [q.ans1, q.ans2];
     return (
       <div style={{ display: "flex", gap: 40, justifyContent: "center", alignItems: "center", flexWrap: "wrap", padding: "10px 0" }}>
-        {latexes.map((lat, i) => (
+        {exprs.map((e, i) => (
           <div key={i} style={{ textAlign: "center", minWidth: 120 }}>
             <div style={{ fontSize: 20, color: "var(--text3)", marginBottom: 8, fontWeight: 600 }}>Expression {i + 1}</div>
-            {lat ? <KaTeXSpan expr={lat} block /> : <div style={{ fontSize: 22, color: "var(--text3)" }}>-</div>}
+            {e.latex
+              ? <KaTeXSpan expr={e.latex} block />
+              : <div style={{ fontSize: 26, fontFamily: "var(--mono)", fontWeight: 800 }}>{e.display || "-"}</div>}
             {revealCorrect && <div style={{ fontSize: 20, fontWeight: 800, color: "var(--green)", marginTop: 6 }}>{answers[i]}</div>}
           </div>
         ))}
@@ -451,6 +458,7 @@ function AnswerInput({ question, onSubmit, submitted }) {
   if (!question) return null;
   const t = question.type;
   if (t === "warmup-a") return <IneqInput onSubmit={onSubmit} submitted={submitted} placeholder="e.g. x >= -3" />;
+  if (t === "warmup-c") return <DivZeroTwoInput question={question} onSubmit={onSubmit} submitted={submitted} />;
   if (t === "warmup-b") return (
     <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
       {["All Real Numbers", "No Solution"].map(opt => (
@@ -461,7 +469,6 @@ function AnswerInput({ question, onSubmit, submitted }) {
       ))}
     </div>
   );
-  if (t === "warmup-c") return <DivZeroTwoInput question={question} onSubmit={onSubmit} submitted={submitted} />;
   if (t === "div-2510") return <Div2510Input question={question} onSubmit={onSubmit} submitted={submitted} />;
   if (t === "div-39") return <Div39Input question={question} onSubmit={onSubmit} submitted={submitted} />;
   if (t === "missing-digit") return <MissingDigitInput question={question} onSubmit={onSubmit} submitted={submitted} />;

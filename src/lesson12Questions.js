@@ -95,9 +95,13 @@ export function genWarmupC() {
   };
   const prob1=makeProb(type1,a,style1);
   const prob2=makeProb(type2,b,style2);
+  // Plain text display for fallback when KaTeX not yet loaded
+  const plainDisplay=(num,den,style)=>style==="fraction"?`${num}/${den}`:`${num} - ${den}`;
   return {
     type:"warmup-c", prob1, prob2,
     latex1:prob1.latex, latex2:prob2.latex,
+    display1:plainDisplay(prob1.num,prob1.den,prob1.style),
+    display2:plainDisplay(prob2.num,prob2.den,prob2.style),
     ans1:prob1.answer, ans2:prob2.answer,
     answer:JSON.stringify({ans1:prob1.answer,ans2:prob2.answer}),
     displayAnswer:`Expr 1: ${prob1.answer}, Expr 2: ${prob2.answer}`,
@@ -391,7 +395,7 @@ export function gradePFFreeResponse(input,q){
 export const LESSON12_TOPICS=[
   { id:"warmup-a",    label:"Warm-up: Two-Step Inequality",    description:"Solve with possible sign flip"       },
   { id:"warmup-b",    label:"Warm-up: Special Case Inequality",description:"All Real or No Solution"             },
-  { id:"warmup-c",    label:"Warm-up: Division by 8 or 9",     description:"Enter numerical answer"             },
+  { id:"warmup-c",    label:"Warm-up: Division with Zero",      description:"Two expressions simultaneously"          },
   { id:"div-2510",    label:"Divisible by 2, 5, or 10?",       description:"3 numbers, multi-select per number" },
   { id:"div-39",      label:"Divisible by 3 or 9?",            description:"4 numbers, 4 choices each"          },
   { id:"missing-digit",label:"Find the Missing Digit",         description:"Make number divisible by 3 or 9"    },
