@@ -398,7 +398,6 @@ export const LESSON12_TOPICS=[
   { id:"div-46",      label:"Divisible by 4 or 6?",            description:"4 numbers, 4 choices each"          },
   { id:"mixed-rules", label:"Mixed Divisibility Review",       description:"6 numbers, all 7 rules"             },
   { id:"prime-composite",label:"Prime or Composite?",          description:"Numbers 1-9"                        },
-  { id:"factor-tree", label:"Factor Tree First Step",          description:"Multiple choice A/B/C/D"            },
   { id:"pf-mc",       label:"Prime Factorization (MC)",        description:"Select correct factorization"       },
   { id:"pf-free",     label:"Prime Factorization (Free)",      description:"Enter using ^ and -"                },
 ];

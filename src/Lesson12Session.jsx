@@ -6,7 +6,7 @@ import {
   gradeWarmupA, gradeWarmupB, gradeWarmupC,
   gradeDivisibility2510Item, gradeDivisibility39Item,
   gradeMissingDigit, gradeDivisibility46Item, gradeMixedRulesItem,
-  gradePrimeCompositeItem, gradeFactorTree, gradePFMultipleChoice, gradePFFreeResponse,
+  gradePrimeCompositeItem, gradePFMultipleChoice, gradePFFreeResponse,
 } from "./lesson12Questions";
 
 const POINTS = 5;

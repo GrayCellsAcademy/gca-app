@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+﻿import { useState, useEffect, useRef } from "react";
 import { setDoc, doc, updateDoc } from "firebase/firestore";
 import {
   createClassworkSession, onSessionChange, onClassworkAnswersChange,
@@ -688,10 +688,15 @@ function StudentLesson08({ session, sessionId, uid }) {
         {session.status==="revealing"?(
           <div style={{ textAlign:"center",marginTop:12 }}>
             {result?(
-              <div style={{ fontSize:22,fontWeight:800,color:result.correct?"var(--green)":"var(--red)" }}>
-                {result.correct?"Correct! +"+POINTS+" pts":"Incorrect"}
+              <div>
+                <div style={{ fontSize:22,fontWeight:800,color:result.correct?"var(--green)":"var(--red)",marginBottom:8 }}>
+                  {result.correct?"Correct! +"+POINTS+" pts":"Incorrect"}
+                </div>
+                <div style={{ fontSize:19,color:"var(--text2)",marginBottom:6 }}>
+                  Your answer: <strong style={{ fontFamily:"var(--mono)",color:result.correct?"var(--green)":"var(--red)" }}>{String(result.answer).slice(0,30)}</strong>
+                </div>
                 {!result.correct&&question?.displayAnswer&&(
-                  <div style={{ marginTop:8,fontSize:20,color:"var(--green)",fontWeight:400 }}>Answer: <strong>{question.displayAnswer}</strong></div>
+                  <div style={{ marginTop:4,fontSize:20,color:"var(--green)" }}>Correct: <strong style={{ fontFamily:"var(--mono)" }}>{question.displayAnswer}</strong></div>
                 )}
               </div>
             ):(
@@ -810,3 +815,4 @@ export default function Lesson08Session({ user, onHome }) {
 }
 
 export { TeacherLesson08 as Lesson08TeacherView, StudentLesson08 as Lesson08StudentView };
+

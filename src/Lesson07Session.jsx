@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+﻿import { useState, useEffect, useRef } from "react";
 import { setDoc, doc, updateDoc } from "firebase/firestore";
 import {
   createClassworkSession, onSessionChange, onClassworkAnswersChange,
@@ -520,17 +520,20 @@ function StudentLesson07({ session, sessionId, uid }) {
         {session.status==="revealing"?(
           <div style={{ textAlign:"center",marginTop:12 }}>
             {result?(
-              <>
-                <div style={{ fontSize:22,fontWeight:800,color:result.correct?"var(--green)":"var(--red)",marginBottom:6 }}>
+              <div>
+                <div style={{ fontSize:22,fontWeight:800,color:result.correct?"var(--green)":"var(--red)",marginBottom:8 }}>
                   {result.correct?"Correct! +"+POINTS+" pts":"Incorrect"}
                 </div>
+                <div style={{ fontSize:19,color:"var(--text2)",marginBottom:6 }}>
+                  Your answer: <strong style={{ fontFamily:"var(--mono)",color:result.correct?"var(--green)":"var(--red)" }}>{String(result.answer).slice(0,30)}</strong>
+                </div>
                 {!result.correct&&question?.displayAnswer&&(
-                  <div style={{ marginTop:8 }}>
+                  <div style={{ marginTop:4 }}>
                     <div style={{ color:"var(--green)",fontSize:20,marginBottom:4 }}>Correct: <strong style={{ fontFamily:"var(--mono)" }}>{question.displayAnswer}</strong></div>
                     <RevealPanel question={question} />
                   </div>
                 )}
-              </>
+              </div>
             ):(
               <div>
                 <div style={{ color:"var(--text3)",marginBottom:4,fontSize:20 }}>No answer submitted.</div>
@@ -631,3 +634,4 @@ export default function Lesson07Session({ user, onHome }) {
 }
 
 export { TeacherLesson07 as Lesson07TeacherView, StudentLesson07 as Lesson07StudentView };
+
