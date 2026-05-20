@@ -173,14 +173,23 @@ function QuestionDisplay({ question: q, revealCorrect }) {
 
 
   if (q.type === "warmup-c") {
+    // Rebuild latex from plain text since Firestore strips backslashes
+    const toLatex = (d) => {
+      if (!d) return "";
+      if (d.includes("/")) {
+        const [num, den] = d.replace(/\s/g,"").split("/");
+        return `\\dfrac{${num}}{${den}}`;
+      }
+      return d.replace(" div ", " \\div ");
+    };
     const displays = [q.display1, q.display2];
     const answers = [q.ans1, q.ans2];
     return (
-      <div style={{ display: "flex", gap: 40, justifyContent: "center", alignItems: "center", flexWrap: "wrap", padding: "10px 0" }}>
+      <div style={{ display: "flex", gap: 60, justifyContent: "center", alignItems: "center", flexWrap: "wrap", padding: "10px 0" }}>
         {displays.map((d, i) => (
           <div key={i} style={{ textAlign: "center", minWidth: 120 }}>
             <div style={{ fontSize: 20, color: "var(--text3)", marginBottom: 8, fontWeight: 600 }}>Expression {i + 1}</div>
-            <div style={{ fontSize: 30, fontFamily: "var(--mono)", fontWeight: 900 }}>{d || "-"}</div>
+            <KaTeXSpan expr={toLatex(d)} block />
             {revealCorrect && <div style={{ fontSize: 20, fontWeight: 800, color: "var(--green)", marginTop: 6 }}>{answers[i]}</div>}
           </div>
         ))}
