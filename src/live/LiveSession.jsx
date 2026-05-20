@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+﻿import { useState, useEffect, useRef } from "react";
 import { setDoc, doc, onSnapshot, collection, query, where } from "firebase/firestore";
 import { db, getTeacherClasses, onSessionChange } from "../core/firebase";
 import Lesson01Session, { Lesson01TeacherView, Lesson01StudentView } from "../Lesson01Session";
@@ -12,6 +12,7 @@ import Lesson08Session, { Lesson08TeacherView, Lesson08StudentView } from "../Le
 import Lesson09Session, { Lesson09TeacherView, Lesson09StudentView } from "../Lesson09Session";
 import Lesson10Session, { Lesson10TeacherView, Lesson10StudentView } from "../Lesson10Session";
 import Lesson11Session, { Lesson11TeacherView, Lesson11StudentView } from "../Lesson11Session";
+import Lesson12Session, { Lesson12TeacherView, Lesson12StudentView } from "../Lesson12Session";
 
 // Join a session by code (student flow)
 async function findSessionByCode(code) {
@@ -99,6 +100,11 @@ export default function LiveSession({ user, onHome }) {
         ? <Lesson11TeacherView session={session} sessionId={sessionId} uid={user.id} />
         : <Lesson11StudentView session={session} sessionId={sessionId} uid={user.id} />;
     }
+    if (session.type === "lesson12") {
+      return user.role === "teacher"
+        ? <Lesson12TeacherView session={session} sessionId={sessionId} uid={user.id} />
+        : <Lesson12StudentView session={session} sessionId={sessionId} uid={user.id} />;
+    }
   }
 
   // Lesson session views (teacher creates)
@@ -113,6 +119,7 @@ export default function LiveSession({ user, onHome }) {
   if (view === "lesson09") return <Lesson09Session user={user} onHome={() => setView("menu")} />;
   if (view === "lesson10") return <Lesson10Session user={user} onHome={() => setView("menu")} />;
   if (view === "lesson11") return <Lesson11Session user={user} onHome={() => setView("menu")} />;
+  if (view === "lesson12") return <Lesson12Session user={user} onHome={() => setView("menu")} />;
 
   // Student join flow
   if (view === "join") {
@@ -267,6 +274,14 @@ export default function LiveSession({ user, onHome }) {
                       <div style={{ color: "var(--text2)", fontSize: 20 }}>Solution sets, number lines, solving inequalities, sign flips, and special cases.</div>
                     </div>
                   </div>
+                  <div className="card" onClick={() => setView("lesson12")}
+                    style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 16 }}>
+                    <div style={{ fontSize: 20, fontWeight: 800, color: "var(--blue)", minWidth: 36 }}>L12</div>
+                    <div>
+                      <div style={{ fontWeight: 800, fontSize: 20, marginBottom: 4 }}>(12) Divisibility & Prime Factorization</div>
+                      <div style={{ color: "var(--text2)", fontSize: 20 }}>Divisibility rules for 2-10, prime/composite numbers, and prime factorization.</div>
+                    </div>
+                  </div>
             </>
           )}
         </div>
@@ -274,3 +289,4 @@ export default function LiveSession({ user, onHome }) {
     </div>
   );
 }
+
