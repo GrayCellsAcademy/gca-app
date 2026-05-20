@@ -97,9 +97,11 @@ export function genWarmupC() {
   const prob2=makeProb(type2,b,style2);
   return {
     type:"warmup-c", prob1, prob2,
+    latex1:prob1.latex, latex2:prob2.latex,
+    ans1:prob1.answer, ans2:prob2.answer,
     answer:JSON.stringify({ans1:prob1.answer,ans2:prob2.answer}),
     displayAnswer:`Expr 1: ${prob1.answer}, Expr 2: ${prob2.answer}`,
-    prompt:"Evaluate each expression. Enter a number or press UNDEFINED.",
+    prompt:"Evaluate each expression. Enter 0 or press UNDEFINED.",
   };
 }
 export function gradeWarmupC(input,q){

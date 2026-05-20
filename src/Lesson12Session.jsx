@@ -171,17 +171,21 @@ function QuestionDisplay({ question: q, revealCorrect }) {
     </div>
   );
 
-  if (q.type === "warmup-c") return (
-    <div style={{ display: "flex", gap: 40, justifyContent: "center", alignItems: "center", flexWrap: "wrap", padding: "10px 0" }}>
-      {[q.prob1, q.prob2].map((p, i) => (
-        <div key={i} style={{ textAlign: "center", minWidth: 120 }}>
-          <div style={{ fontSize: 20, color: "var(--text3)", marginBottom: 8, fontWeight: 600 }}>Expression {i + 1}</div>
-          <KaTeXSpan expr={p.latex} block />
-          {revealCorrect && <div style={{ fontSize: 20, fontWeight: 800, color: "var(--green)", marginTop: 6 }}>{p.answer}</div>}
-        </div>
-      ))}
-    </div>
-  );
+  if (q.type === "warmup-c") {
+    const latexes = [q.latex1 || q.prob1?.latex, q.latex2 || q.prob2?.latex];
+    const answers = [q.ans1 || q.prob1?.answer, q.ans2 || q.prob2?.answer];
+    return (
+      <div style={{ display: "flex", gap: 40, justifyContent: "center", alignItems: "center", flexWrap: "wrap", padding: "10px 0" }}>
+        {latexes.map((lat, i) => (
+          <div key={i} style={{ textAlign: "center", minWidth: 120 }}>
+            <div style={{ fontSize: 20, color: "var(--text3)", marginBottom: 8, fontWeight: 600 }}>Expression {i + 1}</div>
+            {lat ? <KaTeXSpan expr={lat} block /> : <div style={{ fontSize: 22, color: "var(--text3)" }}>-</div>}
+            {revealCorrect && <div style={{ fontSize: 20, fontWeight: 800, color: "var(--green)", marginTop: 6 }}>{answers[i]}</div>}
+          </div>
+        ))}
+      </div>
+    );
+  }
 
   // Multi-item types: only show on reveal
   const MULTI = ["div-2510","div-39","div-46","mixed-rules","prime-composite"];
@@ -398,7 +402,7 @@ function DivZeroTwoInput({ question, onSubmit, submitted }) {
   const [ans1, setAns1] = useState("");
   const [ans2, setAns2] = useState("");
   const ref = useRef(null);
-  useEffect(() => { setAns1(""); setAns2(""); setTimeout(() => ref.current?.focus(), 80); }, [question?.id]);
+  useEffect(() => { setAns1(""); setAns2(""); setTimeout(() => ref.current?.focus(), 80); }, [question?.id, question?.latex1, question?.latex2]);
   const handleSubmit = () => {
     if (!ans1.trim() || !ans2.trim()) return;
     onSubmit(JSON.stringify({ ans1: ans1.trim().toLowerCase(), ans2: ans2.trim().toLowerCase() }));
