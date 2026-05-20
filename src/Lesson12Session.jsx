@@ -173,20 +173,14 @@ function QuestionDisplay({ question: q, revealCorrect }) {
 
 
   if (q.type === "warmup-c") {
-    // Use display1/display2 as plain text fallback, latex1/latex2 for KaTeX
-    const exprs = [
-      { latex: q.latex1, display: q.display1 },
-      { latex: q.latex2, display: q.display2 },
-    ];
+    const displays = [q.display1, q.display2];
     const answers = [q.ans1, q.ans2];
     return (
       <div style={{ display: "flex", gap: 40, justifyContent: "center", alignItems: "center", flexWrap: "wrap", padding: "10px 0" }}>
-        {exprs.map((e, i) => (
+        {displays.map((d, i) => (
           <div key={i} style={{ textAlign: "center", minWidth: 120 }}>
             <div style={{ fontSize: 20, color: "var(--text3)", marginBottom: 8, fontWeight: 600 }}>Expression {i + 1}</div>
-            {e.latex
-              ? <KaTeXSpan expr={e.latex} block />
-              : <div style={{ fontSize: 26, fontFamily: "var(--mono)", fontWeight: 800 }}>{e.display || "-"}</div>}
+            <div style={{ fontSize: 30, fontFamily: "var(--mono)", fontWeight: 900 }}>{d || "-"}</div>
             {revealCorrect && <div style={{ fontSize: 20, fontWeight: 800, color: "var(--green)", marginTop: 6 }}>{answers[i]}</div>}
           </div>
         ))}

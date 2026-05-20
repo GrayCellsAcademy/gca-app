@@ -96,7 +96,7 @@ export function genWarmupC() {
   const prob1=makeProb(type1,a,style1);
   const prob2=makeProb(type2,b,style2);
   // Plain text display for fallback when KaTeX not yet loaded
-  const plainDisplay=(num,den,style)=>style==="fraction"?`${num}/${den}`:`${num} - ${den}`;
+  const plainDisplay=(num,den,style)=>style==="fraction"?`${num} / ${den}`:`${num} div ${den}`;
   return {
     type:"warmup-c", prob1, prob2,
     latex1:prob1.latex, latex2:prob2.latex,
