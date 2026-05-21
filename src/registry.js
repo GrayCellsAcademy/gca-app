@@ -1,4 +1,4 @@
-//  Topic Registry
+﻿//  Topic Registry
 import AdditionTablesPlayer from "./AdditionTablesPlayer";
 import ColumnAdditionPlayer from "./ColumnAdditionPlayer";
 import Lesson01MasteryPlayer from "./Lesson01MasteryPlayer";
@@ -25,6 +25,7 @@ import Lesson08MasteryPlayer from "./Lesson08MasteryPlayer";
 import Lesson09MasteryPlayer from "./Lesson09MasteryPlayer";
 import Lesson10MasteryPlayer from "./Lesson10MasteryPlayer";
 import Lesson11MasteryPlayer from "./Lesson11MasteryPlayer";
+import Lesson12MasteryPlayer from "./Lesson12MasteryPlayer";
 
 export const TOPICS = {
   "addition-tables-v1": {
@@ -188,6 +189,13 @@ export const TOPICS = {
     subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 20,
     Player: Lesson11MasteryPlayer,
   },
+  "lesson12-mastery-v1": {
+    id: "lesson12-mastery-v1",
+    title: "HW 12 (019)",
+    description: "Perfect squares 11-15, divisibility rules, prime/composite, and prime factorization.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 21,
+    Player: Lesson12MasteryPlayer,
+  },
   "review-homework-v1": {
     id: "review-homework-v1",
     title: "Final Exam Review",
@@ -214,3 +222,4 @@ export const TOPICS = {
 export function getTopic(id) { return TOPICS[id] || null; }
 export function getPublishedTopics() { return Object.values(TOPICS).filter(t => t.status === "published"); }
 export function getAllTopics() { return Object.values(TOPICS); }
+
