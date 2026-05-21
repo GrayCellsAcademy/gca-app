@@ -2,9 +2,38 @@
 import { saveProgress as fbSaveProgress, getProgress } from "./core/firebase";
 
 export const LESSON12_MASTERY_TOPIC_ID = "lesson12-mastery-v1";
+export const PERFECT_SQUARES_12_TOPIC_ID = "perfect-squares-12-v1";
 
 const STREAK2 = 2;
 const STREAK3 = 3;
+
+// -- KaTeX --
+function useKaTeX() {
+  useEffect(() => {
+    if (window.katex) return;
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = "https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css";
+    document.head.appendChild(link);
+    const s = document.createElement("script");
+    s.src = "https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js";
+    s.async = true;
+    document.head.appendChild(s);
+  }, []);
+}
+function KaTeXBlock({ expr }) {
+  useKaTeX();
+  const ref = useRef(null);
+  useEffect(() => {
+    const go = () => {
+      if (window.katex && ref.current) {
+        try { window.katex.render(expr, ref.current, { throwOnError: false, displayMode: true }); } catch {}
+      } else setTimeout(go, 100);
+    };
+    go();
+  });
+  return <div ref={ref} style={{ fontSize: 26, margin: "6px 0", minHeight: 36, display: "flex", justifyContent: "center" }} />;
+}
 
 // - Helpers -
 function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
@@ -157,7 +186,7 @@ function SquaresPhase1({ onDone }) {
   return (
     <div style={{ textAlign: "center" }}>
       <div style={{ fontSize: 20, color: "var(--text2)", marginBottom: 8 }}>Square {idx + 1} of {SQUARES.length}</div>
-      <div style={{ fontSize: 36, fontWeight: 900, fontFamily: "var(--mono)", marginBottom: 20 }}>{square.base}- = {square.sq}</div>
+      <KaTeXBlock expr={`${square.base}^2 = ${square.sq}`} />
       <button className="btn btn-primary" style={{ width: "100%", fontSize: 20 }}
         onClick={() => { if (idx + 1 < SQUARES.length) setIdx(i => i + 1); else setDone(true); }}>
         {idx + 1 < SQUARES.length ? "Next" : "Done"}
@@ -233,10 +262,10 @@ function SquaresPhase2({ masteredMap, onItemMastered }) {
       <div style={{ fontSize: 20, color: "var(--text3)", marginBottom: 6, textAlign: "center" }}>
         Mastered: {SQUARES.filter(s => (masteredMap[s.base] || 0) >= STREAK2).length}/{SQUARES.length}
       </div>
-      <div style={{ textAlign: "center", fontSize: 36, fontWeight: 900, fontFamily: "var(--mono)", marginBottom: 16 }}>{current.base}- = ?</div>
+      <KaTeXBlock expr={`${current.base}^2 = \;?`} />
       {feedback ? (
         <FeedbackBanner correct={feedback.correct}
-          message={feedback.correct ? null : `${current.base}- = ${current.sq}`}
+          message={feedback.correct ? null : `${current.base}\u00b2 = ${current.sq}`}
           onNext={nextQuestion} nextLabel="Next Problem" />
       ) : (
         <div style={{ display: "flex", gap: 8, justifyContent: "center" }}>
@@ -279,10 +308,10 @@ function SquaresReview({ onComplete }) {
   return (
     <div>
       <div style={{ fontSize: 20, color: "var(--text2)", marginBottom: 8, textAlign: "center" }}>Cumulative Review - {queue.length} remaining</div>
-      <div style={{ textAlign: "center", fontSize: 36, fontWeight: 900, fontFamily: "var(--mono)", marginBottom: 16 }}>{current.base}- = ?</div>
+      <KaTeXBlock expr={`${current.base}^2 = \;?`} />
       {feedback ? (
         <FeedbackBanner correct={feedback.correct}
-          message={feedback.correct ? null : `${current.base}- = ${current.sq}`}
+          message={feedback.correct ? null : `${current.base}\u00b2 = ${current.sq}`}
           onNext={handleNext} nextLabel="Next Problem" />
       ) : (
         <div style={{ display: "flex", gap: 8, justifyContent: "center" }}>
@@ -738,7 +767,7 @@ function PFMastery({ onCorrect, onWrong }) {
 
   return (
     <div>
-      <div style={{ textAlign: "center", fontSize: 36, fontWeight: 900, fontFamily: "var(--mono)", marginBottom: 8 }}>{n}</div>
+      <KaTeX expr={String(n)} />
       <div style={{ fontSize: 20, color: "var(--text3)", marginBottom: 14, textAlign: "center" }}>
         Enter prime factorization. Use ^ for exponents, x or * for multiplication.
       </div>
@@ -765,7 +794,6 @@ function PFMastery({ onCorrect, onWrong }) {
 
 // - Steps -
 const STEPS = [
-  { id: "perfect-squares", label: "Perfect Squares 11-15",     description: "Memorize and drill 11--15-",             streak: null  },
   { id: "div-2510",        label: "Divisibility: 2, 5, 10",    description: "5 numbers, multi-select, 3 in a row",    streak: STREAK3 },
   { id: "div-39",          label: "Divisibility: 3 and 9",     description: "5 numbers, 4 choices, 3 in a row",       streak: STREAK3 },
   { id: "div-46",          label: "Divisibility: 4 and 6",     description: "5 numbers, 4 choices, 3 in a row",       streak: STREAK3 },
@@ -816,10 +844,6 @@ export default function Lesson12MasteryPlayer({ user, topic, onHome }) {
 
   const handleWrong = async () => { await save(stepIdx, 0, false); };
 
-  const handleSquaresComplete = async () => {
-    const next = stepIdx + 1;
-    await save(next, 0, next >= STEPS.length);
-  };
 
   if (loading) return <div style={{ display: "flex", justifyContent: "center", padding: 60 }}><div className="spinner" /></div>;
 
@@ -869,13 +893,66 @@ export default function Lesson12MasteryPlayer({ user, topic, onHome }) {
           </div>
           {step.streak && <StreakDots current={streak} needed={step.streak} />}
 
-          {step.id === "perfect-squares" && <PerfectSquaresPlayer key={stepIdx} user={user} onComplete={handleSquaresComplete} />}
           {step.id === "div-2510" && <Div2510Mastery key={stepIdx + "-" + streak} onCorrect={handleCorrect} onWrong={handleWrong} />}
           {step.id === "div-39" && <Div39Mastery key={stepIdx + "-" + streak} onCorrect={handleCorrect} onWrong={handleWrong} />}
           {step.id === "div-46" && <Div46Mastery key={stepIdx + "-" + streak} onCorrect={handleCorrect} onWrong={handleWrong} />}
           {step.id === "mixed-div" && <MixedDivMastery key={stepIdx + "-" + streak} onCorrect={handleCorrect} onWrong={handleWrong} />}
           {step.id === "prime-composite" && <PrimeMastery key={stepIdx + "-" + streak} onCorrect={handleCorrect} onWrong={handleWrong} />}
           {step.id === "prime-factor" && <PFMastery key={stepIdx + "-" + streak} onCorrect={handleCorrect} onWrong={handleWrong} />}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// -- Standalone Perfect Squares Player (separate registry entry) --
+export function PerfectSquares12Player({ user, topic, onHome }) {
+  const topicId = topic?.id || PERFECT_SQUARES_12_TOPIC_ID;
+  const [loading, setLoading] = useState(true);
+  const [completed, setCompleted] = useState(false);
+
+  useEffect(() => {
+    getProgress(user.id, topicId).then(prog => {
+      if (prog?.data?.completed) setCompleted(true);
+      setLoading(false);
+    });
+  }, []);
+
+  const handleComplete = async () => {
+    await fbSaveProgress(user.id, topicId, {
+      started: true, completed: true, percentComplete: 100,
+      data: { completed: true },
+    });
+    setCompleted(true);
+  };
+
+  if (loading) return <div style={{ display: "flex", justifyContent: "center", padding: 60 }}><div className="spinner" /></div>;
+
+  if (completed) return (
+    <div style={{ maxWidth: 520, margin: "0 auto", textAlign: "center" }}>
+      <div className="card">
+        <div style={{ fontSize: 48, fontWeight: 900, color: "var(--amber)", marginBottom: 16 }}>100%</div>
+        <h2 style={{ fontSize: 24, fontWeight: 800, marginBottom: 8 }}>Perfect Squares 11-15 Complete!</h2>
+        <button className="btn btn-primary btn-lg" style={{ width: "100%" }} onClick={onHome}>Back to Home</button>
+      </div>
+    </div>
+  );
+
+  return (
+    <div style={{ minHeight: "100vh", background: "var(--bg)", padding: "clamp(16px,3vw,32px)" }} className="dot-bg">
+      <div style={{ maxWidth: 580, margin: "0 auto" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <div style={{ width: 40, height: 40, borderRadius: 12, background: "linear-gradient(135deg,var(--blue),var(--orange))", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, fontWeight: 800, color: "#fff" }}>12</div>
+            <div>
+              <div style={{ fontWeight: 800, fontSize: 22 }}>Perfect Squares 11-15</div>
+              <div style={{ fontSize: 20, color: "var(--text3)" }}>Memorize then drill with 5-second timer</div>
+            </div>
+          </div>
+          <button className="btn btn-ghost btn-sm" onClick={onHome}>Back</button>
+        </div>
+        <div className="card">
+          <PerfectSquaresPlayer user={user} onComplete={handleComplete} />
         </div>
       </div>
     </div>

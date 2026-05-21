@@ -25,7 +25,7 @@ import Lesson08MasteryPlayer from "./Lesson08MasteryPlayer";
 import Lesson09MasteryPlayer from "./Lesson09MasteryPlayer";
 import Lesson10MasteryPlayer from "./Lesson10MasteryPlayer";
 import Lesson11MasteryPlayer from "./Lesson11MasteryPlayer";
-import Lesson12MasteryPlayer from "./Lesson12MasteryPlayer";
+import Lesson12MasteryPlayer, { PerfectSquares12Player } from "./Lesson12MasteryPlayer";
 
 export const TOPICS = {
   "addition-tables-v1": {
@@ -189,11 +189,18 @@ export const TOPICS = {
     subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 20,
     Player: Lesson11MasteryPlayer,
   },
+  "perfect-squares-12-v1": {
+    id: "perfect-squares-12-v1",
+    title: "Perfect Squares (11-15)",
+    description: "Memorize and drill perfect squares from 11 to 15.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "drill", status: "published", order: 21,
+    Player: PerfectSquares12Player,
+  },
   "lesson12-mastery-v1": {
     id: "lesson12-mastery-v1",
     title: "HW 12 (019)",
     description: "Perfect squares 11-15, divisibility rules, prime/composite, and prime factorization.",
-    subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 21,
+    subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 22,
     Player: Lesson12MasteryPlayer,
   },
   "review-homework-v1": {
