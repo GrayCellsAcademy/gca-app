@@ -685,7 +685,7 @@ function PrimeMastery({ onCorrect, onWrong }) {
   const handleSubmit = () => {
     const results = nums.map((n, i) => answers[i] === getCorrect(n));
     const allCorrect = results.every(Boolean);
-    setFeedback({ correct: allCorrect, results, nums: [...nums] });
+    setFeedback({ correct: allCorrect, results, nums: [...nums], answers: [...answers] });
     if (allCorrect) onCorrect(); else onWrong();
   };
 
@@ -697,12 +697,17 @@ function PrimeMastery({ onCorrect, onWrong }) {
             {feedback.correct ? "Correct!" : "Incorrect"}
           </div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
-            {feedback.nums.map((n, i) => (
-              <div key={i} style={{ background: "var(--bg2)", borderRadius: "var(--radius-sm)", padding: "6px 12px", display: "flex", gap: 8, alignItems: "center", border: "1px solid " + (feedback.results[i] ? "rgba(22,163,74,0.2)" : "rgba(239,68,68,0.2)") }}>
-                <span style={{ fontFamily: "var(--mono)", fontSize: 20, fontWeight: 800 }}>{n}</span>
-                <span style={{ fontSize: 18, color: feedback.results[i] ? "var(--green)" : "var(--red)", fontWeight: 700 }}>{getCorrect(n)}</span>
-              </div>
-            ))}
+            {feedback.nums.map((n, i) => {
+              const ok = feedback.results[i];
+              const studentAns = feedback.answers ? feedback.answers[i] : "";
+              return (
+                <div key={i} style={{ background: "var(--bg2)", borderRadius: "var(--radius-sm)", padding: "6px 12px", display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", border: "1px solid " + (ok ? "rgba(22,163,74,0.2)" : "rgba(239,68,68,0.2)") }}>
+                  <span style={{ fontFamily: "var(--mono)", fontSize: 20, fontWeight: 800, minWidth: 32 }}>{n}</span>
+                  {!ok && <span style={{ fontSize: 18, color: "var(--red)", fontWeight: 700 }}>You: {studentAns}</span>}
+                  <span style={{ fontSize: 18, color: "var(--green)", fontWeight: 700 }}>Correct: {getCorrect(n)}</span>
+                </div>
+              );
+            })}
           </div>
           <button className="btn btn-primary" style={{ width: "100%", fontSize: 20 }}
             onClick={() => { setFeedback(null); setNums(genPrimeSet()); setAnswers(Array(10).fill("")); }}>Next Problem</button>
@@ -756,7 +761,7 @@ function PFMastery({ onCorrect, onWrong }) {
   const handleSubmit = () => {
     const parsed = parsePF(input);
     const isCorrect = pfsEqual(parsed, factors);
-    setFeedback({ correct: isCorrect });
+    setFeedback({ correct: isCorrect, input: input.trim() });
     if (isCorrect) onCorrect(); else onWrong();
   };
 
@@ -772,9 +777,18 @@ function PFMastery({ onCorrect, onWrong }) {
         Enter prime factorization. Use ^ for exponents, x or * for multiplication.
       </div>
       {feedback ? (
-        <FeedbackBanner correct={feedback.correct}
-          message={feedback.correct ? `Correct: ${correct}` : `Factor tree: ${buildTreeHint(n)}\nAnswer: ${correct}`}
-          onNext={handleNext} nextLabel="Next Problem" />
+        <div style={{ textAlign: "center" }}>
+          <div style={{ fontSize: 22, fontWeight: 800, color: feedback.correct ? "var(--green)" : "var(--red)", marginBottom: 8 }}>{feedback.correct ? "Correct!" : "Incorrect"}</div>
+          {!feedback.correct && (
+            <div style={{ background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: "var(--radius-sm)", padding: "10px 14px", marginBottom: 10, textAlign: "left", fontSize: 19 }}>
+              <div style={{ color: "var(--red)", fontWeight: 700, marginBottom: 4 }}>Your answer: <span style={{ fontFamily: "var(--mono)" }}>{feedback.input}</span></div>
+              <div style={{ color: "var(--green)", fontWeight: 700 }}>Correct: <span style={{ fontFamily: "var(--mono)" }}>{correct}</span></div>
+              <div style={{ color: "var(--text3)", marginTop: 4 }}>Factor tree: {buildTreeHint(n)}</div>
+            </div>
+          )}
+          {feedback.correct && <div style={{ fontSize: 19, color: "var(--green)", fontWeight: 700, marginBottom: 8 }}>Answer: {correct}</div>}
+          <button className="btn btn-primary" style={{ width: "100%", fontSize: 20 }} onClick={handleNext}>Next Problem</button>
+        </div>
       ) : (
         <div>
           <div style={{ fontSize: 19, color: "var(--text3)", marginBottom: 6, textAlign: "center" }}>e.g. 2^2 * 3 or 2^2 x 3</div>
@@ -792,14 +806,103 @@ function PFMastery({ onCorrect, onWrong }) {
   );
 }
 
+// - Activity 2: All Divisibility Rules (2,3,4,5,6,9,10) -
+const ALL_RULES_7 = [2, 3, 4, 5, 6, 9, 10];
+
+function genAllRulesSet() {
+  const nums = [];
+  while (nums.length < 5) {
+    const n = randInt(100, 9999);
+    if (!nums.includes(n)) nums.push(n);
+  }
+  return nums;
+}
+
+function AllRulesMastery({ onCorrect, onWrong }) {
+  const [nums, setNums] = useState(() => genAllRulesSet());
+  const [answers, setAnswers] = useState(() => Array(5).fill([]));
+  const [feedback, setFeedback] = useState(null);
+
+  const toggle = (i, d) => {
+    setAnswers(prev => prev.map((a, j) => j !== i ? a : a.includes(d) ? a.filter(x => x !== d) : [...a, d]));
+  };
+
+  const handleSubmit = () => {
+    const results = nums.map((n, i) => {
+      const correct = ALL_RULES_7.filter(d => divBy(n, d));
+      const given = answers[i];
+      return correct.length === given.length && correct.every(v => given.includes(v));
+    });
+    const allCorrect = results.every(Boolean);
+    setFeedback({ correct: allCorrect, results, nums: [...nums], answers: answers.map(a => [...a]) });
+    if (allCorrect) onCorrect(); else onWrong();
+  };
+
+  const handleNext = () => {
+    setFeedback(null);
+    setNums(genAllRulesSet());
+    setAnswers(Array(5).fill([]));
+  };
+
+  if (feedback) return (
+    <div>
+      <div style={{ textAlign: "center", fontSize: 22, fontWeight: 800, color: feedback.correct ? "var(--green)" : "var(--red)", marginBottom: 10 }}>
+        {feedback.correct ? "Correct!" : "Incorrect"}
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 12 }}>
+        {feedback.nums.map((n, i) => {
+          const correct = ALL_RULES_7.filter(d => divBy(n, d));
+          const given = feedback.answers[i];
+          const ok = feedback.results[i];
+          return (
+            <div key={i} style={{ background: "var(--bg2)", borderRadius: "var(--radius-sm)", padding: "8px 12px", border: "1px solid " + (ok ? "rgba(22,163,74,0.2)" : "rgba(239,68,68,0.2)") }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 6 }}>
+                <span style={{ fontFamily: "var(--mono)", fontSize: 22, fontWeight: 800 }}>{n}</span>
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  {!ok && <span style={{ fontSize: 18, color: "var(--red)", fontWeight: 700 }}>You: {given.length > 0 ? given.join(", ") : "none"}</span>}
+                  <span style={{ fontSize: 18, color: "var(--green)", fontWeight: 700 }}>Correct: {correct.length > 0 ? correct.join(", ") : "none"}</span>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      <button className="btn btn-primary" style={{ width: "100%", fontSize: 20 }} onClick={handleNext}>Next Problem</button>
+    </div>
+  );
+
+  return (
+    <div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 12 }}>
+        {nums.map((n, i) => (
+          <div key={i} style={{ background: "var(--bg2)", borderRadius: "var(--radius-sm)", padding: "8px 12px" }}>
+            <div style={{ fontSize: 22, fontWeight: 800, fontFamily: "var(--mono)", marginBottom: 6 }}>{n}</div>
+            <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
+              {ALL_RULES_7.map(d => {
+                const sel = answers[i].includes(d);
+                return (
+                  <button key={d} onClick={() => toggle(i, d)}
+                    style={{ padding: "4px 12px", borderRadius: "var(--radius-sm)", border: "2px solid " + (sel ? "var(--blue)" : "var(--border)"), background: sel ? "rgba(27,143,255,0.15)" : "var(--surface)", fontSize: 20, fontWeight: 700, cursor: "pointer", color: sel ? "var(--blue)" : "var(--text)" }}>
+                    {d}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
+      <div style={{ fontSize: 19, color: "var(--text3)", marginBottom: 8, textAlign: "center" }}>Select all that apply. Leave blank if none.</div>
+      <button className="btn btn-primary" style={{ width: "100%", fontSize: 20 }} onClick={handleSubmit}>Submit All</button>
+    </div>
+  );
+}
+
 // - Steps -
 const STEPS = [
-  { id: "div-2510",        label: "Divisibility: 2, 5, 10",    description: "5 numbers, multi-select, 3 in a row",    streak: STREAK3 },
-  { id: "div-39",          label: "Divisibility: 3 and 9",     description: "5 numbers, 4 choices, 3 in a row",       streak: STREAK3 },
-  { id: "div-46",          label: "Divisibility: 4 and 6",     description: "5 numbers, 4 choices, 3 in a row",       streak: STREAK3 },
-  { id: "mixed-div",       label: "Mixed Divisibility",        description: "6 numbers, all 7 rules, 3 in a row",     streak: STREAK3 },
-  { id: "prime-composite", label: "Prime or Composite?",       description: "10 numbers 2-30, 3 in a row",            streak: STREAK3 },
-  { id: "prime-factor",    label: "Prime Factorization",       description: "Enter factorization, 3 in a row",        streak: STREAK3 },
+  { id: "all-rules",      label: "Divisibility Rules (2-10)",  description: "5 numbers, select all rules that apply, 3 in a row", streak: STREAK3 },
+  { id: "mixed-div",      label: "Mixed Divisibility Review",  description: "6 numbers, all 7 rules, 3 in a row",                  streak: STREAK3 },
+  { id: "prime-composite",label: "Prime or Composite?",        description: "10 numbers 2-30, 3 in a row",                         streak: STREAK3 },
+  { id: "prime-factor",   label: "Prime Factorization",        description: "Enter factorization, 3 in a row",                     streak: STREAK3 },
 ];
 
 export default function Lesson12MasteryPlayer({ user, topic, onHome }) {
@@ -893,9 +996,7 @@ export default function Lesson12MasteryPlayer({ user, topic, onHome }) {
           </div>
           {step.streak && <StreakDots current={streak} needed={step.streak} />}
 
-          {step.id === "div-2510" && <Div2510Mastery key={stepIdx + "-" + streak} onCorrect={handleCorrect} onWrong={handleWrong} />}
-          {step.id === "div-39" && <Div39Mastery key={stepIdx + "-" + streak} onCorrect={handleCorrect} onWrong={handleWrong} />}
-          {step.id === "div-46" && <Div46Mastery key={stepIdx + "-" + streak} onCorrect={handleCorrect} onWrong={handleWrong} />}
+          {step.id === "all-rules" && <AllRulesMastery key={stepIdx + "-" + streak} onCorrect={handleCorrect} onWrong={handleWrong} />}
           {step.id === "mixed-div" && <MixedDivMastery key={stepIdx + "-" + streak} onCorrect={handleCorrect} onWrong={handleWrong} />}
           {step.id === "prime-composite" && <PrimeMastery key={stepIdx + "-" + streak} onCorrect={handleCorrect} onWrong={handleWrong} />}
           {step.id === "prime-factor" && <PFMastery key={stepIdx + "-" + streak} onCorrect={handleCorrect} onWrong={handleWrong} />}
