@@ -153,29 +153,30 @@ function IneqInput({ onSubmit, submitted, placeholder }) {
   );
 }
 
-// Shows plain text immediately, upgrades to KaTeX when library loads
+// Shows plain text immediately, upgrades to KaTeX in-place when library loads
 function DivZeroExpr({ latex, fallback }) {
+  useKaTeX();
   const ref = useRef(null);
-  const [rendered, setRendered] = useState(false);
   useEffect(() => {
     if (!latex) return;
     const tryRender = () => {
       if (window.katex && ref.current) {
-        try {
-          window.katex.render(latex, ref.current, { throwOnError: false, displayMode: true });
-          setRendered(true);
-        } catch {}
-      } else {
-        setTimeout(tryRender, 200);
-      }
+        try { window.katex.render(latex, ref.current, { throwOnError: false, displayMode: true }); }
+        catch {}
+      } else { setTimeout(tryRender, 300); }
     };
     tryRender();
+    const id = setInterval(() => {
+      if (window.katex && ref.current) { clearInterval(id);
+        try { window.katex.render(latex, ref.current, { throwOnError: false, displayMode: true }); }
+        catch {}
+      }
+    }, 300);
+    return () => clearInterval(id);
   }, [latex]);
   return (
-    <div style={{ minHeight: 50, display: "flex", alignItems: "center", justifyContent: "center" }}>
-      {rendered
-        ? <div ref={ref} />
-        : <div style={{ fontSize: 28, fontFamily: "var(--mono)", fontWeight: 900 }}>{fallback}</div>}
+    <div ref={ref} style={{ fontSize: 28, fontFamily: "var(--mono)", fontWeight: 900, minHeight: 44, display: "flex", alignItems: "center", justifyContent: "center" }}>
+      {fallback}
     </div>
   );
 }
@@ -208,7 +209,7 @@ function QuestionDisplay({ question: q, revealCorrect }) {
           let latex = "";
           if (d && d.includes(" / ")) {
             const parts = d.trim().split(" / ");
-            latex = `\\dfrac{${parts[0]}}{${parts[1]}}`;
+            latex = "\\dfrac{" + parts[0] + "}{" + parts[1] + "}";
           } else if (d && d.includes(" div ")) {
             latex = d.replace(" div ", " \\div ");
           }
@@ -910,5 +911,4 @@ export default function Lesson12Session({ user, onHome }) {
 }
 
 export { TeacherLesson12 as Lesson12TeacherView, StudentLesson12 as Lesson12StudentView };
-
 
