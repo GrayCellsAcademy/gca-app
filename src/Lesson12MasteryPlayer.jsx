@@ -207,6 +207,7 @@ function SquaresPhase2({ masteredMap, onItemMastered }) {
   const inputRef = useRef(null);
 
   const nextQuestion = () => {
+    if (feedback?.mastered) onItemMastered(feedback.base);
     const rem = SQUARES.filter(s => (masteredMap[s.base] || 0) < STREAK2);
     if (rem.length > 0) {
       setCurrent(randChoice(rem));
@@ -235,15 +236,16 @@ function SquaresPhase2({ masteredMap, onItemMastered }) {
   const handleSubmit = () => {
     clearInterval(timerRef.current);
     const isCorrect = parseInt(input) === current.sq;
-    setFeedback({ correct: isCorrect });
+    let mastered = false;
     if (isCorrect) {
       const newCorrect = (correct[current.base] || 0) + 1;
       const needed = STREAK2 + (wrong[current.base] || 0);
       setCorrect(prev => ({ ...prev, [current.base]: newCorrect }));
-      if (newCorrect >= needed) onItemMastered(current.base);
+      if (newCorrect >= needed) mastered = true;
     } else {
       setWrong(prev => ({ ...prev, [current.base]: (prev[current.base] || 0) + 1 }));
     }
+    setFeedback({ correct: isCorrect, mastered, base: current.base });
   };
 
   const pct = (timeLeft / SQUARE_TIMER) * 100;
@@ -265,7 +267,7 @@ function SquaresPhase2({ masteredMap, onItemMastered }) {
       <KaTeXBlock expr={`${current.base}^2 = \;?`} />
       {feedback ? (
         <FeedbackBanner correct={feedback.correct}
-          message={feedback.correct ? null : `${current.base}\u00b2 = ${current.sq}`}
+          message={`${current.base}\u00b2 = ${current.sq}`}
           onNext={nextQuestion} nextLabel="Next Problem" />
       ) : (
         <div style={{ display: "flex", gap: 8, justifyContent: "center" }}>
@@ -1059,4 +1061,5 @@ export function PerfectSquares12Player({ user, topic, onHome }) {
     </div>
   );
 }
+
 
