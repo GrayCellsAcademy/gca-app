@@ -129,28 +129,10 @@ const SQUARES = [
 const SQUARE_TIMER = 5;
 
 function PerfectSquaresPlayer({ user, onComplete }) {
-  const [phase, setPhase] = useState(1);
-  const [masteredMap, setMasteredMap] = useState({});
-  const [reviewMode, setReviewMode] = useState(false);
-
-  const allMastered = SQUARES.every(s => (masteredMap[s.base] || 0) >= STREAK2);
-
-  const handlePhase1Done = () => setPhase(2);
-
-  const handleItemMastered = (base) => {
-    setMasteredMap(prev => {
-      const next = { ...prev, [base]: (prev[base] || 0) + 1 };
-      const allDone = SQUARES.every(s => (next[s.base] || 0) >= STREAK2);
-      if (allDone && !reviewMode) setTimeout(() => setReviewMode(true), 300);
-      return next;
-    });
-  };
-
-  const handleReviewComplete = () => onComplete();
-
-  if (phase === 1) return <SquaresPhase1 onDone={handlePhase1Done} />;
-  if (!reviewMode) return <SquaresPhase2 masteredMap={masteredMap} onItemMastered={handleItemMastered} />;
-  return <SquaresReview onComplete={handleReviewComplete} />;
+  const [phase, setPhase] = useState(1); // 1=memorize, 2=drill, 3=review
+  if (phase === 1) return <SquaresPhase1 onDone={() => setPhase(2)} />;
+  if (phase === 2) return <SquaresPhase2 onAllMastered={() => setPhase(3)} />;
+  return <SquaresReview onComplete={onComplete} />;
 }
 
 function SquaresPhase1({ onDone }) {
@@ -195,9 +177,10 @@ function SquaresPhase1({ onDone }) {
   );
 }
 
-function SquaresPhase2({ masteredMap, onItemMastered }) {
+function SquaresPhase2({ onAllMastered }) {
   const remaining = SQUARES.filter(s => (masteredMap[s.base] || 0) < STREAK2);
   const [current, setCurrent] = useState(() => randChoice(remaining));
+  const [masteredMap, setMasteredMap] = useState({});
   const [input, setInput] = useState("");
   const [feedback, setFeedback] = useState(null);
   const [timeLeft, setTimeLeft] = useState(SQUARE_TIMER);
@@ -207,13 +190,17 @@ function SquaresPhase2({ masteredMap, onItemMastered }) {
   const inputRef = useRef(null);
 
   const nextQuestion = () => {
-    if (feedback?.mastered) onItemMastered(feedback.base);
-    const rem = SQUARES.filter(s => (masteredMap[s.base] || 0) < STREAK2);
-    if (rem.length > 0) {
-      setCurrent(randChoice(rem));
-      setInput(""); setFeedback(null); setTimeLeft(SQUARE_TIMER);
-      setTimeout(() => inputRef.current?.focus(), 80);
+    // Update masteredMap if this question was mastered
+    let newMasteredMap = masteredMap;
+    if (feedback?.mastered) {
+      newMasteredMap = { ...masteredMap, [feedback.base]: (masteredMap[feedback.base] || 0) + 1 };
+      setMasteredMap(newMasteredMap);
     }
+    const rem = SQUARES.filter(s => (newMasteredMap[s.base] || 0) < STREAK2);
+    if (rem.length === 0) { onAllMastered(); return; }
+    setCurrent(randChoice(rem));
+    setInput(""); setFeedback(null); setTimeLeft(SQUARE_TIMER);
+    setTimeout(() => inputRef.current?.focus(), 80);
   };
 
   useEffect(() => {
@@ -262,7 +249,7 @@ function SquaresPhase2({ masteredMap, onItemMastered }) {
         </div>
       </div>
       <div style={{ fontSize: 20, color: "var(--text3)", marginBottom: 6, textAlign: "center" }}>
-        Mastered: {SQUARES.filter(s => (masteredMap[s.base] || 0) >= STREAK2).length}/{SQUARES.length}
+        Mastered: {SQUARES.filter(s => (masteredMap[s.base] || 0) >= STREAK2).length} / {SQUARES.length}
       </div>
       <KaTeXBlock expr={`${current.base}^2 = \;?`} />
       {feedback ? (
@@ -372,7 +359,6 @@ function Div2510Mastery({ onCorrect, onWrong }) {
     });
     const allCorrect = results.every(Boolean);
     setFeedback({ correct: allCorrect, results, nums: [...nums], answers: [...answers] });
-    if (allCorrect) onCorrect(); else onWrong();
   };
 
   return (
@@ -459,7 +445,6 @@ function Div39Mastery({ onCorrect, onWrong }) {
     const results = nums.map((n, i) => DIV39_VALS[answers[i]] === getDiv39Correct(n));
     const allCorrect = results.every(Boolean);
     setFeedback({ correct: allCorrect, results, nums: [...nums] });
-    if (allCorrect) onCorrect(); else onWrong();
   };
 
   const correctLabel = (n) => {
@@ -541,7 +526,6 @@ function Div46Mastery({ onCorrect, onWrong }) {
     const results = nums.map((n, i) => DIV46_VALS[answers[i]] === getDiv46Correct(n));
     const allCorrect = results.every(Boolean);
     setFeedback({ correct: allCorrect, results, nums: [...nums] });
-    if (allCorrect) onCorrect(); else onWrong();
   };
 
   const correctLabel = n => {
@@ -616,7 +600,6 @@ function MixedDivMastery({ onCorrect, onWrong }) {
     });
     const allCorrect = results.every(Boolean);
     setFeedback({ correct: allCorrect, results, nums: [...nums] });
-    if (allCorrect) onCorrect(); else onWrong();
   };
 
   return (
@@ -640,7 +623,7 @@ function MixedDivMastery({ onCorrect, onWrong }) {
             })}
           </div>
           <button className="btn btn-primary" style={{ width: "100%", fontSize: 20 }}
-            onClick={() => { setFeedback(null); setNums(genMixedSet()); setAnswers(Array(6).fill([])); }}>Next Problem</button>
+            onClick={() => { if (feedback?.correct) onCorrect(); else onWrong(); setFeedback(null); setNums(genMixedSet()); setAnswers(Array(6).fill([])); }}>Next Problem</button>
         </div>
       ) : (
         <div>
@@ -688,7 +671,6 @@ function PrimeMastery({ onCorrect, onWrong }) {
     const results = nums.map((n, i) => answers[i] === getCorrect(n));
     const allCorrect = results.every(Boolean);
     setFeedback({ correct: allCorrect, results, nums: [...nums], answers: [...answers] });
-    if (allCorrect) onCorrect(); else onWrong();
   };
 
   return (
@@ -764,10 +746,10 @@ function PFMastery({ onCorrect, onWrong }) {
     const parsed = parsePF(input);
     const isCorrect = pfsEqual(parsed, factors);
     setFeedback({ correct: isCorrect, input: input.trim() });
-    if (isCorrect) onCorrect(); else onWrong();
   };
 
   const handleNext = () => {
+    if (feedback?.correct) onCorrect(); else onWrong();
     setFeedback(null); setInput(""); setN(randChoice(PF_NUMS));
     setTimeout(() => ref.current?.focus(), 80);
   };
@@ -837,10 +819,10 @@ function AllRulesMastery({ onCorrect, onWrong }) {
     });
     const allCorrect = results.every(Boolean);
     setFeedback({ correct: allCorrect, results, nums: [...nums], answers: answers.map(a => [...a]) });
-    if (allCorrect) onCorrect(); else onWrong();
   };
 
   const handleNext = () => {
+    if (feedback?.correct) onCorrect(); else onWrong();
     setFeedback(null);
     setNums(genAllRulesSet());
     setAnswers(Array(5).fill([]));
