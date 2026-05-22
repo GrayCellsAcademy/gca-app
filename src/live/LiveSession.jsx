@@ -13,6 +13,7 @@ import Lesson09Session, { Lesson09TeacherView, Lesson09StudentView } from "../Le
 import Lesson10Session, { Lesson10TeacherView, Lesson10StudentView } from "../Lesson10Session";
 import Lesson11Session, { Lesson11TeacherView, Lesson11StudentView } from "../Lesson11Session";
 import Lesson12Session, { Lesson12TeacherView, Lesson12StudentView } from "../Lesson12Session";
+import Lesson13Session, { Lesson13TeacherView, Lesson13StudentView } from "../Lesson13Session";
 
 // Join a session by code (student flow)
 async function findSessionByCode(code) {
@@ -105,6 +106,11 @@ export default function LiveSession({ user, onHome }) {
         ? <Lesson12TeacherView session={session} sessionId={sessionId} uid={user.id} />
         : <Lesson12StudentView session={session} sessionId={sessionId} uid={user.id} />;
     }
+    if (session.type === "lesson13") {
+      return user.role === "teacher"
+        ? <Lesson13TeacherView session={session} sessionId={sessionId} uid={user.id} />
+        : <Lesson13StudentView session={session} sessionId={sessionId} uid={user.id} />;
+    }
   }
 
   // Lesson session views (teacher creates)
@@ -120,6 +126,7 @@ export default function LiveSession({ user, onHome }) {
   if (view === "lesson10") return <Lesson10Session user={user} onHome={() => setView("menu")} />;
   if (view === "lesson11") return <Lesson11Session user={user} onHome={() => setView("menu")} />;
   if (view === "lesson12") return <Lesson12Session user={user} onHome={() => setView("menu")} />;
+  if (view === "lesson13") return <Lesson13Session user={user} onHome={() => setView("menu")} />;
 
   // Student join flow
   if (view === "join") {
@@ -280,6 +287,14 @@ export default function LiveSession({ user, onHome }) {
                     <div>
                       <div style={{ fontWeight: 800, fontSize: 20, marginBottom: 4 }}>(12) Divisibility & Prime Factorization</div>
                       <div style={{ color: "var(--text2)", fontSize: 20 }}>Divisibility rules for 2-10, prime/composite numbers, and prime factorization.</div>
+                    </div>
+                  </div>
+                  <div className="card" onClick={() => setView("lesson13")}
+                    style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 16 }}>
+                    <div style={{ fontSize: 20, fontWeight: 800, color: "var(--blue)", minWidth: 36 }}>L13</div>
+                    <div>
+                      <div style={{ fontWeight: 800, fontSize: 20, marginBottom: 4 }}>(13) Factors, Multiples, GCF & LCM</div>
+                      <div style={{ color: "var(--text2)", fontSize: 20 }}>Factor pairs, multiples, GCF and LCM by listing and prime factorization, word problems.</div>
                     </div>
                   </div>
             </>
