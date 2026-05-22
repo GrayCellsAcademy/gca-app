@@ -139,13 +139,6 @@ function QuestionDisplay({ question: q, revealCorrect }) {
     );
   }
 
-  if (q.type === "missing-factor") return (
-    <div style={{ textAlign: "center" }}>
-      <div style={{ fontSize: 28, fontWeight: 900, fontFamily: "var(--mono)", marginBottom: 8 }}>{q.a} x ___ = {q.n}</div>
-      <div style={{ fontSize: 19, color: "var(--text2)", marginBottom: 8 }}>Find the missing factor</div>
-      {revealCorrect && <div style={{ fontSize: 22, color: "var(--green)", fontWeight: 700 }}>___ = {q.b}</div>}
-    </div>
-  );
 
   if (q.type === "first-five-multiples") return (
     <div style={{ textAlign: "center" }}>
@@ -171,30 +164,29 @@ function QuestionDisplay({ question: q, revealCorrect }) {
   if (q.type === "gcf-factors") return (
     <div style={{ textAlign: "center" }}>
       <div style={{ fontSize: 28, fontWeight: 900, fontFamily: "var(--mono)", marginBottom: 12 }}>GCF of {q.a} and {q.b}</div>
-      <div style={{ fontSize: 20, color: "var(--text2)", marginBottom: 10 }}>Factors of {q.a}: {"{" + q.factors_a.join(", ") + "}"}</div>
-      <div style={{ fontSize: 20, color: "var(--text2)", marginBottom: 12 }}>Factors of {q.b}: {"{" + q.factors_b.join(", ") + "}"}</div>
-      <div style={{ display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap" }}>
-        {q.options.map((opt, i) => (
-          <div key={i} style={{ padding: "10px 20px", borderRadius: "var(--radius-sm)", border: revealCorrect && i === q.correctIdx ? "2px solid var(--green)" : "1px solid var(--border)", background: revealCorrect && i === q.correctIdx ? "rgba(22,163,74,0.1)" : "var(--bg2)", fontSize: 22, fontWeight: 800, fontFamily: "var(--mono)" }}>{opt}</div>
-        ))}
-      </div>
+      <div style={{ fontSize: 20, color: "var(--text2)", marginBottom: 6 }}>Factors of {q.a}: <span style={{ fontFamily: "var(--mono)", fontWeight: 700 }}>{"{" + q.factors_a.join(", ") + "}"}</span></div>
+      <div style={{ fontSize: 20, color: "var(--text2)", marginBottom: 12 }}>Factors of {q.b}: <span style={{ fontFamily: "var(--mono)", fontWeight: 700 }}>{"{" + q.factors_b.join(", ") + "}"}</span></div>
+      {revealCorrect && <div style={{ fontSize: 24, color: "var(--green)", fontWeight: 800 }}>GCF = {q.g}</div>}
     </div>
   );
 
   if (q.type === "gcf-pf" || q.type === "lcm-pf") {
     const isGCF = q.type === "gcf-pf";
+    const toKatex = pf => pf.replace(/\^(\d+)/g, "^{$1}").replace(/ x /g, " \\times ");
     return (
       <div style={{ textAlign: "center" }}>
-        <div style={{ fontSize: 26, fontWeight: 900, fontFamily: "var(--mono)", marginBottom: 8 }}>
+        <div style={{ fontSize: 26, fontWeight: 900, fontFamily: "var(--mono)", marginBottom: 12 }}>
           {isGCF ? "GCF" : "LCM"} of {q.a} and {q.b}
         </div>
-        <div style={{ fontSize: 20, color: "var(--text2)", marginBottom: 4 }}>
-          {q.a} = <span style={{ fontFamily: "var(--mono)", fontWeight: 700 }}>{q.pf_a}</span>
-        </div>
-        <div style={{ fontSize: 20, color: "var(--text2)", marginBottom: 8 }}>
-          {q.b} = <span style={{ fontFamily: "var(--mono)", fontWeight: 700 }}>{q.pf_b}</span>
-        </div>
-        {revealCorrect && <div style={{ fontSize: 22, color: "var(--green)", fontWeight: 700 }}>{isGCF ? "GCF" : "LCM"} = {isGCF ? q.g : q.l}</div>}
+        <div style={{ fontSize: 20, color: "var(--text2)", marginBottom: 4 }}>{q.a} =</div>
+        <KaTeX expr={toKatex(q.pf_a)} block />
+        <div style={{ fontSize: 20, color: "var(--text2)", marginBottom: 4, marginTop: 8 }}>{q.b} =</div>
+        <KaTeX expr={toKatex(q.pf_b)} block />
+        {revealCorrect && (
+          <div style={{ fontSize: 24, color: "var(--green)", fontWeight: 800, marginTop: 12 }}>
+            {isGCF ? "GCF" : "LCM"} = {isGCF ? q.g : q.l}
+          </div>
+        )}
       </div>
     );
   }
@@ -458,7 +450,6 @@ function AnswerInput({ question, onSubmit, submitted }) {
     </div>
   );
   if (t === "list-factors") return <ListFactorsMCInput question={question} onSubmit={onSubmit} submitted={submitted} />;
-  if (t === "missing-factor") return <TextInput onSubmit={onSubmit} submitted={submitted} placeholder="Enter missing factor" />;
   if (t === "first-five-multiples") return (
     <div>
       <div style={{ fontSize: 19, color: "var(--text3)", marginBottom: 6, textAlign: "center" }}>Separate by commas (e.g. 7, 14, 21, 28, 35)</div>
@@ -466,7 +457,7 @@ function AnswerInput({ question, onSubmit, submitted }) {
     </div>
   );
   if (t === "is-multiple") return <IsMultipleInput question={question} onSubmit={onSubmit} submitted={submitted} />;
-  if (t === "gcf-factors") return <MCInput options={question.options} onSubmit={onSubmit} submitted={submitted} labelFn={o => String(o)} />;
+  if (t === "gcf-factors") return <TextInput onSubmit={onSubmit} submitted={submitted} placeholder="Enter GCF" />;
   if (t === "gcf-pf" || t === "lcm-pf") return <GCFPFInput question={question} onSubmit={onSubmit} submitted={submitted} />;
   if (t === "gcf-direct" || t === "lcm-direct") return <TextInput onSubmit={onSubmit} submitted={submitted} placeholder="Enter answer" />;
   if (t === "lcm-multiples") return <MCInput options={question.options} onSubmit={onSubmit} submitted={submitted} labelFn={o => String(o)} />;

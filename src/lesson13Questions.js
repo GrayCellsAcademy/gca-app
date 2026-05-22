@@ -77,9 +77,16 @@ export function gradeWarmupB(input,q){
   return s==="neither"||s==="notprime"||s==="composite";
 }
 
-// -- Warm-up C: Prime factorization of 72 --
+// -- Warm-up C: Prime factorization (random 2-digit with 3+ prime factors) --
 export function genWarmupC() {
-  const n=72;
+  // Candidates: 2-digit numbers with at least 3 prime factors (counting multiplicity)
+  const candidates=[];
+  for(let n=12;n<=99;n++){
+    const f=primeFactors(n);
+    const total=Object.values(f).reduce((s,e)=>s+e,0);
+    if(total>=3) candidates.push(n);
+  }
+  const n=randChoice(candidates);
   const f=primeFactors(n);
   const pf=formatPF(n);
   return {type:"warmup-c",n,factors:f,answer:pf,displayAnswer:pf,prompt:`Enter the prime factorization of ${n}.`};
@@ -129,24 +136,6 @@ export function gradeListFactors(input,q){
   return parseInt(String(input).trim())===q.correctIdx;
 }
 
-// -- Topic 1 A2: Missing factor --
-export function genMissingFactor() {
-  const n=randInt(12,80);
-  const factors=getFactors(n).filter(f=>f>1&&f<n);
-  if(factors.length<2) return genMissingFactor();
-  const a=randChoice(factors);
-  const b=n/a;
-  return {
-    type:"missing-factor",n,a,b,
-    display:`${a} x ___ = ${n}`,
-    answer:String(b),displayAnswer:String(b),
-    prompt:`Find the missing factor: ${a} - ___ = ${n}`,
-  };
-}
-export function gradeMissingFactor(input,q){
-  return parseInt(String(input).trim())===q.b;
-}
-
 // -- Topic 2 A3: First five multiples --
 export function genFirstFiveMultiples() {
   const n=randInt(2,12);
@@ -188,27 +177,22 @@ export function gradeIsMultiple(input,q){
   }catch{return false;}
 }
 
-// -- Topic 3 A5: GCF by listing factors (MC) --
+// -- Topic 3 A5: GCF by listing factors (free response) --
 export function genGCFByFactors() {
   const pairs=[[12,18],[18,24],[16,24],[20,30],[15,25],[12,30],[18,27],[24,36],[14,21],[16,28]];
   const [a,b]=randChoice(pairs);
   const g=gcf(a,b);
   const fa=getFactors(a), fb=getFactors(b);
-  // Wrong options: other common factors or nearby numbers
   const common=fa.filter(f=>fb.includes(f));
-  const wrongs=common.filter(f=>f!==g).concat([g+1,g+2,g-1].filter(v=>v>0&&v!==g)).slice(0,3);
-  while(wrongs.length<3) wrongs.push(wrongs[wrongs.length-1]+1);
-  const options=shuffle([g,...wrongs.slice(0,3)]);
-  const correctIdx=options.indexOf(g);
   return {
-    type:"gcf-factors",a,b,g,options,correctIdx,
+    type:"gcf-factors",a,b,g,
     factors_a:fa,factors_b:fb,common,
-    answer:String(correctIdx),displayAnswer:String(g),
+    answer:String(g),displayAnswer:String(g),
     prompt:`Find the GCF of ${a} and ${b} by listing factors.`,
   };
 }
 export function gradeGCFByFactors(input,q){
-  return parseInt(String(input).trim())===q.correctIdx;
+  return parseInt(String(input).trim())===q.g;
 }
 
 // -- Topic 3 A6: GCF by prime factorization (3 stages) --
@@ -362,7 +346,6 @@ export const LESSON13_TOPICS=[
   {id:"warmup-b",    label:"Warm-up: Prime or Composite?",    description:"Is 1 prime or composite?"},
   {id:"warmup-c",    label:"Warm-up: Prime Factorization",    description:"Factor 72"},
   {id:"list-factors",label:"A1: List All Factors",            description:"Select correct factor set (MC)"},
-  {id:"missing-factor",label:"A2: Missing Factor",            description:"Find the missing factor"},
   {id:"first-five-multiples",label:"A3: First Five Multiples",description:"Enter first 5 multiples"},
   {id:"is-multiple", label:"A4: Is it a Multiple?",           description:"6 simultaneous Yes/No"},
   {id:"gcf-factors", label:"A5: GCF by Listing Factors",      description:"Multiple choice"},
@@ -380,7 +363,6 @@ export function generateLesson13Question(topicId,extra){
     case "warmup-b":    return genWarmupB();
     case "warmup-c":    return genWarmupC();
     case "list-factors":return genListFactors();
-    case "missing-factor":return genMissingFactor();
     case "first-five-multiples":return genFirstFiveMultiples();
     case "is-multiple": return genIsMultiple();
     case "gcf-factors": return genGCFByFactors();
@@ -401,7 +383,6 @@ export function gradeLesson13Answer(input,question){
     case "warmup-b":    return gradeWarmupB(input,question);
     case "warmup-c":    return gradeWarmupC(input,question);
     case "list-factors":return gradeListFactors(input,question);
-    case "missing-factor":return gradeMissingFactor(input,question);
     case "first-five-multiples":return gradeFirstFiveMultiples(input,question);
     case "is-multiple": return gradeIsMultiple(input,question);
     case "gcf-factors": return gradeGCFByFactors(input,question);
