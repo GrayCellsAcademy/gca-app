@@ -92,16 +92,19 @@ export function gradeWarmupC(input,q){
 export function genListFactors() {
   const n=randInt(12,60);
   const correct=getFactors(n);
+  const toLabel=arr=>"{"+arr.join(", ")+"}";
   // Generate 3 wrong sets
   const wrongs=[];
-  while(wrongs.length<3){
+  let attempts=0;
+  while(wrongs.length<3&&attempts<200){
+    attempts++;
     let wrong=[...correct];
     const op=randChoice(["remove","add","swap"]);
     if(op==="remove"&&wrong.length>2){
       wrong.splice(randInt(1,wrong.length-2),1);
     } else if(op==="add"){
       let extra; do{extra=randInt(2,n-1);}while(wrong.includes(extra));
-      wrong=shuffle([...wrong,extra]).sort((a,b)=>a-b);
+      wrong=[...wrong,extra].sort((a,b)=>a-b);
     } else {
       const idx=randInt(1,wrong.length-2);
       let rep; do{rep=randInt(2,n-1);}while(wrong.includes(rep));
@@ -110,12 +113,15 @@ export function genListFactors() {
     const ws=JSON.stringify(wrong);
     if(ws!==JSON.stringify(correct)&&!wrongs.find(w=>JSON.stringify(w)===ws)) wrongs.push(wrong);
   }
-  const options=shuffle([correct,...wrongs.slice(0,3)]);
-  const correctIdx=options.findIndex(o=>JSON.stringify(o)===JSON.stringify(correct));
+  const allOptions=shuffle([correct,...wrongs.slice(0,3)]);
+  const correctIdx=allOptions.findIndex(o=>JSON.stringify(o)===JSON.stringify(correct));
+  // Store as flat strings so Firestore can serialize
+  const optionLabels=allOptions.map(toLabel);
   return {
-    type:"list-factors",n,correct,options,correctIdx,
+    type:"list-factors",n,correctIdx,
+    optionLabels,
     answer:String(correctIdx),
-    displayAnswer:`{${correct.join(", ")}}`,
+    displayAnswer:toLabel(correct),
     prompt:`Select the complete set of factors of ${n}.`,
   };
 }
@@ -408,4 +414,5 @@ export function gradeLesson13Answer(input,question){
     default:            return false;
   }
 }
+
 

@@ -110,26 +110,39 @@ function QuestionDisplay({ question: q, revealCorrect }) {
   if (q.type === "warmup-c") return (
     <div style={{ textAlign: "center" }}>
       <div style={{ fontSize: 36, fontWeight: 900, fontFamily: "var(--mono)", marginBottom: 10 }}>{q.n}</div>
-      {revealCorrect && <div style={{ fontSize: 20, color: "var(--green)", fontWeight: 700, fontFamily: "var(--mono)" }}>{q.displayAnswer}</div>}
+      {revealCorrect && (
+        <div style={{ color: "var(--green)", fontWeight: 700 }}>
+          <KaTeX expr={q.displayAnswer.replace(/\^(\d+)/g,"^{$1}").replace(/ x /g," \\times ")} block />
+        </div>
+      )}
     </div>
   );
 
-  if (q.type === "list-factors") return (
-    <div style={{ textAlign: "center" }}>
-      <div style={{ fontSize: 36, fontWeight: 900, fontFamily: "var(--mono)", marginBottom: 12 }}>{q.n}</div>
-      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-        {q.options.map((opt, i) => (
-          <div key={i} style={{ background: revealCorrect && i === q.correctIdx ? "rgba(22,163,74,0.1)" : "var(--bg2)", borderRadius: "var(--radius-sm)", padding: "8px 14px", fontSize: 20, fontFamily: "var(--mono)", fontWeight: 700, border: revealCorrect && i === q.correctIdx ? "2px solid var(--green)" : "1px solid var(--border)" }}>
-            {String.fromCharCode(65 + i)}) {"{" + opt.join(", ") + "}"}
-          </div>
-        ))}
+  if (q.type === "list-factors") {
+    // During answering, MCInput shows the options; on reveal, highlight correct
+    if (!revealCorrect) return (
+      <div style={{ textAlign: "center" }}>
+        <div style={{ fontSize: 36, fontWeight: 900, fontFamily: "var(--mono)", marginBottom: 4 }}>{q.n}</div>
       </div>
-    </div>
-  );
+    );
+    return (
+      <div style={{ textAlign: "center" }}>
+        <div style={{ fontSize: 36, fontWeight: 900, fontFamily: "var(--mono)", marginBottom: 12 }}>{q.n}</div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+          {(q.optionLabels||[]).map((label, i) => (
+            <div key={i} style={{ background: i === q.correctIdx ? "rgba(22,163,74,0.1)" : "var(--bg2)", borderRadius: "var(--radius-sm)", padding: "8px 14px", fontSize: 20, fontFamily: "var(--mono)", fontWeight: 700, border: i === q.correctIdx ? "2px solid var(--green)" : "1px solid var(--border)" }}>
+              {String.fromCharCode(65 + i)}) {label}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   if (q.type === "missing-factor") return (
     <div style={{ textAlign: "center" }}>
-      <div style={{ fontSize: 28, fontWeight: 900, fontFamily: "var(--mono)", marginBottom: 8 }}>{q.a} - ___ = {q.n}</div>
+      <div style={{ fontSize: 28, fontWeight: 900, fontFamily: "var(--mono)", marginBottom: 8 }}>{q.a} x ___ = {q.n}</div>
+      <div style={{ fontSize: 19, color: "var(--text2)", marginBottom: 8 }}>Find the missing factor</div>
       {revealCorrect && <div style={{ fontSize: 22, color: "var(--green)", fontWeight: 700 }}>___ = {q.b}</div>}
     </div>
   );
@@ -409,6 +422,21 @@ function WordProblemInput({ question, onSubmit, submitted }) {
   );
 }
 
+function ListFactorsMCInput({ question, onSubmit, submitted }) {
+  const [sel, setSel] = useState(null);
+  const labels = question.optionLabels || [];
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+      {labels.map((label, i) => (
+        <button key={i} onClick={() => { if (!submitted) { setSel(i); onSubmit(String(i)); } }}
+          style={{ padding: "10px 16px", borderRadius: "var(--radius-sm)", border: "2px solid " + (sel === i ? "var(--blue)" : "var(--border)"), background: sel === i ? "rgba(27,143,255,0.12)" : "var(--surface)", fontSize: 20, fontWeight: 700, cursor: "pointer", textAlign: "left", fontFamily: "var(--mono)" }}>
+          {String.fromCharCode(65 + i)}) {label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 function AnswerInput({ question, onSubmit, submitted }) {
   if (!question) return null;
   const t = question.type;
@@ -429,7 +457,7 @@ function AnswerInput({ question, onSubmit, submitted }) {
       <TextInput onSubmit={onSubmit} submitted={submitted} placeholder="e.g. 2^3 * 3^2" wide />
     </div>
   );
-  if (t === "list-factors") return <MCInput options={question.options} onSubmit={onSubmit} submitted={submitted} labelFn={o => "{" + o.join(", ") + "}"} />;
+  if (t === "list-factors") return <ListFactorsMCInput question={question} onSubmit={onSubmit} submitted={submitted} />;
   if (t === "missing-factor") return <TextInput onSubmit={onSubmit} submitted={submitted} placeholder="Enter missing factor" />;
   if (t === "first-five-multiples") return (
     <div>
@@ -815,4 +843,5 @@ export default function Lesson13Session({ user, onHome }) {
 }
 
 export { TeacherLesson13 as Lesson13TeacherView, StudentLesson13 as Lesson13StudentView };
+
 
