@@ -26,6 +26,7 @@ import Lesson09MasteryPlayer from "./Lesson09MasteryPlayer";
 import Lesson10MasteryPlayer from "./Lesson10MasteryPlayer";
 import Lesson11MasteryPlayer from "./Lesson11MasteryPlayer";
 import Lesson12MasteryPlayer, { PerfectSquares12Player } from "./Lesson12MasteryPlayer";
+import Lesson13MasteryPlayer, { PerfectSquares13Player } from "./Lesson13MasteryPlayer";
 
 export const TOPICS = {
   "addition-tables-v1": {
@@ -195,6 +196,20 @@ export const TOPICS = {
     description: "Memorize and drill perfect squares from 11 to 15.",
     subject: "math", gradeLevel: "6+", icon: "", type: "drill", status: "published", order: 21,
     Player: PerfectSquares12Player,
+  },
+  "perfect-squares-13-v1": {
+    id: "perfect-squares-13-v1",
+    title: "Perfect Squares (16-20)",
+    description: "Memorize and drill perfect squares 16-20, then review all 11-20.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "drill", status: "published", order: 23,
+    Player: PerfectSquares13Player,
+  },
+  "lesson13-mastery-v1": {
+    id: "lesson13-mastery-v1",
+    title: "HW 13 (019)",
+    description: "Factors, multiples, GCF, LCM, and word problems.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 24,
+    Player: Lesson13MasteryPlayer,
   },
   "lesson12-mastery-v1": {
     id: "lesson12-mastery-v1",
