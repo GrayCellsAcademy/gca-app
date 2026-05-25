@@ -157,13 +157,28 @@ export function gradeFirstFiveMultiples(input,q){
 export function genIsMultiple() {
   const base=randChoice([4,6,7,8,9]);
   const statements=[];
-  // Generate 6: mix of yes and no
-  const yesNos=shuffle([true,true,true,false,false,false]);
+  // 6 statements: 2 multiples, 2 non-multiples (random), 2 factors (tricky - factors are NOT multiples unless equal)
+  const types=shuffle(["multiple","multiple","non-multiple","non-multiple","factor","factor"]);
   for(let i=0;i<6;i++){
-    let n;
-    if(yesNos[i]){ n=base*randInt(2,12); }
-    else { do{n=randInt(base*2,base*12);}while(n%base===0); }
-    statements.push({n,base,isMultiple:yesNos[i],display:`Is ${n} a multiple of ${base}?`});
+    let n, isMultiple;
+    if(types[i]==="multiple"){
+      n=base*randInt(2,12);
+      isMultiple=true;
+    } else if(types[i]==="non-multiple"){
+      do{n=randInt(base*2,base*12);}while(n%base===0||getFactors(base).includes(n));
+      isMultiple=false;
+    } else {
+      // factor of base (not base itself) - tricky distractor
+      const factors=getFactors(base).filter(f=>f>1&&f<base);
+      if(factors.length===0){
+        do{n=randInt(base*2,base*12);}while(n%base===0);
+        isMultiple=false;
+      } else {
+        n=randChoice(factors);
+        isMultiple=false; // factors < base are never multiples of base
+      }
+    }
+    statements.push({n,base,isMultiple,display:`Is ${n} a multiple of ${base}?`});
   }
   return {type:"is-multiple",base,statements,prompt:`For each, is the number a multiple of ${base}?`};
 }

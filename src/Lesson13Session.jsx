@@ -297,91 +297,29 @@ function MCInput({ options, onSubmit, submitted, labelFn }) {
 
 // Multi-stage GCF/LCM by PF input
 function GCFPFInput({ question, onSubmit, submitted }) {
-  const [stage, setStage] = useState(0);
-  const [input1a, setInput1a] = useState("");
-  const [input1b, setInput1b] = useState("");
-  const [stage2Answers, setStage2Answers] = useState(question.primeOptions.map(() => ""));
-  const [input3, setInput3] = useState("");
+  // PF already shown in QuestionDisplay - just ask for GCF/LCM directly
   const [feedback, setFeedback] = useState(null);
   const isGCF = question.type === "gcf-pf";
-  const primeOptions = question.primeOptions;
+  const ans = isGCF ? question.g : question.l;
 
-  const labels = [
-    `Stage 1: Enter prime factorization of ${question.a}`,
-    `Stage 1b: Enter prime factorization of ${question.b}`,
-    `Stage 2: For each prime, select the ${isGCF ? "smallest" : "largest"} exponent`,
-    `Stage 3: Enter the ${isGCF ? "GCF" : "LCM"}`,
-  ];
-
-  const handleStage1a = () => {
-    const ok = isGCF ? gradeGCFByPFStage1a(input1a, question) : gradeLCMByPFStage1a(input1a, question);
-    setFeedback({ correct: ok, wrong: ok ? null : `${question.a} = ${question.pf_a}` });
-    if (ok) setTimeout(() => { setStage(1); setFeedback(null); }, 0);
-  };
-  const handleStage1b = () => {
-    const ok = isGCF ? gradeGCFByPFStage1b(input1b, question) : gradeLCMByPFStage1b(input1b, question);
-    setFeedback({ correct: ok, wrong: ok ? null : `${question.b} = ${question.pf_b}` });
-    if (ok) setTimeout(() => { setStage(2); setFeedback(null); }, 0);
-  };
-  const handleStage2 = () => {
-    const ok = isGCF ? gradeGCFByPFStage2(JSON.stringify(stage2Answers), question) : gradeLCMByPFStage2(JSON.stringify(stage2Answers), question);
-    const correctAnswers = primeOptions.map(po => String(po.correct));
-    setFeedback({ correct: ok, wrong: ok ? null : "Correct: " + primeOptions.map(po => `${po.prime}: exp=${po.correct}`).join(", ") });
-    if (ok) setTimeout(() => { setStage(3); setFeedback(null); }, 0);
-  };
-  const handleStage3 = () => {
-    const ok = isGCF ? gradeGCFByPFStage3(input3, question) : gradeLCMByPFStage3(input3, question);
-    const ans = isGCF ? question.g : question.l;
-    setFeedback({ correct: ok, wrong: ok ? null : `Answer: ${ans}` });
+  const handleSubmit = (input) => {
+    const ok = parseInt(String(input).trim()) === ans;
+    setFeedback({ correct: ok, input: input.trim() });
     if (ok) onSubmit(String(ans));
   };
 
   return (
     <div>
-      <div style={{ fontSize: 20, fontWeight: 700, color: "var(--blue)", marginBottom: 12 }}>{labels[stage]}</div>
-      {stage === 0 && (
-        <div>
-          {feedback && <div style={{ fontSize: 19, color: feedback.correct ? "var(--green)" : "var(--red)", fontWeight: 700, marginBottom: 8 }}>{feedback.correct ? "Correct! Move to next stage." : feedback.wrong}</div>}
-          {!feedback?.correct && <TextInput onSubmit={handleStage1a} submitted={false} placeholder={`e.g. ${question.pf_a}`} wide />}
+      <div style={{ fontSize: 20, fontWeight: 700, color: "var(--blue)", marginBottom: 12 }}>
+        Enter the {isGCF ? "GCF" : "LCM"} of {question.a} and {question.b}
+      </div>
+      {feedback && !feedback.correct && (
+        <div style={{ fontSize: 19, color: "var(--red)", fontWeight: 700, marginBottom: 8 }}>
+          Your answer: {feedback.input} - Correct: {ans}
         </div>
       )}
-      {stage === 1 && (
-        <div>
-          <div style={{ fontSize: 20, color: "var(--text2)", marginBottom: 6 }}>{question.a} = <strong style={{ fontFamily: "var(--mono)" }}>{question.pf_a}</strong></div>
-          {feedback && <div style={{ fontSize: 19, color: feedback.correct ? "var(--green)" : "var(--red)", fontWeight: 700, marginBottom: 8 }}>{feedback.correct ? "Correct!" : feedback.wrong}</div>}
-          {!feedback?.correct && <TextInput onSubmit={handleStage1b} submitted={false} placeholder={`e.g. ${question.pf_b}`} wide />}
-        </div>
-      )}
-      {stage === 2 && (
-        <div>
-          <div style={{ fontSize: 20, color: "var(--text2)", marginBottom: 4 }}>{question.a} = <strong style={{ fontFamily: "var(--mono)" }}>{question.pf_a}</strong></div>
-          <div style={{ fontSize: 20, color: "var(--text2)", marginBottom: 10 }}>{question.b} = <strong style={{ fontFamily: "var(--mono)" }}>{question.pf_b}</strong></div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 10 }}>
-            {primeOptions.map((po, i) => (
-              <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, background: "var(--bg2)", borderRadius: "var(--radius-sm)", padding: "8px 12px" }}>
-                <span style={{ fontFamily: "var(--mono)", fontSize: 20, fontWeight: 800, minWidth: 24 }}>{po.prime}:</span>
-                <span style={{ fontSize: 19, color: "var(--text3)" }}>exp {po.expA} vs exp {po.expB} -</span>
-                <div style={{ display: "flex", gap: 6 }}>
-                  {[...new Set([po.expA, po.expB])].sort().map(exp => (
-                    <button key={exp} onClick={() => setStage2Answers(prev => prev.map((x, j) => j === i ? String(exp) : x))}
-                      style={{ padding: "4px 12px", borderRadius: "var(--radius-sm)", border: "2px solid " + (stage2Answers[i] === String(exp) ? "var(--blue)" : "var(--border)"), background: stage2Answers[i] === String(exp) ? "rgba(27,143,255,0.15)" : "var(--surface)", fontSize: 20, fontWeight: 700, cursor: "pointer", fontFamily: "var(--mono)" }}>
-                      {exp}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-          {feedback && <div style={{ fontSize: 19, color: feedback.correct ? "var(--green)" : "var(--red)", fontWeight: 700, marginBottom: 8 }}>{feedback.correct ? "Correct!" : feedback.wrong}</div>}
-          <button className="btn btn-primary" style={{ width: "100%", fontSize: 20 }} onClick={handleStage2}
-            disabled={stage2Answers.some(a => a === "")}>Submit</button>
-        </div>
-      )}
-      {stage === 3 && (
-        <div>
-          {feedback && <div style={{ fontSize: 19, color: feedback.correct ? "var(--green)" : "var(--red)", fontWeight: 700, marginBottom: 8 }}>{feedback.correct ? "Correct!" : feedback.wrong}</div>}
-          {!feedback?.correct && <TextInput onSubmit={handleStage3} submitted={false} placeholder={`Enter ${isGCF ? "GCF" : "LCM"}`} />}
-        </div>
+      {!feedback?.correct && (
+        <TextInput onSubmit={handleSubmit} submitted={false} placeholder={`Enter ${isGCF ? "GCF" : "LCM"}`} />
       )}
     </div>
   );
