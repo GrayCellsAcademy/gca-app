@@ -157,27 +157,33 @@ export function gradeFirstFiveMultiples(input,q){
 export function genIsMultiple() {
   const base=randChoice([4,6,7,8,9]);
   const statements=[];
+  const usedNums=new Set();
   // 6 statements: 2 multiples, 2 non-multiples (random), 2 factors (tricky - factors are NOT multiples unless equal)
   const types=shuffle(["multiple","multiple","non-multiple","non-multiple","factor","factor"]);
   for(let i=0;i<6;i++){
     let n, isMultiple;
-    if(types[i]==="multiple"){
-      n=base*randInt(2,12);
-      isMultiple=true;
-    } else if(types[i]==="non-multiple"){
-      do{n=randInt(base*2,base*12);}while(n%base===0||getFactors(base).includes(n));
-      isMultiple=false;
-    } else {
-      // factor of base (not base itself) - tricky distractor
-      const factors=getFactors(base).filter(f=>f>1&&f<base);
-      if(factors.length===0){
-        do{n=randInt(base*2,base*12);}while(n%base===0);
+    let attempts=0;
+    do {
+      attempts++;
+      if(types[i]==="multiple"){
+        n=base*randInt(2,12);
+        isMultiple=true;
+      } else if(types[i]==="non-multiple"){
+        do{n=randInt(base*2,base*12);}while(n%base===0||getFactors(base).includes(n));
         isMultiple=false;
       } else {
-        n=randChoice(factors);
-        isMultiple=false; // factors < base are never multiples of base
+        // factor of base (not base itself) - tricky distractor
+        const factors=getFactors(base).filter(f=>f>1&&f<base);
+        if(factors.length===0){
+          do{n=randInt(base*2,base*12);}while(n%base===0);
+          isMultiple=false;
+        } else {
+          n=randChoice(factors);
+          isMultiple=false; // factors < base are never multiples of base
+        }
       }
-    }
+    } while(usedNums.has(n)&&attempts<20);
+    usedNums.add(n);
     statements.push({n,base,isMultiple,display:`Is ${n} a multiple of ${base}?`});
   }
   return {type:"is-multiple",base,statements,prompt:`For each, is the number a multiple of ${base}?`};
@@ -246,15 +252,16 @@ export function gradeGCFByPFStage3(input,q){
   return parseInt(String(input).trim())===q.g;
 }
 
-// -- Topic 3 A7: GCF direct free response --
-export function genGCFDirect(idx=0) {
-  const pool=[
-    {a:18,b:24,g:6},{a:12,b:30,g:6},{a:20,b:28,g:4},
-    {a:15,b:25,g:5},{a:16,b:24,g:8},{a:14,b:21,g:7},
-    {a:24,b:36,g:12},{a:18,b:27,g:9},{a:30,b:45,g:15},
-  ];
-  const item=pool[idx%pool.length];
-  return {type:"gcf-direct",a:item.a,b:item.b,g:item.g,answer:String(item.g),displayAnswer:String(item.g),prompt:`Find the GCF of ${item.a} and ${item.b}.`};
+// -- Topic 3 A7: GCF direct free response (random numbers under 100) --
+export function genGCFDirect() {
+  for(let i=0;i<200;i++){
+    const a=randInt(12,99), b=randInt(12,99);
+    if(a===b) continue;
+    const g=gcf(a,b);
+    if(g<2) continue; // trivial GCF of 1 not interesting
+    return {type:"gcf-direct",a,b,g,answer:String(g),displayAnswer:String(g),prompt:`Find the GCF of ${a} and ${b}.`};
+  }
+  return {type:"gcf-direct",a:18,b:24,g:6,answer:"6",displayAnswer:"6",prompt:"Find the GCF of 18 and 24."};
 }
 export function gradeGCFDirect(input,q){
   return parseInt(String(input).trim())===q.g;
@@ -312,15 +319,17 @@ export function gradeLCMByPFStage3(input,q){
   return parseInt(String(input).trim())===q.l;
 }
 
-// -- Topic 4 A10: LCM direct free response --
-export function genLCMDirect(idx=0) {
-  const pool=[
-    {a:6,b:8,l:24},{a:4,b:10,l:20},{a:6,b:9,l:18},
-    {a:8,b:12,l:24},{a:6,b:14,l:42},{a:10,b:15,l:30},
-    {a:12,b:18,l:36},{a:9,b:15,l:45},{a:6,b:20,l:60},
-  ];
-  const item=pool[idx%pool.length];
-  return {type:"lcm-direct",a:item.a,b:item.b,l:item.l,answer:String(item.l),displayAnswer:String(item.l),prompt:`Find the LCM of ${item.a} and ${item.b}.`};
+// -- Topic 4 A10: LCM direct free response (LCM under 200) --
+export function genLCMDirect() {
+  for(let i=0;i<200;i++){
+    const a=randInt(4,50), b=randInt(4,50);
+    if(a===b) continue;
+    const l=lcm(a,b);
+    if(l>200||l<10) continue;
+    if(l===a||l===b) continue; // one is a multiple of the other - too easy
+    return {type:"lcm-direct",a,b,l,answer:String(l),displayAnswer:String(l),prompt:`Find the LCM of ${a} and ${b}.`};
+  }
+  return {type:"lcm-direct",a:6,b:8,l:24,answer:"24",displayAnswer:"24",prompt:"Find the LCM of 6 and 8."};
 }
 export function gradeLCMDirect(input,q){
   return parseInt(String(input).trim())===q.l;
@@ -382,10 +391,10 @@ export function generateLesson13Question(topicId,extra){
     case "is-multiple": return genIsMultiple();
     case "gcf-factors": return genGCFByFactors();
     case "gcf-pf":      return genGCFByPF();
-    case "gcf-direct":  return genGCFDirect(extra?.idx||0);
+    case "gcf-direct":  return genGCFDirect();
     case "lcm-multiples":return genLCMByMultiples();
     case "lcm-pf":      return genLCMByPF();
-    case "lcm-direct":  return genLCMDirect(extra?.idx||0);
+    case "lcm-direct":  return genLCMDirect();
     case "word-problem":return genWordProblem();
     default:            return genWarmupA();
   }
