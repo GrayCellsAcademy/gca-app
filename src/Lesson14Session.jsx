@@ -3,7 +3,7 @@ import { setDoc, doc, updateDoc } from "firebase/firestore";
 import { onSessionChange, onClassworkAnswersChange, getTeacherClasses, addToScore, db } from "./core/firebase";
 import {
   LESSON14_TOPICS, generateLesson14Question, gradeLesson14Answer,
-  gradeClassifyItem, gradeCompareItem, gradeImproperToMixedItem, gradeMixedToImproperItem,
+  gradeClassifyItem, gradeImproperToMixedItem, gradeMixedToImproperItem,
   gradeMixedReviewItem,
 } from "./lesson14Questions";
 
@@ -105,13 +105,15 @@ function FractionPicture({ num, den, shape }) {
 }
 
 // -- Number Line SVG --
-function NumberLineSVG({ value, den }) {
+function NumberLineSVG({ value, den, totalNum }) {
   const W = 320, H = 70, margin = 30;
   const lineW = W - 2 * margin;
   // Show 0 to 2, with marks at every 1/den
   const totalParts = 2 * den;
   const markX = (i) => margin + (i / totalParts) * lineW;
-  const pointX = margin + (value / 2) * lineW;
+  // Use totalNum/den if value is undefined (Firestore may drop floats)
+  const actualValue = (value !== undefined && !isNaN(value)) ? value : (totalNum / den);
+  const pointX = margin + (actualValue / 2) * lineW;
 
   const ticks = [];
   for (let i = 0; i <= totalParts; i++) {
@@ -131,7 +133,7 @@ function NumberLineSVG({ value, den }) {
       <polygon points={`${W - margin},35 ${W - margin - 8},30 ${W - margin - 8},40`} fill="var(--text2)" />
       {ticks}
       <circle cx={pointX} cy={35} r={6} fill="var(--blue)" />
-      <line x1={pointX} y1={15} x2={pointX} y2={29} stroke="var(--blue)" strokeWidth="2" strokeDasharray="3,2" />
+      <line x1={pointX} y1={10} x2={pointX} y2={29} stroke="var(--blue)" strokeWidth="2.5" />
     </svg>
   );
 }
@@ -184,24 +186,10 @@ function QuestionDisplay({ question: q, revealCorrect }) {
     );
   }
 
-  if (q.type === "compare-to-one") {
-    if (!revealCorrect) return null;
-    const labels = { less: "< 1", equal: "= 1", greater: "> 1" };
-    return (
-      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-        {q.fractions.map((f, i) => (
-          <div key={i} style={{ background: "var(--bg2)", borderRadius: "var(--radius-sm)", padding: "8px 14px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <span style={{ fontFamily: "var(--mono)", fontSize: 22, fontWeight: 800 }}>{f.display}</span>
-            <span style={{ fontSize: 19, color: "var(--green)", fontWeight: 700 }}>{labels[f.correct]}</span>
-          </div>
-        ))}
-      </div>
-    );
-  }
 
   if (q.type === "number-line") return (
     <div>
-      <NumberLineSVG value={q.value} den={q.den} />
+      <NumberLineSVG value={q.value} den={q.den} totalNum={q.totalNum} />
       {revealCorrect && <div style={{ textAlign: "center", color: "var(--green)", fontWeight: 700, fontSize: 24, marginTop: 8, fontFamily: "var(--mono)" }}>{q.displayAnswer}</div>}
     </div>
   );
@@ -323,33 +311,6 @@ function ClassifyInput({ question, onSubmit, submitted }) {
   );
 }
 
-function CompareToOneInput({ question, onSubmit, submitted }) {
-  const opts = [{ label: "< 1", val: "less" }, { label: "= 1", val: "equal" }, { label: "> 1", val: "greater" }];
-  const [answers, setAnswers] = useState(question.fractions.map(() => ""));
-  const allDone = answers.every(a => a !== "");
-  return (
-    <div>
-      <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 12 }}>
-        {question.fractions.map((f, i) => (
-          <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "var(--bg2)", borderRadius: "var(--radius-sm)", padding: "10px 14px", flexWrap: "wrap", gap: 8 }}>
-            <span style={{ fontSize: 24, fontWeight: 900, fontFamily: "var(--mono)" }}>{f.display}</span>
-            <div style={{ display: "flex", gap: 8 }}>
-              {opts.map(opt => (
-                <button key={opt.val} onClick={() => !submitted && setAnswers(prev => prev.map((x, j) => j === i ? opt.val : x))}
-                  style={{ padding: "6px 16px", borderRadius: "var(--radius-sm)", border: "2px solid " + (answers[i] === opt.val ? "var(--blue)" : "var(--border)"), background: answers[i] === opt.val ? "rgba(27,143,255,0.15)" : "var(--surface)", fontSize: 20, fontWeight: 700, cursor: "pointer", color: answers[i] === opt.val ? "var(--blue)" : "var(--text)" }}>
-                  {opt.label}
-                </button>
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
-      <button className="btn btn-primary" style={{ width: "100%", fontSize: 20 }}
-        onClick={() => onSubmit(JSON.stringify(answers))} disabled={submitted || !allDone}>Submit All</button>
-    </div>
-  );
-}
-
 function MultiTextInput({ items, labelFn, onSubmit, submitted, placeholder }) {
   const [answers, setAnswers] = useState(items.map(() => ""));
   const allDone = answers.every(a => a.trim() !== "");
@@ -414,7 +375,6 @@ function AnswerInput({ question, onSubmit, submitted }) {
     </div>
   );
   if (t === "classify-fractions") return <ClassifyInput question={question} onSubmit={onSubmit} submitted={submitted} />;
-  if (t === "compare-to-one") return <CompareToOneInput question={question} onSubmit={onSubmit} submitted={submitted} />;
   if (t === "number-line") return (
     <div>
       <div style={{ fontSize: 19, color: "var(--text3)", marginBottom: 6, textAlign: "center" }}>Enter fraction or mixed number (e.g. 3/4 or 1 1/2)</div>
@@ -471,7 +431,7 @@ function gradeAnswer(input, question) {
   return gradeLesson14Answer(input, question);
 }
 
-const MULTI_ITEM_TYPES = ["classify-fractions", "compare-to-one", "improper-to-mixed", "mixed-to-improper", "mixed-review"];
+const MULTI_ITEM_TYPES = ["classify-fractions", "improper-to-mixed", "mixed-to-improper", "mixed-review"];
 
 // -- Teacher --
 function TeacherLesson14({ session, sessionId, uid }) {
@@ -701,7 +661,6 @@ function StudentLesson14({ session, sessionId, uid }) {
                         const parsed = JSON.parse(result.answer);
                         studentAns = String(parsed[i] || "");
                         if (question.type === "classify-fractions") { itemOk = gradeClassifyItem(studentAns, item); correctAns = item.correct; }
-                        else if (question.type === "compare-to-one") { itemOk = gradeCompareItem(studentAns, item); correctAns = { less: "< 1", equal: "= 1", greater: "> 1" }[item.correct]; }
                         else if (question.type === "improper-to-mixed") { itemOk = gradeImproperToMixedItem(studentAns, item); correctAns = item.displayAnswer; }
                         else if (question.type === "mixed-to-improper") { itemOk = gradeMixedToImproperItem(studentAns, item); correctAns = item.displayAnswer; }
                         else if (question.type === "mixed-review") { itemOk = gradeMixedReviewItem(studentAns, item); correctAns = item.displayAnswer; }
@@ -828,4 +787,5 @@ export default function Lesson14Session({ user, onHome }) {
 }
 
 export { TeacherLesson14 as Lesson14TeacherView, StudentLesson14 as Lesson14StudentView };
+
 

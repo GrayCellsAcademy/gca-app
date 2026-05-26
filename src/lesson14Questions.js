@@ -66,14 +66,38 @@ export function genWarmupA(){
 }
 export function gradeWarmupA(input,q){ return pfsEqual(parsePF(input),q.factors); }
 
-// - Warm-up B: GCF of 36 and 48 -
+// - Warm-up B: GCF of two 2-digit numbers (GCF is product of 2+ primes) -
 export function genWarmupB(){
+  // Find pairs where GCF has at least 2 prime factors (counting multiplicity)
+  for(let attempt=0;attempt<500;attempt++){
+    const a=randInt(20,99), b=randInt(20,99);
+    if(a===b) continue;
+    const g=gcd(a,b);
+    if(g<6) continue; // need at least 2*3=6
+    const pf=primeFactors(g);
+    const total=Object.values(pf).reduce((s,e)=>s+e,0);
+    if(total<2) continue; // need 2+ prime factors
+    return {type:"warmup-b",a,b,g,answer:String(g),displayAnswer:String(g),prompt:`Find the GCF of ${a} and ${b}.`};
+  }
   return {type:"warmup-b",a:36,b:48,g:12,answer:"12",displayAnswer:"12",prompt:"Find the GCF of 36 and 48."};
 }
 export function gradeWarmupB(input,q){ return parseInt(String(input).trim())===q.g; }
 
-// - Warm-up C: LCM of 12 and 18 -
+// - Warm-up C: LCM of two 2-digit numbers (GCF is product of 2+ primes) -
+function lcm(a,b){ return (a*b)/gcd(a,b); }
 export function genWarmupC(){
+  for(let attempt=0;attempt<500;attempt++){
+    const a=randInt(12,60), b=randInt(12,60);
+    if(a===b) continue;
+    const g=gcd(a,b);
+    if(g<6) continue;
+    const pf=primeFactors(g);
+    const total=Object.values(pf).reduce((s,e)=>s+e,0);
+    if(total<2) continue;
+    const l=lcm(a,b);
+    if(l>300) continue;
+    return {type:"warmup-c",a,b,l,answer:String(l),displayAnswer:String(l),prompt:`Find the LCM of ${a} and ${b}.`};
+  }
   return {type:"warmup-c",a:12,b:18,l:36,answer:"36",displayAnswer:"36",prompt:"Find the LCM of 12 and 18."};
 }
 export function gradeWarmupC(input,q){ return parseInt(String(input).trim())===q.l; }
@@ -128,36 +152,6 @@ export function gradeClassifyFractions(input,q){
   }catch{return false;}
 }
 
-// - Topic 2 A4: Compare fraction to 1 -
-export function genCompareToOne(){
-  const den=randChoice([4,5,6,8,10]);
-  // Generate 4 fractions: one < 1, one = 1, one > 1, one = 0 (or another)
-  const types=shuffle(["less","equal","greater","zero"]);
-  const fractions=types.map(t=>{
-    if(t==="less") return {num:randInt(1,den-1),den,correct:"less",display:""};
-    if(t==="equal") return {num:den,den,correct:"equal",display:""};
-    if(t==="greater") return {num:den+randInt(1,den),den,correct:"greater",display:""};
-    return {num:0,den,correct:"zero_or_less",display:""};
-  });
-  // Fix "zero_or_less" to "less" since 0/n < 1
-  fractions.forEach(f=>{if(f.correct==="zero_or_less") f.correct="less";});
-  fractions.forEach(f=>{f.display=`${f.num}/${f.den}`;});
-  return {type:"compare-to-one",fractions,prompt:"Compare each fraction to 1."};
-}
-export function gradeCompareItem(answer,item){
-  const s=String(answer).trim().toLowerCase().replace(/\s/g,"");
-  if(item.correct==="less") return s==="<1"||s==="less"||s==="lessthan1";
-  if(item.correct==="equal") return s==="=1"||s==="equal"||s==="equalto1"||s==="1";
-  if(item.correct==="greater") return s===">1"||s==="greater"||s==="greaterthan1";
-  return false;
-}
-export function gradeCompareToOne(input,q){
-  try{
-    const ans=JSON.parse(input);
-    return q.fractions.every((f,i)=>gradeCompareItem(ans[i],f));
-  }catch{return false;}
-}
-
 // - Topic 3 A5: Identify point on number line -
 export function genNumberLinePoint(){
   // Generate a point between 0 and 2
@@ -180,8 +174,10 @@ export function genNumberLinePoint(){
     value=whole+num/den;
     display=`1 ${num}/${den}`;
   }
+  // Store value as numerator/denominator pair (Firestore-safe, no float)
+  const totalNum = whole*den + num; // value = totalNum/den
   return {
-    type:"number-line-point",num,den,whole,value,display,
+    type:"number-line",num,den,whole,value,totalNum,display,
     answer:display,displayAnswer:display,
     acceptImproper:true,
     prompt:"What fraction or mixed number is marked on the number line?",
@@ -191,7 +187,9 @@ export function gradeNumberLinePoint(input,q){
   const p=parseFraction(String(input).trim());
   if(!p) return false;
   const inputVal=p.isMixed?(p.whole+p.num/p.den):p.num/p.den;
-  return Math.abs(inputVal-q.value)<0.001;
+  // Use totalNum/den for comparison if value is missing (Firestore float issue)
+  const targetVal = (q.value !== undefined) ? q.value : (q.totalNum/q.den);
+  return Math.abs(inputVal-targetVal)<0.001;
 }
 
 // - Topic 4 A7: Convert improper to mixed -
@@ -436,7 +434,6 @@ export const LESSON14_TOPICS=[
   {id:"warmup-c",        label:"Warm-up: LCM",                  description:"LCM of 12 and 18"},
   {id:"identify-fraction",label:"A1: Identify Fraction from Picture", description:"Enter fraction a/b"},
   {id:"classify-fractions",label:"A3: Classify the Fraction",   description:"6 simultaneous Zero/Proper/One/Improper"},
-  {id:"compare-to-one",  label:"A4: Compare Fraction to 1",     description:"4 simultaneous <1 / =1 / >1"},
   {id:"number-line",     label:"A5: Identify Point on Number Line", description:"Enter fraction or mixed number"},
   {id:"improper-to-mixed",label:"A7: Convert Improper to Mixed",description:"4 simultaneous"},
   {id:"mixed-to-improper",label:"A8: Convert Mixed to Improper",description:"4 simultaneous"},
@@ -454,7 +451,6 @@ export function generateLesson14Question(topicId){
     case "warmup-c":         return genWarmupC();
     case "identify-fraction":return genIdentifyFraction();
     case "classify-fractions":return genClassifyFractions();
-    case "compare-to-one":   return genCompareToOne();
     case "number-line":      return genNumberLinePoint();
     case "improper-to-mixed":return genImproperToMixed();
     case "mixed-to-improper":return genMixedToImproper();
@@ -475,7 +471,6 @@ export function gradeLesson14Answer(input,question){
     case "warmup-c":          return gradeWarmupC(input,question);
     case "identify-fraction": return gradeIdentifyFraction(input,question);
     case "classify-fractions":return gradeClassifyFractions(input,question);
-    case "compare-to-one":    return gradeCompareToOne(input,question);
     case "number-line":       return gradeNumberLinePoint(input,question);
     case "improper-to-mixed": return gradeImproperToMixed(input,question);
     case "mixed-to-improper": return gradeMixedToImproper(input,question);
@@ -487,4 +482,5 @@ export function gradeLesson14Answer(input,question){
     default:                  return false;
   }
 }
+
 
