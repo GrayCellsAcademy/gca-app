@@ -222,12 +222,19 @@ function QuestionDisplay({ question: q, revealCorrect }) {
     );
   }
 
-  if (q.type === "missing-equiv") return (
-    <div style={{ textAlign: "center" }}>
-      <div style={{ fontSize: 28, fontWeight: 900, fontFamily: "var(--mono)", marginBottom: 8 }}>{q.display}</div>
-      {revealCorrect && <div style={{ color: "var(--green)", fontWeight: 700, fontSize: 24 }}>Missing {q.missing}: {q.displayAnswer}</div>}
-    </div>
-  );
+  if (q.type === "missing-equiv") {
+    // Build KaTeX expression: e.g. \frac{2}{3} = \frac{?}{12}
+    const toKatexFrac = (n, d) => `\\frac{${n}}{${d}}`;
+    const katexExpr = q.missing === "numerator"
+      ? `${toKatexFrac(q.n1, q.d1)} = ${toKatexFrac("?", q.d2)}`
+      : `${toKatexFrac(q.n1, q.d1)} = ${toKatexFrac(q.n2, "?")}`;
+    return (
+      <div style={{ textAlign: "center" }}>
+        <KaTeX expr={katexExpr} block />
+        {revealCorrect && <div style={{ color: "var(--green)", fontWeight: 700, fontSize: 24, marginTop: 8 }}>Missing {q.missing}: {q.displayAnswer}</div>}
+      </div>
+    );
+  }
 
   if (q.type === "equiv-fraction") return (
     <div style={{ textAlign: "center" }}>
@@ -358,6 +365,124 @@ function MixedReviewInput({ question, onSubmit, submitted }) {
   );
 }
 
+// Visual mixed number input: whole number field + fraction fields side by side
+function MixedNumberInput({ onSubmit, submitted, label }) {
+  const [mode, setMode] = useState("text"); // "text" or "visual"
+  const [textVal, setTextVal] = useState("");
+  const [whole, setWhole] = useState("");
+  const [num, setNum] = useState("");
+  const [den, setDen] = useState("");
+  const textRef = useRef(null);
+
+  const submitText = () => {
+    if (textVal.trim()) onSubmit(textVal.trim());
+  };
+  const submitVisual = () => {
+    if (!whole.trim() || !num.trim() || !den.trim()) return;
+    onSubmit(`${whole.trim()} ${num.trim()}/${den.trim()}`);
+  };
+
+  if (mode === "visual") return (
+    <div>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, justifyContent: "center", marginBottom: 12 }}>
+        {/* Whole number */}
+        <input value={whole} onChange={e => setWhole(e.target.value)} disabled={submitted}
+          placeholder="whole" autoFocus
+          style={{ textAlign: "center", fontSize: 24, fontFamily: "var(--mono)", fontWeight: 800, padding: "8px", width: 70, borderRadius: "var(--radius-sm)", border: "2px solid var(--border)", background: "var(--surface)" }} />
+        {/* Fraction part stacked */}
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
+          <input value={num} onChange={e => setNum(e.target.value)} disabled={submitted}
+            placeholder="num"
+            style={{ textAlign: "center", fontSize: 22, fontFamily: "var(--mono)", fontWeight: 800, padding: "4px 8px", width: 60, borderRadius: "var(--radius-sm)", border: "2px solid var(--border)", background: "var(--surface)" }} />
+          <div style={{ width: 60, height: 2, background: "var(--text)", borderRadius: 99 }} />
+          <input value={den} onChange={e => setDen(e.target.value)} disabled={submitted}
+            placeholder="den"
+            style={{ textAlign: "center", fontSize: 22, fontFamily: "var(--mono)", fontWeight: 800, padding: "4px 8px", width: 60, borderRadius: "var(--radius-sm)", border: "2px solid var(--border)", background: "var(--surface)" }} />
+        </div>
+        <button className="btn btn-primary" style={{ fontSize: 20, padding: "10px 20px" }}
+          onClick={submitVisual} disabled={submitted || !whole.trim() || !num.trim() || !den.trim()}>OK</button>
+      </div>
+      <button className="btn btn-ghost btn-sm" style={{ width: "100%", fontSize: 18 }} onClick={() => setMode("text")}>
+        Type instead (e.g. 2 1/3)
+      </button>
+    </div>
+  );
+
+  return (
+    <div>
+      <div style={{ display: "flex", gap: 8, justifyContent: "center", marginBottom: 8 }}>
+        <input ref={textRef} value={textVal} onChange={e => setTextVal(e.target.value)}
+          onKeyDown={e => e.key === "Enter" && textVal.trim() && submitText()}
+          disabled={submitted} placeholder="e.g. 2 1/3"
+          style={{ textAlign: "center", fontSize: 22, fontFamily: "var(--mono)", fontWeight: 700, padding: "10px", width: 160 }} />
+        <button className="btn btn-primary" style={{ fontSize: 20, padding: "10px 20px" }}
+          onMouseDown={e => { e.preventDefault(); submitText(); }} disabled={submitted || !textVal.trim()}>OK</button>
+      </div>
+      <button className="btn btn-ghost btn-sm" style={{ width: "100%", fontSize: 18 }} onClick={() => setMode("visual")}>
+        Use visual input
+      </button>
+    </div>
+  );
+}
+
+// Visual mixed number grid for improper-to-mixed (one per fraction)
+function ImproperToMixedInput({ question, onSubmit, submitted }) {
+  const [modes, setModes] = useState(question.fractions.map(() => "text"));
+  const [textAnswers, setTextAnswers] = useState(question.fractions.map(() => ""));
+  const [wholes, setWholes] = useState(question.fractions.map(() => ""));
+  const [nums, setNums] = useState(question.fractions.map(() => ""));
+  const [dens, setDens] = useState(question.fractions.map(() => ""));
+
+  const getAnswer = (i) => {
+    if (modes[i] === "visual") return wholes[i].trim() && nums[i].trim() && dens[i].trim() ? `${wholes[i].trim()} ${nums[i].trim()}/${dens[i].trim()}` : "";
+    return textAnswers[i].trim();
+  };
+  const allDone = question.fractions.every((_, i) => getAnswer(i) !== "");
+
+  const setMode = (i, m) => setModes(prev => prev.map((x, j) => j === i ? m : x));
+
+  return (
+    <div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 12 }}>
+        {question.fractions.map((f, i) => (
+          <div key={i} style={{ background: "var(--bg2)", borderRadius: "var(--radius-sm)", padding: "10px 14px" }}>
+            <div style={{ fontSize: 24, fontWeight: 900, fontFamily: "var(--mono)", marginBottom: 8 }}>{f.num}/{f.den} =</div>
+            {modes[i] === "visual" ? (
+              <div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                  <input value={wholes[i]} onChange={e => setWholes(prev => prev.map((x, j) => j === i ? e.target.value : x))}
+                    disabled={submitted} placeholder="whole"
+                    style={{ textAlign: "center", fontSize: 22, fontFamily: "var(--mono)", fontWeight: 800, padding: "6px", width: 60, borderRadius: "var(--radius-sm)", border: "2px solid var(--border)", background: "var(--surface)" }} />
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
+                    <input value={nums[i]} onChange={e => setNums(prev => prev.map((x, j) => j === i ? e.target.value : x))}
+                      disabled={submitted} placeholder="num"
+                      style={{ textAlign: "center", fontSize: 20, fontFamily: "var(--mono)", fontWeight: 800, padding: "4px 6px", width: 50, borderRadius: "var(--radius-sm)", border: "2px solid var(--border)", background: "var(--surface)" }} />
+                    <div style={{ width: 50, height: 2, background: "var(--text)", borderRadius: 99 }} />
+                    <input value={dens[i]} onChange={e => setDens(prev => prev.map((x, j) => j === i ? e.target.value : x))}
+                      disabled={submitted} placeholder="den"
+                      style={{ textAlign: "center", fontSize: 20, fontFamily: "var(--mono)", fontWeight: 800, padding: "4px 6px", width: 50, borderRadius: "var(--radius-sm)", border: "2px solid var(--border)", background: "var(--surface)" }} />
+                  </div>
+                </div>
+                <button className="btn btn-ghost btn-sm" style={{ fontSize: 16 }} onClick={() => setMode(i, "text")}>Type instead</button>
+              </div>
+            ) : (
+              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                <input value={textAnswers[i]} onChange={e => setTextAnswers(prev => prev.map((x, j) => j === i ? e.target.value : x))}
+                  disabled={submitted} placeholder="e.g. 2 1/3"
+                  style={{ textAlign: "center", fontSize: 20, fontFamily: "var(--mono)", fontWeight: 700, padding: "6px 10px", width: 120, borderRadius: "var(--radius-sm)", border: "1px solid var(--border)", background: "var(--surface)" }} />
+                <button className="btn btn-ghost btn-sm" style={{ fontSize: 16 }} onClick={() => setMode(i, "visual")}>Visual</button>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+      <button className="btn btn-primary" style={{ width: "100%", fontSize: 20 }}
+        onClick={() => onSubmit(JSON.stringify(question.fractions.map((_, i) => getAnswer(i))))}
+        disabled={submitted || !allDone}>Submit All</button>
+    </div>
+  );
+}
+
 function AnswerInput({ question, onSubmit, submitted }) {
   if (!question) return null;
   const t = question.type;
@@ -377,16 +502,11 @@ function AnswerInput({ question, onSubmit, submitted }) {
   if (t === "classify-fractions") return <ClassifyInput question={question} onSubmit={onSubmit} submitted={submitted} />;
   if (t === "number-line") return (
     <div>
-      <div style={{ fontSize: 19, color: "var(--text3)", marginBottom: 6, textAlign: "center" }}>Enter fraction or mixed number (e.g. 3/4 or 1 1/2)</div>
-      <TextInput onSubmit={onSubmit} submitted={submitted} placeholder="e.g. 3/4 or 1 1/2" wide />
+      <div style={{ fontSize: 19, color: "var(--text3)", marginBottom: 8, textAlign: "center" }}>Enter the fraction or mixed number shown on the number line</div>
+      <MixedNumberInput onSubmit={onSubmit} submitted={submitted} />
     </div>
   );
-  if (t === "improper-to-mixed") return (
-    <div>
-      <div style={{ fontSize: 19, color: "var(--text3)", marginBottom: 6, textAlign: "center" }}>Enter mixed number (e.g. 2 1/3)</div>
-      <MultiTextInput items={question.fractions} labelFn={f => `${f.num}/${f.den}`} onSubmit={onSubmit} submitted={submitted} placeholder="e.g. 2 1/3" />
-    </div>
-  );
+  if (t === "improper-to-mixed") return <ImproperToMixedInput question={question} onSubmit={onSubmit} submitted={submitted} />;
   if (t === "mixed-to-improper") return (
     <div>
       <div style={{ fontSize: 19, color: "var(--text3)", marginBottom: 6, textAlign: "center" }}>Enter improper fraction (e.g. 7/3)</div>
@@ -395,8 +515,8 @@ function AnswerInput({ question, onSubmit, submitted }) {
   );
   if (t === "missing-equiv") return (
     <div>
-      <div style={{ fontSize: 22, fontWeight: 800, fontFamily: "var(--mono)", marginBottom: 10, textAlign: "center" }}>{question.display}</div>
-      <TextInput onSubmit={onSubmit} submitted={submitted} placeholder="Enter missing number" />
+      <div style={{ fontSize: 19, color: "var(--text3)", marginBottom: 8, textAlign: "center" }}>Enter the missing number</div>
+      <TextInput onSubmit={onSubmit} submitted={submitted} placeholder="Enter number" />
     </div>
   );
   if (t === "equiv-fraction") return (
