@@ -317,7 +317,6 @@ export function genReduceMC(){
   const options=shuffle([`${rn}/${rd}`,...[...wrongs].slice(0,3)]);
   const correctIdx=options.indexOf(`${rn}/${rd}`);
   return {
-    type:"reduce-mc",n,d,rn,rd,options,correctIdx,
     answer:String(correctIdx),displayAnswer:`${rn}/${rd}`,
     prompt:`Reduce ${n}/${d} to lowest terms.`,
   };
@@ -392,7 +391,6 @@ export function genMixedReview(){
     return {subtype:"reduce",n,d,rn,rd,display:`${n}/${d}`,answer:`${rn}/${rd}`,displayAnswer:`${rn}/${rd}`};
   };
   const questions=shuffle([identFrac(),classifyFrac(),impToMix(),mixToImp(),missingEquiv(),reduceFrac()]);
-  return {type:"mixed-review",questions,prompt:"Answer each question."};
 }
 export function gradeMixedReviewItem(input,item){
   if(!input) return false;
@@ -439,9 +437,7 @@ export const LESSON14_TOPICS=[
   {id:"mixed-to-improper",label:"A8: Convert Mixed to Improper",description:"4 simultaneous"},
   {id:"missing-equiv",   label:"A9: Missing Numerator/Denominator", description:"Equivalent fractions"},
   {id:"equiv-fraction",  label:"A10: Generate Equivalent Fraction", description:"Enter any equivalent fraction"},
-  {id:"reduce-mc",       label:"A11: Reduce Fraction (MC)",     description:"Select correct reduced form"},
   {id:"reduce-free",     label:"A12: Reduce Fraction (Free)",   description:"Enter fraction in lowest terms"},
-  {id:"mixed-review",    label:"A13: Mixed Review",             description:"6 simultaneous, all skills"},
 ];
 
 export function generateLesson14Question(topicId){
@@ -456,9 +452,7 @@ export function generateLesson14Question(topicId){
     case "mixed-to-improper":return genMixedToImproper();
     case "missing-equiv":    return genMissingEquiv();
     case "equiv-fraction":   return genEquivFraction();
-    case "reduce-mc":        return genReduceMC();
     case "reduce-free":      return genReduceFree();
-    case "mixed-review":     return genMixedReview();
     default:                 return genWarmupA();
   }
 }
@@ -476,11 +470,10 @@ export function gradeLesson14Answer(input,question){
     case "mixed-to-improper": return gradeMixedToImproper(input,question);
     case "missing-equiv":     return gradeMissingEquiv(input,question);
     case "equiv-fraction":    return gradeEquivFraction(input,question);
-    case "reduce-mc":         return gradeReduceMC(input,question);
     case "reduce-free":       return gradeReduceFree(input,question);
-    case "mixed-review":      return gradeMixedReview(input,question);
     default:                  return false;
   }
 }
+
 
 

@@ -4,7 +4,6 @@ import { onSessionChange, onClassworkAnswersChange, getTeacherClasses, addToScor
 import {
   LESSON14_TOPICS, generateLesson14Question, gradeLesson14Answer,
   gradeClassifyItem, gradeImproperToMixedItem, gradeMixedToImproperItem,
-  gradeMixedReviewItem,
 } from "./lesson14Questions";
 
 const POINTS = 5;
@@ -243,18 +242,6 @@ function QuestionDisplay({ question: q, revealCorrect }) {
     </div>
   );
 
-  if (q.type === "reduce-mc") return (
-    <div style={{ textAlign: "center" }}>
-      <div style={{ fontSize: 32, fontWeight: 900, fontFamily: "var(--mono)", marginBottom: 14 }}>{q.n}/{q.d}</div>
-      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-        {q.options.map((opt, i) => (
-          <div key={i} style={{ background: revealCorrect && i === q.correctIdx ? "rgba(22,163,74,0.1)" : "var(--bg2)", borderRadius: "var(--radius-sm)", padding: "8px 14px", fontSize: 22, fontFamily: "var(--mono)", fontWeight: 700, border: revealCorrect && i === q.correctIdx ? "2px solid var(--green)" : "1px solid var(--border)" }}>
-            {String.fromCharCode(65 + i)}) {opt}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
 
   if (q.type === "reduce-free") return (
     <div style={{ textAlign: "center" }}>
@@ -263,23 +250,6 @@ function QuestionDisplay({ question: q, revealCorrect }) {
     </div>
   );
 
-  if (q.type === "mixed-review") {
-    if (!revealCorrect) return null;
-    const labels = { "identify": "Fraction", "classify": "Classify", "imp-to-mix": "Improper to Mixed", "mix-to-imp": "Mixed to Improper", "missing-equiv": "Equivalent Fraction", "reduce": "Reduce" };
-    return (
-      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-        {q.questions.map((item, i) => (
-          <div key={i} style={{ background: "var(--bg2)", borderRadius: "var(--radius-sm)", padding: "8px 14px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <div>
-              <span style={{ fontSize: 18, color: "var(--text3)", marginRight: 8 }}>{labels[item.subtype]}:</span>
-              <span style={{ fontFamily: "var(--mono)", fontSize: 20, fontWeight: 800 }}>{item.display}</span>
-            </div>
-            <span style={{ fontFamily: "var(--mono)", fontSize: 20, color: "var(--green)", fontWeight: 700 }}>{item.displayAnswer}</span>
-          </div>
-        ))}
-      </div>
-    );
-  }
 
   return null;
 }
@@ -330,32 +300,6 @@ function MultiTextInput({ items, labelFn, onSubmit, submitted, placeholder }) {
             <input value={answers[i]} onChange={e => setAnswers(prev => prev.map((x, j) => j === i ? e.target.value : x))}
               disabled={submitted} placeholder={placeholder || ""}
               style={{ textAlign: "center", fontSize: 20, fontFamily: "var(--mono)", fontWeight: 700, padding: "6px 10px", width: 140, borderRadius: "var(--radius-sm)", border: "1px solid var(--border)", background: "var(--surface)" }} />
-          </div>
-        ))}
-      </div>
-      <button className="btn btn-primary" style={{ width: "100%", fontSize: 20 }}
-        onClick={() => onSubmit(JSON.stringify(answers))} disabled={submitted || !allDone}>Submit All</button>
-    </div>
-  );
-}
-
-function MixedReviewInput({ question, onSubmit, submitted }) {
-  const [answers, setAnswers] = useState(question.questions.map(() => ""));
-  const allDone = answers.every(a => a.trim() !== "");
-  const labels = { "identify": "Fraction shown", "classify": "Classify", "imp-to-mix": "Mixed number", "mix-to-imp": "Improper fraction", "missing-equiv": "Missing number", "reduce": "Reduced fraction" };
-  const placeholders = { "identify": "e.g. 3/4", "classify": "zero/proper/one/improper", "imp-to-mix": "e.g. 2 1/3", "mix-to-imp": "e.g. 7/3", "missing-equiv": "Enter number", "reduce": "e.g. 2/3" };
-  return (
-    <div>
-      <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 12 }}>
-        {question.questions.map((item, i) => (
-          <div key={i} style={{ background: "var(--bg2)", borderRadius: "var(--radius-sm)", padding: "10px 14px" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 6 }}>
-              <span style={{ fontSize: 18, color: "var(--text3)", fontWeight: 600 }}>{labels[item.subtype]}:</span>
-              <span style={{ fontFamily: "var(--mono)", fontSize: 20, fontWeight: 800 }}>{item.display}</span>
-            </div>
-            <input value={answers[i]} onChange={e => setAnswers(prev => prev.map((x, j) => j === i ? e.target.value : x))}
-              disabled={submitted} placeholder={placeholders[item.subtype] || ""}
-              style={{ textAlign: "center", fontSize: 20, fontFamily: "var(--mono)", fontWeight: 700, padding: "6px 10px", width: "100%", borderRadius: "var(--radius-sm)", border: "1px solid var(--border)", background: "var(--surface)" }} />
           </div>
         ))}
       </div>
@@ -419,7 +363,7 @@ function MixedNumberInput({ onSubmit, submitted, label }) {
           onMouseDown={e => { e.preventDefault(); submitText(); }} disabled={submitted || !textVal.trim()}>OK</button>
       </div>
       <button className="btn btn-ghost btn-sm" style={{ width: "100%", fontSize: 18 }} onClick={() => setMode("visual")}>
-        Use visual input
+        Enter as mixed number &nbsp;<span style={{fontFamily:"var(--mono)",fontWeight:900}}>2 -/- </span>
       </button>
     </div>
   );
@@ -470,7 +414,7 @@ function ImproperToMixedInput({ question, onSubmit, submitted }) {
                 <input value={textAnswers[i]} onChange={e => setTextAnswers(prev => prev.map((x, j) => j === i ? e.target.value : x))}
                   disabled={submitted} placeholder="e.g. 2 1/3"
                   style={{ textAlign: "center", fontSize: 20, fontFamily: "var(--mono)", fontWeight: 700, padding: "6px 10px", width: 120, borderRadius: "var(--radius-sm)", border: "1px solid var(--border)", background: "var(--surface)" }} />
-                <button className="btn btn-ghost btn-sm" style={{ fontSize: 16 }} onClick={() => setMode(i, "visual")}>Visual</button>
+                <button className="btn btn-ghost btn-sm" style={{ fontSize: 16 }} onClick={() => setMode(i, "visual")}><span style={{fontFamily:"var(--mono)",fontWeight:900}}>2 -/-</span></button>
               </div>
             )}
           </div>
@@ -525,23 +469,12 @@ function AnswerInput({ question, onSubmit, submitted }) {
       <TextInput onSubmit={onSubmit} submitted={submitted} placeholder="e.g. 6/8" />
     </div>
   );
-  if (t === "reduce-mc") return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-      {question.options.map((opt, i) => (
-        <button key={i} onClick={() => !submitted && onSubmit(String(i))}
-          style={{ padding: "10px 16px", borderRadius: "var(--radius-sm)", border: "2px solid var(--border)", background: "var(--surface)", fontFamily: "var(--mono)", fontSize: 22, fontWeight: 700, cursor: "pointer", textAlign: "left" }}>
-          {String.fromCharCode(65 + i)}) {opt}
-        </button>
-      ))}
-    </div>
-  );
   if (t === "reduce-free") return (
     <div>
       <div style={{ fontSize: 19, color: "var(--text3)", marginBottom: 6, textAlign: "center" }}>Enter fraction in lowest terms</div>
       <TextInput onSubmit={onSubmit} submitted={submitted} placeholder="e.g. 3/4" />
     </div>
   );
-  if (t === "mixed-review") return <MixedReviewInput question={question} onSubmit={onSubmit} submitted={submitted} />;
   return null;
 }
 
@@ -551,7 +484,7 @@ function gradeAnswer(input, question) {
   return gradeLesson14Answer(input, question);
 }
 
-const MULTI_ITEM_TYPES = ["classify-fractions", "improper-to-mixed", "mixed-to-improper", "mixed-review"];
+const MULTI_ITEM_TYPES = ["classify-fractions", "improper-to-mixed", "mixed-to-improper"];
 
 // -- Teacher --
 function TeacherLesson14({ session, sessionId, uid }) {
@@ -783,7 +716,6 @@ function StudentLesson14({ session, sessionId, uid }) {
                         if (question.type === "classify-fractions") { itemOk = gradeClassifyItem(studentAns, item); correctAns = item.correct; }
                         else if (question.type === "improper-to-mixed") { itemOk = gradeImproperToMixedItem(studentAns, item); correctAns = item.displayAnswer; }
                         else if (question.type === "mixed-to-improper") { itemOk = gradeMixedToImproperItem(studentAns, item); correctAns = item.displayAnswer; }
-                        else if (question.type === "mixed-review") { itemOk = gradeMixedReviewItem(studentAns, item); correctAns = item.displayAnswer; }
                       } catch {}
                       const displayLabel = item.display || (item.num !== undefined ? `${item.num}/${item.den}` : `${item.whole} ${item.num}/${item.den}`);
                       return (
@@ -907,5 +839,6 @@ export default function Lesson14Session({ user, onHome }) {
 }
 
 export { TeacherLesson14 as Lesson14TeacherView, StudentLesson14 as Lesson14StudentView };
+
 
 
