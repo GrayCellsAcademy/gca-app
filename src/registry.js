@@ -27,6 +27,7 @@ import Lesson10MasteryPlayer from "./Lesson10MasteryPlayer";
 import Lesson11MasteryPlayer from "./Lesson11MasteryPlayer";
 import Lesson12MasteryPlayer, { PerfectSquares12Player } from "./Lesson12MasteryPlayer";
 import Lesson13MasteryPlayer, { PerfectSquares13Player } from "./Lesson13MasteryPlayer";
+import Lesson14MasteryPlayer, { PerfectCubesPlayer14 } from "./Lesson14MasteryPlayer";
 
 export const TOPICS = {
   "addition-tables-v1": {
@@ -210,6 +211,20 @@ export const TOPICS = {
     description: "Factors, multiples, GCF, LCM, and word problems.",
     subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 24,
     Player: Lesson13MasteryPlayer,
+  },
+  "perfect-cubes-v1": {
+    id: "perfect-cubes-v1",
+    title: "Perfect Cubes (1-5)",
+    description: "Memorize and drill perfect cubes 1- through 5-.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "drill", status: "published", order: 25,
+    Player: PerfectCubesPlayer14,
+  },
+  "lesson14-mastery-v1": {
+    id: "lesson14-mastery-v1",
+    title: "HW 14 (019)",
+    description: "Fraction pictures, classification, number lines, conversions, equivalent fractions, and reducing.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 26,
+    Player: Lesson14MasteryPlayer,
   },
   "lesson12-mastery-v1": {
     id: "lesson12-mastery-v1",
