@@ -762,7 +762,6 @@ const STEPS=[
   {id:"mix-to-imp",   label:"Mixed to Improper",        description:"4 fractions, all correct, 3 in a row",       streak:STREAK3},
   {id:"equiv",        label:"Equivalent Fractions",     description:"Missing numerator/denominator, 3 in a row",  streak:STREAK3},
   {id:"reduce",       label:"Reduce Fractions",         description:"Enter in lowest terms, 3 in a row",          streak:STREAK3},
-  {id:"mixed",        label:"Mixed Mastery",            description:"All skills, 8 problems, 3 in a row",         streak:STREAK3},
 ];
 
 export default function Lesson14MasteryPlayer({ user, topic, onHome }) {
@@ -828,7 +827,6 @@ export default function Lesson14MasteryPlayer({ user, topic, onHome }) {
           {step.id==="mix-to-imp"  &&<MixToImpMastery    key={stepIdx+"-"+streak} onCorrect={handleCorrect} onWrong={handleWrong}/>}
           {step.id==="equiv"       &&<EquivMastery        key={stepIdx+"-"+streak} onCorrect={handleCorrect} onWrong={handleWrong}/>}
           {step.id==="reduce"      &&<ReduceMastery       key={stepIdx+"-"+streak} onCorrect={handleCorrect} onWrong={handleWrong}/>}
-          {step.id==="mixed"       &&<MixedMastery        key={stepIdx+"-"+streak} onCorrect={handleCorrect} onWrong={handleWrong}/>}
         </div>
       </div>
     </div>
@@ -867,4 +865,5 @@ export function PerfectCubesPlayer14({ user, topic, onHome }) {
     </div>
   );
 }
+
 
