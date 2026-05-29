@@ -327,7 +327,7 @@ export function gradeDiffDirect(input,q){
 export function genDiffDenomNeg(){
   const problems=[];
   for(let i=0;i<4;i++){
-    const p=genDiffDenomNegHelper();
+    const p=genDiffDenomNeg();
     const display=displayProblem(p.n1,p.d1,p.n2,p.d2,p.op);
     problems.push({...p,display,answer:fmtFrac(p.rn,p.rd,true),displayAnswer:fmtFrac(p.rn,p.rd,true)});
   }
@@ -550,8 +550,4 @@ export function gradeLesson15Answer(input,question){
     default:                return false;
   }
 }
-
-
-
-
 
