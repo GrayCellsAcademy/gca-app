@@ -177,7 +177,7 @@ function genDiffDenomPair(){
   return {n1,d1,n2,d2,op,resNum,resDen:cd,rn,rd,lcd:cd};
 }
 
-function genDiffDenomNeg(){
+function genDiffDenomNegHelper(){
   const pairs=[[2,3],[3,4],[4,5],[5,6],[2,5],[3,7],[5,8]];
   const [d1,d2]=randChoice(pairs);
   const combos=["+-","--","pos-neg","neg+pos"];
@@ -327,7 +327,7 @@ export function gradeDiffDirect(input,q){
 export function genDiffDenomNeg(){
   const problems=[];
   for(let i=0;i<4;i++){
-    const p=genDiffDenomNeg();
+    const p=genDiffDenomNegHelper();
     const display=displayProblem(p.n1,p.d1,p.n2,p.d2,p.op);
     problems.push({...p,display,answer:fmtFrac(p.rn,p.rd,true),displayAnswer:fmtFrac(p.rn,p.rd,true)});
   }
@@ -550,4 +550,7 @@ export function gradeLesson15Answer(input,question){
     default:                return false;
   }
 }
+
+
+
 
