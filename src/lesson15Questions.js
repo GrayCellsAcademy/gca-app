@@ -148,7 +148,7 @@ function genCommonDenomPair(requireSimplify=false){
     :{n1:2,n2:3,den:7,op:"+",resNum:5,resDen:7};
 }
 
-function genCommonDenomNeg(){
+function genCommonDenomNegHelper(){
   // Result is negative or crosses zero
   const den=randChoice([3,5,7,9]);
   const combos=[
@@ -250,7 +250,7 @@ export function gradeCommonSimplify(input,q){
 export function genCommonDenomNeg(){
   const problems=[];
   for(let i=0;i<4;i++){
-    const p=genCommonDenomNeg();
+    const p=genCommonDenomNegHelper();
     const display=displayProblem(p.n1,p.den,p.n2,p.den,p.op);
     problems.push({...p,display,answer:fmtFrac(p.rn,p.rd),displayAnswer:fmtFrac(p.rn,p.rd)});
   }
