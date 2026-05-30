@@ -157,25 +157,25 @@ function QuestionDisplay({ question: q, revealCorrect }) {
 
   if (q.type === "warmup-a") return (
     <div style={{ textAlign: "center" }}>
-      <KaTeX expr={fracToKatex("24/36")} block />
+      <KaTeX expr={fracToKatex(q.n + "/" + q.d)} block />
       {revealCorrect && <div style={{ color: "var(--green)", fontWeight: 800 }}><KaTeX expr={fracToKatex(q.displayAnswer)} block /></div>}
     </div>
   );
   if (q.type === "warmup-b") return (
     <div style={{ textAlign: "center" }}>
-      <KaTeX expr={fracToKatex("3 2/5")} block />
+      <KaTeX expr={fracToKatex(q.whole + " " + q.num + "/" + q.den)} block />
       {revealCorrect && <div style={{ color: "var(--green)", fontWeight: 800 }}><KaTeX expr={fracToKatex(q.displayAnswer)} block /></div>}
     </div>
   );
   if (q.type === "warmup-c") return (
     <div style={{ textAlign: "center" }}>
-      <KaTeX expr={fracToKatex("17/3")} block />
+      <KaTeX expr={fracToKatex(q.num + "/" + q.den)} block />
       {revealCorrect && <div style={{ color: "var(--green)", fontWeight: 800 }}><KaTeX expr={fracToKatex(q.displayAnswer)} block /></div>}
     </div>
   );
   if (q.type === "warmup-d") return (
     <div style={{ textAlign: "center" }}>
-      <KaTeX expr={fracToKatex("5/8") + " = " + fracToKatex("?/24")} block />
+      <KaTeX expr={fracToKatex(q.n1 + "/" + q.d1) + " = " + fracToKatex("?" + "/" + q.d2)} block />
       {revealCorrect && <div style={{ color: "var(--green)", fontWeight: 800, fontSize: 22 }}>? = {q.displayAnswer}</div>}
     </div>
   );
@@ -254,10 +254,10 @@ function AnswerInput({ question, onSubmit, submitted }) {
   if (!question) return null;
   const t = question.type;
 
-  if (t === "warmup-a") return <TextInput onSubmit={onSubmit} submitted={submitted} placeholder="e.g. 2/3" />;
-  if (t === "warmup-b") return <TextInput onSubmit={onSubmit} submitted={submitted} placeholder="e.g. 17/5" />;
-  if (t === "warmup-c") return <MixedInput onSubmit={onSubmit} submitted={submitted} placeholder="e.g. 5 2/3" />;
-  if (t === "warmup-d") return <TextInput onSubmit={onSubmit} submitted={submitted} placeholder="Enter missing numerator" />;
+  if (t === "warmup-a") return <TextInput onSubmit={onSubmit} submitted={submitted} placeholder="" />;
+  if (t === "warmup-b") return <TextInput onSubmit={onSubmit} submitted={submitted} placeholder="" />;
+  if (t === "warmup-c") return <MixedInput onSubmit={onSubmit} submitted={submitted} placeholder="" />;
+  if (t === "warmup-d") return <TextInput onSubmit={onSubmit} submitted={submitted} placeholder="" />;
 
   const SIMUL_FRAC = ["common-simple","common-simplify","common-neg","diff-direct","diff-neg"];
   if (SIMUL_FRAC.includes(t)) {

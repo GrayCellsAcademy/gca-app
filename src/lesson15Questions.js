@@ -95,24 +95,38 @@ function answerMatches(input, correctNum, correctDen){
   return rn===in_&&rd===id_;
 }
 
-// - Warm-up A: Reduce 24/36 -
+// - Warm-up A: Reduce a fraction (random GCF > 1) -
 export function genWarmupA(){
-  return {type:"warmup-a",n:24,d:36,rn:2,rd:3,answer:"2/3",displayAnswer:"2/3",prompt:"Reduce 24/36 to lowest terms."};
+  const pool=[{n:24,d:36,rn:2,rd:3},{n:18,d:24,rn:3,rd:4},{n:20,d:30,rn:2,rd:3},
+    {n:15,d:25,rn:3,rd:5},{n:12,d:18,rn:2,rd:3},{n:16,d:24,rn:2,rd:3},
+    {n:10,d:15,rn:2,rd:3},{n:14,d:21,rn:2,rd:3},{n:9,d:12,rn:3,rd:4},{n:8,d:20,rn:2,rd:5}];
+  const p=randChoice(pool);
+  return {type:"warmup-a",n:p.n,d:p.d,rn:p.rn,rd:p.rd,answer:`${p.rn}/${p.rd}`,displayAnswer:`${p.rn}/${p.rd}`,prompt:`Reduce ${p.n}/${p.d} to lowest terms.`};
 }
 export function gradeWarmupA(input,q){ return answerMatches(input,q.rn,q.rd); }
 
-// - Warm-up B: Mixed to improper 3 2/5 -
+// - Warm-up B: Mixed to improper (random) -
 export function genWarmupB(){
-  return {type:"warmup-b",whole:3,num:2,den:5,imp:17,answer:"17/5",displayAnswer:"17/5",prompt:"Convert 3 2/5 to an improper fraction."};
+  const pool=[{whole:3,num:2,den:5},{whole:2,num:3,den:4},{whole:4,num:1,den:3},
+    {whole:5,num:2,den:7},{whole:3,num:5,den:6},{whole:2,num:4,den:9},
+    {whole:4,num:3,den:8},{whole:6,num:1,den:5},{whole:3,num:2,den:7},{whole:5,num:3,den:4}];
+  const p=randChoice(pool);
+  const imp=p.whole*p.den+p.num;
+  return {type:"warmup-b",whole:p.whole,num:p.num,den:p.den,imp,answer:`${imp}/${p.den}`,displayAnswer:`${imp}/${p.den}`,prompt:`Convert ${p.whole} ${p.num}/${p.den} to an improper fraction.`};
 }
 export function gradeWarmupB(input,q){
   const m=String(input).trim().match(/^(\d+)\/(\d+)$/);
   return m&&parseInt(m[1])===q.imp&&parseInt(m[2])===q.den;
 }
 
-// - Warm-up C: Improper to mixed 17/3 -
+// - Warm-up C: Improper to mixed (random) -
 export function genWarmupC(){
-  return {type:"warmup-c",num:17,den:3,whole:5,rem:2,answer:"5 2/3",displayAnswer:"5 2/3",prompt:"Convert 17/3 to a mixed number."};
+  const pool=[{num:17,den:3},{num:11,den:4},{num:8,den:5},{num:13,den:6},
+    {num:19,den:7},{num:15,den:4},{num:22,den:5},{num:11,den:3},
+    {num:17,den:6},{num:13,den:4},{num:23,den:8},{num:14,den:3}];
+  const p=randChoice(pool);
+  const whole=Math.floor(p.num/p.den),rem=p.num%p.den;
+  return {type:"warmup-c",num:p.num,den:p.den,whole,rem,answer:`${whole} ${rem}/${p.den}`,displayAnswer:`${whole} ${rem}/${p.den}`,prompt:`Convert ${p.num}/${p.den} to a mixed number.`};
 }
 export function gradeWarmupC(input,q){
   const s=String(input).trim().replace(/\s*-\s*/g," ");
@@ -120,11 +134,16 @@ export function gradeWarmupC(input,q){
   return m&&parseInt(m[1])===q.whole&&parseInt(m[2])===q.rem&&parseInt(m[3])===q.den;
 }
 
-// - Warm-up D: Equivalent fraction 5/8 = ?/24 -
+// - Warm-up D: Equivalent fraction - find missing numerator or denominator (random) -
 export function genWarmupD(){
-  return {type:"warmup-d",n1:5,d1:8,d2:24,answer:"15",displayAnswer:"15",prompt:"Find the missing numerator: 5/8 = ?/24"};
+  const pool=[{n1:5,d1:8,d2:24},{n1:2,d1:3,d2:12},{n1:3,d1:4,d2:20},
+    {n1:1,d1:6,d2:18},{n1:4,d1:5,d2:25},{n1:3,d1:7,d2:21},
+    {n1:2,d1:9,d2:27},{n1:5,d1:6,d2:30},{n1:3,d1:8,d2:32},{n1:7,d1:10,d2:40}];
+  const p=randChoice(pool);
+  const n2=p.n1*(p.d2/p.d1);
+  return {type:"warmup-d",n1:p.n1,d1:p.d1,d2:p.d2,n2,answer:String(n2),displayAnswer:String(n2),prompt:`Find the missing numerator: ${p.n1}/${p.d1} = ?/${p.d2}`};
 }
-export function gradeWarmupD(input,q){ return parseInt(String(input).trim())===15; }
+export function gradeWarmupD(input,q){ return parseInt(String(input).trim())===q.n2; }
 
 // - Helpers for generating fraction arithmetic -
 const SIMPLE_DENOMS=[3,4,5,6,7,8,9,10,12];
