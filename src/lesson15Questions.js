@@ -152,12 +152,12 @@ function genCommonDenomNegHelper(){
   // Result is negative or crosses zero
   const den=randChoice([3,5,7,9]);
   const combos=[
-    ()=>{const n1=randInt(1,den-1),n2=randInt(n1+1,den);return{n1,n2,den,op:"+",neg1:false,neg2:true};},
-    ()=>{const n1=randInt(1,den-1),n2=randInt(1,den-1);return{n1,n2,den,op:"+",neg1:true,neg2:true};},
-    ()=>{const n1=randInt(1,den-2),n2=randInt(n1+1,den-1);return{n1,n2,den,op:"-",neg1:false,neg2:false};},
-    ()=>{const n1=randInt(1,den-1),n2=randInt(1,den-1);return{n1,n2,den,op:"-",neg1:true,neg2:false};},
+    ()=>{const n1=randInt(1,den-1),n2=randInt(n1+1,den);return{n1,n2,op:"+",neg1:false,neg2:true};},
+    ()=>{const n1=randInt(1,den-1),n2=randInt(1,den-1);return{n1,n2,op:"+",neg1:true,neg2:true};},
+    ()=>{const n1=randInt(1,den-2),n2=randInt(n1+1,den-1);return{n1,n2,op:"-",neg1:false,neg2:false};},
+    ()=>{const n1=randInt(1,den-1),n2=randInt(1,den-1);return{n1,n2,op:"-",neg1:true,neg2:false};},
   ];
-  const {n1,n2,den,op,neg1,neg2}=randChoice(combos)();
+  const {n1,n2,op,neg1,neg2}=randChoice(combos)();
   const a=neg1?-n1:n1, b=neg2?-n2:n2;
   const res=op==="+"?a+b:a-b;
   const [rn,rd]=reduce(res,den);
