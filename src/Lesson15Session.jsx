@@ -157,25 +157,25 @@ function QuestionDisplay({ question: q, revealCorrect }) {
 
   if (q.type === "warmup-a") return (
     <div style={{ textAlign: "center" }}>
-      <KaTeX expr="\\dfrac{24}{36}" block />
+      <KaTeX expr={fracToKatex("24/36")} block />
       {revealCorrect && <div style={{ color: "var(--green)", fontWeight: 800 }}><KaTeX expr={fracToKatex(q.displayAnswer)} block /></div>}
     </div>
   );
   if (q.type === "warmup-b") return (
     <div style={{ textAlign: "center" }}>
-      <KaTeX expr="3\\dfrac{2}{5}" block />
+      <KaTeX expr={fracToKatex("3 2/5")} block />
       {revealCorrect && <div style={{ color: "var(--green)", fontWeight: 800 }}><KaTeX expr={fracToKatex(q.displayAnswer)} block /></div>}
     </div>
   );
   if (q.type === "warmup-c") return (
     <div style={{ textAlign: "center" }}>
-      <KaTeX expr="\\dfrac{17}{3}" block />
+      <KaTeX expr={fracToKatex("17/3")} block />
       {revealCorrect && <div style={{ color: "var(--green)", fontWeight: 800 }}><KaTeX expr={fracToKatex(q.displayAnswer)} block /></div>}
     </div>
   );
   if (q.type === "warmup-d") return (
     <div style={{ textAlign: "center" }}>
-      <KaTeX expr="\\dfrac{5}{8} = \\dfrac{?}{24}" block />
+      <KaTeX expr={fracToKatex("5/8") + " = " + fracToKatex("?/24")} block />
       {revealCorrect && <div style={{ color: "var(--green)", fontWeight: 800, fontSize: 22 }}>? = {q.displayAnswer}</div>}
     </div>
   );
@@ -210,7 +210,7 @@ function QuestionDisplay({ question: q, revealCorrect }) {
       <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
         {q.problems.map((p, i) => (
           <div key={i} style={{ background: "var(--bg2)", borderRadius: "var(--radius-sm)", padding: "8px 14px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <KaTeX expr={`\\frac{1}{${p.d1}} \\text{ and } \\frac{1}{${p.d2}}`} />
+            <KaTeX expr={fracToKatex("1/" + p.d1) + " \\text{ and } " + fracToKatex("1/" + p.d2)} />
             {revealCorrect && <span style={{ fontFamily: "var(--mono)", fontSize: 20, color: "var(--green)", fontWeight: 700 }}>{p.displayAnswer}</span>}
           </div>
         ))}
