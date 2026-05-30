@@ -370,7 +370,7 @@ function StudentReveal({ result, question }) {
 
 function gradeAnswer(input, question) {
   if (!input || !question) return false;
-  return gradeLesson15Answer(input, question);
+  try { return gradeLesson15Answer(input, question); } catch { return false; }
 }
 
 const MULTI_ITEM_TYPES = ["common-simple","common-simplify","common-neg","diff-direct","diff-neg","add-mixed-simple","sub-mixed-simple","add-mixed-carry","sub-mixed-borrow","whole-frac","find-cd","mixed-review"];
@@ -387,7 +387,8 @@ function TeacherLesson15({ session, sessionId, uid }) {
 
   useEffect(() => {
     if (!question?.id) return;
-    setAnswers([]); revealedRef.current = false;
+    setAnswers([]);
+    revealedRef.current = false;
     const unsub = onClassworkAnswersChange(sessionId, question.id, setAnswers);
     return () => unsub();
   }, [question?.id]);
@@ -398,15 +399,15 @@ function TeacherLesson15({ session, sessionId, uid }) {
       const q = generateLesson15Question(LESSON15_TOPICS[idx].id);
       const qId = "q_" + Date.now().toString(36);
       q.id = qId; q.points = POINTS;
-      // Strip any undefined values Firestore can't handle
       const safeQ = JSON.parse(JSON.stringify(q));
-      revealedRef.current = false; setAnswers([]);
+      setAnswers([]); // clear immediately before Firestore write
+      revealedRef.current = false;
       await updateDoc(doc(db, "sessions", sessionId), {
         status: "question", currentQuestion: safeQ,
         timerSeconds: timerInput, timerEndsAt: Date.now() + timerInput * 1000,
         questionCount: (session.questionCount || 0) + 1,
       });
-    } catch(e) { console.error("handleGenerate error:", e); alert("Error generating question: " + e.message); }
+    } catch(e) { console.error("handleGenerate error:", e); alert("Error: " + e.message); }
   };
 
   const handleReveal = async () => {
@@ -424,7 +425,7 @@ function TeacherLesson15({ session, sessionId, uid }) {
 
   const isMulti = MULTI_ITEM_TYPES.includes(question?.type);
   const submittedCount = answers.length;
-  const correctCount = answers.filter(a => gradeAnswer(a.answer, question)).length;
+  const correctCount = question ? answers.filter(a => { try { return gradeAnswer(a.answer, question); } catch { return false; } }).length : 0;
 
   return (
     <div style={{ maxWidth: 1100, margin: "0 auto" }}>
@@ -516,7 +517,7 @@ function TeacherLesson15({ session, sessionId, uid }) {
                   {Object.entries(participants).map(([pUid, p]) => {
                     const ans = answers.find(a => a.uid === pUid);
                     const has = ans?.answer !== undefined && ans?.answer !== "";
-                    const correct = has && gradeAnswer(ans.answer, question);
+                    const correct = has && (() => { try { return gradeAnswer(ans.answer, question); } catch { return false; } })();
                     return (
                       <div key={pUid} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "var(--bg2)", borderRadius: "var(--radius-sm)", padding: "7px 12px", border: "1px solid " + (has ? (correct ? "rgba(22,163,74,0.3)" : "rgba(239,68,68,0.3)") : "var(--border)") }}>
                         <span style={{ fontWeight: 600, fontSize: 20 }}>{p.name}</span>
