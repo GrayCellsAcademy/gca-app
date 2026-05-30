@@ -33,13 +33,13 @@ function KaTeX({ expr, block }) {
 
 // Convert "2/3 + 1/4" style strings to KaTeX
 function fracToKatex(str) {
-  if (!str) return str;
+  if (!str && str !== 0) return "";
   const bs = "\\";
   let s = String(str);
   // Mixed: "-1 2/3" or "1 2/3"
   s = s.replace(/(-?)(\d+)\s+(\d+)\/(\d+)/g, (_, neg, w, n, d) => `${neg}${w}${bs}dfrac{${n}}{${d}}`);
-  // Simple fraction: "-3/4" or "3/4"
-  s = s.replace(/(-?)(\d+)\/(\d+)/g, (_, neg, n, d) => `${neg}${bs}dfrac{${n}}{${d}}`);
+  // Simple fraction: "-3/4" or "3/4" or "?/24"
+  s = s.replace(/(-?)(\d+|\?)\/(\d+)/g, (_, neg, n, d) => `${neg}${bs}dfrac{${n}}{${d}}`);
   // operators
   s = s.replace(/\s\+\s\(-/g, ` + ${bs}left(-`).replace(/\)\s/g, `${bs}right) `);
   return s;
@@ -128,8 +128,10 @@ function MixedInput({ onSubmit, submitted, placeholder }) {
 
 // -- Multi-row text input (for simultaneous problems) --
 function MultiTextInput({ items, labelFn, onSubmit, submitted, placeholder, wide }) {
-  const [answers, setAnswers] = useState(items.map(() => ""));
+  const safeItems = items || [];
+  const [answers, setAnswers] = useState(safeItems.map(() => ""));
   const allDone = answers.every(a => a.trim() !== "");
+  if (!safeItems.length) return null;
   return (
     <div>
       <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 12 }}>
@@ -295,9 +297,10 @@ function AnswerInput({ question, onSubmit, submitted }) {
 
 // Simultaneous fraction entries sharing state via parent - use a wrapper
 function SimulFracEntryGroup({ question, onSubmit, submitted }) {
-  const items = question.problems;
+  const items = question?.problems || [];
   const [answers, setAnswers] = useState(items.map(() => ""));
   const allDone = answers.every(a => a.trim() !== "");
+  if (!items.length) return null;
   return (
     <div>
       <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 12 }}>
@@ -347,7 +350,7 @@ function StudentReveal({ result, question }) {
       </div>
       {isMulti ? (
         <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-          {(question.problems || question.questions || []).map((item, i) => {
+          {(question?.problems || question?.questions || []).map((item, i) => {
             let studentAns = "", correctAns = item.displayAnswer || item.answer, itemOk = false;
             try {
               const parsed = JSON.parse(result.answer);
