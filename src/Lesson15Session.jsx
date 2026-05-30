@@ -4,7 +4,7 @@ import { onSessionChange, onClassworkAnswersChange, getTeacherClasses, addToScor
 import {
   LESSON15_TOPICS, generateLesson15Question, gradeLesson15Answer,
   gradeCommonSimpleItem, gradeCommonSimplifyItem, gradeCommonNegItem,
-  gradeFindCDItem, gradeStagedCDStage,
+  gradeFindCDItem,
   gradeDiffDirectItem, gradeDiffNegItem,
   gradeAddMixedSimpleItem, gradeSubMixedSimpleItem,
   gradeAddMixedCarryItem, gradeSubMixedBorrowItem,
@@ -135,91 +135,7 @@ function MultiTextInput({ items, labelFn, onSubmit, submitted, placeholder, wide
 }
 
 // -- Staged CD input --
-function StagedCDInput({ question, onSubmit, submitted }) {
-  const [stage, setStage] = useState(1);
-  const [input, setInput] = useState("");
-  const [feedback, setFeedback] = useState(null);
-  const [stageAnswers, setStageAnswers] = useState({});
-  const ref = useRef(null);
 
-  const stageLabels = {
-    1: "Enter a common denominator",
-    2: "What do you multiply the top & bottom of the 1st fraction by?",
-    3: `Enter the 1st fraction converted (${question.n1}/${question.d1} with new denominator)`,
-    4: "What do you multiply the top & bottom of the 2nd fraction by?",
-    5: `Enter the 2nd fraction converted (${question.n2}/${question.d2} with new denominator)`,
-    6: "Enter the sum/difference (unsimplified is OK)",
-    7: "Simplify your answer (if already simplified, enter the same fraction)",
-  };
-  const stageAnswerLabels = {
-    1: `Any common denominator (e.g. ${question.lcd})`,
-    2: `Multiply by ${question.mult1}`,
-    3: `${question.conv1n}/${question.lcd}`,
-    4: `Multiply by ${question.mult2}`,
-    5: `${question.conv2n}/${question.lcd}`,
-    6: `${question.resNum}/${question.resDen}`,
-    7: question.displayAnswer,
-  };
-  const needsMixed = stage === 7;
-
-  const handleStageSubmit = (val) => {
-    const ok = gradeStagedCDStage(stage, val, question);
-    setFeedback({ correct: ok, val, correctLabel: stageAnswerLabels[stage] });
-    if (ok) {
-      setStageAnswers(prev => ({ ...prev, [stage]: val }));
-      if (stage === 7) { onSubmit(val); }
-    }
-  };
-
-  const handleNext = () => {
-    if (feedback?.correct) { setStage(s => s + 1); }
-    setFeedback(null); setInput("");
-    setTimeout(() => ref.current?.focus(), 80);
-  };
-
-  return (
-    <div>
-      <div style={{ marginBottom: 10 }}>
-        <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 10 }}>
-          {[1,2,3,4,5,6,7].map(s => (
-            <div key={s} style={{ fontSize: 17, fontWeight: 700, padding: "2px 8px", borderRadius: 99,
-              background: s < stage ? "rgba(22,163,74,0.12)" : s === stage ? "rgba(27,143,255,0.12)" : "var(--surface)",
-              color: s < stage ? "var(--green)" : s === stage ? "var(--blue)" : "var(--text3)",
-              border: "1px solid " + (s < stage ? "rgba(22,163,74,0.3)" : s === stage ? "rgba(27,143,255,0.3)" : "var(--border)") }}>
-              {s < stage ? "-" : `Step ${s}`}
-            </div>
-          ))}
-        </div>
-        <div style={{ fontSize: 20, fontWeight: 700, color: "var(--blue)", marginBottom: 10 }}>
-          Step {stage}: {stageLabels[stage]}
-        </div>
-        {Object.entries(stageAnswers).map(([s, v]) => (
-          <div key={s} style={{ fontSize: 18, color: "var(--text3)", marginBottom: 2 }}>
-            Step {s}: <span style={{ fontFamily: "var(--mono)", fontWeight: 700, color: "var(--green)" }}>{v}</span>
-          </div>
-        ))}
-      </div>
-      {feedback ? (
-        <div style={{ textAlign: "center" }}>
-          <div style={{ fontSize: 22, fontWeight: 800, color: feedback.correct ? "var(--green)" : "var(--red)", marginBottom: 8 }}>{feedback.correct ? "Correct!" : "Incorrect"}</div>
-          {!feedback.correct && <div style={{ fontSize: 19, color: "var(--text2)", marginBottom: 10 }}>Correct: <strong style={{ fontFamily: "var(--mono)" }}>{feedback.correctLabel}</strong></div>}
-          {stage < 7 && <button className="btn btn-primary" style={{ width: "100%", fontSize: 20 }} onClick={handleNext}>{feedback.correct ? `Next: Step ${stage + 1}` : "Try Again"}</button>}
-        </div>
-      ) : needsMixed ? (
-        <MixedInput onSubmit={handleStageSubmit} submitted={false} placeholder="e.g. 5/6 or 1 1/2" />
-      ) : (
-        <div style={{ display: "flex", gap: 8, justifyContent: "center" }}>
-          <input ref={ref} value={input} onChange={e => setInput(e.target.value)}
-            onKeyDown={e => e.key === "Enter" && input.trim() && handleStageSubmit(input.trim())}
-            placeholder={stage <= 2 || stage === 4 ? "Enter number" : "e.g. 3/4"} autoFocus
-            style={{ textAlign: "center", fontSize: 22, fontFamily: "var(--mono)", fontWeight: 700, padding: "10px", width: 180 }} />
-          <button className="btn btn-primary" style={{ fontSize: 20, padding: "10px 20px" }}
-            onClick={() => handleStageSubmit(input.trim())} disabled={!input.trim()}>OK</button>
-        </div>
-      )}
-    </div>
-  );
-}
 
 // -- QuestionDisplay --
 function QuestionDisplay({ question: q, revealCorrect }) {
@@ -332,7 +248,7 @@ function AnswerInput({ question, onSubmit, submitted }) {
   if (t === "find-cd") {
     return <MultiTextInput items={question.problems} labelFn={p => `1/${p.d1} and 1/${p.d2}`} onSubmit={onSubmit} submitted={submitted} placeholder="Enter CD" />;
   }
-  if (t === "staged-cd") return <StagedCDInput question={question} onSubmit={onSubmit} submitted={submitted} />;
+  if (t === "staged-cd") return <MixedInput onSubmit={onSubmit} submitted={submitted} placeholder="e.g. 5/6 or 1 1/2" />;
 
   if (t === "mixed-review") {
     const [answers, setAnswers] = useState(question.questions.map(() => ""));
@@ -496,7 +412,6 @@ function TeacherLesson15({ session, sessionId, uid }) {
   };
 
   const isMulti = MULTI_ITEM_TYPES.includes(question?.type);
-  const isStaged = question?.type === "staged-cd";
   const submittedCount = answers.length;
   const correctCount = answers.filter(a => gradeAnswer(a.answer, question)).length;
 
@@ -515,7 +430,7 @@ function TeacherLesson15({ session, sessionId, uid }) {
               <input type="number" min={15} max={600} value={timerInput} onChange={e => setTimerInput(Number(e.target.value))}
                 style={{ width: 70, padding: "6px 10px", fontSize: 20, textAlign: "center" }} />
             </div>
-            {session.status === "question" && !isStaged && <button className="btn btn-ghost" onClick={handleReveal}>Reveal</button>}
+            {session.status === "question" && <button className="btn btn-ghost" onClick={handleReveal}>Reveal</button>}
             {session.status === "revealing" && (
               <>
                 <button className="btn btn-ghost" onClick={() => handleGenerate()}>Repeat</button>
@@ -568,13 +483,13 @@ function TeacherLesson15({ session, sessionId, uid }) {
                 </div>
                 {question.prompt && <div style={{ fontSize: 20, color: "var(--text2)", marginBottom: 8 }}>{question.prompt}</div>}
                 <QuestionDisplay question={question} revealCorrect={session.status === "revealing"} />
-                {session.status === "question" && session.timerEndsAt && !isStaged && (
+                {session.status === "question" && session.timerEndsAt && (
                   <div style={{ marginTop: 12 }}>
                     <TimerBar endsAt={session.timerEndsAt} totalSeconds={session.timerSeconds}
                       onExpired={async () => { if (!revealedRef.current) await handleReveal(); }} />
                   </div>
                 )}
-                {session.status === "revealing" && !isMulti && !isStaged && (
+                {session.status === "revealing" && !isMulti && (
                   <div style={{ marginTop: 12, background: "rgba(22,163,74,0.06)", border: "1px solid rgba(22,163,74,0.2)", borderRadius: "var(--radius-sm)", padding: "12px 16px" }}>
                     <div style={{ fontSize: 20, color: "var(--text3)", marginBottom: 4 }}>Correct answer</div>
                     <div style={{ fontSize: 22, fontWeight: 800, color: "var(--green)", fontFamily: "var(--mono)" }}>{question.displayAnswer}</div>
@@ -647,7 +562,6 @@ function StudentLesson15({ session, sessionId, uid }) {
   );
 
   const isMulti = MULTI_ITEM_TYPES.includes(question?.type);
-  const isStaged = question?.type === "staged-cd";
 
   return (
     <div style={{ maxWidth: 640, margin: "0 auto" }}>
@@ -655,7 +569,7 @@ function StudentLesson15({ session, sessionId, uid }) {
         <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-sm)", padding: "5px 12px", fontSize: 20, fontWeight: 700 }}>Score: {myScore} pts</div>
       </div>
       <div className="card" key={question?.id || "waiting"}>
-        {session.status === "question" && session.timerEndsAt && !submitted && !isStaged && (
+        {session.status === "question" && session.timerEndsAt && !submitted && (
           <TimerBar endsAt={session.timerEndsAt} totalSeconds={session.timerSeconds} />
         )}
         {question && (

@@ -265,7 +265,12 @@ export function gradeCommonNeg(input,q){
 
 // - A4: Find a common denominator (5 problems, free response) -
 export function genFindCommonDenom(){
-  const pairs=[[2,3],[3,4],[2,5],[3,5],[4,6],[5,6],[3,8],[4,9],[2,7],[5,8]];
+  // Mix of coprime and non-coprime pairs
+  const pairs=[
+    [2,3],[3,4],[2,5],[3,5],[2,7],[5,8],   // coprime
+    [4,6],[6,9],[4,8],[6,10],[9,12],[4,12], // non-coprime (share factor)
+    [3,9],[2,6],[4,10],[6,8],               // one divides into the other or share factor
+  ];
   const prob=shuffle(pairs).slice(0,5).map(([d1,d2])=>({d1,d2,lcd:lcm(d1,d2),answer:String(lcm(d1,d2)),displayAnswer:`any multiple of ${lcm(d1,d2)} (e.g. ${lcm(d1,d2)})`}));
   return {type:"find-cd",problems:prob,prompt:"Enter any common denominator for each pair."};
 }
@@ -277,33 +282,28 @@ export function gradeFindCD(input,q){
   try{const ans=JSON.parse(input);return q.problems.every((p,i)=>gradeFindCDItem(ans[i],p));}catch{return false;}
 }
 
-// - A5: Staged conversion to common denominator -
+// - A5: Add/subtract with different denominators (direct, includes non-coprime) -
 export function genStagedCD(){
-  const p=genDiffDenomPair();
-  // Ensure positive simple case for step-by-step
-  const {n1,d1,n2,d2,op,lcd,resNum,resDen,rn,rd}=p;
-  const mult1=lcd/d1, mult2=lcd/d2;
-  const conv1n=n1*mult1, conv2n=n2*mult2;
+  // Pool includes non-coprime pairs
+  const pairs=[
+    [2,3],[3,4],[2,5],[3,5],[4,5],[5,6],[3,8],[5,8],[2,7], // coprime
+    [4,6],[6,9],[4,8],[3,9],[6,10],[4,12],[6,8],           // non-coprime
+  ];
+  const [d1,d2]=randChoice(pairs);
+  const op=randChoice(["+","-"]);
+  const n1=randInt(1,d1-1), n2=randInt(1,d2-1);
+  const cd=lcm(d1,d2);
+  const resNum=op==="+"?n1*(cd/d1)+n2*(cd/d2):n1*(cd/d1)-n2*(cd/d2);
+  const [rn,rd]=reduce(resNum,cd);
   return {
-    type:"staged-cd",n1,d1,n2,d2,op,lcd,mult1,mult2,conv1n,conv2n,
-    resNum,resDen,rn,rd,
+    type:"staged-cd",n1,d1,n2,d2,op,lcd:cd,resNum,resDen:cd,rn,rd,
     display:`${n1}/${d1} ${op} ${n2}/${d2}`,
     displayAnswer:fmtFrac(rn,rd,true),
   };
 }
 export function gradeStagedCDStage(stage,input,q){
-  const v=parseInt(String(input).trim());
-  const s=String(input).trim();
-  switch(stage){
-    case 1: return Number.isInteger(v)&&v>0&&v%q.d1===0&&v%q.d2===0;
-    case 2: { const cd=v; return cd===q.lcd; } // accept if matches lcd (simplest)
-    case 3: return answerMatches(s,q.conv1n,q.lcd);
-    case 4: return v===q.mult2;
-    case 5: return answerMatches(s,q.conv2n,q.lcd);
-    case 6: return answerMatches(s,q.resNum,q.resDen);
-    case 7: return answerMatches(s,q.rn,q.rd);
-    default: return false;
-  }
+  // Kept for backwards compatibility but A5 now just grades the final answer
+  return answerMatches(String(input).trim(),q.rn,q.rd);
 }
 
 // - A6: Different denominators direct (4 simultaneous) -
