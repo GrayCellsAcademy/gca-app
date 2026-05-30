@@ -245,23 +245,6 @@ function AnswerInput({ question, onSubmit, submitted }) {
   if (t === "warmup-c") return <MixedInput onSubmit={onSubmit} submitted={submitted} placeholder="" />;
   if (t === "warmup-d") return <TextInput onSubmit={onSubmit} submitted={submitted} placeholder="" />;
 
-  const SIMUL_FRAC = ["common-simple","common-simplify","common-neg","diff-direct","diff-neg"];
-  if (SIMUL_FRAC.includes(t)) {
-    const items = question.problems;
-    return (
-      <div>
-        <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 12 }}>
-          {items.map((item, i) => (
-            <div key={i} style={{ background: "var(--bg2)", borderRadius: "var(--radius-sm)", padding: "10px 14px", display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-              <span style={{ flex: 1 }}><KaTeX expr={fracToKatex(item.display)} /></span>
-              <SimulFracEntry i={i} question={question} onSubmit={onSubmit} submitted={submitted} />
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
   const SIMUL_MIXED = ["add-mixed-simple","sub-mixed-simple","add-mixed-carry","sub-mixed-borrow","whole-frac"];
   if (SIMUL_MIXED.includes(t)) {
     return <MultiTextInput items={question.problems} labelFn={p => p.display} onSubmit={onSubmit} submitted={submitted} placeholder="e.g. 3 2/3" wide />;
@@ -272,27 +255,29 @@ function AnswerInput({ question, onSubmit, submitted }) {
   }
   if (t === "staged-cd") return <MixedInput onSubmit={onSubmit} submitted={submitted} placeholder="e.g. 5/6 or 1 1/2" />;
 
-  if (t === "mixed-review") {
-    const [answers, setAnswers] = useState(question.questions.map(() => ""));
-    const allDone = answers.every(a => a.trim() !== "");
-    return (
-      <div>
-        <div style={{ display: "flex", flexDirection: "column", gap: 7, marginBottom: 12 }}>
-          {question.questions.map((item, i) => (
-            <div key={i} style={{ background: "var(--bg2)", borderRadius: "var(--radius-sm)", padding: "10px 14px" }}>
-              <div style={{ marginBottom: 6 }}><KaTeX expr={fracToKatex(item.display)} /></div>
-              <input value={answers[i]} onChange={e => setAnswers(prev => prev.map((x, j) => j === i ? e.target.value : x))}
-                disabled={submitted} placeholder="Enter answer"
-                style={{ textAlign: "center", fontSize: 20, fontFamily: "var(--mono)", fontWeight: 700, padding: "6px 10px", width: "100%", borderRadius: "var(--radius-sm)", border: "1px solid var(--border)", background: "var(--surface)" }} />
-            </div>
-          ))}
-        </div>
-        <button className="btn btn-primary" style={{ width: "100%", fontSize: 20 }}
-          onClick={() => onSubmit(JSON.stringify(answers))} disabled={submitted || !allDone}>Submit All</button>
-      </div>
-    );
-  }
+  if (t === "mixed-review") return <MixedReviewInput question={question} onSubmit={onSubmit} submitted={submitted} />;
   return null;
+}
+
+function MixedReviewInput({ question, onSubmit, submitted }) {
+  const [answers, setAnswers] = useState((question.questions || []).map(() => ""));
+  const allDone = answers.every(a => a.trim() !== "");
+  return (
+    <div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 7, marginBottom: 12 }}>
+        {(question.questions || []).map((item, i) => (
+          <div key={i} style={{ background: "var(--bg2)", borderRadius: "var(--radius-sm)", padding: "10px 14px" }}>
+            <div style={{ marginBottom: 6 }}><KaTeX expr={fracToKatex(item.display)} /></div>
+            <input value={answers[i]} onChange={e => setAnswers(prev => prev.map((x, j) => j === i ? e.target.value : x))}
+              disabled={submitted} placeholder="Enter answer"
+              style={{ textAlign: "center", fontSize: 20, fontFamily: "var(--mono)", fontWeight: 700, padding: "6px 10px", width: "100%", borderRadius: "var(--radius-sm)", border: "1px solid var(--border)", background: "var(--surface)" }} />
+          </div>
+        ))}
+      </div>
+      <button className="btn btn-primary" style={{ width: "100%", fontSize: 20 }}
+        onClick={() => onSubmit(JSON.stringify(answers))} disabled={submitted || !allDone}>Submit All</button>
+    </div>
+  );
 }
 
 // Simultaneous fraction entries sharing state via parent - use a wrapper
@@ -318,7 +303,6 @@ function SimulFracEntryGroup({ question, onSubmit, submitted }) {
     </div>
   );
 }
-function SimulFracEntry() { return null; } // placeholder, replaced by group
 
 // Override AnswerInput for fraction types
 function AnswerInputFull({ question, onSubmit, submitted }) {
