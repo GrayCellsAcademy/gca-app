@@ -44,23 +44,6 @@ function fracToKatex(str) {
   s = s.replace(/\s\+\s\(-/g, ` + ${bs}left(-`).replace(/\)\s/g, `${bs}right) `);
   return s;
 }
-function FracKaTeX({ expr, block }) {
-  useKaTeX();
-  const [html, setHtml] = useState("");
-  useEffect(() => {
-    if (!expr) return;
-    const id = setInterval(() => {
-      if (window.katex) {
-        clearInterval(id);
-        try { setHtml(window.katex.renderToString(expr, { throwOnError: false, displayMode: !!block })); } catch {}
-      }
-    }, 100);
-    return () => clearInterval(id);
-  }, [expr, block]);
-  return block
-    ? <div dangerouslySetInnerHTML={{ __html: html || expr }} style={{ fontSize: 24, margin: "4px 0", minHeight: 36 }} />
-    : <span dangerouslySetInnerHTML={{ __html: html || expr }} style={{ fontSize: 22 }} />;
-}
 
 // -- Timer --
 function TimerBar({ endsAt, totalSeconds, onExpired }) {
@@ -152,7 +135,7 @@ function MultiTextInput({ items, labelFn, onSubmit, submitted, placeholder, wide
       <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 12 }}>
         {items.map((item, i) => (
           <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, background: "var(--bg2)", borderRadius: "var(--radius-sm)", padding: "10px 14px", flexWrap: "wrap" }}>
-            <span style={{ flex: 1 }}><FracKaTeX expr={fracToKatex(labelFn(item))} /></span>
+            <span style={{ flex: 1 }}><KaTeX expr={fracToKatex(labelFn(item))} /></span>
             <input value={answers[i]} onChange={e => setAnswers(prev => prev.map((x, j) => j === i ? e.target.value : x))}
               disabled={submitted} placeholder={placeholder || "e.g. 3/4"}
               style={{ textAlign: "center", fontSize: 20, fontFamily: "var(--mono)", fontWeight: 700, padding: "6px 10px", width: wide ? 160 : 120, borderRadius: "var(--radius-sm)", border: "1px solid var(--border)", background: "var(--surface)" }} />
@@ -167,7 +150,6 @@ function MultiTextInput({ items, labelFn, onSubmit, submitted, placeholder, wide
 
 // -- Staged CD input --
 
-
 // -- QuestionDisplay --
 function QuestionDisplay({ question: q, revealCorrect }) {
   useKaTeX();
@@ -175,25 +157,25 @@ function QuestionDisplay({ question: q, revealCorrect }) {
 
   if (q.type === "warmup-a") return (
     <div style={{ textAlign: "center" }}>
-      <FracKaTeX expr="\\dfrac{24}{36}" block />
-      {revealCorrect && <div style={{ color: "var(--green)", fontWeight: 800 }}><FracKaTeX expr={fracToKatex(q.displayAnswer)} block /></div>}
+      <KaTeX expr="\\dfrac{24}{36}" block />
+      {revealCorrect && <div style={{ color: "var(--green)", fontWeight: 800 }}><KaTeX expr={fracToKatex(q.displayAnswer)} block /></div>}
     </div>
   );
   if (q.type === "warmup-b") return (
     <div style={{ textAlign: "center" }}>
-      <FracKaTeX expr="3\\dfrac{2}{5}" block />
-      {revealCorrect && <div style={{ color: "var(--green)", fontWeight: 800 }}><FracKaTeX expr={fracToKatex(q.displayAnswer)} block /></div>}
+      <KaTeX expr="3\\dfrac{2}{5}" block />
+      {revealCorrect && <div style={{ color: "var(--green)", fontWeight: 800 }}><KaTeX expr={fracToKatex(q.displayAnswer)} block /></div>}
     </div>
   );
   if (q.type === "warmup-c") return (
     <div style={{ textAlign: "center" }}>
-      <FracKaTeX expr="\\dfrac{17}{3}" block />
-      {revealCorrect && <div style={{ color: "var(--green)", fontWeight: 800 }}><FracKaTeX expr={fracToKatex(q.displayAnswer)} block /></div>}
+      <KaTeX expr="\\dfrac{17}{3}" block />
+      {revealCorrect && <div style={{ color: "var(--green)", fontWeight: 800 }}><KaTeX expr={fracToKatex(q.displayAnswer)} block /></div>}
     </div>
   );
   if (q.type === "warmup-d") return (
     <div style={{ textAlign: "center" }}>
-      <FracKaTeX expr="\\dfrac{5}{8} = \\dfrac{?}{24}" block />
+      <KaTeX expr="\\dfrac{5}{8} = \\dfrac{?}{24}" block />
       {revealCorrect && <div style={{ color: "var(--green)", fontWeight: 800, fontSize: 22 }}>? = {q.displayAnswer}</div>}
     </div>
   );
@@ -206,7 +188,7 @@ function QuestionDisplay({ question: q, revealCorrect }) {
       <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
         {items.map((item, i) => (
           <div key={i} style={{ background: "var(--bg2)", borderRadius: "var(--radius-sm)", padding: "8px 14px" }}>
-            <FracKaTeX expr={fracToKatex(item.display)} />
+            <KaTeX expr={fracToKatex(item.display)} />
           </div>
         ))}
       </div>
@@ -215,8 +197,8 @@ function QuestionDisplay({ question: q, revealCorrect }) {
       <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
         {items.map((item, i) => (
           <div key={i} style={{ background: "var(--bg2)", borderRadius: "var(--radius-sm)", padding: "8px 14px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
-            <FracKaTeX expr={fracToKatex(item.display)} />
-            <span style={{ color: "var(--green)", fontWeight: 700 }}><FracKaTeX expr={fracToKatex(item.displayAnswer || item.answer)} /></span>
+            <KaTeX expr={fracToKatex(item.display)} />
+            <span style={{ color: "var(--green)", fontWeight: 700 }}><KaTeX expr={fracToKatex(item.displayAnswer || item.answer)} /></span>
           </div>
         ))}
       </div>
@@ -228,7 +210,7 @@ function QuestionDisplay({ question: q, revealCorrect }) {
       <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
         {q.problems.map((p, i) => (
           <div key={i} style={{ background: "var(--bg2)", borderRadius: "var(--radius-sm)", padding: "8px 14px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <FracKaTeX expr={`\\frac{1}{${p.d1}} \\text{ and } \\frac{1}{${p.d2}}`} />
+            <KaTeX expr={`\\frac{1}{${p.d1}} \\text{ and } \\frac{1}{${p.d2}}`} />
             {revealCorrect && <span style={{ fontFamily: "var(--mono)", fontSize: 20, color: "var(--green)", fontWeight: 700 }}>{p.displayAnswer}</span>}
           </div>
         ))}
@@ -238,8 +220,8 @@ function QuestionDisplay({ question: q, revealCorrect }) {
 
   if (q.type === "staged-cd") return (
     <div style={{ textAlign: "center" }}>
-      <FracKaTeX expr={fracToKatex(q.display)} block />
-      {revealCorrect && <div style={{ color: "var(--green)", fontWeight: 800 }}><FracKaTeX expr={fracToKatex(q.displayAnswer)} block /></div>}
+      <KaTeX expr={fracToKatex(q.display)} block />
+      {revealCorrect && <div style={{ color: "var(--green)", fontWeight: 800 }}><KaTeX expr={fracToKatex(q.displayAnswer)} block /></div>}
     </div>
   );
 
@@ -248,7 +230,7 @@ function QuestionDisplay({ question: q, revealCorrect }) {
       <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
         {q.questions.map((item, i) => (
           <div key={i} style={{ background: "var(--bg2)", borderRadius: "var(--radius-sm)", padding: "8px 14px" }}>
-            <FracKaTeX expr={fracToKatex(item.display)} />
+            <KaTeX expr={fracToKatex(item.display)} />
           </div>
         ))}
       </div>
@@ -257,8 +239,8 @@ function QuestionDisplay({ question: q, revealCorrect }) {
       <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
         {q.questions.map((item, i) => (
           <div key={i} style={{ background: "var(--bg2)", borderRadius: "var(--radius-sm)", padding: "8px 14px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
-            <FracKaTeX expr={fracToKatex(item.display)} />
-            <span style={{ color: "var(--green)", fontWeight: 700 }}><FracKaTeX expr={fracToKatex(item.answer)} /></span>
+            <KaTeX expr={fracToKatex(item.display)} />
+            <span style={{ color: "var(--green)", fontWeight: 700 }}><KaTeX expr={fracToKatex(item.answer)} /></span>
           </div>
         ))}
       </div>
@@ -285,7 +267,7 @@ function AnswerInput({ question, onSubmit, submitted }) {
         <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 12 }}>
           {items.map((item, i) => (
             <div key={i} style={{ background: "var(--bg2)", borderRadius: "var(--radius-sm)", padding: "10px 14px", display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-              <span style={{ flex: 1 }}><FracKaTeX expr={fracToKatex(item.display)} /></span>
+              <span style={{ flex: 1 }}><KaTeX expr={fracToKatex(item.display)} /></span>
               <SimulFracEntry i={i} question={question} onSubmit={onSubmit} submitted={submitted} />
             </div>
           ))}
@@ -392,7 +374,7 @@ function StudentReveal({ result, question }) {
             } catch {}
             return (
               <div key={i} style={{ background: "var(--bg2)", borderRadius: "var(--radius-sm)", padding: "6px 12px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 6, border: "1px solid " + (itemOk ? "rgba(22,163,74,0.2)" : "rgba(239,68,68,0.2)") }}>
-                <span><FracKaTeX expr={fracToKatex(item.display || "")} /></span>
+                <span><KaTeX expr={fracToKatex(item.display || "")} /></span>
                 <div style={{ display: "flex", gap: 8 }}>
                   {!itemOk && <span style={{ fontSize: 17, color: "var(--red)", fontWeight: 700 }}>You: {studentAns || "-"}</span>}
                   <span style={{ fontSize: 17, color: "var(--green)", fontWeight: 700 }}>{correctAns}</span>
@@ -546,7 +528,7 @@ function TeacherLesson15({ session, sessionId, uid }) {
                 {session.status === "revealing" && !isMulti && (
                   <div style={{ marginTop: 12, background: "rgba(22,163,74,0.06)", border: "1px solid rgba(22,163,74,0.2)", borderRadius: "var(--radius-sm)", padding: "12px 16px" }}>
                     <div style={{ fontSize: 20, color: "var(--text3)", marginBottom: 4 }}>Correct answer</div>
-                    <div style={{ fontWeight: 800, color: "var(--green)" }}><FracKaTeX expr={fracToKatex(question.displayAnswer || "")} /></div>
+                    <div style={{ fontWeight: 800, color: "var(--green)" }}><KaTeX expr={fracToKatex(question.displayAnswer || "")} /></div>
                   </div>
                 )}
                 <div style={{ height: 6, background: "var(--surface2)", borderRadius: 99, overflow: "hidden", marginTop: 12 }}>
@@ -733,6 +715,5 @@ export default function Lesson15Session({ user, onHome }) {
 }
 
 export { TeacherLesson15 as Lesson15TeacherView, StudentLesson15 as Lesson15StudentView };
-
 
 
