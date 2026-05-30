@@ -34,19 +34,28 @@ function KaTeX({ expr, block }) {
 // Convert "2/3 + 1/4" style strings to KaTeX
 function fracToKatex(str) {
   if (!str) return str;
-  // Replace "n/d" with \frac{n}{d}, handle negatives and mixed numbers
+  const bs = "\\";
   let s = String(str);
   // Mixed: "-1 2/3" or "1 2/3"
-  s = s.replace(/(-?)(\d+)\s+(\d+)\/(\d+)/g, (_, neg, w, n, d) => `${neg}${w}\\dfrac{${n}}{${d}}`);
+  s = s.replace(/(-?)(\d+)\s+(\d+)\/(\d+)/g, (_, neg, w, n, d) => `${neg}${w}${bs}dfrac{${n}}{${d}}`);
   // Simple fraction: "-3/4" or "3/4"
-  s = s.replace(/(-?)(\d+)\/(\d+)/g, (_, neg, n, d) => `${neg}\\dfrac{${n}}{${d}}`);
-  // Replace operators for display
-  s = s.replace(/\s\+\s\(-/g, ' + \\left(-').replace(/\)\s/g, '\\right) ');
+  s = s.replace(/(-?)(\d+)\/(\d+)/g, (_, neg, n, d) => `${neg}${bs}dfrac{${n}}{${d}}`);
+  // operators
+  s = s.replace(/\s\+\s\(-/g, ` + ${bs}left(-`).replace(/\)\s/g, `${bs}right) `);
   return s;
 }
 function FracKaTeX({ expr, block }) {
   const ref = useRef(null); useKaTeX();
-  useEffect(() => { const go = () => { if (window.katex && ref.current) { try { window.katex.render(expr, ref.current, { throwOnError: false, displayMode: !!block }); } catch {} } else setTimeout(go, 100); }; go(); });
+  useEffect(() => {
+    if (!expr) return;
+    const id = setInterval(() => {
+      if (window.katex && ref.current) {
+        clearInterval(id);
+        try { window.katex.render(expr, ref.current, { throwOnError: false, displayMode: !!block }); } catch {}
+      }
+    }, 100);
+    return () => clearInterval(id);
+  }, [expr, block]);
   return block
     ? <div ref={ref} style={{ fontSize: 24, margin: "4px 0", minHeight: 36 }} />
     : <span ref={ref} style={{ fontSize: 22 }} />;
