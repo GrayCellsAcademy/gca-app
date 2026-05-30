@@ -410,15 +410,19 @@ function TeacherLesson15({ session, sessionId, uid }) {
 
   const handleGenerate = async (tIdx) => {
     const idx = tIdx !== undefined ? tIdx : topicIdx;
-    const q = generateLesson15Question(LESSON15_TOPICS[idx].id);
-    const qId = "q_" + Date.now().toString(36);
-    q.id = qId; q.points = POINTS;
-    revealedRef.current = false; setAnswers([]);
-    await updateDoc(doc(db, "sessions", sessionId), {
-      status: "question", currentQuestion: q,
-      timerSeconds: timerInput, timerEndsAt: Date.now() + timerInput * 1000,
-      questionCount: (session.questionCount || 0) + 1,
-    });
+    try {
+      const q = generateLesson15Question(LESSON15_TOPICS[idx].id);
+      const qId = "q_" + Date.now().toString(36);
+      q.id = qId; q.points = POINTS;
+      // Strip any undefined values Firestore can't handle
+      const safeQ = JSON.parse(JSON.stringify(q));
+      revealedRef.current = false; setAnswers([]);
+      await updateDoc(doc(db, "sessions", sessionId), {
+        status: "question", currentQuestion: safeQ,
+        timerSeconds: timerInput, timerEndsAt: Date.now() + timerInput * 1000,
+        questionCount: (session.questionCount || 0) + 1,
+      });
+    } catch(e) { console.error("handleGenerate error:", e); alert("Error generating question: " + e.message); }
   };
 
   const handleReveal = async () => {
