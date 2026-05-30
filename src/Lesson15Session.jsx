@@ -45,20 +45,21 @@ function fracToKatex(str) {
   return s;
 }
 function FracKaTeX({ expr, block }) {
-  const ref = useRef(null); useKaTeX();
+  useKaTeX();
+  const [html, setHtml] = useState("");
   useEffect(() => {
     if (!expr) return;
     const id = setInterval(() => {
-      if (window.katex && ref.current) {
+      if (window.katex) {
         clearInterval(id);
-        try { window.katex.render(expr, ref.current, { throwOnError: false, displayMode: !!block }); } catch {}
+        try { setHtml(window.katex.renderToString(expr, { throwOnError: false, displayMode: !!block })); } catch {}
       }
     }, 100);
     return () => clearInterval(id);
   }, [expr, block]);
   return block
-    ? <div ref={ref} style={{ fontSize: 24, margin: "4px 0", minHeight: 36 }} />
-    : <span ref={ref} style={{ fontSize: 22 }} />;
+    ? <div dangerouslySetInnerHTML={{ __html: html || expr }} style={{ fontSize: 24, margin: "4px 0", minHeight: 36 }} />
+    : <span dangerouslySetInnerHTML={{ __html: html || expr }} style={{ fontSize: 22 }} />;
 }
 
 // -- Timer --
@@ -732,5 +733,6 @@ export default function Lesson15Session({ user, onHome }) {
 }
 
 export { TeacherLesson15 as Lesson15TeacherView, StudentLesson15 as Lesson15StudentView };
+
 
 
