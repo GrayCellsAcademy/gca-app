@@ -168,19 +168,26 @@ function genCommonDenomPair(requireSimplify=false){
 }
 
 function genCommonDenomNegHelper(){
-  // Result is negative or crosses zero
-  const den=randChoice([3,5,7,9]);
-  const combos=[
-    ()=>{const n1=randInt(1,den-1),n2=randInt(n1+1,den);return{n1,n2,op:"+",neg1:false,neg2:true};},
-    ()=>{const n1=randInt(1,den-1),n2=randInt(1,den-1);return{n1,n2,op:"+",neg1:true,neg2:true};},
-    ()=>{const n1=randInt(1,den-2),n2=randInt(n1+1,den-1);return{n1,n2,op:"-",neg1:false,neg2:false};},
-    ()=>{const n1=randInt(1,den-1),n2=randInt(1,den-1);return{n1,n2,op:"-",neg1:true,neg2:false};},
-  ];
-  const {n1,n2,op,neg1,neg2}=randChoice(combos)();
-  const a=neg1?-n1:n1, b=neg2?-n2:n2;
-  const res=op==="+"?a+b:a-b;
-  const [rn,rd]=reduce(res,den);
-  return {n1:neg1?-n1:n1,n2:neg2?-n2:n2,den,op,resNum:res,resDen:den,rn,rd};
+  // Result is negative or crosses zero, never zero
+  for(let attempt=0;attempt<100;attempt++){
+    const den=randChoice([3,5,7,9]);
+    const combos=[
+      ()=>{const n1=randInt(1,den-1),n2=randInt(n1+1,den);return{n1,n2,op:"+",neg1:false,neg2:true};},
+      ()=>{const n1=randInt(1,den-1),n2=randInt(1,den-1);return{n1,n2,op:"+",neg1:true,neg2:true};},
+      ()=>{if(den<4) return null;const n1=randInt(1,den-2),n2=randInt(n1+1,den-1);return{n1,n2,op:"-",neg1:false,neg2:false};},
+      ()=>{const n1=randInt(1,den-1),n2=randInt(1,den-1);return{n1,n2,op:"-",neg1:true,neg2:false};},
+    ];
+    const pick=randChoice(combos.filter(Boolean))();
+    if(!pick) continue;
+    const {n1,n2,op,neg1,neg2}=pick;
+    const a=neg1?-n1:n1, b=neg2?-n2:n2;
+    const res=op==="+"?a+b:a-b;
+    if(res===0) continue; // skip zero results
+    const [rn,rd]=reduce(res,den);
+    return {n1:neg1?-n1:n1,n2:neg2?-n2:n2,den,op,resNum:res,resDen:den,rn,rd};
+  }
+  // fallback
+  return {n1:3,n2:-4,den:5,op:"+",resNum:-1,resDen:5,rn:-1,rd:5};
 }
 
 function genDiffDenomPair(){
@@ -238,9 +245,7 @@ export function genCommonDenomSimple(){
   return {type:"common-simple",problems,prompt:"Add or subtract. No need to simplify."};
 }
 export function gradeCommonSimpleItem(input,item){
-  const p=parseFrac(String(input).trim());
-  if(!p) return false;
-  return p.whole===0&&p.num===item.resNum&&p.den===item.resDen&&!p.neg;
+  return answerMatches(input,item.resNum,item.resDen);
 }
 export function gradeCommonSimple(input,q){
   try{const ans=JSON.parse(input);return q.problems.every((p,i)=>gradeCommonSimpleItem(ans[i],p));}catch{return false;}
