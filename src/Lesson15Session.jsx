@@ -184,15 +184,7 @@ function QuestionDisplay({ question: q, revealCorrect }) {
   const MULTI = ["common-simple","common-simplify","common-neg","diff-direct","diff-neg","add-mixed-simple","sub-mixed-simple","add-mixed-carry","sub-mixed-borrow","whole-frac"];
   if (MULTI.includes(q.type)) {
     const items = q.problems || q.questions || [];
-    if (!revealCorrect) return (
-      <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-        {items.map((item, i) => (
-          <div key={i} style={{ background: "var(--bg2)", borderRadius: "var(--radius-sm)", padding: "8px 14px" }}>
-            <KaTeX expr={fracToKatex(item.display)} />
-          </div>
-        ))}
-      </div>
-    );
+    if (!revealCorrect) return null; // AnswerInput handles display during answering
     return (
       <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
         {items.map((item, i) => (
@@ -226,15 +218,7 @@ function QuestionDisplay({ question: q, revealCorrect }) {
   );
 
   if (q.type === "mixed-review") {
-    if (!revealCorrect) return (
-      <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-        {q.questions.map((item, i) => (
-          <div key={i} style={{ background: "var(--bg2)", borderRadius: "var(--radius-sm)", padding: "8px 14px" }}>
-            <KaTeX expr={fracToKatex(item.display)} />
-          </div>
-        ))}
-      </div>
-    );
+    if (!revealCorrect) return null; // AnswerInput handles display
     return (
       <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
         {q.questions.map((item, i) => (
@@ -294,7 +278,7 @@ function AnswerInput({ question, onSubmit, submitted }) {
         <div style={{ display: "flex", flexDirection: "column", gap: 7, marginBottom: 12 }}>
           {question.questions.map((item, i) => (
             <div key={i} style={{ background: "var(--bg2)", borderRadius: "var(--radius-sm)", padding: "10px 14px" }}>
-              <div style={{ fontFamily: "var(--mono)", fontSize: 20, fontWeight: 800, marginBottom: 6 }}>{item.display}</div>
+              <div style={{ marginBottom: 6 }}><KaTeX expr={fracToKatex(item.display)} /></div>
               <input value={answers[i]} onChange={e => setAnswers(prev => prev.map((x, j) => j === i ? e.target.value : x))}
                 disabled={submitted} placeholder="Enter answer"
                 style={{ textAlign: "center", fontSize: 20, fontFamily: "var(--mono)", fontWeight: 700, padding: "6px 10px", width: "100%", borderRadius: "var(--radius-sm)", border: "1px solid var(--border)", background: "var(--surface)" }} />
@@ -319,7 +303,7 @@ function SimulFracEntryGroup({ question, onSubmit, submitted }) {
       <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 12 }}>
         {items.map((item, i) => (
           <div key={i} style={{ background: "var(--bg2)", borderRadius: "var(--radius-sm)", padding: "10px 14px", display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-            <span style={{ fontFamily: "var(--mono)", fontSize: 20, fontWeight: 800, flex: 1 }}>{item.display}</span>
+            <span style={{ flex: 1 }}><KaTeX expr={fracToKatex(item.display)} /></span>
             <input value={answers[i]} onChange={e => setAnswers(prev => prev.map((x, j) => j === i ? e.target.value : x))}
               disabled={submitted} placeholder="e.g. 3/4"
               style={{ textAlign: "center", fontSize: 20, fontFamily: "var(--mono)", fontWeight: 700, padding: "6px 10px", width: 110, borderRadius: "var(--radius-sm)", border: "1px solid var(--border)", background: "var(--surface)" }} />
