@@ -31,6 +31,27 @@ function KaTeX({ expr, block }) {
   return block ? <div ref={ref} style={{ fontSize: 26, margin: "4px 0", minHeight: 36 }} /> : <span ref={ref} style={{ fontSize: 22 }} />;
 }
 
+// Convert "2/3 + 1/4" style strings to KaTeX
+function fracToKatex(str) {
+  if (!str) return str;
+  // Replace "n/d" with \frac{n}{d}, handle negatives and mixed numbers
+  let s = String(str);
+  // Mixed: "-1 2/3" or "1 2/3"
+  s = s.replace(/(-?)(\d+)\s+(\d+)\/(\d+)/g, (_, neg, w, n, d) => `${neg}${w}\\dfrac{${n}}{${d}}`);
+  // Simple fraction: "-3/4" or "3/4"
+  s = s.replace(/(-?)(\d+)\/(\d+)/g, (_, neg, n, d) => `${neg}\\dfrac{${n}}{${d}}`);
+  // Replace operators for display
+  s = s.replace(/\s\+\s\(-/g, ' + \\left(-').replace(/\)\s/g, '\\right) ');
+  return s;
+}
+function FracKaTeX({ expr, block }) {
+  const ref = useRef(null); useKaTeX();
+  useEffect(() => { const go = () => { if (window.katex && ref.current) { try { window.katex.render(expr, ref.current, { throwOnError: false, displayMode: !!block }); } catch {} } else setTimeout(go, 100); }; go(); });
+  return block
+    ? <div ref={ref} style={{ fontSize: 24, margin: "4px 0", minHeight: 36 }} />
+    : <span ref={ref} style={{ fontSize: 22 }} />;
+}
+
 // -- Timer --
 function TimerBar({ endsAt, totalSeconds, onExpired }) {
   const [rem, setRem] = useState(totalSeconds); const ref = useRef(false);
@@ -121,7 +142,7 @@ function MultiTextInput({ items, labelFn, onSubmit, submitted, placeholder, wide
       <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 12 }}>
         {items.map((item, i) => (
           <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, background: "var(--bg2)", borderRadius: "var(--radius-sm)", padding: "10px 14px", flexWrap: "wrap" }}>
-            <span style={{ fontFamily: "var(--mono)", fontSize: 20, fontWeight: 800, flex: 1 }}>{labelFn(item)}</span>
+            <span style={{ flex: 1 }}><FracKaTeX expr={fracToKatex(labelFn(item))} /></span>
             <input value={answers[i]} onChange={e => setAnswers(prev => prev.map((x, j) => j === i ? e.target.value : x))}
               disabled={submitted} placeholder={placeholder || "e.g. 3/4"}
               style={{ textAlign: "center", fontSize: 20, fontFamily: "var(--mono)", fontWeight: 700, padding: "6px 10px", width: wide ? 160 : 120, borderRadius: "var(--radius-sm)", border: "1px solid var(--border)", background: "var(--surface)" }} />
@@ -142,20 +163,28 @@ function QuestionDisplay({ question: q, revealCorrect }) {
   useKaTeX();
   if (!q) return null;
 
-  const warmupDisplay = (label, answer) => (
+  if (q.type === "warmup-a") return (
     <div style={{ textAlign: "center" }}>
-      <div style={{ fontSize: 26, fontWeight: 900, fontFamily: "var(--mono)", marginBottom: 8 }}>{label}</div>
-      {revealCorrect && <div style={{ fontSize: 24, color: "var(--green)", fontWeight: 800 }}>{answer}</div>}
+      <FracKaTeX expr="\\dfrac{24}{36}" block />
+      {revealCorrect && <div style={{ color: "var(--green)", fontWeight: 800 }}><FracKaTeX expr={fracToKatex(q.displayAnswer)} block /></div>}
     </div>
   );
-
-  if (q.type === "warmup-a") return warmupDisplay("Reduce: 24/36", q.displayAnswer);
-  if (q.type === "warmup-b") return warmupDisplay("3 2/5 as improper fraction", q.displayAnswer);
-  if (q.type === "warmup-c") return warmupDisplay("17/3 as mixed number", q.displayAnswer);
+  if (q.type === "warmup-b") return (
+    <div style={{ textAlign: "center" }}>
+      <FracKaTeX expr="3\\dfrac{2}{5}" block />
+      {revealCorrect && <div style={{ color: "var(--green)", fontWeight: 800 }}><FracKaTeX expr={fracToKatex(q.displayAnswer)} block /></div>}
+    </div>
+  );
+  if (q.type === "warmup-c") return (
+    <div style={{ textAlign: "center" }}>
+      <FracKaTeX expr="\\dfrac{17}{3}" block />
+      {revealCorrect && <div style={{ color: "var(--green)", fontWeight: 800 }}><FracKaTeX expr={fracToKatex(q.displayAnswer)} block /></div>}
+    </div>
+  );
   if (q.type === "warmup-d") return (
     <div style={{ textAlign: "center" }}>
-      <div style={{ fontSize: 26, fontWeight: 900, fontFamily: "var(--mono)", marginBottom: 8 }}>5/8 = ?/24</div>
-      {revealCorrect && <div style={{ fontSize: 24, color: "var(--green)", fontWeight: 800 }}>? = {q.displayAnswer}</div>}
+      <FracKaTeX expr="\\dfrac{5}{8} = \\dfrac{?}{24}" block />
+      {revealCorrect && <div style={{ color: "var(--green)", fontWeight: 800, fontSize: 22 }}>? = {q.displayAnswer}</div>}
     </div>
   );
 
@@ -163,13 +192,21 @@ function QuestionDisplay({ question: q, revealCorrect }) {
   const MULTI = ["common-simple","common-simplify","common-neg","diff-direct","diff-neg","add-mixed-simple","sub-mixed-simple","add-mixed-carry","sub-mixed-borrow","whole-frac"];
   if (MULTI.includes(q.type)) {
     const items = q.problems || q.questions || [];
-    if (!revealCorrect) return null; // student sees questions via AnswerInput
+    if (!revealCorrect) return (
+      <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+        {items.map((item, i) => (
+          <div key={i} style={{ background: "var(--bg2)", borderRadius: "var(--radius-sm)", padding: "8px 14px" }}>
+            <FracKaTeX expr={fracToKatex(item.display)} />
+          </div>
+        ))}
+      </div>
+    );
     return (
       <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
         {items.map((item, i) => (
-          <div key={i} style={{ background: "var(--bg2)", borderRadius: "var(--radius-sm)", padding: "8px 14px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <span style={{ fontFamily: "var(--mono)", fontSize: 20, fontWeight: 800 }}>{item.display}</span>
-            <span style={{ fontFamily: "var(--mono)", fontSize: 20, color: "var(--green)", fontWeight: 700 }}>{item.displayAnswer || item.answer}</span>
+          <div key={i} style={{ background: "var(--bg2)", borderRadius: "var(--radius-sm)", padding: "8px 14px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
+            <FracKaTeX expr={fracToKatex(item.display)} />
+            <span style={{ color: "var(--green)", fontWeight: 700 }}><FracKaTeX expr={fracToKatex(item.displayAnswer || item.answer)} /></span>
           </div>
         ))}
       </div>
@@ -177,13 +214,12 @@ function QuestionDisplay({ question: q, revealCorrect }) {
   }
 
   if (q.type === "find-cd") {
-    if (!revealCorrect) return null;
     return (
       <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
         {q.problems.map((p, i) => (
-          <div key={i} style={{ background: "var(--bg2)", borderRadius: "var(--radius-sm)", padding: "8px 14px", display: "flex", justifyContent: "space-between" }}>
-            <span style={{ fontFamily: "var(--mono)", fontSize: 20, fontWeight: 800 }}>1/{p.d1} and 1/{p.d2}</span>
-            <span style={{ fontFamily: "var(--mono)", fontSize: 20, color: "var(--green)", fontWeight: 700 }}>{p.displayAnswer}</span>
+          <div key={i} style={{ background: "var(--bg2)", borderRadius: "var(--radius-sm)", padding: "8px 14px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <FracKaTeX expr={`\\frac{1}{${p.d1}} \\text{ and } \\frac{1}{${p.d2}}`} />
+            {revealCorrect && <span style={{ fontFamily: "var(--mono)", fontSize: 20, color: "var(--green)", fontWeight: 700 }}>{p.displayAnswer}</span>}
           </div>
         ))}
       </div>
@@ -192,19 +228,27 @@ function QuestionDisplay({ question: q, revealCorrect }) {
 
   if (q.type === "staged-cd") return (
     <div style={{ textAlign: "center" }}>
-      <div style={{ fontSize: 28, fontWeight: 900, fontFamily: "var(--mono)", marginBottom: 8 }}>{q.display}</div>
-      {revealCorrect && <div style={{ fontSize: 24, color: "var(--green)", fontWeight: 800 }}>{q.displayAnswer}</div>}
+      <FracKaTeX expr={fracToKatex(q.display)} block />
+      {revealCorrect && <div style={{ color: "var(--green)", fontWeight: 800 }}><FracKaTeX expr={fracToKatex(q.displayAnswer)} block /></div>}
     </div>
   );
 
   if (q.type === "mixed-review") {
-    if (!revealCorrect) return null;
+    if (!revealCorrect) return (
+      <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+        {q.questions.map((item, i) => (
+          <div key={i} style={{ background: "var(--bg2)", borderRadius: "var(--radius-sm)", padding: "8px 14px" }}>
+            <FracKaTeX expr={fracToKatex(item.display)} />
+          </div>
+        ))}
+      </div>
+    );
     return (
       <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
         {q.questions.map((item, i) => (
-          <div key={i} style={{ background: "var(--bg2)", borderRadius: "var(--radius-sm)", padding: "8px 14px", display: "flex", justifyContent: "space-between" }}>
-            <span style={{ fontFamily: "var(--mono)", fontSize: 20, fontWeight: 800 }}>{item.display}</span>
-            <span style={{ fontFamily: "var(--mono)", fontSize: 20, color: "var(--green)", fontWeight: 700 }}>{item.answer}</span>
+          <div key={i} style={{ background: "var(--bg2)", borderRadius: "var(--radius-sm)", padding: "8px 14px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
+            <FracKaTeX expr={fracToKatex(item.display)} />
+            <span style={{ color: "var(--green)", fontWeight: 700 }}><FracKaTeX expr={fracToKatex(item.answer)} /></span>
           </div>
         ))}
       </div>
@@ -231,7 +275,7 @@ function AnswerInput({ question, onSubmit, submitted }) {
         <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 12 }}>
           {items.map((item, i) => (
             <div key={i} style={{ background: "var(--bg2)", borderRadius: "var(--radius-sm)", padding: "10px 14px", display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-              <span style={{ fontFamily: "var(--mono)", fontSize: 20, fontWeight: 800, flex: 1 }}>{item.display}</span>
+              <span style={{ flex: 1 }}><FracKaTeX expr={fracToKatex(item.display)} /></span>
               <SimulFracEntry i={i} question={question} onSubmit={onSubmit} submitted={submitted} />
             </div>
           ))}
@@ -246,7 +290,7 @@ function AnswerInput({ question, onSubmit, submitted }) {
   }
 
   if (t === "find-cd") {
-    return <MultiTextInput items={question.problems} labelFn={p => `1/${p.d1} and 1/${p.d2}`} onSubmit={onSubmit} submitted={submitted} placeholder="Enter CD" />;
+    return <MultiTextInput items={question.problems} labelFn={p => `${p.d1} and ${p.d2}`} onSubmit={onSubmit} submitted={submitted} placeholder="Enter CD" />;
   }
   if (t === "staged-cd") return <MixedInput onSubmit={onSubmit} submitted={submitted} placeholder="e.g. 5/6 or 1 1/2" />;
 
@@ -338,7 +382,7 @@ function StudentReveal({ result, question }) {
             } catch {}
             return (
               <div key={i} style={{ background: "var(--bg2)", borderRadius: "var(--radius-sm)", padding: "6px 12px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 6, border: "1px solid " + (itemOk ? "rgba(22,163,74,0.2)" : "rgba(239,68,68,0.2)") }}>
-                <span style={{ fontFamily: "var(--mono)", fontSize: 18, fontWeight: 800 }}>{item.display}</span>
+                <span><FracKaTeX expr={fracToKatex(item.display || "")} /></span>
                 <div style={{ display: "flex", gap: 8 }}>
                   {!itemOk && <span style={{ fontSize: 17, color: "var(--red)", fontWeight: 700 }}>You: {studentAns || "-"}</span>}
                   <span style={{ fontSize: 17, color: "var(--green)", fontWeight: 700 }}>{correctAns}</span>
@@ -479,7 +523,7 @@ function TeacherLesson15({ session, sessionId, uid }) {
             <>
               <div className="card">
                 <div style={{ fontSize: 20, color: "var(--text3)", marginBottom: 8 }}>
-                  {LESSON15_TOPICS[topicIdx]?.label} - {submittedCount}/{totalStudents} submitted{!isMulti && !isStaged && ` - ${correctCount} correct`}
+                  {LESSON15_TOPICS[topicIdx]?.label} - {submittedCount}/{totalStudents} submitted{!isMulti && ` - ${correctCount} correct`}
                 </div>
                 {question.prompt && <div style={{ fontSize: 20, color: "var(--text2)", marginBottom: 8 }}>{question.prompt}</div>}
                 <QuestionDisplay question={question} revealCorrect={session.status === "revealing"} />
@@ -492,7 +536,7 @@ function TeacherLesson15({ session, sessionId, uid }) {
                 {session.status === "revealing" && !isMulti && (
                   <div style={{ marginTop: 12, background: "rgba(22,163,74,0.06)", border: "1px solid rgba(22,163,74,0.2)", borderRadius: "var(--radius-sm)", padding: "12px 16px" }}>
                     <div style={{ fontSize: 20, color: "var(--text3)", marginBottom: 4 }}>Correct answer</div>
-                    <div style={{ fontSize: 22, fontWeight: 800, color: "var(--green)", fontFamily: "var(--mono)" }}>{question.displayAnswer}</div>
+                    <div style={{ fontWeight: 800, color: "var(--green)" }}><FracKaTeX expr={fracToKatex(question.displayAnswer || "")} /></div>
                   </div>
                 )}
                 <div style={{ height: 6, background: "var(--surface2)", borderRadius: 99, overflow: "hidden", marginTop: 12 }}>
@@ -679,4 +723,5 @@ export default function Lesson15Session({ user, onHome }) {
 }
 
 export { TeacherLesson15 as Lesson15TeacherView, StudentLesson15 as Lesson15StudentView };
+
 
