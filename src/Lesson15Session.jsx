@@ -398,19 +398,24 @@ function TeacherLesson15({ session, sessionId, uid }) {
 
   const handleGenerate = async (tIdx) => {
     const idx = tIdx !== undefined ? tIdx : topicIdx;
+    console.log("[L15] handleGenerate start, topic:", LESSON15_TOPICS[idx]?.id);
     try {
+      console.log("[L15] generating question...");
       const q = generateLesson15Question(LESSON15_TOPICS[idx].id);
+      console.log("[L15] question generated:", q.type, "problems:", q.problems?.length);
       const qId = "q_" + Date.now().toString(36);
       q.id = qId; q.points = POINTS;
       const safeQ = JSON.parse(JSON.stringify(q));
-      setAnswers([]); // clear immediately before Firestore write
+      console.log("[L15] safeQ ok, writing to Firestore...");
+      setAnswers([]);
       revealedRef.current = false;
       await updateDoc(doc(db, "sessions", sessionId), {
         status: "question", currentQuestion: safeQ,
         timerSeconds: timerInput, timerEndsAt: Date.now() + timerInput * 1000,
         questionCount: (session.questionCount || 0) + 1,
       });
-    } catch(e) { console.error("handleGenerate error:", e); alert("Error: " + e.message); }
+      console.log("[L15] Firestore write complete");
+    } catch(e) { console.error("[L15] handleGenerate error:", e); alert("Error: " + e.message); }
   };
 
   const handleReveal = async () => {
