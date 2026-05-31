@@ -255,7 +255,7 @@ function AnswerInput({ question, onSubmit, submitted }) {
   }
 
   if (t === "find-cd") {
-    return <MultiTextInput items={question.problems} labelFn={p => `${p.d1} and ${p.d2}`} onSubmit={onSubmit} submitted={submitted} placeholder="Enter CD" />;
+    return <MultiTextInput items={question.problems} labelFn={p => `1/${p.d1} and 1/${p.d2}`} onSubmit={onSubmit} submitted={submitted} placeholder="Enter CD" />;
   }
   if (t === "staged-cd") return <MixedInput onSubmit={onSubmit} submitted={submitted} placeholder="e.g. 5/6 or 1 1/2" />;
 
