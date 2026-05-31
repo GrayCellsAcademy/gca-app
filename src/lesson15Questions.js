@@ -148,23 +148,30 @@ export function gradeWarmupD(input,q){ return parseInt(String(input).trim())===q
 // - Helpers for generating fraction arithmetic -
 const SIMPLE_DENOMS=[3,4,5,6,7,8,9,10,12];
 
+// Pre-built pools: no loops, no hanging
+const _SIMPLE_POOL = [
+  // {n1,n2,den,op} where result is NOT simplifiable
+  {n1:2,n2:3,den:7,op:"+"},{n1:1,n2:3,den:7,op:"+"},{n1:3,n2:1,den:7,op:"-"},
+  {n1:2,n2:1,den:9,op:"+"},{n1:4,n2:1,den:9,op:"+"},{n1:5,n2:2,op:"-",den:9},
+  {n1:3,n2:2,den:10,op:"+"},{n1:7,n2:3,op:"-",den:10},{n1:1,n2:4,den:10,op:"+"},
+  {n1:2,n2:3,den:8,op:"+"},{n1:5,n2:1,den:8,op:"+"},{n1:7,n2:3,op:"-",den:8},
+  {n1:1,n2:2,den:5,op:"+"},{n1:4,n2:2,op:"-",den:5},{n1:3,n2:1,den:5,op:"-"},
+  {n1:1,n2:2,den:4,op:"-"},{n1:3,n2:2,op:"-",den:7},{n1:6,n2:4,op:"-",den:11},
+];
+const _SIMPLIFY_POOL = [
+  // {n1,n2,den,op} where result IS simplifiable (gcd(result,den)>1, result!=den)
+  {n1:3,n2:5,den:12,op:"+"},{n1:1,n2:5,den:12,op:"+"},{n1:7,n2:5,op:"-",den:12},
+  {n1:2,n2:4,den:9,op:"+"},{n1:1,n2:5,den:9,op:"+"},{n1:7,n2:4,op:"-",den:9},
+  {n1:1,n2:3,den:8,op:"+"},{n1:3,n2:5,den:8,op:"+"},{n1:6,n2:2,op:"-",den:8},
+  {n1:2,n2:4,den:6,op:"+"},{n1:1,n2:3,den:6,op:"+"},{n1:5,n2:3,op:"-",den:6},
+  {n1:2,n2:3,den:10,op:"+"},{n1:4,n2:6,den:10,op:"+"},{n1:8,n2:4,op:"-",den:10},
+  {n1:3,n2:6,den:12,op:"+"},{n1:2,n2:4,den:12,op:"+"},{n1:9,n2:3,op:"-",den:12},
+];
 function genCommonDenomPair(requireSimplify=false){
-  for(let i=0;i<200;i++){
-    const den=randChoice(SIMPLE_DENOMS);
-    const op=randChoice(["+","-"]);
-    let n1=randInt(1,den-1), n2=randInt(1,den-1);
-    if(op==="-") while(n1<=n2) n2=randInt(1,den-1);
-    const resNum=op==="+"?n1+n2:n1-n2;
-    const g=gcd(resNum,den);
-    const isSimplifiable=g>1&&resNum!==den;
-    if(requireSimplify&&!isSimplifiable) continue;
-    if(!requireSimplify&&isSimplifiable) continue;
-    return {n1,n2,den,op,resNum,resDen:den};
-  }
-  // fallback
-  return requireSimplify
-    ?{n1:3,n2:5,den:12,op:"+",resNum:8,resDen:12}
-    :{n1:2,n2:3,den:7,op:"+",resNum:5,resDen:7};
+  const pool = requireSimplify ? _SIMPLIFY_POOL : _SIMPLE_POOL;
+  const p = randChoice(pool);
+  const resNum = p.op==="+" ? p.n1+p.n2 : p.n1-p.n2;
+  return {n1:p.n1, n2:p.n2, den:p.den, op:p.op, resNum, resDen:p.den};
 }
 
 function genCommonDenomNegHelper(){
