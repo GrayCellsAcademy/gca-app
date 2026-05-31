@@ -36,12 +36,14 @@ function fracToKatex(str) {
   if (!str && str !== 0) return "";
   const bs = "\\";
   let s = String(str);
-  // Mixed: "-1 2/3" or "1 2/3"
-  s = s.replace(/(-?)(\d+)\s+(\d+)\/(\d+)/g, (_, neg, w, n, d) => `${neg}${w}${bs}dfrac{${n}}{${d}}`);
-  // Simple fraction: "-3/4" or "3/4" or "?/24"
-  s = s.replace(/(-?)(\d+|\?)\/(\d+)/g, (_, neg, n, d) => `${neg}${bs}dfrac{${n}}{${d}}`);
-  // operators
-  s = s.replace(/\s\+\s\(-/g, ` + ${bs}left(-`).replace(/\)\s/g, `${bs}right) `);
+  // Step 1: handle parenthesized negatives "(-3/7)" -> "\left(-\dfrac{3}{7}\right)"
+  s = s.replace(/\(-(\d+)\/(\d+)\)/g, (_, n, d) => `${bs}left(-${bs}dfrac{${n}}{${d}}${bs}right)`);
+  // Step 2: mixed numbers "1 2/3" -> "1\dfrac{2}{3}"
+  s = s.replace(/(\d+) (\d+)\/(\d+)/g, (_, w, n, d) => `${w}${bs}dfrac{${n}}{${d}}`);
+  // Step 3: negative fractions "-3/7" -> "-\dfrac{3}{7}"
+  s = s.replace(/-(\d+)\/(\d+)/g, (_, n, d) => `-${bs}dfrac{${n}}{${d}}`);
+  // Step 4: plain fractions "3/7" or "?/12"
+  s = s.replace(/(\d+|\?)\/(\d+)/g, (_, n, d) => `${bs}dfrac{${n}}{${d}}`);
   return s;
 }
 
@@ -200,12 +202,14 @@ function QuestionDisplay({ question: q, revealCorrect }) {
   }
 
   if (q.type === "find-cd") {
+    // During answering, MultiTextInput shows the pairs; only show on reveal
+    if (!revealCorrect) return null;
     return (
       <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
         {q.problems.map((p, i) => (
           <div key={i} style={{ background: "var(--bg2)", borderRadius: "var(--radius-sm)", padding: "8px 14px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <KaTeX expr={fracToKatex("1/" + p.d1) + " \\text{ and } " + fracToKatex("1/" + p.d2)} />
-            {revealCorrect && <span style={{ fontFamily: "var(--mono)", fontSize: 20, color: "var(--green)", fontWeight: 700 }}>{p.displayAnswer}</span>}
+            <span style={{ fontFamily: "var(--mono)", fontSize: 20, color: "var(--green)", fontWeight: 700 }}>{p.displayAnswer}</span>
           </div>
         ))}
       </div>
