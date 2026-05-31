@@ -178,14 +178,14 @@ function SquaresPhase1({ onDone }) {
 }
 
 function SquaresPhase2({ onAllMastered }) {
-  const remaining = SQUARES.filter(s => (masteredMap[s.base] || 0) < STREAK2);
-  const [current, setCurrent] = useState(() => randChoice(remaining));
   const [masteredMap, setMasteredMap] = useState({});
+  const [correct, setCorrect] = useState({});
+  const [wrong, setWrong] = useState({});
+  const remaining = SQUARES.filter(s => (masteredMap[s.base] || 0) < STREAK2);
+  const [current, setCurrent] = useState(() => randChoice(SQUARES));
   const [input, setInput] = useState("");
   const [feedback, setFeedback] = useState(null);
   const [timeLeft, setTimeLeft] = useState(SQUARE_TIMER);
-  const [correct, setCorrect] = useState({});
-  const [wrong, setWrong] = useState({});
   const timerRef = useRef(null);
   const inputRef = useRef(null);
 
