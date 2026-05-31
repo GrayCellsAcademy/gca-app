@@ -40,7 +40,10 @@ function answerMatches(input, correctNum, correctDen) {
     if (neg) num = -num;
     const [rn, rd] = reduce(correctNum, correctDen);
     const [in_, id_] = reduce(num, den);
-    return rn === in_ && rd === id_;
+    // Must match AND be in simplified form (gcd of input = 1)
+    if (rn !== in_ || rd !== id_) return false;
+    if (den !== 1 && gcd(Math.abs(num), den) !== 1) return false; // not simplified
+    return true;
   } catch { return false; }
 }
 
@@ -476,10 +479,10 @@ function SixProblemMastery({ genProblems, onCorrect, onWrong, needMixed }) {
     });
     const allCorrect = results.every(Boolean);
     setFeedback({ results, allCorrect, answers: [...answers] });
-    if (allCorrect) onCorrect(); else onWrong();
   };
 
   const handleNext = () => {
+    if (feedback?.allCorrect) onCorrect(); else onWrong();
     setProblems(genProblems());
     setAnswers(Array(6).fill(""));
     setFeedback(null);
@@ -542,10 +545,10 @@ function CommonDenomMastery({ onCorrect, onWrong }) {
   const handleSubmit = (input) => {
     const ok = answerMatches(input, q.resNum, q.resDen);
     setFeedback({ correct: ok, input });
-    if (ok) onCorrect(); else onWrong();
   };
 
   const handleNext = () => {
+    if (feedback?.correct) onCorrect(); else onWrong();
     setFeedback(null);
     setQ(randChoice(genCommonDenomProblems()));
   };
@@ -573,10 +576,10 @@ function DiffDenomMastery({ onCorrect, onWrong }) {
   const handleSubmit = (input) => {
     const ok = answerMatches(input, q.rn, q.rd);
     setFeedback({ correct: ok, input });
-    if (ok) onCorrect(); else onWrong();
   };
 
   const handleNext = () => {
+    if (feedback?.correct) onCorrect(); else onWrong();
     setFeedback(null);
     setQ(randChoice(genDiffDenomProblems()));
   };
@@ -597,12 +600,12 @@ function DiffDenomMastery({ onCorrect, onWrong }) {
 
 // - Steps -
 const STEPS = [
-  { id: "common-denom", label: "Common Denominator", description: "6 problems per set, streak 3", streak: STREAK3 },
-  { id: "diff-denom", label: "Different Denominators", description: "6 problems per set, streak 3", streak: STREAK3 },
-  { id: "mixed-simple", label: "Mixed Numbers (Simple)", description: "All 6 correct to pass", streak: 1 },
-  { id: "mixed-carry", label: "Mixed Numbers (Carrying)", description: "All 6 correct to pass", streak: 1 },
-  { id: "mixed-borrow", label: "Mixed Numbers (Borrowing)", description: "All 6 correct to pass", streak: 1 },
-  { id: "whole-frac", label: "Whole Number +/- Fraction", description: "All 6 correct to pass", streak: 1 },
+  { id: "common-denom", label: "Common Denominator", description: "Streak of 3 in a row", streak: STREAK3 },
+  { id: "diff-denom", label: "Different Denominators", description: "Streak of 3 in a row", streak: STREAK3 },
+  { id: "mixed-simple", label: "Mixed Numbers (Simple)", description: "All correct to pass", streak: 1 },
+  { id: "mixed-carry", label: "Mixed Numbers (Carrying)", description: "All correct to pass", streak: 1 },
+  { id: "mixed-borrow", label: "Mixed Numbers (Borrowing)", description: "All correct to pass", streak: 1 },
+  { id: "whole-frac", label: "Whole Number +/- Fraction", description: "All correct to pass", streak: 1 },
 ];
 
 export default function Lesson15MasteryPlayer({ user, topic, onHome }) {
