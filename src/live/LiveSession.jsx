@@ -16,6 +16,7 @@ import Lesson12Session, { Lesson12TeacherView, Lesson12StudentView } from "../Le
 import Lesson13Session, { Lesson13TeacherView, Lesson13StudentView } from "../Lesson13Session";
 import Lesson14Session, { Lesson14TeacherView, Lesson14StudentView } from "../Lesson14Session";
 import Lesson15Session, { Lesson15TeacherView, Lesson15StudentView } from "../Lesson15Session";
+import Lesson16Session, { Lesson16TeacherView, Lesson16StudentView } from "../Lesson16Session";
 
 // Join a session by code (student flow)
 async function findSessionByCode(code) {
@@ -123,6 +124,11 @@ export default function LiveSession({ user, onHome }) {
         ? <Lesson15TeacherView session={session} sessionId={sessionId} uid={user.id} />
         : <Lesson15StudentView session={session} sessionId={sessionId} uid={user.id} />;
     }
+    if (session.type === "lesson16") {
+      return user.role === "teacher"
+        ? <Lesson16TeacherView session={session} sessionId={sessionId} uid={user.id} />
+        : <Lesson16StudentView session={session} sessionId={sessionId} uid={user.id} />;
+    }
   }
 
   // Lesson session views (teacher creates)
@@ -141,6 +147,7 @@ export default function LiveSession({ user, onHome }) {
   if (view === "lesson13") return <Lesson13Session user={user} onHome={() => setView("menu")} />;
   if (view === "lesson14") return <Lesson14Session user={user} onHome={() => setView("menu")} />;
   if (view === "lesson15") return <Lesson15Session user={user} onHome={() => setView("menu")} />;
+  if (view === "lesson16") return <Lesson16Session user={user} onHome={() => setView("menu")} />;
 
   // Student join flow
   if (view === "join") {
@@ -325,6 +332,14 @@ export default function LiveSession({ user, onHome }) {
                     <div>
                       <div style={{ fontWeight: 800, fontSize: 20, marginBottom: 4 }}>(15) Adding and Subtracting Fractions</div>
                       <div style={{ color: "var(--text2)", fontSize: 20 }}>Common denominators, different denominators, mixed numbers, carrying, borrowing, and negatives.</div>
+                    </div>
+                  </div>
+                  <div className="card" onClick={() => setView("lesson16")}
+                    style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 16 }}>
+                    <div style={{ fontSize: 20, fontWeight: 800, color: "var(--blue)", minWidth: 36 }}>L16</div>
+                    <div>
+                      <div style={{ fontWeight: 800, fontSize: 20, marginBottom: 4 }}>(16) Multiplying and Dividing Fractions</div>
+                      <div style={{ color: "var(--text2)", fontSize: 20 }}>Cross cancellation, reciprocals, dividing fractions, and mixed numbers.</div>
                     </div>
                   </div>
             </>
