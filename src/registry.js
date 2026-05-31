@@ -28,6 +28,7 @@ import Lesson11MasteryPlayer from "./Lesson11MasteryPlayer";
 import Lesson12MasteryPlayer, { PerfectSquares12Player } from "./Lesson12MasteryPlayer";
 import Lesson13MasteryPlayer, { PerfectSquares13Player } from "./Lesson13MasteryPlayer";
 import Lesson14MasteryPlayer, { PerfectCubesPlayer14 } from "./Lesson14MasteryPlayer";
+import Lesson15MasteryPlayer, { PerfectCubes2Player } from "./Lesson15MasteryPlayer";
 
 export const TOPICS = {
   "addition-tables-v1": {
@@ -218,6 +219,20 @@ export const TOPICS = {
     description: "Memorize and drill perfect cubes 1- through 5-.",
     subject: "math", gradeLevel: "6+", icon: "", type: "drill", status: "published", order: 25,
     Player: PerfectCubesPlayer14,
+  },
+  "perfect-cubes-2-v1": {
+    id: "perfect-cubes-2-v1",
+    title: "Perfect Cubes (6-10)",
+    description: "Memorize and drill perfect cubes 6-10, then review all 1-10.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "drill", status: "published", order: 27,
+    Player: PerfectCubes2Player,
+  },
+  "lesson15-mastery-v1": {
+    id: "lesson15-mastery-v1",
+    title: "HW 15 (019)",
+    description: "Adding and subtracting fractions - common denominators, different denominators, mixed numbers.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 28,
+    Player: Lesson15MasteryPlayer,
   },
   "lesson14-mastery-v1": {
     id: "lesson14-mastery-v1",
