@@ -694,7 +694,7 @@ function PrimeMastery({ onCorrect, onWrong }) {
             })}
           </div>
           <button className="btn btn-primary" style={{ width: "100%", fontSize: 20 }}
-            onClick={() => { setFeedback(null); setNums(genPrimeSet()); setAnswers(Array(10).fill("")); }}>Next Problem</button>
+            onClick={() => { if (feedback?.correct) onCorrect(); else onWrong(); setFeedback(null); setNums(genPrimeSet()); setAnswers(Array(10).fill("")); }}>Next Problem</button>
         </div>
       ) : (
         <div>
