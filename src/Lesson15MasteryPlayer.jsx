@@ -501,8 +501,7 @@ function SixProblemMastery({ genProblems, onCorrect, onWrong, needMixed }) {
               {!ok && (
                 <div style={{ fontSize: 18, fontFamily: "var(--mono)", whiteSpace: "pre-line", color: "var(--text2)", marginBottom: 4 }}>
                   <span style={{ color: "var(--red)" }}>You: {feedback.answers[i] || "-"}</span>
-                  {q.worked ? "
-" + q.worked : ""}
+                  {q.worked ? "\n" + q.worked : ""}
                 </div>
               )}
               <div style={{ fontSize: 18, fontWeight: 700, color: ok ? "var(--green)" : "var(--green)" }}>
