@@ -6,7 +6,7 @@ import {
   gradeMultSimpleItem, gradeMultSimplifyItem, gradeCrossDirectItem, gradeFracWholeItem,
   gradeReciprocalItem, gradeDivideDirectItem, gradeWholeDivItem,
   gradeMultMixedItem, gradeDivideMixedItem,
-  gradeCrossCancelStage1, gradeCrossCancelStage2, gradeCrossCancelStage3,
+  gradeCrossCancelStage3,
   gradeDivideStage1, gradeDivideStage2, gradeDivideStage3,
 } from "./lesson16Questions";
 
@@ -249,14 +249,7 @@ function AnswerInput({ question, onSubmit, submitted }) {
   if (t === "reciprocals") {
     return <MultiRowInput items={question.items} labelFn={item => item.display} onSubmit={onSubmit} submitted={submitted} placeholder="e.g. 3/2" />;
   }
-  if (t === "cross-cancel") {
-    const stages = [
-      { label: "Step 1: Enter the fractions after cross-cancellation (e.g. 2/1 x 1/4)", placeholder: "e.g. 2/1 x 1/4", grader: gradeCrossCancelStage1, correctAnswer: q => q.cancelledDisplay },
-      { label: "Step 2: Multiply the cancelled fractions", placeholder: "e.g. 2/4", grader: gradeCrossCancelStage2, correctAnswer: q => q.productDisplay },
-      { label: "Step 3: Simplify the product", placeholder: "e.g. 1/2", grader: gradeCrossCancelStage3, correctAnswer: q => q.displayAnswer },
-    ];
-    return <StepInput question={question} onSubmit={onSubmit} submitted={submitted} stages={stages} />;
-  }
+  if (t === "cross-cancel") return <TextInput onSubmit={onSubmit} submitted={submitted} placeholder="Enter simplified answer" />;
   if (t === "divide-steps") {
     const stages = [
       { label: "Step 1: Rewrite as multiplication by the reciprocal", placeholder: "e.g. 2/3 x 4/3", grader: gradeDivideStage1, correctAnswer: q => q.multiplyDisplay },
@@ -275,7 +268,7 @@ function gradeAnswer(input, question) {
 }
 
 const MULTI_ITEM_TYPES = ["mult-simple","mult-simplify","cross-direct","frac-whole","divide-direct","whole-div","mult-mixed","divide-mixed","reciprocals"];
-const STEP_TYPES = ["cross-cancel","divide-steps"];
+const STEP_TYPES = ["divide-steps"];
 
 // -- Student per-item reveal --
 function StudentReveal({ result, question }) {
