@@ -389,8 +389,11 @@ function TeacherLesson15({ session, sessionId, uid }) {
     if (!question?.id) return;
     setAnswers([]);
     revealedRef.current = false;
-    const unsub = onClassworkAnswersChange(sessionId, question.id, setAnswers);
-    return () => unsub();
+    let active = true;
+    const unsub = onClassworkAnswersChange(sessionId, question.id, (data) => {
+      if (active) setAnswers(data);
+    });
+    return () => { active = false; unsub(); };
   }, [question?.id]);
 
   const handleGenerate = async (tIdx) => {
@@ -447,7 +450,8 @@ function TeacherLesson15({ session, sessionId, uid }) {
               <>
                 <button className="btn btn-ghost" onClick={() => handleGenerate()}>Repeat</button>
                 {topicIdx < LESSON15_TOPICS.length - 1 && (
-                  <button className="btn btn-primary" onClick={() => { const n = topicIdx + 1; setTopicIdx(n); handleGenerate(n); }}>
+                  <button className="btn btn-primary" onClick={() => { const n = topicIdx + 1; setTopicIdx(n); handleGenerate(n); }}
+                    disabled={session.status === "question"}>
                     Next: {LESSON15_TOPICS[topicIdx + 1]?.label}
                   </button>
                 )}
@@ -497,7 +501,7 @@ function TeacherLesson15({ session, sessionId, uid }) {
                 <QuestionDisplay question={question} revealCorrect={session.status === "revealing"} />
                 {session.status === "question" && session.timerEndsAt && (
                   <div style={{ marginTop: 12 }}>
-                    <TimerBar endsAt={session.timerEndsAt} totalSeconds={session.timerSeconds}
+                    <TimerBar key={question?.id} endsAt={session.timerEndsAt} totalSeconds={session.timerSeconds}
                       onExpired={async () => { if (!revealedRef.current) await handleReveal(); }} />
                   </div>
                 )}
