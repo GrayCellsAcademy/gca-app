@@ -44,6 +44,38 @@ function answerMatches(input, correctNum, correctDen) {
   } catch { return false; }
 }
 
+// -- KaTeX --
+function useKaTeX() {
+  useEffect(() => {
+    if (window.katex) return;
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = "https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css";
+    document.head.appendChild(link);
+    const s = document.createElement("script");
+    s.src = "https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js";
+    s.async = true; document.head.appendChild(s);
+  }, []);
+}
+function KaTeX({ expr }) {
+  const ref = useRef(null); useKaTeX();
+  useEffect(() => {
+    const go = () => { if (window.katex && ref.current) { try { window.katex.render(expr, ref.current, { throwOnError: false, displayMode: false }); } catch {} } else setTimeout(go, 100); };
+    go();
+  });
+  return <span ref={ref} style={{ fontSize: 22 }} />;
+}
+function fracToKatex(str) {
+  if (!str && str !== 0) return "";
+  const bs = "\\";
+  let s = String(str);
+  s = s.replace(/\(-(\d+)\/(\d+)\)/g, (_, n, d) => `${bs}left(-${bs}dfrac{${n}}{${d}}${bs}right)`);
+  s = s.replace(/(\d+) (\d+)\/(\d+)/g, (_, w, n, d) => `${w}${bs}dfrac{${n}}{${d}}`);
+  s = s.replace(/-(\d+)\/(\d+)/g, (_, n, d) => `-${bs}dfrac{${n}}{${d}}`);
+  s = s.replace(/(\d+)\/(\d+)/g, (_, n, d) => `${bs}dfrac{${n}}{${d}}`);
+  return s;
+}
+
 // -- Shared UI --
 function StreakDots({ current, needed }) {
   return (
@@ -431,67 +463,74 @@ function genWholeFracProblems() {
 }
 
 // - 6-problem set mastery component -
-function SixProblemMastery({ genProblems, prompt, useStreak, onCorrect, onWrong, needMixed }) {
+function SixProblemMastery({ genProblems, onCorrect, onWrong, needMixed }) {
   const [problems, setProblems] = useState(() => genProblems());
-  const [idx, setIdx] = useState(0);
+  const [answers, setAnswers] = useState(Array(6).fill(""));
   const [feedback, setFeedback] = useState(null);
-  const [wrongSet, setWrongSet] = useState(false);
 
-  const q = problems[idx];
-  const isLast = idx === problems.length - 1;
-
-  const handleSubmit = (input) => {
-    const ok = answerMatches(input, q.resNum, q.resDen);
-    setFeedback({ correct: ok, input });
-    if (!ok) setWrongSet(true);
+  const handleSubmit = () => {
+    const results = problems.map((q, i) => {
+      const rn = q.rn !== undefined ? q.rn : q.resNum;
+      const rd = q.rd !== undefined ? q.rd : q.resDen;
+      return answerMatches(answers[i], rn, rd);
+    });
+    const allCorrect = results.every(Boolean);
+    setFeedback({ results, allCorrect, answers: [...answers] });
+    if (allCorrect) onCorrect(); else onWrong();
   };
 
   const handleNext = () => {
-    if (isLast) {
-      if (!feedback.correct || wrongSet) {
-        // Wrong somewhere - reset
-        onWrong();
-        setProblems(genProblems()); setIdx(0); setFeedback(null); setWrongSet(false);
-      } else {
-        onCorrect();
-        setProblems(genProblems()); setIdx(0); setFeedback(null); setWrongSet(false);
-      }
-    } else {
-      setIdx(i => i + 1);
-      setFeedback(null);
-    }
+    setProblems(genProblems());
+    setAnswers(Array(6).fill(""));
+    setFeedback(null);
   };
+
+  const allFilled = answers.every(a => a.trim() !== "");
+
+  if (feedback) return (
+    <div>
+      <div style={{ textAlign: "center", fontSize: 22, fontWeight: 800, color: feedback.allCorrect ? "var(--green)" : "var(--red)", marginBottom: 12 }}>
+        {feedback.allCorrect ? "All Correct!" : "Incorrect"}
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 12 }}>
+        {problems.map((q, i) => {
+          const ok = feedback.results[i];
+          return (
+            <div key={i} style={{ background: "var(--bg2)", borderRadius: "var(--radius-sm)", padding: "10px 14px", border: "1px solid " + (ok ? "rgba(22,163,74,0.2)" : "rgba(239,68,68,0.2)") }}>
+              <div style={{ marginBottom: 4 }}><KaTeX expr={fracToKatex(q.display)} /></div>
+              {!ok && (
+                <div style={{ fontSize: 18, fontFamily: "var(--mono)", whiteSpace: "pre-line", color: "var(--text2)", marginBottom: 4 }}>
+                  <span style={{ color: "var(--red)" }}>You: {feedback.answers[i] || "-"}</span>
+                  {q.worked ? "
+" + q.worked : ""}
+                </div>
+              )}
+              <div style={{ fontSize: 18, fontWeight: 700, color: ok ? "var(--green)" : "var(--green)" }}>
+                {ok ? "Correct: " : "Answer: "}{q.answer}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      <button className="btn btn-primary" style={{ width: "100%", fontSize: 20 }} onClick={handleNext}>
+        {feedback.allCorrect ? "Next Set" : "Try New Set"}
+      </button>
+    </div>
+  );
 
   return (
     <div>
-      <div style={{ fontSize: 19, color: "var(--text3)", marginBottom: 8, textAlign: "center" }}>
-        Problem {idx + 1} of {problems.length}
-        {wrongSet && !isLast && <span style={{ color: "var(--amber)", marginLeft: 8 }}>(set has errors)</span>}
+      <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 12 }}>
+        {problems.map((q, i) => (
+          <div key={i} style={{ background: "var(--bg2)", borderRadius: "var(--radius-sm)", padding: "10px 14px", display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+            <span style={{ flex: 1 }}><KaTeX expr={fracToKatex(q.display)} /></span>
+            <input value={answers[i]} onChange={e => setAnswers(prev => prev.map((x, j) => j === i ? e.target.value : x))}
+              placeholder="answer"
+              style={{ textAlign: "center", fontSize: 20, fontFamily: "var(--mono)", fontWeight: 700, padding: "6px 10px", width: 120, borderRadius: "var(--radius-sm)", border: "1px solid var(--border)", background: "var(--surface)" }} />
+          </div>
+        ))}
       </div>
-      <div style={{ textAlign: "center", fontSize: 26, fontWeight: 900, fontFamily: "var(--mono)", marginBottom: 14 }}>{q.display}</div>
-      {feedback ? (
-        <div style={{ textAlign: "center" }}>
-          <div style={{ fontSize: 22, fontWeight: 800, color: feedback.correct ? "var(--green)" : "var(--red)", marginBottom: 8 }}>{feedback.correct ? "Correct!" : "Incorrect"}</div>
-          {!feedback.correct && q.worked && (
-            <div style={{ background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: "var(--radius-sm)", padding: "10px 14px", marginBottom: 10, textAlign: "left", fontSize: 19, fontFamily: "var(--mono)", whiteSpace: "pre-line" }}>
-              <div style={{ color: "var(--red)", marginBottom: 4 }}>Your answer: {feedback.input}</div>
-              {q.worked}
-              <div style={{ color: "var(--green)", fontWeight: 700 }}>Answer: {q.answer}</div>
-            </div>
-          )}
-          {(!q.worked || feedback.correct) && !feedback.correct && (
-            <div style={{ fontSize: 20, color: "var(--green)", fontWeight: 700, marginBottom: 10 }}>Correct: {q.answer}</div>
-          )}
-          {feedback.correct && <div style={{ fontSize: 20, color: "var(--green)", fontWeight: 700, marginBottom: 10 }}>Answer: {q.answer}</div>}
-          <button className="btn btn-primary" style={{ width: "100%", fontSize: 20 }} onClick={handleNext}>
-            {isLast ? (wrongSet || !feedback.correct ? "Try New Set" : "Complete!") : "Next Problem"}
-          </button>
-        </div>
-      ) : (
-        needMixed
-          ? <MixedInput onSubmit={handleSubmit} submitted={false} />
-          : <TextInput onSubmit={handleSubmit} submitted={false} placeholder="Enter answer" />
-      )}
+      <button className="btn btn-primary" style={{ width: "100%", fontSize: 20 }} onClick={handleSubmit} disabled={!allFilled}>Submit All</button>
     </div>
   );
 }
@@ -514,13 +553,13 @@ function CommonDenomMastery({ onCorrect, onWrong }) {
 
   return (
     <div>
-      <div style={{ textAlign: "center", fontSize: 26, fontWeight: 900, fontFamily: "var(--mono)", marginBottom: 14 }}>{q.display}</div>
+      <div style={{ textAlign: "center", marginBottom: 14 }}><KaTeX expr={fracToKatex(q.display)} /></div>
       {feedback ? (
         <FeedbackBanner correct={feedback.correct}
           message={feedback.correct ? `Answer: ${q.answer}` : `Your answer: ${feedback.input}\nCorrect: ${q.answer}`}
           onNext={handleNext} />
       ) : (
-        <TextInput onSubmit={handleSubmit} submitted={false} placeholder="e.g. -1/3 or 2/5" />
+        <TextInput onSubmit={handleSubmit} submitted={false} placeholder="" />
       )}
     </div>
   );
@@ -545,13 +584,13 @@ function DiffDenomMastery({ onCorrect, onWrong }) {
 
   return (
     <div>
-      <div style={{ textAlign: "center", fontSize: 26, fontWeight: 900, fontFamily: "var(--mono)", marginBottom: 14 }}>{q.display}</div>
+      <div style={{ textAlign: "center", marginBottom: 14 }}><KaTeX expr={fracToKatex(q.display)} /></div>
       {feedback ? (
         <FeedbackBanner correct={feedback.correct}
           message={feedback.correct ? `Answer: ${q.answer}` : `Your answer: ${feedback.input}\nCorrect: ${q.answer}`}
           onNext={handleNext} />
       ) : (
-        <TextInput onSubmit={handleSubmit} submitted={false} placeholder="e.g. 5/6 or -1/4" />
+        <TextInput onSubmit={handleSubmit} submitted={false} placeholder="" />
       )}
     </div>
   );
