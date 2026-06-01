@@ -7,7 +7,6 @@ import {
   gradeReciprocalItem, gradeDivideDirectItem, gradeWholeDivItem,
   gradeMultMixedItem, gradeDivideMixedItem,
   gradeCrossCancelStage3,
-  gradeDivideStage1, gradeDivideStage2, gradeDivideStage3,
 } from "./lesson16Questions";
 
 const POINTS = 5;
@@ -250,14 +249,7 @@ function AnswerInput({ question, onSubmit, submitted }) {
     return <MultiRowInput items={question.items} labelFn={item => item.display} onSubmit={onSubmit} submitted={submitted} placeholder="e.g. 3/2" />;
   }
   if (t === "cross-cancel") return <TextInput onSubmit={onSubmit} submitted={submitted} placeholder="Enter simplified answer" />;
-  if (t === "divide-steps") {
-    const stages = [
-      { label: "Step 1: Rewrite as multiplication by the reciprocal", placeholder: "e.g. 2/3 x 4/3", grader: gradeDivideStage1, correctAnswer: q => q.multiplyDisplay },
-      { label: "Step 2: Multiply the fractions", placeholder: "e.g. 8/9", grader: gradeDivideStage2, correctAnswer: q => q.productDisplay },
-      { label: "Step 3: Simplify if needed", placeholder: "e.g. 8/9", grader: gradeDivideStage3, correctAnswer: q => q.displayAnswer },
-    ];
-    return <StepInput question={question} onSubmit={onSubmit} submitted={submitted} stages={stages} />;
-  }
+  if (t === "divide-steps") return <TextInput onSubmit={onSubmit} submitted={submitted} placeholder="Enter simplified answer" />;
   if (t === "mixed-review") return <TextInput onSubmit={onSubmit} submitted={submitted} placeholder="Enter answer" />;
   return null;
 }
@@ -268,7 +260,7 @@ function gradeAnswer(input, question) {
 }
 
 const MULTI_ITEM_TYPES = ["mult-simple","mult-simplify","cross-direct","frac-whole","divide-direct","whole-div","mult-mixed","divide-mixed","reciprocals"];
-const STEP_TYPES = ["divide-steps"];
+const STEP_TYPES = [];
 
 // -- Student per-item reveal --
 function StudentReveal({ result, question }) {
@@ -630,4 +622,5 @@ export default function Lesson16Session({ user, onHome }) {
 }
 
 export { TeacherLesson16 as Lesson16TeacherView, StudentLesson16 as Lesson16StudentView };
+
 
