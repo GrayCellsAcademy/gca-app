@@ -106,6 +106,58 @@ function MultiRowInput({ items, labelFn, onSubmit, submitted, placeholder }) {
   );
 }
 
+// Multi-row input with mixed number toggle per row
+function MultiMixedRowInput({ items, labelFn, onSubmit, submitted }) {
+  const [answers, setAnswers] = useState((items || []).map(() => ""));
+  const [modes, setModes] = useState((items || []).map(() => "text"));
+  const [wholes, setWholes] = useState((items || []).map(() => ""));
+  const [nums, setNums] = useState((items || []).map(() => ""));
+  const [dens, setDens] = useState((items || []).map(() => ""));
+  const allDone = answers.every(a => a.trim() !== "");
+  if (!items?.length) return null;
+
+  const setMode = (i, m) => setModes(prev => prev.map((x, j) => j === i ? m : x));
+  const setAnswer = (i, v) => setAnswers(prev => prev.map((x, j) => j === i ? v : x));
+
+  return (
+    <div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 12 }}>
+        {items.map((item, i) => (
+          <div key={i} style={{ background: "var(--bg2)", borderRadius: "var(--radius-sm)", padding: "10px 14px" }}>
+            <div style={{ marginBottom: 8 }}><KaTeX expr={fracToKatex(labelFn(item))} /></div>
+            {modes[i] === "visual" ? (
+              <div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                  <input value={wholes[i]} onChange={e => { setWholes(prev => prev.map((x,j)=>j===i?e.target.value:x)); setAnswer(i, e.target.value && nums[i] && dens[i] ? `${e.target.value} ${nums[i]}/${dens[i]}` : ""); }} disabled={submitted} placeholder="whole"
+                    style={{ textAlign: "center", fontSize: 20, fontFamily: "var(--mono)", fontWeight: 800, padding: "6px", width: 55, borderRadius: "var(--radius-sm)", border: "2px solid var(--border)", background: "var(--surface)" }} />
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
+                    <input value={nums[i]} onChange={e => { setNums(prev => prev.map((x,j)=>j===i?e.target.value:x)); setAnswer(i, wholes[i] && e.target.value && dens[i] ? `${wholes[i]} ${e.target.value}/${dens[i]}` : ""); }} disabled={submitted} placeholder="num"
+                      style={{ textAlign: "center", fontSize: 18, fontFamily: "var(--mono)", fontWeight: 800, padding: "3px 6px", width: 48, borderRadius: "var(--radius-sm)", border: "2px solid var(--border)", background: "var(--surface)" }} />
+                    <div style={{ width: 48, height: 2, background: "var(--text)", borderRadius: 99 }} />
+                    <input value={dens[i]} onChange={e => { setDens(prev => prev.map((x,j)=>j===i?e.target.value:x)); setAnswer(i, wholes[i] && nums[i] && e.target.value ? `${wholes[i]} ${nums[i]}/${e.target.value}` : ""); }} disabled={submitted} placeholder="den"
+                      style={{ textAlign: "center", fontSize: 18, fontFamily: "var(--mono)", fontWeight: 800, padding: "3px 6px", width: 48, borderRadius: "var(--radius-sm)", border: "2px solid var(--border)", background: "var(--surface)" }} />
+                  </div>
+                  <button className="btn btn-ghost btn-sm" style={{ fontSize: 15 }} onClick={() => setMode(i, "text")}>Type</button>
+                </div>
+              </div>
+            ) : (
+              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                <input value={answers[i]} onChange={e => setAnswer(i, e.target.value)} disabled={submitted} placeholder="e.g. 3 1/2"
+                  style={{ textAlign: "center", fontSize: 20, fontFamily: "var(--mono)", fontWeight: 700, padding: "6px 10px", flex: 1, borderRadius: "var(--radius-sm)", border: "1px solid var(--border)", background: "var(--surface)" }} />
+                <button className="btn btn-ghost btn-sm" style={{ fontSize: 15 }} onClick={() => setMode(i, "visual")}>
+                  <span style={{ fontFamily: "var(--mono)", fontWeight: 900 }}>2 -/-</span>
+                </button>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+      <button className="btn btn-primary" style={{ width: "100%", fontSize: 20 }}
+        onClick={() => onSubmit(JSON.stringify(answers))} disabled={submitted || !allDone}>Submit All</button>
+    </div>
+  );
+}
+
 // -- Step-by-step input for cross-cancel and divide-steps --
 function StepInput({ question, onSubmit, submitted, stages }) {
   const [stage, setStage] = useState(0);
@@ -239,11 +291,14 @@ function AnswerInput({ question, onSubmit, submitted }) {
   if (t === "mult-simple" || t === "mult-simplify") {
     return <MultiRowInput items={question.problems} labelFn={p => p.display} onSubmit={onSubmit} submitted={submitted} placeholder="e.g. 2/12" />;
   }
-  if (t === "cross-direct" || t === "frac-whole" || t === "divide-direct" || t === "whole-div") {
+  if (t === "cross-direct" || t === "frac-whole" || t === "divide-direct") {
     return <MultiRowInput items={question.problems} labelFn={p => p.display} onSubmit={onSubmit} submitted={submitted} placeholder="e.g. 3/5" />;
   }
+  if (t === "whole-div") {
+    return <MultiMixedRowInput items={question.problems} labelFn={p => p.display} onSubmit={onSubmit} submitted={submitted} />;
+  }
   if (t === "mult-mixed" || t === "divide-mixed") {
-    return <MultiRowInput items={question.problems} labelFn={p => p.display} onSubmit={onSubmit} submitted={submitted} placeholder="e.g. 3 1/2" />;
+    return <MultiMixedRowInput items={question.problems} labelFn={p => p.display} onSubmit={onSubmit} submitted={submitted} />;
   }
   if (t === "reciprocals") {
     return <MultiRowInput items={question.items} labelFn={item => item.display} onSubmit={onSubmit} submitted={submitted} placeholder="e.g. 3/2" />;
