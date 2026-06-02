@@ -288,22 +288,26 @@ const DIV_POOL = [
 const MIX_MULT_POOL = [
   { type: "m*m", w1: 1, n1: 1, d1: 2, w2: 2, n2: 1, d2: 3, rn: 7, rd: 2 },
   { type: "m*m", w1: 2, n1: 1, d1: 4, w2: 1, n2: 2, d2: 3, rn: 15, rd: 4 },
-  { type: "m*m", w1: 1, n1: 3, d1: 5, w2: 2, n2: 1, d2: 2, rn: 4, rd: 1 },
-  { type: "m*w", w1: 2, n1: 1, d1: 3, w2: 3, rn: 7, rd: 1 },
-  { type: "m*w", w1: 1, n1: 1, d1: 2, w2: 4, rn: 6, rd: 1 },
-  { type: "m*f", w1: 1, n1: 1, d1: 2, n2: 2, d2: 3, rn: 1, rd: 1 },
-  { type: "m*m", w1: 2, n1: 2, d1: 3, w2: 1, n2: 1, d2: 2, rn: 4, rd: 1 },
+  { type: "m*m", w1: 1, n1: 2, d1: 3, w2: 2, n2: 1, d2: 4, rn: 25, rd: 12 },
+  { type: "m*m", w1: 2, n1: 1, d1: 3, w2: 1, n2: 3, d2: 4, rn: 77, rd: 24 },
   { type: "m*w", w1: 3, n1: 1, d1: 4, w2: 2, rn: 13, rd: 2 },
+  { type: "m*w", w1: 2, n1: 1, d1: 3, w2: 2, rn: 14, rd: 3 },
+  { type: "m*f", w1: 2, n1: 1, d1: 2, n2: 3, d2: 4, rn: 15, rd: 8 },
+  { type: "m*f", w1: 3, n1: 1, d1: 3, n2: 2, d2: 3, rn: 20, rd: 9 },
+  { type: "m*m", w1: 1, n1: 1, d1: 2, w2: 1, n2: 2, d2: 3, rn: 5, rd: 2 },
+  { type: "m*m", w1: 2, n1: 3, d1: 4, w2: 1, n2: 1, d2: 3, rn: 11, rd: 4 },
 ];
 const MIX_DIV_POOL = [
-  { type: "m/m", w1: 2, n1: 1, d1: 2, w2: 1, n2: 1, d2: 4, rn: 2, rd: 1 },
-  { type: "m/m", w1: 3, n1: 1, d1: 3, w2: 1, n2: 2, d2: 3, rn: 2, rd: 1 },
-  { type: "m/m", w1: 1, n1: 3, d1: 4, w2: 2, n2: 1, d2: 2, rn: 7, rd: 10 },
+  { type: "m/m", w1: 3, n1: 1, d1: 2, w2: 1, n2: 1, d2: 4, rn: 14, rd: 5 },
+  { type: "m/m", w1: 2, n1: 2, d1: 3, w2: 1, n2: 1, d2: 4, rn: 32, rd: 15 },
+  { type: "m/m", w1: 4, n1: 1, d1: 2, w2: 1, n2: 3, d2: 4, rn: 18, rd: 7 },
   { type: "m/w", w1: 3, n1: 1, d1: 2, w2: 2, rn: 7, rd: 4 },
-  { type: "w/m", w: 4, w2: 1, n2: 1, d2: 3, rn: 3, rd: 1 },
-  { type: "f/m", n: 3, d: 4, w2: 1, n2: 1, d2: 2, rn: 3, rd: 2 },
+  { type: "m/w", w1: 5, n1: 1, d1: 3, w2: 3, rn: 16, rd: 9 },
   { type: "m/f", w1: 2, n1: 1, d1: 3, n: 2, d: 3, rn: 7, rd: 2 },
-  { type: "m/m", w1: 2, n1: 2, d1: 3, w2: 1, n2: 1, d2: 3, rn: 2, rd: 1 },
+  { type: "m/f", w1: 3, n1: 1, d1: 4, n: 3, d: 4, rn: 13, rd: 3 },
+  { type: "m/m", w1: 3, n1: 3, d1: 4, w2: 1, n2: 2, d2: 3, rn: 9, rd: 4 },
+  { type: "m/m", w1: 2, n1: 1, d1: 2, w2: 1, n2: 1, d2: 3, rn: 27, rd: 16 },
+  { type: "m/w", w1: 4, n1: 1, d1: 2, w2: 3, rn: 3, rd: 2 },
 ];
 
 function getDisplay(p) {
@@ -318,8 +322,53 @@ function getDisplay(p) {
   return { latex: "", worked: "" };
 }
 
+// Per-row mixed number input
+function RowMixedInput({ value, onChange }) {
+  const [mode, setMode] = useState("text");
+  const [whole, setWhole] = useState(""); const [num, setNum] = useState(""); const [den, setDen] = useState("");
+  const sync = (w, n, d) => { if (w.trim() && n.trim() && d.trim()) onChange(`${w.trim()} ${n.trim()}/${d.trim()}`); else onChange(""); };
+  if (mode === "visual") return (
+    <div>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 5 }}>
+        <input value={whole} onChange={e => { setWhole(e.target.value); sync(e.target.value, num, den); }} placeholder="whole"
+          style={{ textAlign: "center", fontSize: 20, fontFamily: "var(--mono)", fontWeight: 800, padding: "5px", width: 55, borderRadius: "var(--radius-sm)", border: "2px solid var(--border)", background: "var(--surface)" }} />
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
+          <input value={num} onChange={e => { setNum(e.target.value); sync(whole, e.target.value, den); }} placeholder="num"
+            style={{ textAlign: "center", fontSize: 18, fontFamily: "var(--mono)", fontWeight: 800, padding: "3px 5px", width: 48, borderRadius: "var(--radius-sm)", border: "2px solid var(--border)", background: "var(--surface)" }} />
+          <div style={{ width: 48, height: 2, background: "var(--text)", borderRadius: 99 }} />
+          <input value={den} onChange={e => { setDen(e.target.value); sync(whole, num, e.target.value); }} placeholder="den"
+            style={{ textAlign: "center", fontSize: 18, fontFamily: "var(--mono)", fontWeight: 800, padding: "3px 5px", width: 48, borderRadius: "var(--radius-sm)", border: "2px solid var(--border)", background: "var(--surface)" }} />
+        </div>
+        <button className="btn btn-ghost btn-sm" style={{ fontSize: 14 }} onClick={() => setMode("text")}>Type</button>
+      </div>
+    </div>
+  );
+  return (
+    <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+      <input value={value} onChange={e => onChange(e.target.value)} placeholder=""
+        style={{ textAlign: "center", fontSize: 20, fontFamily: "var(--mono)", fontWeight: 700, padding: "6px 10px", flex: 1, borderRadius: "var(--radius-sm)", border: "1px solid var(--border)", background: "var(--surface)" }} />
+      <button className="btn btn-ghost btn-sm" style={{ fontSize: 14, whiteSpace: "nowrap" }} onClick={() => setMode("visual")}>
+        <span style={{ fontFamily: "var(--mono)", fontWeight: 900 }}>2 -/-</span>
+      </button>
+    </div>
+  );
+}
+
+function answerOkMixed(input, rn, rd) {
+  // Must be a mixed number (rn > rd, rd != 1)
+  if (!answerOk(input, rn, rd)) return false;
+  const p = parseFrac(input);
+  if (!p) return false;
+  // Check it's written as mixed number form
+  const s = String(input || "").trim();
+  // Accept if it contains a space (mixed) or is a pure fraction > 1
+  // Reject if it's an integer
+  if (s.match(/^-?\d+$/)) return false; // pure integer not accepted
+  return true;
+}
+
 // - Six-problem mastery component -
-function SixMastery({ genProblems, renderProblem, gradeProblem, workedSolution, onCorrect, onWrong, useMixed }) {
+function SixMastery({ genProblems, renderProblem, gradeProblem, workedSolution, onCorrect, onWrong, useMixed, useMixedRow }) {
   const [problems, setProblems] = useState(() => genProblems());
   const [answers, setAnswers] = useState(Array(6).fill(""));
   const [feedback, setFeedback] = useState(null);
@@ -367,7 +416,9 @@ function SixMastery({ genProblems, renderProblem, gradeProblem, workedSolution, 
         {problems.map((p, i) => (
           <div key={i} style={{ background: "var(--bg2)", borderRadius: "var(--radius-sm)", padding: "10px 14px" }}>
             <div style={{ marginBottom: 8 }}>{renderProblem(p)}</div>
-            {useMixed ? (
+            {useMixedRow ? (
+              <RowMixedInput value={answers[i]} onChange={v => setAnswers(prev => prev.map((x, j) => j === i ? v : x))} />
+            ) : useMixed ? (
               <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
                 <input value={answers[i]} onChange={e => setAnswers(prev => prev.map((x, j) => j === i ? e.target.value : x))} placeholder=""
                   style={{ textAlign: "center", fontSize: 20, fontFamily: "var(--mono)", fontWeight: 700, padding: "6px 10px", flex: 1, borderRadius: "var(--radius-sm)", border: "1px solid var(--border)", background: "var(--surface)" }} />
@@ -447,18 +498,18 @@ function MultMixedMastery({ onCorrect, onWrong }) {
   return <SixMastery
     genProblems={() => shuffle([...MIX_MULT_POOL]).slice(0, 6)}
     renderProblem={p => { const { latex } = getDisplay(p); return <KaTeX expr={latex} />; }}
-    gradeProblem={(input, p) => answerOk(input, p.rn, p.rd)}
+    gradeProblem={(input, p) => answerOkMixed(input, p.rn, p.rd)}
     workedSolution={p => { const { worked } = getDisplay(p); return worked; }}
-    onCorrect={onCorrect} onWrong={onWrong} useMixed />
+    onCorrect={onCorrect} onWrong={onWrong} useMixed useMixedRow />
 }
 
 function DivMixedMastery({ onCorrect, onWrong }) {
   return <SixMastery
     genProblems={() => shuffle([...MIX_DIV_POOL]).slice(0, 6)}
     renderProblem={p => { const { latex } = getDisplay(p); return <KaTeX expr={latex} />; }}
-    gradeProblem={(input, p) => answerOk(input, p.rn, p.rd)}
+    gradeProblem={(input, p) => answerOkMixed(input, p.rn, p.rd)}
     workedSolution={p => { const { worked } = getDisplay(p); return worked; }}
-    onCorrect={onCorrect} onWrong={onWrong} useMixed />
+    onCorrect={onCorrect} onWrong={onWrong} useMixed useMixedRow />
 }
 
 // - Activity 8: Mixed Operations -
@@ -551,8 +602,8 @@ const STEPS = [
   { id: "frac-whole",  label: "Fraction x Whole",          description: "All correct to pass. Answer must be in simplest form.", streak: 1 },
   { id: "reciprocals", label: "Reciprocals",               description: "All correct to pass. Answer must be in simplest form.", streak: 1 },
   { id: "div-frac",    label: "Divide Fractions",          description: "All correct to pass. Answer must be in simplest form.", streak: 1 },
-  { id: "mult-mixed",  label: "Multiply Mixed Numbers",    description: "All correct to pass. Answer must be in simplest form.", streak: 1 },
-  { id: "div-mixed",   label: "Divide Mixed Numbers",      description: "All correct to pass. Answer must be in simplest form.", streak: 1 },
+  { id: "mult-mixed",  label: "Multiply Mixed Numbers",    description: "All correct to pass. Enter answer as a mixed number in simplest form.", streak: 1 },
+  { id: "div-mixed",   label: "Divide Mixed Numbers",      description: "All correct to pass. Enter answer as a mixed number in simplest form.", streak: 1 },
   { id: "mixed-ops",   label: "Mixed Operations",          description: "All correct to pass. Answer must be in simplest form.", streak: 1 },
 ];
 
