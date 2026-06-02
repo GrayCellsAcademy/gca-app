@@ -135,7 +135,7 @@ function MixedInput({ onSubmit, submitted }) {
     <div>
       <div style={{ display: "flex", gap: 8, justifyContent: "center", marginBottom: 8 }}>
         <input ref={ref} value={textVal} onChange={e => setTextVal(e.target.value)}
-          onKeyDown={e => e.key === "Enter" && textVal.trim() && onSubmit(textVal.trim())} disabled={submitted} placeholder="e.g. 2 1/3 or 3/4"
+          onKeyDown={e => e.key === "Enter" && textVal.trim() && onSubmit(textVal.trim())} disabled={submitted} placeholder=""
           style={{ textAlign: "center", fontSize: 22, fontFamily: "var(--mono)", fontWeight: 700, padding: "10px", width: 180 }} />
         <button className="btn btn-primary" style={{ fontSize: 20, padding: "10px 20px" }}
           onMouseDown={e => { e.preventDefault(); if (textVal.trim()) onSubmit(textVal.trim()); }} disabled={submitted || !textVal.trim()}>OK</button>
@@ -369,11 +369,11 @@ function SixMastery({ genProblems, renderProblem, gradeProblem, workedSolution, 
             <div style={{ marginBottom: 8 }}>{renderProblem(p)}</div>
             {useMixed ? (
               <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                <input value={answers[i]} onChange={e => setAnswers(prev => prev.map((x, j) => j === i ? e.target.value : x))} placeholder="e.g. 2 1/3"
+                <input value={answers[i]} onChange={e => setAnswers(prev => prev.map((x, j) => j === i ? e.target.value : x))} placeholder=""
                   style={{ textAlign: "center", fontSize: 20, fontFamily: "var(--mono)", fontWeight: 700, padding: "6px 10px", flex: 1, borderRadius: "var(--radius-sm)", border: "1px solid var(--border)", background: "var(--surface)" }} />
               </div>
             ) : (
-              <input value={answers[i]} onChange={e => setAnswers(prev => prev.map((x, j) => j === i ? e.target.value : x))} placeholder="e.g. 3/4"
+              <input value={answers[i]} onChange={e => setAnswers(prev => prev.map((x, j) => j === i ? e.target.value : x))} placeholder=""
                 style={{ textAlign: "center", fontSize: 20, fontFamily: "var(--mono)", fontWeight: 700, padding: "6px 10px", width: "100%", borderRadius: "var(--radius-sm)", border: "1px solid var(--border)", background: "var(--surface)" }} />
             )}
           </div>
@@ -535,7 +535,7 @@ function MixedOpsMastery({ onCorrect, onWrong }) {
         {problems.map((p, i) => (
           <div key={i} style={{ background: "var(--bg2)", borderRadius: "var(--radius-sm)", padding: "10px 14px" }}>
             <KaTeXBlock expr={p.latex} />
-            <input value={answers[i]} onChange={e => setAnswers(prev => prev.map((x, j) => j === i ? e.target.value : x))} placeholder="e.g. 2 1/3"
+            <input value={answers[i]} onChange={e => setAnswers(prev => prev.map((x, j) => j === i ? e.target.value : x))} placeholder=""
               style={{ textAlign: "center", fontSize: 20, fontFamily: "var(--mono)", fontWeight: 700, padding: "6px 10px", width: "100%", borderRadius: "var(--radius-sm)", border: "1px solid var(--border)", background: "var(--surface)" }} />
           </div>
         ))}
@@ -547,13 +547,13 @@ function MixedOpsMastery({ onCorrect, onWrong }) {
 
 // - Steps -
 const STEPS = [
-  { id: "mult-frac",   label: "Multiply Fractions",        description: "All correct to pass", streak: 1 },
-  { id: "frac-whole",  label: "Fraction x Whole",          description: "All correct to pass", streak: 1 },
-  { id: "reciprocals", label: "Reciprocals",               description: "All correct to pass", streak: 1 },
-  { id: "div-frac",    label: "Divide Fractions",          description: "All correct to pass", streak: 1 },
-  { id: "mult-mixed",  label: "Multiply Mixed Numbers",    description: "All correct to pass", streak: 1 },
-  { id: "div-mixed",   label: "Divide Mixed Numbers",      description: "All correct to pass", streak: 1 },
-  { id: "mixed-ops",   label: "Mixed Operations",          description: "All correct to pass", streak: 1 },
+  { id: "mult-frac",   label: "Multiply Fractions",        description: "All correct to pass. Answer must be in simplest form.", streak: 1 },
+  { id: "frac-whole",  label: "Fraction x Whole",          description: "All correct to pass. Answer must be in simplest form.", streak: 1 },
+  { id: "reciprocals", label: "Reciprocals",               description: "All correct to pass. Answer must be in simplest form.", streak: 1 },
+  { id: "div-frac",    label: "Divide Fractions",          description: "All correct to pass. Answer must be in simplest form.", streak: 1 },
+  { id: "mult-mixed",  label: "Multiply Mixed Numbers",    description: "All correct to pass. Answer must be in simplest form.", streak: 1 },
+  { id: "div-mixed",   label: "Divide Mixed Numbers",      description: "All correct to pass. Answer must be in simplest form.", streak: 1 },
+  { id: "mixed-ops",   label: "Mixed Operations",          description: "All correct to pass. Answer must be in simplest form.", streak: 1 },
 ];
 
 export default function Lesson16MasteryPlayer({ user, topic, onHome }) {
