@@ -288,37 +288,77 @@ const DIV_POOL = [
 const MIX_MULT_POOL = [
   { type: "m*m", w1: 1, n1: 1, d1: 2, w2: 2, n2: 1, d2: 3, rn: 7, rd: 2 },
   { type: "m*m", w1: 2, n1: 1, d1: 4, w2: 1, n2: 2, d2: 3, rn: 15, rd: 4 },
-  { type: "m*m", w1: 1, n1: 2, d1: 3, w2: 2, n2: 1, d2: 4, rn: 25, rd: 12 },
-  { type: "m*m", w1: 2, n1: 1, d1: 3, w2: 1, n2: 3, d2: 4, rn: 77, rd: 24 },
+  { type: "m*m", w1: 1, n1: 2, d1: 3, w2: 2, n2: 1, d2: 4, rn: 15, rd: 4 },
+  { type: "m*m", w1: 2, n1: 1, d1: 3, w2: 1, n2: 3, d2: 4, rn: 49, rd: 12 },
   { type: "m*w", w1: 3, n1: 1, d1: 4, w2: 2, rn: 13, rd: 2 },
   { type: "m*w", w1: 2, n1: 1, d1: 3, w2: 2, rn: 14, rd: 3 },
   { type: "m*f", w1: 2, n1: 1, d1: 2, n2: 3, d2: 4, rn: 15, rd: 8 },
   { type: "m*f", w1: 3, n1: 1, d1: 3, n2: 2, d2: 3, rn: 20, rd: 9 },
   { type: "m*m", w1: 1, n1: 1, d1: 2, w2: 1, n2: 2, d2: 3, rn: 5, rd: 2 },
-  { type: "m*m", w1: 2, n1: 3, d1: 4, w2: 1, n2: 1, d2: 3, rn: 11, rd: 4 },
+  { type: "m*m", w1: 2, n1: 3, d1: 4, w2: 1, n2: 1, d2: 3, rn: 11, rd: 3 },
 ];
 const MIX_DIV_POOL = [
-  { type: "m/m", w1: 3, n1: 1, d1: 2, w2: 1, n2: 1, d2: 4, rn: 14, rd: 5 },
   { type: "m/m", w1: 2, n1: 2, d1: 3, w2: 1, n2: 1, d2: 4, rn: 32, rd: 15 },
   { type: "m/m", w1: 4, n1: 1, d1: 2, w2: 1, n2: 3, d2: 4, rn: 18, rd: 7 },
+  { type: "m/m", w1: 3, n1: 3, d1: 4, w2: 1, n2: 2, d2: 3, rn: 9, rd: 4 },
+  { type: "m/m", w1: 2, n1: 1, d1: 2, w2: 1, n2: 1, d2: 3, rn: 15, rd: 8 },
+  { type: "m/m", w1: 3, n1: 1, d1: 3, w2: 1, n2: 1, d2: 4, rn: 32, rd: 15 },
   { type: "m/w", w1: 3, n1: 1, d1: 2, w2: 2, rn: 7, rd: 4 },
-  { type: "m/w", w1: 5, n1: 1, d1: 3, w2: 3, rn: 16, rd: 9 },
+  { type: "m/w", w1: 4, n1: 1, d1: 2, w2: 3, rn: 3, rd: 2 },
   { type: "m/f", w1: 2, n1: 1, d1: 3, n: 2, d: 3, rn: 7, rd: 2 },
   { type: "m/f", w1: 3, n1: 1, d1: 4, n: 3, d: 4, rn: 13, rd: 3 },
-  { type: "m/m", w1: 3, n1: 3, d1: 4, w2: 1, n2: 2, d2: 3, rn: 9, rd: 4 },
-  { type: "m/m", w1: 2, n1: 1, d1: 2, w2: 1, n2: 1, d2: 3, rn: 27, rd: 16 },
-  { type: "m/w", w1: 4, n1: 1, d1: 2, w2: 3, rn: 3, rd: 2 },
+  { type: "m/m", w1: 4, n1: 1, d1: 3, w2: 1, n2: 3, d2: 4, rn: 52, rd: 21 },
 ];
 
 function getDisplay(p) {
-  if (p.type === "m*m") return { latex: `${mixed(p.w1, p.n1, p.d1)} \\times ${mixed(p.w2, p.n2, p.d2)}`, worked: `Convert: ${frac(p.w1 * p.d1 + p.n1, p.d1)} \\times ${frac(p.w2 * p.d2 + p.n2, p.d2)} = ${frac(p.rn, p.rd)}` };
-  if (p.type === "m*w") return { latex: `${mixed(p.w1, p.n1, p.d1)} \\times ${p.w2}`, worked: `Convert: ${frac(p.w1 * p.d1 + p.n1, p.d1)} \\times ${p.w2} = ${frac(p.rn, p.rd)}` };
-  if (p.type === "m*f") return { latex: `${mixed(p.w1, p.n1, p.d1)} \\times ${frac(p.n2, p.d2)}`, worked: `Convert: ${frac(p.w1 * p.d1 + p.n1, p.d1)} \\times ${frac(p.n2, p.d2)} = ${frac(p.rn, p.rd)}` };
-  if (p.type === "m/m") return { latex: `${mixed(p.w1, p.n1, p.d1)} \\div ${mixed(p.w2, p.n2, p.d2)}`, worked: `Convert: ${frac(p.w1 * p.d1 + p.n1, p.d1)} \\div ${frac(p.w2 * p.d2 + p.n2, p.d2)} = ${frac(p.w1 * p.d1 + p.n1, p.d1)} \\times ${frac(p.d2 * p.w2 + p.n2, p.n2 * p.w2 + (p.n2 === 0 ? 1 : 0))}` };
-  if (p.type === "m/w") return { latex: `${mixed(p.w1, p.n1, p.d1)} \\div ${p.w2}`, worked: `Convert: ${frac(p.w1 * p.d1 + p.n1, p.d1)} \\div ${p.w2} = ${frac(p.rn, p.rd)}` };
-  if (p.type === "w/m") return { latex: `${p.w} \\div ${mixed(p.w2, p.n2, p.d2)}`, worked: `Convert: ${p.w} \\div ${frac(p.w2 * p.d2 + p.n2, p.d2)} = ${p.w} \\times ${frac(p.d2, p.w2 * p.d2 + p.n2)} = ${frac(p.rn, p.rd)}` };
-  if (p.type === "f/m") return { latex: `${frac(p.n, p.d)} \\div ${mixed(p.w2, p.n2, p.d2)}`, worked: `Convert: ${frac(p.n, p.d)} \\div ${frac(p.w2 * p.d2 + p.n2, p.d2)} = ${frac(p.n, p.d)} \\times ${frac(p.d2, p.w2 * p.d2 + p.n2)} = ${frac(p.rn, p.rd)}` };
-  if (p.type === "m/f") return { latex: `${mixed(p.w1, p.n1, p.d1)} \\div ${frac(p.n, p.d)}`, worked: `Convert: ${frac(p.w1 * p.d1 + p.n1, p.d1)} \\div ${frac(p.n, p.d)} = ${frac(p.w1 * p.d1 + p.n1, p.d1)} \\times ${frac(p.d, p.n)} = ${frac(p.rn, p.rd)}` };
+  const imp1 = p.w1 !== undefined ? p.w1 * p.d1 + p.n1 : null;
+  const imp2 = p.w2 !== undefined ? (p.n2 !== undefined ? p.w2 * p.d2 + p.n2 : p.w2) : null;
+  function pf(n,d){ return d===1?String(n):`${n}/${d}`; }
+  function ans(){ return fmtAnswer(p.rn,p.rd); }
+  if (p.type === "m*m") return {
+    latex: `${mixed(p.w1,p.n1,p.d1)} \\times ${mixed(p.w2,p.n2,p.d2)}`,
+    worked: `Step 1: Convert to improper fractions: ${pf(imp1,p.d1)} x ${pf(imp2,p.d2)}
+Step 2: Multiply: ${imp1*imp2}/${p.d1*p.d2} = ${ans()}`
+  };
+  if (p.type === "m*w") return {
+    latex: `${mixed(p.w1,p.n1,p.d1)} \\times ${p.w2}`,
+    worked: `Step 1: Convert: ${pf(imp1,p.d1)} x ${p.w2}
+Step 2: Multiply: ${imp1*p.w2}/${p.d1} = ${ans()}`
+  };
+  if (p.type === "m*f") return {
+    latex: `${mixed(p.w1,p.n1,p.d1)} \\times ${frac(p.n2,p.d2)}`,
+    worked: `Step 1: Convert: ${pf(imp1,p.d1)} x ${pf(p.n2,p.d2)}
+Step 2: Multiply: ${imp1*p.n2}/${p.d1*p.d2} = ${ans()}`
+  };
+  if (p.type === "m/m") {
+    const i2=p.w2*p.d2+p.n2;
+    return {
+      latex: `${mixed(p.w1,p.n1,p.d1)} \\div ${mixed(p.w2,p.n2,p.d2)}`,
+      worked: `Step 1: Convert: ${pf(imp1,p.d1)} / ${pf(i2,p.d2)}
+Step 2: Multiply by reciprocal: ${pf(imp1,p.d1)} x ${pf(p.d2,i2)}
+Step 3: = ${imp1*p.d2}/${p.d1*i2} = ${ans()}`
+    };
+  }
+  if (p.type === "m/w") return {
+    latex: `${mixed(p.w1,p.n1,p.d1)} \\div ${p.w2}`,
+    worked: `Step 1: Convert: ${pf(imp1,p.d1)} / ${p.w2}
+Step 2: Multiply by reciprocal: ${pf(imp1,p.d1)} x 1/${p.w2} = ${ans()}`
+  };
+  if (p.type === "m/f") return {
+    latex: `${mixed(p.w1,p.n1,p.d1)} \\div ${frac(p.n,p.d)}`,
+    worked: `Step 1: Convert: ${pf(imp1,p.d1)} / ${pf(p.n,p.d)}
+Step 2: Multiply by reciprocal: ${pf(imp1,p.d1)} x ${pf(p.d,p.n)} = ${ans()}`
+  };
+  if (p.type === "w/m") return {
+    latex: `${p.w} \\div ${mixed(p.w2,p.n2,p.d2)}`,
+    worked: `Step 1: ${p.w} / ${pf(imp2,p.d2)}
+Step 2: Multiply by reciprocal: ${p.w} x ${pf(p.d2,imp2)} = ${ans()}`
+  };
+  if (p.type === "f/m") return {
+    latex: `${frac(p.n,p.d)} \\div ${mixed(p.w2,p.n2,p.d2)}`,
+    worked: `Step 1: ${pf(p.n,p.d)} / ${pf(imp2,p.d2)}
+Step 2: Multiply by reciprocal: ${pf(p.n,p.d)} x ${pf(p.d2,imp2)} = ${ans()}`
+  };
   return { latex: "", worked: "" };
 }
 
