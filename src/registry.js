@@ -29,6 +29,7 @@ import Lesson12MasteryPlayer, { PerfectSquares12Player } from "./Lesson12Mastery
 import Lesson13MasteryPlayer, { PerfectSquares13Player } from "./Lesson13MasteryPlayer";
 import Lesson14MasteryPlayer, { PerfectCubesPlayer14 } from "./Lesson14MasteryPlayer";
 import Lesson15MasteryPlayer, { PerfectCubes2Player } from "./Lesson15MasteryPlayer";
+import Lesson16MasteryPlayer, { MultZerosPlayer } from "./Lesson16MasteryPlayer";
 
 export const TOPICS = {
   "addition-tables-v1": {
@@ -226,6 +227,20 @@ export const TOPICS = {
     description: "Memorize and drill perfect cubes 6-10, then review all 1-10.",
     subject: "math", gradeLevel: "6+", icon: "", type: "drill", status: "published", order: 27,
     Player: PerfectCubes2Player,
+  },
+  "mult-zeros-v1": {
+    id: "mult-zeros-v1",
+    title: "Multiplying with Zeros",
+    description: "Tutorial and 8-second timed drill, 3 in a row.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "drill", status: "published", order: 29,
+    Player: MultZerosPlayer,
+  },
+  "lesson16-mastery-v1": {
+    id: "lesson16-mastery-v1",
+    title: "HW 16 (019)",
+    description: "Multiplying and dividing fractions, reciprocals, mixed numbers, and mixed operations.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 30,
+    Player: Lesson16MasteryPlayer,
   },
   "lesson15-mastery-v1": {
     id: "lesson15-mastery-v1",
