@@ -554,34 +554,44 @@ function DivMixedMastery({ onCorrect, onWrong }) {
 
 // - Activity 8: Mixed Operations -
 function genMixedOps() {
-  const fracs = [
-    { latex: frac(1, 2), n: 1, d: 1, isNeg: false },
-    { latex: frac(2, 3), n: 2, d: 3, isNeg: false },
-    { latex: frac(3, 4), n: 3, d: 4, isNeg: false },
-    { latex: mixed(1, 1, 2), n: 3, d: 2, isNeg: false },
-    { latex: mixed(2, 1, 3), n: 7, d: 3, isNeg: false },
-    { latex: mixed(1, 3, 4), n: 7, d: 4, isNeg: false },
+  const BASE_FRACS = [
+    { latex: frac(1, 2), n: 1, d: 2, isMixed: false },
+    { latex: frac(2, 3), n: 2, d: 3, isMixed: false },
+    { latex: frac(3, 4), n: 3, d: 4, isMixed: false },
+    { latex: mixed(1, 1, 2), n: 3, d: 2, isMixed: true },
+    { latex: mixed(2, 1, 3), n: 7, d: 3, isMixed: true },
+    { latex: mixed(1, 3, 4), n: 7, d: 4, isMixed: true },
   ];
   const probs = [];
   for (let i = 0; i < 4; i++) {
-    const [f1, f2, f3] = shuffle([...fracs]).slice(0, 3).map(f => {
+    const [f1, f2, f3] = shuffle([...BASE_FRACS]).slice(0, 3).map(f => {
       const neg = Math.random() < 0.5;
-      return { ...f, neg, n: neg ? -f.n : f.n, latex: neg ? `-${f.latex}` : f.latex };
+      // Wrap negative in parens for display: (-\dfrac{1}{2}) or (-1\dfrac{1}{2})
+      const negLatex = `\\left(-${f.latex}\\right)`;
+      return { ...f, neg, n: neg ? -f.n : f.n, latex: neg ? negLatex : f.latex };
     });
     const addSub = randChoice(["+", "-"]);
     const multDiv = randChoice(["\\times", "\\div"]);
     const useParens = Math.random() < 0.5;
+    const hasMixed = f1.isMixed || f2.isMixed || f3.isMixed;
     // (f1 addSub f2) multDiv f3
-    let as_cd = f1.d * f2.d / gcd(Math.abs(f1.d), Math.abs(f2.d));
+    const as_cd = f1.d * f2.d / gcd(Math.abs(f1.d), Math.abs(f2.d));
     const as_n = addSub === "+" ? f1.n * (as_cd / f1.d) + f2.n * (as_cd / f2.d) : f1.n * (as_cd / f1.d) - f2.n * (as_cd / f2.d);
     let rn, rd;
     if (multDiv === "\\times") { rn = as_n * f3.n; rd = as_cd * f3.d; }
-    else { rn = as_n * f3.d; rd = as_cd * f3.n; }
+    else if (f3.n !== 0) { rn = as_n * f3.d; rd = as_cd * f3.n; }
+    else { rn = 0; rd = 1; }
     const [fn, fd] = reduce(rn, rd);
+    // Build display: if f2 is negative and appears after an operator, wrap it
+    const f2display = f2.neg ? `\\left(${f2.latex.replace(/^\\left\(/, "").replace(/\\right\)$/, "")}\\right)` : f2.latex;
+    const f3display = f3.neg ? `\\left(${f3.latex.replace(/^\\left\(/, "").replace(/\\right\)$/, "")}\\right)` : f3.latex;
+    const inner = `${f1.latex} ${addSub} ${f2display}`;
     const latex = useParens
-      ? `\\left(${f1.latex} ${addSub} ${f2.latex}\\right) ${multDiv} ${f3.latex}`
-      : `${f1.latex} ${addSub} ${f2.latex} ${multDiv} ${f3.latex}`;
-    probs.push({ latex, rn: fn, rd: fd, answer: fmtAnswer(fn, fd) });
+      ? `\\left(${inner}\\right) ${multDiv} ${f3display}`
+      : `${inner} ${multDiv} ${f3display}`;
+    // Instruction hint
+    const needsMixed = hasMixed && Math.abs(fn) > fd && fd !== 1;
+    probs.push({ latex, rn: fn, rd: fd, answer: fmtAnswer(fn, fd), hasMixed, needsMixed });
   }
   return probs;
 }
@@ -595,9 +605,12 @@ function MixedOpsMastery({ onCorrect, onWrong }) {
     const results = problems.map((p, i) => answerOk(answers[i], p.rn, p.rd));
     const allOk = results.every(Boolean);
     setFeedback({ results, allOk, answers: [...answers] });
-    if (allOk) onCorrect(); else onWrong();
   };
-  const handleNext = () => { setProblems(genMixedOps()); setAnswers(Array(4).fill("")); setFeedback(null); };
+  const handleNext = () => {
+    const wasOk = feedback?.allOk;
+    setProblems(genMixedOps()); setAnswers(Array(4).fill("")); setFeedback(null);
+    if (wasOk) onCorrect(); else onWrong();
+  };
   const allFilled = answers.every(a => a.trim() !== "");
 
   if (feedback) return (
@@ -626,8 +639,12 @@ function MixedOpsMastery({ onCorrect, onWrong }) {
         {problems.map((p, i) => (
           <div key={i} style={{ background: "var(--bg2)", borderRadius: "var(--radius-sm)", padding: "10px 14px" }}>
             <KaTeXBlock expr={p.latex} />
-            <input value={answers[i]} onChange={e => setAnswers(prev => prev.map((x, j) => j === i ? e.target.value : x))} placeholder=""
-              style={{ textAlign: "center", fontSize: 20, fontFamily: "var(--mono)", fontWeight: 700, padding: "6px 10px", width: "100%", borderRadius: "var(--radius-sm)", border: "1px solid var(--border)", background: "var(--surface)" }} />
+            {p.needsMixed && (
+              <div style={{ fontSize: 17, color: "var(--blue)", marginBottom: 6 }}>
+                If answer is an improper fraction, write it as a mixed number.
+              </div>
+            )}
+            <RowMixedInput value={answers[i]} onChange={v => setAnswers(prev => prev.map((x, j) => j === i ? v : x))} />
           </div>
         ))}
       </div>
