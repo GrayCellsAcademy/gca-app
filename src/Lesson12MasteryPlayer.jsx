@@ -694,7 +694,11 @@ function PrimeMastery({ onCorrect, onWrong }) {
             })}
           </div>
           <button className="btn btn-primary" style={{ width: "100%", fontSize: 20 }}
-            onClick={() => { if (feedback?.correct) onCorrect(); else onWrong(); setFeedback(null); setNums(genPrimeSet()); setAnswers(Array(10).fill("")); }}>Next Problem</button>
+            onClick={() => {
+              const wasCorrect = feedback?.correct;
+              setFeedback(null); setNums(genPrimeSet()); setAnswers(Array(10).fill(""));
+              if (wasCorrect) onCorrect(); else onWrong();
+            }}>Next Problem</button>
         </div>
       ) : (
         <div>
@@ -727,6 +731,7 @@ function PFMastery({ onCorrect, onWrong }) {
   const [feedback, setFeedback] = useState(null);
   const ref = useRef(null);
 
+  if (!n) return null;
   const correct = formatPF(n);
   const factors = primeFactors(n);
 
@@ -749,9 +754,10 @@ function PFMastery({ onCorrect, onWrong }) {
   };
 
   const handleNext = () => {
-    if (feedback?.correct) onCorrect(); else onWrong();
+    const wasCorrect = feedback?.correct;
     setFeedback(null); setInput(""); setN(randChoice(PF_NUMS));
     setTimeout(() => ref.current?.focus(), 80);
+    if (wasCorrect) onCorrect(); else onWrong();
   };
 
   return (
