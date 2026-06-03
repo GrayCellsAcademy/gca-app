@@ -762,7 +762,7 @@ function PFMastery({ onCorrect, onWrong }) {
 
   return (
     <div>
-      <KaTeX expr={String(n)} />
+      <div style={{ textAlign: "center", fontSize: 36, fontWeight: 900, fontFamily: "var(--mono)", marginBottom: 8 }}>{n}</div>
       <div style={{ fontSize: 20, color: "var(--text3)", marginBottom: 14, textAlign: "center" }}>
         Enter prime factorization. Use ^ for exponents, x or * for multiplication.
       </div>
