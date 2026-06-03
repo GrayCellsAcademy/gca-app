@@ -572,7 +572,6 @@ function genMixedOps() {
     });
     const addSub = randChoice(["+", "-"]);
     const multDiv = randChoice(["\\times", "\\div"]);
-    const useParens = Math.random() < 0.5;
     const hasMixed = f1.isMixed || f2.isMixed || f3.isMixed;
     // (f1 addSub f2) multDiv f3
     const as_cd = f1.d * f2.d / gcd(Math.abs(f1.d), Math.abs(f2.d));
@@ -585,10 +584,9 @@ function genMixedOps() {
     // Build display: if f2 is negative and appears after an operator, wrap it
     const f2display = f2.neg ? `\\left(${f2.latex.replace(/^\\left\(/, "").replace(/\\right\)$/, "")}\\right)` : f2.latex;
     const f3display = f3.neg ? `\\left(${f3.latex.replace(/^\\left\(/, "").replace(/\\right\)$/, "")}\\right)` : f3.latex;
+    // Always use parentheses to avoid BODMAS ambiguity
     const inner = `${f1.latex} ${addSub} ${f2display}`;
-    const latex = useParens
-      ? `\\left(${inner}\\right) ${multDiv} ${f3display}`
-      : `${inner} ${multDiv} ${f3display}`;
+    const latex = `\\left(${inner}\\right) ${multDiv} ${f3display}`;
     // Instruction hint
     const needsMixed = hasMixed && Math.abs(fn) > fd && fd !== 1;
     probs.push({ latex, rn: fn, rd: fd, answer: fmtAnswer(fn, fd), hasMixed, needsMixed });
