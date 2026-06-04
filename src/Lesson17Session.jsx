@@ -8,7 +8,6 @@ import {
   gradeLCDMCItem, gradeSolveDirectItem,
   gradeFactorSBSStage1, gradeFactorSBSStage2,
   gradeClearDenomStage1, gradeClearDenomStage2, gradeClearDenomStage3,
-  gradeGCFIdentifyItem,
 } from "./lesson17Questions";
 
 const POINTS = 5;
