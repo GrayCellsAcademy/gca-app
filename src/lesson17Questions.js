@@ -52,6 +52,11 @@ function algOk(input,coeff,exp){
 
 function fmtAlg(coeff,exp){
   if(exp===0)return String(coeff);
+  if(exp<0){
+    const absExp=Math.abs(exp);
+    const denom=absExp===1?"x":`x^${absExp}`;
+    return coeff===1?`1/${denom}`:`${coeff}/${denom}`;
+  }
   const c=coeff===1?"":coeff===-1?"-":String(coeff);
   const x=exp===1?"x":`x^${exp}`;
   return`${c}${x}`;
@@ -119,11 +124,14 @@ export function gradeWarmupD(input,q){return algOk(input,q.rCoeff,q.rExp);}
 
 // - A1: Quotient Rule (positive exponents) 4 simultaneous -
 const QUOT_SIMPLE=[
+  // positive result (numerator exp higher)
   {c1:1,e1:7,c2:1,e2:3,rc:1,re:4},{c1:6,e1:5,c2:2,e2:2,rc:3,re:3},
   {c1:10,e1:8,c2:5,e2:2,rc:2,re:6},{c1:12,e1:9,c2:4,e2:4,rc:3,re:5},
   {c1:8,e1:6,c2:4,e2:1,rc:2,re:5},{c1:9,e1:7,c2:3,e2:3,rc:3,re:4},
-  {c1:15,e1:8,c2:5,e2:3,rc:3,re:5},{c1:6,e1:10,c2:2,e2:4,rc:3,re:6},
-  {c1:1,e1:6,c2:1,e2:2,rc:1,re:4},{c1:4,e1:9,c2:2,e2:5,rc:2,re:4},
+  // negative result (denominator exp higher) -> answer is 1/x^n
+  {c1:1,e1:2,c2:1,e2:5,rc:1,re:-3},{c1:3,e1:3,c2:6,e2:7,rc:1,re:-4},
+  {c1:4,e1:2,c2:8,e2:6,rc:1,re:-4},{c1:2,e1:3,c2:6,e2:5,rc:1,re:-2},
+  {c1:1,e1:4,c2:1,e2:9,rc:1,re:-5},{c1:5,e1:2,c2:10,e2:6,rc:1,re:-4},
 ];
 export function genQuotSimple(){
   const probs=shuffle([...QUOT_SIMPLE]).slice(0,4).map(p=>({
@@ -161,23 +169,16 @@ export function gradeQuotMixed(input,q){
 
 // - A3: Identify GCF multiple choice 5 problems -
 const GCF_ID_POOL=[
-  {expr:"12x+18",gcf:6,options:[2,3,6,9]},
-  {expr:"8x-12",gcf:4,options:[2,4,6,8]},
-  {expr:"15x+25",gcf:5,options:[3,5,10,15]},
-  {expr:"9x^2-6x",gcf:"3x",options:["x","3","3x","9x"]},
-  {expr:"24x^2+16x",gcf:"8x",options:["4x","8","8x","16x"]},
-  {expr:"14x-21",gcf:7,options:[3,7,14,21]},
-  {expr:"18x+27",gcf:9,options:[3,6,9,18]},
-  {expr:"10x^2-15x",gcf:"5x",options:["5","5x","10x","15x"]},
-  {expr:"20x-30",gcf:10,options:[5,10,15,20]},
-  {expr:"6x^2+9x",gcf:"3x",options:["3","3x","6","6x"]},
+  {expr:"12x+18",gcf:6},{expr:"8x-12",gcf:4},{expr:"15x+25",gcf:5},
+  {expr:"9x^2-6x",gcf:"3x"},{expr:"24x^2+16x",gcf:"8x"},{expr:"14x-21",gcf:7},
+  {expr:"18x+27",gcf:9},{expr:"10x^2-15x",gcf:"5x"},{expr:"20x-30",gcf:10},
+  {expr:"6x^2+9x",gcf:"3x"},{expr:"8x^2+12x",gcf:"4x"},{expr:"21x-14",gcf:7},
 ];
 export function genGCFIdentify(){
   const probs=shuffle([...GCF_ID_POOL]).slice(0,5).map(p=>({
     ...p,answer:String(p.gcf),displayAnswer:String(p.gcf),
-    shuffledOptions:shuffle([...p.options]),
   }));
-  return{type:"gcf-identify",problems:probs,prompt:"Select the GCF of each expression."};
+  return{type:"gcf-identify",problems:probs,prompt:"Enter the GCF of each expression."};
 }
 export function gradeGCFIdentifyItem(input,item){
   return String(input).trim()===String(item.gcf);
@@ -308,24 +309,19 @@ export function gradeSolveDirect(input,q){
 export const LESSON17_TOPICS=[
   {id:"warmup-a",     label:"Warm-up: Multiply Fractions",    description:"3/5 x 5/6"},
   {id:"warmup-b",     label:"Warm-up: Divide Mixed Numbers",  description:"2 1/4 / 1 1/2"},
-  {id:"warmup-c",     label:"Warm-up: Factor GCF",            description:"12x - 18"},
-  {id:"warmup-d",     label:"Warm-up: Quotient Rule",         description:"15x^6 / 3x^2"},
   {id:"quot-simple",  label:"A1: Quotient Rule (Basic)",      description:"4 simultaneous"},
-  {id:"quot-mixed",   label:"A2: Quotient Rule (Mixed)",      description:"4 simultaneous"},
-  {id:"gcf-identify", label:"A3: Identify GCF",              description:"5 multiple choice"},
-  {id:"factor-sbs",   label:"A4: Factor GCF (Step by Step)",  description:"2-stage"},
-  {id:"factor-direct",label:"A5: Factor GCF (Direct)",        description:"5 simultaneous"},
-  {id:"lcd-mc",       label:"A6: Find LCD",                   description:"5 multiple choice"},
-  {id:"clear-denom",  label:"A7: Clear Denominators (Steps)", description:"3-stage"},
-  {id:"solve-direct", label:"A8: Solve (Direct)",             description:"4 simultaneous"},
+  {id:"gcf-identify", label:"A2: Identify GCF",              description:"5 free response"},
+  {id:"factor-sbs",   label:"A3: Factor GCF (Step by Step)",  description:"2-stage"},
+  {id:"factor-direct",label:"A4: Factor GCF (Direct)",        description:"5 simultaneous"},
+  {id:"lcd-mc",       label:"A5: Find LCD",                   description:"5 multiple choice"},
+  {id:"clear-denom",  label:"A6: Clear Denominators (Steps)", description:"3-stage"},
+  {id:"solve-direct", label:"A7: Solve (Direct)",             description:"4 simultaneous"},
 ];
 
 export function generateLesson17Question(topicId){
   switch(topicId){
     case "warmup-a":     return genWarmupA();
     case "warmup-b":     return genWarmupB();
-    case "warmup-c":     return genWarmupC();
-    case "warmup-d":     return genWarmupD();
     case "quot-simple":  return genQuotSimple();
     case "quot-mixed":   return genQuotMixed();
     case "gcf-identify": return genGCFIdentify();
@@ -343,10 +339,7 @@ export function gradeLesson17Answer(input,question){
   switch(question.type){
     case "warmup-a":     return gradeWarmupA(input,question);
     case "warmup-b":     return gradeWarmupB(input,question);
-    case "warmup-c":     return gradeWarmupC(input,question);
-    case "warmup-d":     return gradeWarmupD(input,question);
     case "quot-simple":  return gradeQuotSimple(input,question);
-    case "quot-mixed":   return gradeQuotMixed(input,question);
     case "gcf-identify": return gradeGCFIdentify(input,question);
     case "factor-sbs":   return gradeFactorSBSStage2(input,question);
     case "factor-direct":return gradeFactorDirect(input,question);

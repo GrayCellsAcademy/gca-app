@@ -8,6 +8,7 @@ import {
   gradeLCDMCItem, gradeSolveDirectItem,
   gradeFactorSBSStage1, gradeFactorSBSStage2,
   gradeClearDenomStage1, gradeClearDenomStage2, gradeClearDenomStage3,
+  gradeGCFIdentifyItem,
 } from "./lesson17Questions";
 
 const POINTS = 5;
@@ -41,6 +42,27 @@ function algToKatex(str) {
   let s = String(str);
   s = s.replace(/\^(\d+)/g, (_, e) => `^{${e}}`);
   return s;
+}
+// Convert algebraic answer like "3x^3" or "1/x^4" to KaTeX
+function algAnswerToKatex(str) {
+  if (!str) return str;
+  const bs = "\\";
+  let s = String(str);
+  // Handle "1/x^n" -> \dfrac{1}{x^{n}}
+  const frac = s.match(/^(\d+)\/x\^(\d+)$/);
+  if (frac) return `${bs}dfrac{${frac[1]}}{x^{${frac[2]}}}`;
+  const frac1 = s.match(/^(\d+)\/x$/);
+  if (frac1) return `${bs}dfrac{${frac1[1]}}{x}`;
+  // Handle normal: "3x^3" -> "3x^{3}"
+  s = s.replace(/x\^(\d+)/g, (_, e) => `x^{${e}}`);
+  return s;
+}
+// Show quot-simple problem as fraction KaTeX: c1*x^e1 / c2*x^e2
+function quotToFracKatex(item) {
+  const bs = "\\";
+  const num = item.c1 === 1 ? `x^{${item.e1}}` : `${item.c1}x^{${item.e1}}`;
+  const den = item.c2 === 1 ? `x^{${item.e2}}` : `${item.c2}x^{${item.e2}}`;
+  return `${bs}dfrac{${num}}{${den}}`;
 }
 function exprToKatex(str) {
   if (!str) return str;
@@ -211,8 +233,8 @@ function StepInput({ question, onSubmit, submitted, stages }) {
 }
 
 const STEP_TYPES = ["factor-sbs", "clear-denom"];
-const MULTI_ITEM_TYPES = ["quot-simple", "quot-mixed", "factor-direct", "solve-direct"];
-const MC_TYPES = ["gcf-identify", "lcd-mc"];
+const MULTI_ITEM_TYPES = ["quot-simple", "factor-direct", "solve-direct"];
+const MC_TYPES = ["lcd-mc"];
 
 function gradeAnswer(input, question) {
   if (!input || !question) return false;
@@ -233,10 +255,7 @@ function QuestionDisplay({ question: q, revealCorrect }) {
 
   if (q.type === "warmup-a") return simple(`\\dfrac{3}{5} \\times \\dfrac{5}{6}`, q.displayAnswer);
   if (q.type === "warmup-b") return simple(`2\\dfrac{1}{4} \\div 1\\dfrac{1}{2}`, q.displayAnswer);
-  if (q.type === "warmup-c") return simple(algToKatex("12x - 18"), q.displayAnswer);
-  if (q.type === "warmup-d") return simple(`15x^{6} \\div 3x^{2}`, q.displayAnswer);
-
-  if (MULTI_ITEM_TYPES.includes(q.type)) {
+  if (MULTI_ITEM_TYPES.includes(q.type) || q.type === "gcf-identify") {
     const items = q.problems || [];
     if (!revealCorrect) return null;
     return (
@@ -244,7 +263,9 @@ function QuestionDisplay({ question: q, revealCorrect }) {
         {items.map((item, i) => (
           <div key={i} style={{ background: "var(--bg2)", borderRadius: "var(--radius-sm)", padding: "8px 14px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <KaTeX expr={item.display || item.eq || item.expr} />
-            <span style={{ color: "var(--green)", fontWeight: 700, fontFamily: "var(--mono)" }}>{item.displayAnswer}</span>
+            {q.type === "quot-simple" || q.type === "quot-mixed"
+              ? <span style={{ color: "var(--green)", fontWeight: 700 }}><KaTeX expr={algAnswerToKatex(item.displayAnswer)} /></span>
+              : <span style={{ color: "var(--green)", fontWeight: 700, fontFamily: "var(--mono)" }}>{item.displayAnswer}</span>}
           </div>
         ))}
       </div>
@@ -259,7 +280,7 @@ function QuestionDisplay({ question: q, revealCorrect }) {
         {items.map((item, i) => (
           <div key={i} style={{ background: "var(--bg2)", borderRadius: "var(--radius-sm)", padding: "8px 14px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <KaTeX expr={item.eq || algToKatex(item.expr)} />
-            <span style={{ color: "var(--green)", fontWeight: 700, fontFamily: "var(--mono)" }}>GCF/LCD: {item.displayAnswer}</span>
+            <span style={{ color: "var(--green)", fontWeight: 700, fontFamily: "var(--mono)" }}>GCF: {item.displayAnswer}</span>
           </div>
         ))}
       </div>
@@ -282,10 +303,8 @@ function AnswerInput({ question, onSubmit, submitted }) {
   const t = question.type;
 
   if (t === "warmup-a" || t === "warmup-b") return <TextInput onSubmit={onSubmit} submitted={submitted} placeholder="e.g. 1 1/2" />;
-  if (t === "warmup-c" || t === "warmup-d") return <TextInput onSubmit={onSubmit} submitted={submitted} placeholder="e.g. 6(2x-3)" wide />;
-
-  if (t === "quot-simple" || t === "quot-mixed") {
-    return <MultiRowInput items={question.problems} labelFn={p => p.display} onSubmit={onSubmit} submitted={submitted} placeholder="e.g. 3x^3" />;
+  if (t === "quot-simple") {
+    return <MultiRowInput items={question.problems} labelFn={p => quotToFracKatex(p)} onSubmit={onSubmit} submitted={submitted} placeholder="e.g. 3x^3" />;
   }
   if (t === "factor-direct") {
     return <MultiRowInput items={question.problems} labelFn={p => algToKatex(p.expr)} onSubmit={onSubmit} submitted={submitted} placeholder="e.g. 5(3x+5)" />;
@@ -293,7 +312,7 @@ function AnswerInput({ question, onSubmit, submitted }) {
   if (t === "solve-direct") {
     return <MultiRowInput items={question.problems} labelFn={p => p.eq} onSubmit={onSubmit} submitted={submitted} placeholder="e.g. x=1 or 2/3" />;
   }
-  if (t === "gcf-identify") return <MultiMCInput items={question.problems} onSubmit={onSubmit} submitted={submitted} />;
+  if (t === "gcf-identify") return <MultiRowInput items={question.problems} labelFn={p => algToKatex(p.expr)} onSubmit={onSubmit} submitted={submitted} placeholder="e.g. 3x" />;
   if (t === "lcd-mc") return <MultiMCInput items={question.problems} onSubmit={onSubmit} submitted={submitted} />;
 
   if (t === "factor-sbs") {
@@ -320,7 +339,7 @@ function StudentReveal({ result, question }) {
   const isMulti = MULTI_ITEM_TYPES.includes(question?.type);
   const isMC = MC_TYPES.includes(question?.type);
   const graderMap = {
-    "quot-simple": gradeQuotSimpleItem, "quot-mixed": gradeQuotMixedItem,
+    "quot-simple": gradeQuotSimpleItem,
     "factor-direct": gradeFactorDirectItem, "solve-direct": gradeSolveDirectItem,
     "gcf-identify": gradeGCFIdentifyItem, "lcd-mc": gradeLCDMCItem,
   };
@@ -426,7 +445,7 @@ function TeacherLesson17({ session, sessionId }) {
               <input type="number" min={15} max={600} value={timerInput} onChange={e => setTimerInput(Number(e.target.value))}
                 style={{ width: 70, padding: "6px 10px", fontSize: 20, textAlign: "center" }} />
             </div>
-            {session.status === "question" && !isStep && <button className="btn btn-ghost" onClick={handleReveal}>Reveal</button>}
+            {session.status === "question" && <button className="btn btn-ghost" onClick={handleReveal}>Reveal</button>}
             {session.status === "revealing" && (
               <>
                 <button className="btn btn-ghost" onClick={() => handleGenerate()}>Repeat</button>
@@ -480,7 +499,7 @@ function TeacherLesson17({ session, sessionId }) {
                 </div>
                 {question.prompt && <div style={{ fontSize: 20, color: "var(--text2)", marginBottom: 8 }}>{question.prompt}</div>}
                 <QuestionDisplay question={question} revealCorrect={session.status === "revealing"} />
-                {session.status === "question" && session.timerEndsAt && !isStep && (
+                {session.status === "question" && session.timerEndsAt && (
                   <div style={{ marginTop: 12 }}>
                     <TimerBar key={question?.id} endsAt={session.timerEndsAt} totalSeconds={session.timerSeconds}
                       onExpired={async () => { if (!revealedRef.current) await handleReveal(); }} />
