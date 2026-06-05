@@ -30,6 +30,7 @@ import Lesson13MasteryPlayer, { PerfectSquares13Player } from "./Lesson13Mastery
 import Lesson14MasteryPlayer, { PerfectCubesPlayer14 } from "./Lesson14MasteryPlayer";
 import Lesson15MasteryPlayer, { PerfectCubes2Player } from "./Lesson15MasteryPlayer";
 import Lesson16MasteryPlayer, { MultZerosPlayer } from "./Lesson16MasteryPlayer";
+import Lesson17MasteryPlayer, { DivZerosPlayer } from "./Lesson17MasteryPlayer";
 
 export const TOPICS = {
   "addition-tables-v1": {
@@ -234,6 +235,20 @@ export const TOPICS = {
     description: "Tutorial and 8-second timed drill, 3 in a row.",
     subject: "math", gradeLevel: "6+", icon: "", type: "drill", status: "published", order: 29,
     Player: MultZerosPlayer,
+  },
+  "div-zeros-v1": {
+    id: "div-zeros-v1",
+    title: "Division with Zeros",
+    description: "Tutorial and 8-second timed drill, 3 in a row.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "drill", status: "published", order: 31,
+    Player: DivZerosPlayer,
+  },
+  "lesson17-mastery-v1": {
+    id: "lesson17-mastery-v1",
+    title: "HW 17 (019)",
+    description: "Quotient rule, factoring GCF, and solving equations with fractional coefficients.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 32,
+    Player: Lesson17MasteryPlayer,
   },
   "lesson16-mastery-v1": {
     id: "lesson16-mastery-v1",
