@@ -42,6 +42,11 @@ function parseAlg(str){
   // coeff*x^n: "3x^4" or "-3x^4"
   const cxpm=s.match(/^(-?\d+)x\^(\d+)$/);
   if(cxpm)return{coeff:parseInt(cxpm[1]),exp:parseInt(cxpm[2])};
+  // negative exponent: "1/x" or "1/x^n" or "c/x^n"
+  const neg1=s.match(/^(\d+)\/x$/);
+  if(neg1)return{coeff:parseInt(neg1[1]),exp:-1};
+  const negn=s.match(/^(\d+)\/x\^(\d+)$/);
+  if(negn)return{coeff:parseInt(negn[1]),exp:-parseInt(negn[2])};
   return null;
 }
 
@@ -98,15 +103,48 @@ function factoredOk(input,gcfCoeff,gcfExp,innerA,innerB){
   return p.gcfCoeff===gcfCoeff&&p.gcfExp===gcfExp&&p.innerA===innerA&&p.innerB===innerB;
 }
 
-// - Warm-up A: Multiply fractions 3/5 x 5/6 -
+// - Warm-up A: Multiply fractions (cross-cancellation required) -
 export function genWarmupA(){
-  return{type:"warmup-a",n1:3,d1:5,n2:5,d2:6,rn:1,rd:2,answer:"1/2",displayAnswer:"1/2",prompt:"Multiply and simplify."};
+  // Pairs where cross-cancellation is needed: n1 shares factor with d2, n2 shares factor with d1
+  const pool=[
+    {n1:3,d1:5,n2:5,d2:6,rn:1,rd:2},{n1:2,d1:3,n2:3,d2:4,rn:1,rd:2},
+    {n1:4,d1:5,n2:5,d2:8,rn:1,rd:2},{n1:3,d1:4,n2:8,d2:9,rn:2,rd:3},
+    {n1:5,d1:6,n2:3,d2:10,rn:1,rd:4},{n1:7,d1:8,n2:4,d2:21,rn:1,rd:6},
+    {n1:6,d1:7,n2:7,d2:9,rn:2,rd:3},{n1:4,d1:9,n2:3,d2:8,rn:1,rd:6},
+    {n1:9,d1:10,n2:5,d2:18,rn:1,rd:4},{n1:5,d1:8,n2:4,d2:15,rn:1,rd:6},
+  ];
+  const p=randChoice(pool);
+  const ans=p.rn===1&&p.rd===1?"1":p.rd===1?String(p.rn):`${p.rn}/${p.rd}`;
+  return{type:"warmup-a",...p,answer:ans,displayAnswer:ans,prompt:"Multiply and simplify."};
 }
 export function gradeWarmupA(input,q){return fracOk(input,q.rn,q.rd);}
 
-// - Warm-up B: Divide mixed numbers 2 1/4 / 1 1/2 -
+// - Warm-up B: Divide mixed numbers (answer is mixed number > 2, needs simplification) -
 export function genWarmupB(){
-  return{type:"warmup-b",w1:2,n1:1,d1:4,w2:1,n2:1,d2:2,rn:3,rd:2,answer:"1 1/2",displayAnswer:"1 1/2",prompt:"Divide and simplify."};
+  // Verified pool: all answers are mixed numbers > 2 with simplification needed
+  const pool=[
+    {w1:3,n1:3,d1:4,w2:1,n2:1,d2:4,rn:3,rd:1},   // 15/4 / 5/4 = 3 -- skip (integer)
+    {w1:4,n1:1,d1:2,w2:1,n2:3,d2:4,rn:18,rd:7},   // 9/2 / 7/4 = 18/7 = 2 4/7
+    {w1:5,n1:1,d1:3,w2:1,n2:3,d2:4,rn:64,rd:21},  // 16/3 / 7/4 = 64/21 = 3 1/21
+    {w1:3,n1:1,d1:2,w2:1,n2:1,d2:4,rn:14,rd:5},   // 7/2 / 5/4 = 14/5 = 2 4/5
+    {w1:4,n1:2,d1:3,w2:1,n2:1,d2:2,rn:28,rd:9},   // 14/3 / 3/2 = 28/9 = 3 1/9
+    {w1:5,n1:1,d1:2,w2:2,n2:1,d2:6,rn:33,rd:13},  // not clean -- use simpler
+    {w1:3,n1:3,d1:4,w2:1,n2:1,d2:3,rn:9,rd:4},    // 15/4 / 4/3 = 45/16 -- let me recalc
+  ];
+  // Use a clean verified pool
+  const verified=[
+    {w1:4,n1:1,d1:2,w2:1,n2:3,d2:4,rn:18,rd:7},   // 9/2 / 7/4 = 36/14 = 18/7 = 2 4/7
+    {w1:3,n1:1,d1:2,w2:1,n2:1,d2:4,rn:14,rd:5},   // 7/2 / 5/4 = 28/10 = 14/5 = 2 4/5
+    {w1:4,n1:2,d1:3,w2:1,n2:1,d2:2,rn:28,rd:9},   // 14/3 / 3/2 = 28/9 = 3 1/9
+    {w1:5,n1:1,d1:3,w2:1,n2:3,d2:4,rn:64,rd:21},  // 16/3 / 7/4 = 64/21 = 3 1/21
+    {w1:3,n1:3,d1:4,w2:1,n2:1,d2:3,rn:45,rd:16},  // 15/4 / 4/3 = 45/16 = 2 13/16
+    {w1:4,n1:1,d1:4,w2:1,n2:2,d2:3,rn:51,rd:20},  // 17/4 / 5/3 = 51/20 = 2 11/20
+    {w1:5,n1:1,d1:2,w2:1,n2:3,d2:4,rn:22,rd:7},   // 11/2 / 7/4 = 44/14 = 22/7 = 3 1/7
+  ];
+  const p=randChoice(verified);
+  function fmtMixed(n,d){const[rn,rd]=reduce(n,d);if(rd===1)return String(rn);if(rn>rd){const w=Math.floor(rn/rd);const r=rn%rd;return`${w} ${r}/${rd}`;}return`${rn}/${rd}`;}
+  const ans=fmtMixed(p.rn,p.rd);
+  return{type:"warmup-b",...p,answer:ans,displayAnswer:ans,prompt:"Divide and simplify."};
 }
 export function gradeWarmupB(input,q){return fracOk(input,q.rn,q.rd);}
 

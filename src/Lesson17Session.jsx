@@ -114,6 +114,48 @@ function TextInput({ onSubmit, submitted, placeholder, wide }) {
   );
 }
 
+// -- Mixed number input --
+function MixedInput({ onSubmit, submitted }) {
+  const [mode, setMode] = useState("text");
+  const [textVal, setTextVal] = useState("");
+  const [whole, setWhole] = useState(""); const [num, setNum] = useState(""); const [den, setDen] = useState("");
+  const ref = useRef(null);
+  useEffect(() => { setTextVal(""); setWhole(""); setNum(""); setDen(""); setTimeout(() => ref.current?.focus(), 80); }, [submitted]);
+  if (mode === "visual") return (
+    <div>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, justifyContent: "center", marginBottom: 8 }}>
+        <input value={whole} onChange={e => setWhole(e.target.value)} disabled={submitted} placeholder="whole" autoFocus
+          style={{ textAlign: "center", fontSize: 24, fontFamily: "var(--mono)", fontWeight: 800, padding: "8px", width: 70, borderRadius: "var(--radius-sm)", border: "2px solid var(--border)", background: "var(--surface)" }} />
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
+          <input value={num} onChange={e => setNum(e.target.value)} disabled={submitted} placeholder="num"
+            style={{ textAlign: "center", fontSize: 22, fontFamily: "var(--mono)", fontWeight: 800, padding: "4px 8px", width: 60, borderRadius: "var(--radius-sm)", border: "2px solid var(--border)", background: "var(--surface)" }} />
+          <div style={{ width: 60, height: 2, background: "var(--text)", borderRadius: 99 }} />
+          <input value={den} onChange={e => setDen(e.target.value)} disabled={submitted} placeholder="den"
+            style={{ textAlign: "center", fontSize: 22, fontFamily: "var(--mono)", fontWeight: 800, padding: "4px 8px", width: 60, borderRadius: "var(--radius-sm)", border: "2px solid var(--border)", background: "var(--surface)" }} />
+        </div>
+        <button className="btn btn-primary" style={{ fontSize: 20, padding: "10px 20px" }}
+          onClick={() => { if (whole.trim() && num.trim() && den.trim()) onSubmit(`${whole.trim()} ${num.trim()}/${den.trim()}`); }}
+          disabled={submitted || !whole.trim() || !num.trim() || !den.trim()}>OK</button>
+      </div>
+      <button className="btn btn-ghost btn-sm" style={{ width: "100%", fontSize: 18 }} onClick={() => setMode("text")}>Type instead</button>
+    </div>
+  );
+  return (
+    <div>
+      <div style={{ display: "flex", gap: 8, justifyContent: "center", marginBottom: 8 }}>
+        <input ref={ref} value={textVal} onChange={e => setTextVal(e.target.value)}
+          onKeyDown={e => e.key === "Enter" && textVal.trim() && onSubmit(textVal.trim())} disabled={submitted} placeholder=""
+          style={{ textAlign: "center", fontSize: 22, fontFamily: "var(--mono)", fontWeight: 700, padding: "10px", width: 180 }} />
+        <button className="btn btn-primary" style={{ fontSize: 20, padding: "10px 20px" }}
+          onMouseDown={e => { e.preventDefault(); if (textVal.trim()) onSubmit(textVal.trim()); }} disabled={submitted || !textVal.trim()}>OK</button>
+      </div>
+      <button className="btn btn-ghost btn-sm" style={{ width: "100%", fontSize: 18 }} onClick={() => setMode("visual")}>
+        Enter as mixed number &nbsp;<span style={{ fontFamily: "var(--mono)", fontWeight: 900 }}>2 -/-</span>
+      </button>
+    </div>
+  );
+}
+
 // -- Multi-row text input --
 function MultiRowInput({ items, labelFn, onSubmit, submitted, placeholder }) {
   const [answers, setAnswers] = useState((items || []).map(() => ""));
@@ -252,8 +294,8 @@ function QuestionDisplay({ question: q, revealCorrect }) {
     </div>
   );
 
-  if (q.type === "warmup-a") return simple(`\\dfrac{3}{5} \\times \\dfrac{5}{6}`, q.displayAnswer);
-  if (q.type === "warmup-b") return simple(`2\\dfrac{1}{4} \\div 1\\dfrac{1}{2}`, q.displayAnswer);
+  if (q.type === "warmup-a") return simple(`\\dfrac{${q.n1}}{${q.d1}} \\times \\dfrac{${q.n2}}{${q.d2}}`, q.displayAnswer);
+  if (q.type === "warmup-b") return simple(`${q.w1}\\dfrac{${q.n1}}{${q.d1}} \\div ${q.w2}\\dfrac{${q.n2}}{${q.d2}}`, q.displayAnswer);
   if (MULTI_ITEM_TYPES.includes(q.type) || q.type === "gcf-identify") {
     const items = q.problems || [];
     if (!revealCorrect) return null;
@@ -301,7 +343,8 @@ function AnswerInput({ question, onSubmit, submitted }) {
   if (!question) return null;
   const t = question.type;
 
-  if (t === "warmup-a" || t === "warmup-b") return <TextInput onSubmit={onSubmit} submitted={submitted} placeholder="e.g. 1 1/2" />;
+  if (t === "warmup-a") return <TextInput onSubmit={onSubmit} submitted={submitted} placeholder="" />;
+  if (t === "warmup-b") return <MixedInput onSubmit={onSubmit} submitted={submitted} />;
   if (t === "quot-simple") {
     return <MultiRowInput items={question.problems} labelFn={p => quotToFracKatex(p)} onSubmit={onSubmit} submitted={submitted} placeholder="e.g. 3x^3" />;
   }
