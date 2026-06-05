@@ -398,9 +398,8 @@ export const LESSON17_TOPICS=[
   {id:"gcf-identify", label:"A2: Identify GCF",              description:"5 free response"},
   {id:"factor-sbs",   label:"A3: Factor GCF (Step by Step)",  description:"2-stage"},
   {id:"factor-direct",label:"A4: Factor GCF (Direct)",        description:"5 simultaneous"},
-  {id:"lcd-mc",       label:"A5: Find LCD",                   description:"5 multiple choice"},
-  {id:"clear-denom",  label:"A6: Clear Denominators (Steps)", description:"3-stage"},
-  {id:"solve-direct", label:"A7: Solve (Direct)",             description:"4 simultaneous"},
+  {id:"clear-denom",  label:"A5: Clear Denominators (Steps)", description:"3-stage"},
+  {id:"solve-direct", label:"A6: Solve (Direct)",             description:"4 simultaneous"},
 ];
 
 export function generateLesson17Question(topicId){
@@ -412,8 +411,7 @@ export function generateLesson17Question(topicId){
     case "gcf-identify": return genGCFIdentify();
     case "factor-sbs":   return genFactorSBS();
     case "factor-direct":return genFactorDirect();
-    case "lcd-mc":       return genLCDMultiChoice();
-    case "clear-denom":  return genClearDenom();
+case "clear-denom":  return genClearDenom();
     case "solve-direct": return genSolveDirect();
     default:             return genWarmupA();
   }
@@ -428,8 +426,7 @@ export function gradeLesson17Answer(input,question){
     case "gcf-identify": return gradeGCFIdentify(input,question);
     case "factor-sbs":   return gradeFactorSBSStage2(input,question);
     case "factor-direct":return gradeFactorDirect(input,question);
-    case "lcd-mc":       return gradeLCDMC(input,question);
-    case "clear-denom":  return gradeClearDenomStage3(input,question);
+case "clear-denom":  return gradeClearDenomStage3(input,question);
     case "solve-direct": return gradeSolveDirect(input,question);
     default:             return false;
   }

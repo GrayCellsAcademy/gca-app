@@ -5,7 +5,7 @@ import {
   LESSON17_TOPICS, generateLesson17Question, gradeLesson17Answer,
   gradeQuotSimpleItem, gradeQuotMixedItem,
   gradeGCFIdentifyItem, gradeFactorDirectItem,
-  gradeLCDMCItem, gradeSolveDirectItem,
+  gradeSolveDirectItem,
   gradeFactorSBSStage1, gradeFactorSBSStage2,
   gradeClearDenomStage1, gradeClearDenomStage2, gradeClearDenomStage3,
 } from "./lesson17Questions";
@@ -287,7 +287,7 @@ function StepInput({ question, onSubmit, submitted, stages }) {
 
 const STEP_TYPES = ["factor-sbs", "clear-denom"];
 const MULTI_ITEM_TYPES = ["quot-simple", "factor-direct", "solve-direct"];
-const MC_TYPES = ["lcd-mc"];
+const MC_TYPES = [];
 
 function gradeAnswer(input, question) {
   if (!input || !question) return false;
@@ -395,7 +395,7 @@ function StudentReveal({ result, question }) {
   const graderMap = {
     "quot-simple": gradeQuotSimpleItem,
     "factor-direct": gradeFactorDirectItem, "solve-direct": gradeSolveDirectItem,
-    "gcf-identify": gradeGCFIdentifyItem, "lcd-mc": gradeLCDMCItem,
+    "gcf-identify": gradeGCFIdentifyItem,
   };
   return (
     <div>
