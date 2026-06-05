@@ -42,29 +42,57 @@ function parseAlg(str){
   // coeff*x^n: "3x^4" or "-3x^4"
   const cxpm=s.match(/^(-?\d+)x\^(\d+)$/);
   if(cxpm)return{coeff:parseInt(cxpm[1]),exp:parseInt(cxpm[2])};
-  // negative exponent: "1/x" or "1/x^n" or "c/x^n"
+  // negative exponent: "1/x" or "1/x^n"
   const neg1=s.match(/^(\d+)\/x$/);
-  if(neg1)return{coeff:parseInt(neg1[1]),exp:-1};
+  if(neg1)return{coeff:parseInt(neg1[1]),exp:-1,coeffN:parseInt(neg1[1]),coeffD:1};
   const negn=s.match(/^(\d+)\/x\^(\d+)$/);
-  if(negn)return{coeff:parseInt(negn[1]),exp:-parseInt(negn[2])};
+  if(negn)return{coeff:parseInt(negn[1]),exp:-parseInt(negn[2]),coeffN:parseInt(negn[1]),coeffD:1};
+  // fractional coeff with negative exp: "1/(2x^4)" or "3/(2x^3)"
+  const negfrac=s.match(/^(\d+)\/\((\d+)x\^(\d+)\)$/);
+  if(negfrac)return{coeff:0,exp:-parseInt(negfrac[3]),coeffN:parseInt(negfrac[1]),coeffD:parseInt(negfrac[2])};
+  const negfrac1=s.match(/^(\d+)\/\((\d+)x\)$/);
+  if(negfrac1)return{coeff:0,exp:-1,coeffN:parseInt(negfrac1[1]),coeffD:parseInt(negfrac1[2])};
+  // fractional coeff with positive exp: "x/2" or "x^3/4" or "3x^2/4"
+  const posfrac1=s.match(/^(\d+)x\^(\d+)\/(\d+)$/);
+  if(posfrac1)return{coeff:0,exp:parseInt(posfrac1[2]),coeffN:parseInt(posfrac1[1]),coeffD:parseInt(posfrac1[3])};
+  const posfrac2=s.match(/^x\^(\d+)\/(\d+)$/);
+  if(posfrac2)return{coeff:0,exp:parseInt(posfrac2[1]),coeffN:1,coeffD:parseInt(posfrac2[2])};
+  const posfrac3=s.match(/^x\/(\d+)$/);
+  if(posfrac3)return{coeff:0,exp:1,coeffN:1,coeffD:parseInt(posfrac3[1])};
+  const posfrac4=s.match(/^(\d+)x\/(\d+)$/);
+  if(posfrac4)return{coeff:0,exp:1,coeffN:parseInt(posfrac4[1]),coeffD:parseInt(posfrac4[2])};
   return null;
 }
 
-function algOk(input,coeff,exp){
+function algOk(input,coeff,exp,coeffN,coeffD){
   const p=parseAlg(input); if(!p)return false;
-  return p.coeff===coeff&&p.exp===exp;
+  if(p.exp!==exp)return false;
+  // Compare coefficients as fractions
+  const inN=p.coeffN!==undefined?p.coeffN:p.coeff;
+  const inD=p.coeffD!==undefined?p.coeffD:1;
+  const tgN=coeffN!==undefined?coeffN:coeff;
+  const tgD=coeffD!==undefined?coeffD:1;
+  const gi=gcd(Math.abs(inN),inD); const gt=gcd(Math.abs(tgN),tgD);
+  return(inN/gi===tgN/gt)&&(inD/gi===tgD/gt);
 }
 
-function fmtAlg(coeff,exp){
-  if(exp===0)return String(coeff);
+function fmtAlg(coeff,exp,coeffN,coeffD){
+  // coeffN/coeffD is optional fractional coefficient; coeff is integer fallback
+  const cn=coeffN!==undefined?coeffN:coeff;
+  const cd=coeffD!==undefined?coeffD:1;
+  const g=gcd(Math.abs(cn),cd); const rn=cn/g; const rd=cd/g;
+  const isFrac=rd!==1;
+  if(exp===0)return isFrac?`${rn}/${rd}`:String(rn);
   if(exp<0){
     const absExp=Math.abs(exp);
-    const denom=absExp===1?"x":`x^${absExp}`;
-    return coeff===1?`1/${denom}`:`${coeff}/${denom}`;
+    const xPart=absExp===1?"x":`x^${absExp}`;
+    if(isFrac) return `${rn}/(${rd}${xPart})`;
+    return rn===1?`1/${xPart}`:`${rn}/${xPart}`;
   }
-  const c=coeff===1?"":coeff===-1?"-":String(coeff);
-  const x=exp===1?"x":`x^${exp}`;
-  return`${c}${x}`;
+  const xPart=exp===1?"x":`x^${exp}`;
+  if(isFrac) return `${rn}${xPart}/${rd}`;
+  const c=rn===1?"":String(rn);
+  return`${c}${xPart}`;
 }
 
 // Parse factored form: "k(ax+b)" or "kx(ax+b)" or "k(ax-b)"
@@ -162,25 +190,38 @@ export function gradeWarmupD(input,q){return algOk(input,q.rCoeff,q.rExp);}
 
 // - A1: Quotient Rule (positive exponents) 4 simultaneous -
 const QUOT_SIMPLE=[
-  // positive result (numerator exp higher) - coefficients divide evenly
+  // positive result, integer coefficient
   {c1:1,e1:7,c2:1,e2:3,rc:1,re:4},{c1:6,e1:5,c2:2,e2:2,rc:3,re:3},
   {c1:10,e1:8,c2:5,e2:2,rc:2,re:6},{c1:12,e1:9,c2:4,e2:4,rc:3,re:5},
-  {c1:8,e1:6,c2:4,e2:1,rc:2,re:5},{c1:9,e1:7,c2:3,e2:3,rc:3,re:4},
-  {c1:15,e1:8,c2:5,e2:3,rc:3,re:5},{c1:6,e1:10,c2:2,e2:4,rc:3,re:6},
-  // negative result (denominator exp higher) - c1===c2 so coeff cancels to 1
+  {c1:9,e1:7,c2:3,e2:3,rc:3,re:4},{c1:15,e1:8,c2:5,e2:3,rc:3,re:5},
+  // positive result, fractional coefficient (rcN/rcD)
+  {c1:3,e1:5,c2:6,e2:2,rcN:1,rcD:2,re:3},{c1:2,e1:6,c2:8,e2:3,rcN:1,rcD:4,re:3},
+  {c1:4,e1:7,c2:6,e2:2,rcN:2,rcD:3,re:5},{c1:3,e1:8,c2:9,e2:4,rcN:1,rcD:3,re:4},
+  // negative result, integer coefficient (c1===c2)
   {c1:1,e1:2,c2:1,e2:5,rc:1,re:-3},{c1:1,e1:4,c2:1,e2:9,rc:1,re:-5},
   {c1:4,e1:3,c2:4,e2:7,rc:1,re:-4},{c1:3,e1:2,c2:3,e2:6,rc:1,re:-4},
-  {c1:2,e1:1,c2:2,e2:5,rc:1,re:-4},{c1:5,e1:3,c2:5,e2:8,rc:1,re:-5},
+  // negative result, fractional coefficient
+  {c1:3,e1:2,c2:6,e2:7,rcN:1,rcD:2,re:-5},{c1:2,e1:3,c2:8,e2:9,rcN:1,rcD:4,re:-6},
+  {c1:4,e1:1,c2:6,e2:5,rcN:2,rcD:3,re:-4},{c1:3,e1:2,c2:9,e2:8,rcN:1,rcD:3,re:-6},
 ];
 export function genQuotSimple(){
-  const probs=shuffle([...QUOT_SIMPLE]).slice(0,4).map(p=>({
-    ...p,
-    display:`${p.c1===1?"":p.c1}x^{${p.e1}} \\div ${p.c2===1?"":p.c2}x^{${p.e2}}`,
-    answer:fmtAlg(p.rc,p.re),displayAnswer:fmtAlg(p.rc,p.re),
-  }));
+  const probs=shuffle([...QUOT_SIMPLE]).slice(0,4).map(p=>{
+    const n1=p.e1===1?"x":`x^{${p.e1}}`;
+    const n2=p.e2===1?"x":`x^{${p.e2}}`;
+    const c1d=p.c1===1?"":String(p.c1);
+    const c2d=p.c2===1?"":String(p.c2);
+    const rc=p.rcN!==undefined?p.rcN:(p.rc||1);
+    const rd=p.rcD!==undefined?p.rcD:1;
+    const ans=fmtAlg(rc,p.re,p.rcN,p.rcD);
+    return{...p,display:`${c1d}${n1} \\div ${c2d}${n2}`,answer:ans,displayAnswer:ans};
+  });
   return{type:"quot-simple",problems:probs,prompt:"Apply the quotient rule. Simplify."};
 }
-export function gradeQuotSimpleItem(input,item){return algOk(input,item.rc,item.re);}
+export function gradeQuotSimpleItem(input,item){
+  const rc=item.rcN!==undefined?item.rcN:(item.rc||1);
+  const rd=item.rcD!==undefined?item.rcD:1;
+  return algOk(input,rc,item.re,item.rcN,item.rcD);
+}
 export function gradeQuotSimple(input,q){
   try{const ans=JSON.parse(input);return q.problems.every((p,i)=>gradeQuotSimpleItem(ans[i],p));}catch{return false;}
 }

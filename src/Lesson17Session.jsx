@@ -47,20 +47,32 @@ function algAnswerToKatex(str) {
   if (!str) return str;
   const bs = "\\";
   let s = String(str);
-  // Handle "1/x^n" -> \dfrac{1}{x^{n}}
-  const frac = s.match(/^(\d+)\/x\^(\d+)$/);
-  if (frac) return `${bs}dfrac{${frac[1]}}{x^{${frac[2]}}}`;
-  const frac1 = s.match(/^(\d+)\/x$/);
-  if (frac1) return `${bs}dfrac{${frac1[1]}}{x}`;
-  // Handle normal: "3x^3" -> "3x^{3}"
+  // "1/(2x^4)" -> \dfrac{1}{2x^{4}}
+  const negfrac = s.match(/^(\d+)\/\((\d+)x\^(\d+)\)$/);
+  if (negfrac) return `${bs}dfrac{${negfrac[1]}}{${negfrac[2]}x^{${negfrac[3]}}}`;
+  const negfrac1 = s.match(/^(\d+)\/\((\d+)x\)$/);
+  if (negfrac1) return `${bs}dfrac{${negfrac1[1]}}{${negfrac1[2]}x}`;
+  // "1/x^4" -> \dfrac{1}{x^{4}}
+  const neg = s.match(/^(\d+)\/x\^(\d+)$/);
+  if (neg) return `${bs}dfrac{${neg[1]}}{x^{${neg[2]}}}`;
+  const neg1 = s.match(/^(\d+)\/x$/);
+  if (neg1) return `${bs}dfrac{${neg1[1]}}{x}`;
+  // "x^3/4" or "3x^3/4" -> \dfrac{...}{4}
+  const posfrac = s.match(/^(\d*)x\^(\d+)\/(\d+)$/);
+  if (posfrac) return `${bs}dfrac{${posfrac[1] || 1}x^{${posfrac[2]}}}{${posfrac[3]}}`;
+  const posfrac1 = s.match(/^(\d*)x\/(\d+)$/);
+  if (posfrac1) return `${bs}dfrac{${posfrac1[1] || 1}x}{${posfrac1[2]}}`;
+  // Normal: "3x^3" -> "3x^{3}"
   s = s.replace(/x\^(\d+)/g, (_, e) => `x^{${e}}`);
   return s;
 }
 // Show quot-simple problem as fraction KaTeX: c1*x^e1 / c2*x^e2
 function quotToFracKatex(item) {
   const bs = "\\";
-  const num = item.c1 === 1 ? `x^{${item.e1}}` : `${item.c1}x^{${item.e1}}`;
-  const den = item.c2 === 1 ? `x^{${item.e2}}` : `${item.c2}x^{${item.e2}}`;
+  const xn = item.e1 === 1 ? "x" : `x^{${item.e1}}`;
+  const xd = item.e2 === 1 ? "x" : `x^{${item.e2}}`;
+  const num = item.c1 === 1 ? xn : `${item.c1}${xn}`;
+  const den = item.c2 === 1 ? xd : `${item.c2}${xd}`;
   return `${bs}dfrac{${num}}{${den}}`;
 }
 function exprToKatex(str) {
