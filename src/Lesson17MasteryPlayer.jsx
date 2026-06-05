@@ -111,8 +111,15 @@ function exprKatex(s) {
   return s.replace(/x\^(\d+)/g, (_, e) => `x^{${e}}`);
 }
 function eqKatex(s) {
-  // Convert equation string with fractions to katex
-  return s.replace(/(\d+)\/(\d+)/g, (_, n, d) => `\\dfrac{${n}}{${d}}`).replace(/x\^(\d+)/g, (_, e) => `x^{${e}}`);
+  // Convert "(a/b)x" -> "\left(\dfrac{a}{b}\right)x" for proper sized parens
+  const bs = "\\";
+  let r = String(s);
+  r = r.replace(/x\^(\d+)/g, (_, e) => `x^{${e}}`);
+  // Replace "(n/d)" with \left(\dfrac{n}{d}\right)
+  r = r.replace(/\((\d+)\/(\d+)\)/g, (_, n, d) => `${bs}left(${bs}dfrac{${n}}{${d}}${bs}right)`);
+  // Replace remaining n/d not in parens
+  r = r.replace(/(\d+)\/(\d+)/g, (_, n, d) => `${bs}dfrac{${n}}{${d}}`);
+  return r;
 }
 
 // -- Shared UI --
@@ -359,13 +366,29 @@ const FACTOR_POOL = [
   { expr: "9x^2 - 6x", gcfC: 3, gcfE: 1, aA: 3, aB: -2, answer: "3x(3x-2)" },
   { expr: "24x^2 + 16x", gcfC: 8, gcfE: 1, aA: 3, aB: 2, answer: "8x(3x+2)" },
   { expr: "14x - 21", gcfC: 7, gcfE: 0, aA: 2, aB: -3, answer: "7(2x-3)" },
-  { expr: "18x + 27", gcfC: 9, gcfE: 0, aA: 2, aB: 3, answer: "9(2x+3)" },
   { expr: "10x^2 - 15x", gcfC: 5, gcfE: 1, aA: 2, aB: -3, answer: "5x(2x-3)" },
-  { expr: "20x + 30", gcfC: 10, gcfE: 0, aA: 2, aB: 3, answer: "10(2x+3)" },
-  { expr: "6x^2 + 9x", gcfC: 3, gcfE: 1, aA: 2, aB: 3, answer: "3x(2x+3)" },
-  { expr: "16x - 24", gcfC: 8, gcfE: 0, aA: 2, aB: -3, answer: "8(2x-3)" },
   { expr: "21x^2 - 14x", gcfC: 7, gcfE: 1, aA: 3, aB: -2, answer: "7x(3x-2)" },
+  { expr: "16x + 20", gcfC: 4, gcfE: 0, aA: 4, aB: 5, answer: "4(4x+5)" },
+  { expr: "12x^2 + 8x", gcfC: 4, gcfE: 1, aA: 3, aB: 2, answer: "4x(3x+2)" },
+  { expr: "18x - 12", gcfC: 6, gcfE: 0, aA: 3, aB: -2, answer: "6(3x-2)" },
+  { expr: "25x + 15", gcfC: 5, gcfE: 0, aA: 5, aB: 3, answer: "5(5x+3)" },
+  { expr: "14x^2 - 28x", gcfC: 14, gcfE: 1, aA: 1, aB: -2, answer: "14x(x-2)" },
+  { expr: "30x - 18", gcfC: 6, gcfE: 0, aA: 5, aB: -3, answer: "6(5x-3)" },
+  { expr: "20x^2 + 12x", gcfC: 4, gcfE: 1, aA: 5, aB: 3, answer: "4x(5x+3)" },
+  { expr: "9x - 15", gcfC: 3, gcfE: 0, aA: 3, aB: -5, answer: "3(3x-5)" },
 ];
+
+function genFactorSet() {
+  // Ensure no two problems have the same inner expression (aA,aB pair)
+  const shuffled = shuffle([...FACTOR_POOL]);
+  const seen = new Set(); const result = [];
+  for (const p of shuffled) {
+    const key = `${p.aA},${p.aB}`;
+    if (!seen.has(key)) { seen.add(key); result.push(p); }
+    if (result.length === 6) break;
+  }
+  return result;
+}
 
 function parseFactored(str) {
   const s = String(str || "").trim().replace(/\s+/g, "").replace(/\u2013/g, "-").replace(/\u2212/g, "-");
@@ -386,7 +409,7 @@ function factoredOk(input, p) {
 }
 
 function FactorMastery({ onCorrect, onWrong }) {
-  const [problems, setProblems] = useState(() => shuffle([...FACTOR_POOL]).slice(0, 6));
+  const [problems, setProblems] = useState(() => genFactorSet());
   return (
     <SixMastery
       problems={problems}
@@ -396,8 +419,8 @@ function FactorMastery({ onCorrect, onWrong }) {
         const gcf = p.gcfE === 0 ? String(p.gcfC) : `${p.gcfC}x`;
         return `GCF = ${gcf}\nFactor out: ${p.answer}`;
       }}
-      onCorrect={() => { setProblems(shuffle([...FACTOR_POOL]).slice(0, 6)); onCorrect(); }}
-      onWrong={() => { setProblems(shuffle([...FACTOR_POOL]).slice(0, 6)); onWrong(); }}
+      onCorrect={() => { setProblems(genFactorSet()); onCorrect(); }}
+      onWrong={() => { setProblems(genFactorSet()); onWrong(); }}
     />
   );
 }
@@ -417,28 +440,42 @@ const CLEAR_INT_POOL = [
 ];
 
 const CLEAR_FRAC_POOL = [
+  // Fractional solutions (60%+)
   { eq: "(1/2)x + (1/3) = (3/4)", lcd: 12, cleared: "6x + 4 = 9", xNum: 5, xDen: 6, answer: "5/6" },
   { eq: "(2/3)x - (1/4) = (5/6)", lcd: 12, cleared: "8x - 3 = 10", xNum: 13, xDen: 8, answer: "1 5/8" },
-  { eq: "(1/4)x + (1/6) = (5/12)", lcd: 12, cleared: "3x + 2 = 5", xNum: 1, xDen: 1, answer: "1" },
   { eq: "(3/4)x - (1/3) = (5/6)", lcd: 12, cleared: "9x - 4 = 10", xNum: 14, xDen: 9, answer: "1 5/9" },
-  { eq: "(1/3)x + (1/4) = (7/12)", lcd: 12, cleared: "4x + 3 = 7", xNum: 1, xDen: 1, answer: "1" },
   { eq: "(2/5)x - (1/2) = (1/10)", lcd: 10, cleared: "4x - 5 = 1", xNum: 3, xDen: 2, answer: "1 1/2" },
   { eq: "(1/6)x + (1/4) = (1/3)", lcd: 12, cleared: "2x + 3 = 4", xNum: 1, xDen: 2, answer: "1/2" },
   { eq: "(3/5)x + (1/2) = (7/10)", lcd: 10, cleared: "6x + 5 = 7", xNum: 1, xDen: 3, answer: "1/3" },
-  { eq: "(5/6)x - (1/3) = (1/2)", lcd: 6, cleared: "5x - 2 = 3", xNum: 1, xDen: 1, answer: "1" },
-  { eq: "(2/3)x + (3/4) = (17/12)", lcd: 12, cleared: "8x + 9 = 17", xNum: 1, xDen: 1, answer: "1" },
+  { eq: "(1/4)x - (1/3) = (1/6)", lcd: 12, cleared: "3x - 4 = 2", xNum: 2, xDen: 1, answer: "2" },
+  { eq: "(3/8)x + (1/4) = (5/8)", lcd: 8, cleared: "3x + 2 = 5", xNum: 1, xDen: 1, answer: "1" },
+  { eq: "(5/6)x - (1/4) = (7/12)", lcd: 12, cleared: "10x - 3 = 7", xNum: 1, xDen: 1, answer: "1" },
+  { eq: "(2/3)x + (1/6) = (5/6)", lcd: 6, cleared: "4x + 1 = 5", xNum: 1, xDen: 1, answer: "1" },
+  { eq: "(1/3)x - (1/4) = (1/12)", lcd: 12, cleared: "4x - 3 = 1", xNum: 1, xDen: 1, answer: "1" },
+  { eq: "(5/8)x - (1/4) = (3/8)", lcd: 8, cleared: "5x - 2 = 3", xNum: 1, xDen: 1, answer: "1" },
+  { eq: "(3/4)x + (1/6) = (11/12)", lcd: 12, cleared: "9x + 2 = 11", xNum: 1, xDen: 1, answer: "1" },
+  { eq: "(2/7)x + (1/7) = (3/7)", lcd: 7, cleared: "2x + 1 = 3", xNum: 1, xDen: 1, answer: "1" },
 ];
 
-function ClearDenomMastery({ pool, onCorrect, onWrong }) {
-  const [problems, setProblems] = useState(() => shuffle([...pool]).slice(0, 6));
+function genClearFracSet() {
+  // Pick 6: ~60% fraction solutions, ~40% integer
+  const fracSols = CLEAR_FRAC_POOL.filter(p => p.xDen !== 1);
+  const intSols = CLEAR_FRAC_POOL.filter(p => p.xDen === 1);
+  const picked = [...shuffle([...fracSols]).slice(0, 4), ...shuffle([...intSols]).slice(0, 2)];
+  return shuffle(picked);
+}
+
+function ClearDenomMastery({ pool, genFn, onCorrect, onWrong }) {
+  const gen = genFn || (() => shuffle([...pool]).slice(0, 6));
+  const [problems, setProblems] = useState(() => gen());
   return (
     <SixMastery
       problems={problems}
       renderProblem={p => <KaTeX expr={eqKatex(p.eq)} />}
       gradeProblem={(input, p) => fracOk(input, p.xNum, p.xDen)}
       workedSolution={p => `LCD = ${p.lcd}\nMultiply through: ${p.cleared}\nSolve: x = ${p.answer}`}
-      onCorrect={() => { setProblems(shuffle([...pool]).slice(0, 6)); onCorrect(); }}
-      onWrong={() => { setProblems(shuffle([...pool]).slice(0, 6)); onWrong(); }}
+      onCorrect={() => { setProblems(gen()); onCorrect(); }}
+      onWrong={() => { setProblems(gen()); onWrong(); }}
     />
   );
 }
@@ -519,7 +556,7 @@ export default function Lesson17MasteryPlayer({ user, topic, onHome }) {
           {step.id === "quotient"   && <QuotMastery     key={stepIdx} onCorrect={handleCorrect} onWrong={handleWrong} />}
           {step.id === "factor"     && <FactorMastery   key={stepIdx} onCorrect={handleCorrect} onWrong={handleWrong} />}
           {step.id === "clear-int"  && <ClearDenomMastery key={stepIdx} pool={CLEAR_INT_POOL}  onCorrect={handleCorrect} onWrong={handleWrong} />}
-          {step.id === "clear-frac" && <ClearDenomMastery key={stepIdx} pool={CLEAR_FRAC_POOL} onCorrect={handleCorrect} onWrong={handleWrong} />}
+          {step.id === "clear-frac" && <ClearDenomMastery key={stepIdx} genFn={genClearFracSet} onCorrect={handleCorrect} onWrong={handleWrong} />}
         </div>
       </div>
     </div>
