@@ -52,6 +52,11 @@ function parseAlg(str){
   if(negfrac)return{coeff:0,exp:-parseInt(negfrac[3]),coeffN:parseInt(negfrac[1]),coeffD:parseInt(negfrac[2])};
   const negfrac1=s.match(/^(\d+)\/\((\d+)x\)$/);
   if(negfrac1)return{coeff:0,exp:-1,coeffN:parseInt(negfrac1[1]),coeffD:parseInt(negfrac1[2])};
+  // also accept without parens: "1/2x^4" or "1/2x" meaning 1/(2x^4)
+  const negfracNP=s.match(/^(\d+)\/(\d+)x\^(\d+)$/);
+  if(negfracNP)return{coeff:0,exp:-parseInt(negfracNP[3]),coeffN:parseInt(negfracNP[1]),coeffD:parseInt(negfracNP[2])};
+  const negfracNP1=s.match(/^(\d+)\/(\d+)x$/);
+  if(negfracNP1)return{coeff:0,exp:-1,coeffN:parseInt(negfracNP1[1]),coeffD:parseInt(negfracNP1[2])};
   // fractional coeff with positive exp: "x/2" or "x^3/4" or "3x^2/4"
   const posfrac1=s.match(/^(\d+)x\^(\d+)\/(\d+)$/);
   if(posfrac1)return{coeff:0,exp:parseInt(posfrac1[2]),coeffN:parseInt(posfrac1[1]),coeffD:parseInt(posfrac1[3])};
