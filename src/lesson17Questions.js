@@ -162,14 +162,15 @@ export function gradeWarmupD(input,q){return algOk(input,q.rCoeff,q.rExp);}
 
 // - A1: Quotient Rule (positive exponents) 4 simultaneous -
 const QUOT_SIMPLE=[
-  // positive result (numerator exp higher)
+  // positive result (numerator exp higher) - coefficients divide evenly
   {c1:1,e1:7,c2:1,e2:3,rc:1,re:4},{c1:6,e1:5,c2:2,e2:2,rc:3,re:3},
   {c1:10,e1:8,c2:5,e2:2,rc:2,re:6},{c1:12,e1:9,c2:4,e2:4,rc:3,re:5},
   {c1:8,e1:6,c2:4,e2:1,rc:2,re:5},{c1:9,e1:7,c2:3,e2:3,rc:3,re:4},
-  // negative result (denominator exp higher) -> answer is 1/x^n
-  {c1:1,e1:2,c2:1,e2:5,rc:1,re:-3},{c1:3,e1:3,c2:6,e2:7,rc:1,re:-4},
-  {c1:4,e1:2,c2:8,e2:6,rc:1,re:-4},{c1:2,e1:3,c2:6,e2:5,rc:1,re:-2},
-  {c1:1,e1:4,c2:1,e2:9,rc:1,re:-5},{c1:5,e1:2,c2:10,e2:6,rc:1,re:-4},
+  {c1:15,e1:8,c2:5,e2:3,rc:3,re:5},{c1:6,e1:10,c2:2,e2:4,rc:3,re:6},
+  // negative result (denominator exp higher) - c1===c2 so coeff cancels to 1
+  {c1:1,e1:2,c2:1,e2:5,rc:1,re:-3},{c1:1,e1:4,c2:1,e2:9,rc:1,re:-5},
+  {c1:4,e1:3,c2:4,e2:7,rc:1,re:-4},{c1:3,e1:2,c2:3,e2:6,rc:1,re:-4},
+  {c1:2,e1:1,c2:2,e2:5,rc:1,re:-4},{c1:5,e1:3,c2:5,e2:8,rc:1,re:-5},
 ];
 export function genQuotSimple(){
   const probs=shuffle([...QUOT_SIMPLE]).slice(0,4).map(p=>({
