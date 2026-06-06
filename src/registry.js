@@ -31,6 +31,7 @@ import Lesson14MasteryPlayer, { PerfectCubesPlayer14 } from "./Lesson14MasteryPl
 import Lesson15MasteryPlayer, { PerfectCubes2Player } from "./Lesson15MasteryPlayer";
 import Lesson16MasteryPlayer, { MultZerosPlayer } from "./Lesson16MasteryPlayer";
 import Lesson17MasteryPlayer, { DivZerosPlayer } from "./Lesson17MasteryPlayer";
+import Lesson18MasteryPlayer, { DecMentalPlayer } from "./Lesson18MasteryPlayer";
 
 export const TOPICS = {
   "addition-tables-v1": {
@@ -242,6 +243,20 @@ export const TOPICS = {
     description: "Tutorial and 8-second timed drill, 3 in a row.",
     subject: "math", gradeLevel: "6+", icon: "", type: "drill", status: "published", order: 31,
     Player: DivZerosPlayer,
+  },
+  "dec-mental-v1": {
+    id: "dec-mental-v1",
+    title: "Decimal x 10 / 100 / 1000",
+    description: "6-second timed drill: multiply or divide decimals by powers of 10.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "drill", status: "published", order: 33,
+    Player: DecMentalPlayer,
+  },
+  "lesson18-mastery-v1": {
+    id: "lesson18-mastery-v1",
+    title: "HW 18 (019)",
+    description: "Place value, decimal-fraction conversion, operations, and metric length.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 34,
+    Player: Lesson18MasteryPlayer,
   },
   "lesson17-mastery-v1": {
     id: "lesson17-mastery-v1",
