@@ -554,6 +554,7 @@ function ClearDenomMastery({ pool, genFn, onCorrect, onWrong }) {
       workedSolution={p => `LCD = ${p.lcd}\nMultiply through: ${p.cleared}\nSolve: x = ${p.answer}`}
       onCorrect={() => { setProblems(gen()); onCorrect(); }}
       onWrong={() => { setProblems(gen()); onWrong(); }}
+      useMixed
     />
   );
 }
