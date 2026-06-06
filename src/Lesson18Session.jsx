@@ -242,9 +242,9 @@ function PlaceValueDisplay({ item }) {
 
 const STEP_TYPES = ["add-dec-sbs", "sub-dec-sbs", "mult-dec-sbs"];
 const MULTI_TYPES = ["add-sub-direct", "mult-dec-direct", "metric-adj", "metric-nonadj", "metric-mixed"];
-const MC_TYPES = ["place-value", "dec-frac-mc"];
+const MC_TYPES = ["place-value"];
 const LIST_TYPES = ["decimal-desc", "dec-frac-free", "count-places"];
-const TWO_FIELD_TYPES = ["equiv-dec", "align-dec"];
+const TWO_FIELD_TYPES = ["align-dec"];
 
 function gradeAnswer(input, question) {
   if (!input || !question) return false;
@@ -309,13 +309,10 @@ function AnswerInput({ question, onSubmit, submitted }) {
   if (t === "warmup-c" || t === "warmup-d") return <TextInput onSubmit={onSubmit} submitted={submitted} placeholder="" wide />;
 
   if (t === "place-value") return <MCRowInput items={question.items} labelFn={item => item.number} onSubmit={onSubmit} submitted={submitted} />;
-  if (t === "dec-frac-mc") return <MCRowInput items={question.items} labelFn={item => String(item.dec)} onSubmit={onSubmit} submitted={submitted} />;
-
   if (t === "decimal-desc") return <MultiRowInput items={question.items} labelFn={item => item.desc} onSubmit={onSubmit} submitted={submitted} placeholder="e.g. 5.3" />;
   if (t === "dec-frac-free") return <MultiRowInput items={question.items} labelFn={item => String(item.dec)} onSubmit={onSubmit} submitted={submitted} placeholder="e.g. 3/4" />;
   if (t === "count-places") return <MultiRowInput items={question.items} labelFn={item => `${item.a} and ${item.b}`} onSubmit={onSubmit} submitted={submitted} placeholder="# places" />;
 
-  if (t === "equiv-dec") return <TwoFieldInput items={question.items} labelFn={item => item.dec} onSubmit={onSubmit} submitted={submitted} ph1="e.g. 0.30" ph2="e.g. 0.300" />;
   if (t === "align-dec") return <TwoFieldInput items={question.items} labelFn={item => `${item.a} and ${item.b}`} onSubmit={onSubmit} submitted={submitted} ph1={`${question.items?.[0]?.a || ""}`} ph2={`${question.items?.[0]?.b || ""}`} />;
 
   if (t === "add-sub-direct") return <MultiRowInput items={question.problems} labelFn={p => p.expr} onSubmit={onSubmit} submitted={submitted} placeholder="answer" />;
@@ -353,8 +350,7 @@ function StudentReveal({ result, question }) {
   const isMulti = [...MULTI_TYPES, ...LIST_TYPES, ...MC_TYPES, ...TWO_FIELD_TYPES].includes(question?.type);
 
   const graderMap = {
-    "place-value": gradePlaceValueItem, "dec-frac-mc": gradeDecToFracMCItem,
-    "decimal-desc": gradeDecimalDescItem, "dec-frac-free": gradeDecToFracFreeItem,
+    "place-value": gradePlaceValueItem, "decimal-desc": gradeDecimalDescItem, "dec-frac-free": gradeDecToFracFreeItem,
     "count-places": gradeCountPlacesItem,
     "add-sub-direct": gradeAddSubDirectItem, "mult-dec-direct": gradeMultDecDirectItem,
     "metric-adj": gradeMetricAdjItem, "metric-nonadj": gradeMetricNonAdjItem, "metric-mixed": gradeMetricMixedItem,

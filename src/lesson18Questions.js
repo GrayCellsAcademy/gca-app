@@ -81,14 +81,16 @@ export function gradePlaceValue(input,q){
 const DECIMAL_DESCRIPTIONS=[
   {desc:"five and three tenths",value:5.3,answer:"5.3"},
   {desc:"twelve and forty-seven hundredths",value:12.47,answer:"12.47"},
-  {desc:"zero and six hundred twenty-three thousandths",value:0.623,answer:"0.623"},
+  {desc:"six hundred twenty-three thousandths",value:0.623,answer:"0.623"},
   {desc:"eight and five hundredths",value:8.05,answer:"8.05"},
-  {desc:"one and two hundred fifty thousandths",value:1.250,answer:"1.25"},
+  {desc:"one and two hundred fifty thousandths",value:1.25,answer:"1.25"},
   {desc:"three and seven tenths",value:3.7,answer:"3.7"},
   {desc:"twenty and four hundredths",value:20.04,answer:"20.04"},
   {desc:"nine thousandths",value:0.009,answer:"0.009"},
   {desc:"six and fifteen hundredths",value:6.15,answer:"6.15"},
   {desc:"forty-two and eight tenths",value:42.8,answer:"42.8"},
+  {desc:"forty-five thousandths",value:0.045,answer:"0.045"},
+  {desc:"seven hundredths",value:0.07,answer:"0.07"},
 ];
 export function genDecimalDesc(){
   const items=shuffle([...DECIMAL_DESCRIPTIONS]).slice(0,5);
@@ -368,19 +370,17 @@ export const LESSON18_TOPICS=[
   {id:"warmup-d",       label:"Warm-up: Quotient Rule",              description:"15x^6 / 3x^2"},
   {id:"place-value",    label:"A1: Place Value",                     description:"6 simultaneous MC"},
   {id:"decimal-desc",   label:"A2: Write Decimal from Description",  description:"5 problems"},
-  {id:"dec-frac-mc",    label:"A3: Decimal to Fraction (MC)",        description:"5 multiple choice"},
-  {id:"dec-frac-free",  label:"A4: Decimal to Fraction (Free)",      description:"5 problems"},
-  {id:"equiv-dec",      label:"A5: Equivalent Decimals",             description:"3 problems"},
-  {id:"align-dec",      label:"A6: Align Decimals",                  description:"3 problems"},
-  {id:"add-dec-sbs",    label:"A7: Add Decimals (Steps)",            description:"2-stage"},
-  {id:"sub-dec-sbs",    label:"A8: Subtract Decimals (Steps)",       description:"2-stage"},
-  {id:"add-sub-direct", label:"A9: Add/Subtract Direct",             description:"4 simultaneous"},
-  {id:"count-places",   label:"A10: Count Decimal Places",           description:"5 problems"},
-  {id:"mult-dec-sbs",   label:"A11: Multiply Decimals (Steps)",      description:"3-stage"},
-  {id:"mult-dec-direct",label:"A12: Multiply Decimals Direct",       description:"4 simultaneous"},
-  {id:"metric-adj",     label:"A13: Adjacent Metric Units",          description:"6 simultaneous"},
-  {id:"metric-nonadj",  label:"A14: Non-Adjacent Metric Units",      description:"6 simultaneous"},
-  {id:"metric-mixed",   label:"A15: Mixed Metric Conversions",       description:"4 simultaneous"},
+  {id:"dec-frac-free",  label:"A3: Decimal to Fraction",             description:"5 problems"},
+  {id:"align-dec",      label:"A4: Align Decimals",                  description:"3 problems"},
+  {id:"add-dec-sbs",    label:"A5: Add Decimals (Steps)",            description:"2-stage"},
+  {id:"sub-dec-sbs",    label:"A6: Subtract Decimals (Steps)",       description:"2-stage"},
+  {id:"add-sub-direct", label:"A7: Add/Subtract Direct",             description:"4 simultaneous"},
+  {id:"count-places",   label:"A8: Count Decimal Places",           description:"5 problems"},
+  {id:"mult-dec-sbs",   label:"A9: Multiply Decimals (Steps)",      description:"3-stage"},
+  {id:"mult-dec-direct",label:"A10: Multiply Decimals Direct",       description:"4 simultaneous"},
+  {id:"metric-adj",     label:"A11: Adjacent Metric Units",          description:"6 simultaneous"},
+  {id:"metric-nonadj",  label:"A12: Non-Adjacent Metric Units",      description:"6 simultaneous"},
+  {id:"metric-mixed",   label:"A13: Mixed Metric Conversions",       description:"4 simultaneous"},
 ];
 
 export function generateLesson18Question(topicId){
@@ -391,10 +391,8 @@ export function generateLesson18Question(topicId){
     case "warmup-d":       return genWarmupD();
     case "place-value":    return genPlaceValue();
     case "decimal-desc":   return genDecimalDesc();
-    case "dec-frac-mc":    return genDecToFracMC();
-    case "dec-frac-free":  return genDecToFracFree();
-    case "equiv-dec":      return genEquivDec();
-    case "align-dec":      return genAlignDec();
+case "dec-frac-free":  return genDecToFracFree();
+case "align-dec":      return genAlignDec();
     case "add-dec-sbs":    return genAddDecSBS();
     case "sub-dec-sbs":    return genSubDecSBS();
     case "add-sub-direct": return genAddSubDirect();
@@ -417,10 +415,8 @@ export function gradeLesson18Answer(input,question){
     case "warmup-d":       return gradeWarmupD(input,question);
     case "place-value":    return gradePlaceValue(input,question);
     case "decimal-desc":   return gradeDecimalDesc(input,question);
-    case "dec-frac-mc":    return gradeDecToFracMC(input,question);
-    case "dec-frac-free":  return gradeDecToFracFree(input,question);
-    case "equiv-dec":      return gradeEquivDec(input,question);
-    case "align-dec":      return gradeAlignDec(input,question);
+case "dec-frac-free":  return gradeDecToFracFree(input,question);
+case "align-dec":      return gradeAlignDec(input,question);
     case "add-dec-sbs":    return gradeAddDecSBSStage2(input,question);
     case "sub-dec-sbs":    return gradeSubDecSBSStage2(input,question);
     case "add-sub-direct": return gradeAddSubDirect(input,question);
