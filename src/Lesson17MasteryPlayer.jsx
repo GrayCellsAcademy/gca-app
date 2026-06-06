@@ -440,21 +440,22 @@ const CLEAR_INT_POOL = [
 ];
 
 const CLEAR_FRAC_POOL = [
-  // Fractional solutions (60%+)
+  // All equations have NO two fractions sharing the same denominator
+  // Fractional x solutions
   { eq: "(1/2)x + (1/3) = (3/4)", lcd: 12, cleared: "6x + 4 = 9", xNum: 5, xDen: 6, answer: "5/6" },
   { eq: "(2/3)x - (1/4) = (5/6)", lcd: 12, cleared: "8x - 3 = 10", xNum: 13, xDen: 8, answer: "1 5/8" },
   { eq: "(3/4)x - (1/3) = (5/6)", lcd: 12, cleared: "9x - 4 = 10", xNum: 14, xDen: 9, answer: "1 5/9" },
-  { eq: "(2/5)x - (1/2) = (1/10)", lcd: 10, cleared: "4x - 5 = 1", xNum: 3, xDen: 2, answer: "1 1/2" },
-  { eq: "(1/6)x + (1/4) = (1/3)", lcd: 12, cleared: "2x + 3 = 4", xNum: 1, xDen: 2, answer: "1/2" },
-  { eq: "(3/5)x + (1/2) = (7/10)", lcd: 10, cleared: "6x + 5 = 7", xNum: 1, xDen: 3, answer: "1/3" },
-  { eq: "(1/4)x - (1/3) = (1/6)", lcd: 12, cleared: "3x - 4 = 2", xNum: 2, xDen: 1, answer: "2" },
-  { eq: "(3/8)x + (1/4) = (5/8)", lcd: 8, cleared: "3x + 2 = 5", xNum: 1, xDen: 1, answer: "1" },
-  { eq: "(5/6)x - (1/4) = (7/12)", lcd: 12, cleared: "10x - 3 = 7", xNum: 1, xDen: 1, answer: "1" },
-  { eq: "(2/3)x + (1/6) = (5/6)", lcd: 6, cleared: "4x + 1 = 5", xNum: 1, xDen: 1, answer: "1" },
-  { eq: "(1/3)x - (1/4) = (1/12)", lcd: 12, cleared: "4x - 3 = 1", xNum: 1, xDen: 1, answer: "1" },
-  { eq: "(5/8)x - (1/4) = (3/8)", lcd: 8, cleared: "5x - 2 = 3", xNum: 1, xDen: 1, answer: "1" },
-  { eq: "(3/4)x + (1/6) = (11/12)", lcd: 12, cleared: "9x + 2 = 11", xNum: 1, xDen: 1, answer: "1" },
-  { eq: "(2/7)x + (1/7) = (3/7)", lcd: 7, cleared: "2x + 1 = 3", xNum: 1, xDen: 1, answer: "1" },
+  { eq: "(2/5)x - (1/2) = (1/3)", lcd: 30, cleared: "12x - 15 = 10", xNum: 25, xDen: 12, answer: "2 1/12" },
+  { eq: "(1/4)x + (1/3) = (5/6)", lcd: 12, cleared: "3x + 4 = 10", xNum: 2, xDen: 1, answer: "2" },
+  { eq: "(3/5)x - (1/4) = (1/2)", lcd: 20, cleared: "12x - 5 = 10", xNum: 5, xDen: 4, answer: "1 1/4" },
+  { eq: "(1/6)x + (1/4) = (5/12)", lcd: 12, cleared: "2x + 3 = 5", xNum: 1, xDen: 1, answer: "1" },
+  { eq: "(5/6)x - (1/4) = (1/3)", lcd: 12, cleared: "10x - 3 = 4", xNum: 7, xDen: 10, answer: "7/10" },
+  { eq: "(1/3)x + (1/2) = (5/4)", lcd: 12, cleared: "4x + 6 = 15", xNum: 9, xDen: 4, answer: "2 1/4" },
+  { eq: "(3/4)x - (1/6) = (1/3)", lcd: 12, cleared: "9x - 2 = 4", xNum: 2, xDen: 3, answer: "2/3" },
+  { eq: "(2/3)x + (1/4) = (5/6)", lcd: 12, cleared: "8x + 3 = 10", xNum: 7, xDen: 8, answer: "7/8" },
+  { eq: "(1/2)x - (1/5) = (3/10)", lcd: 10, cleared: "5x - 2 = 3", xNum: 1, xDen: 1, answer: "1" },
+  { eq: "(4/5)x + (1/3) = (17/15)", lcd: 15, cleared: "12x + 5 = 17", xNum: 1, xDen: 1, answer: "1" },
+  { eq: "(1/4)x - (1/6) = (1/3)", lcd: 12, cleared: "3x - 2 = 4", xNum: 2, xDen: 1, answer: "2" },
 ];
 
 function genClearFracSet() {
@@ -484,8 +485,7 @@ function ClearDenomMastery({ pool, genFn, onCorrect, onWrong }) {
 const STEPS = [
   { id: "quotient", label: "Quotient Rule", description: "All correct to pass. Enter simplified expression." },
   { id: "factor", label: "Factoring GCF", description: "All correct to pass. Enter factored form e.g. 3x(2x+5)." },
-  { id: "clear-int", label: "Clear Denominators (Integer Solutions)", description: "All correct to pass. Enter value of x." },
-  { id: "clear-frac", label: "Clear Denominators (Fractional Solutions)", description: "All correct to pass. Enter value of x." },
+  { id: "clear-frac", label: "Clear Denominators", description: "All correct to pass. Enter value of x. No two fractions in an equation share the same denominator." },
 ];
 
 export default function Lesson17MasteryPlayer({ user, topic, onHome }) {
@@ -555,7 +555,6 @@ export default function Lesson17MasteryPlayer({ user, topic, onHome }) {
           </div>
           {step.id === "quotient"   && <QuotMastery     key={stepIdx} onCorrect={handleCorrect} onWrong={handleWrong} />}
           {step.id === "factor"     && <FactorMastery   key={stepIdx} onCorrect={handleCorrect} onWrong={handleWrong} />}
-          {step.id === "clear-int"  && <ClearDenomMastery key={stepIdx} pool={CLEAR_INT_POOL}  onCorrect={handleCorrect} onWrong={handleWrong} />}
           {step.id === "clear-frac" && <ClearDenomMastery key={stepIdx} genFn={genClearFracSet} onCorrect={handleCorrect} onWrong={handleWrong} />}
         </div>
       </div>
