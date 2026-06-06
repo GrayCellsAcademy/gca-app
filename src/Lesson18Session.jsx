@@ -274,12 +274,10 @@ function QuestionDisplay({ question: q, revealCorrect }) {
         {items.map((item, i) => (
           <div key={i} style={{ background: "var(--bg2)", borderRadius: "var(--radius-sm)", padding: "8px 14px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
             <span style={{ fontFamily: "var(--mono)", fontSize: 19, fontWeight: 700 }}>
-              {item.expr || item.desc || item.number || (item.a && `${item.a} | ${item.b}`) || String(i + 1)}
+              {item.expr || item.desc || item.number || (item.a !== undefined ? `${item.a} x ${item.b}` : String(i + 1))}
             </span>
             <span style={{ fontFamily: "var(--mono)", fontSize: 19, color: "var(--green)", fontWeight: 700 }}>
-              {item.answer || item.answer1}
-              {item.answer2 ? ` / ${item.answer2}` : ""}
-              {item.aligned_a ? `${item.aligned_a} and ${item.aligned_b}` : ""}
+              {item.total !== undefined ? String(item.total) : (item.answer || item.answer1 || "")}
             </span>
           </div>
         ))}
@@ -308,12 +306,12 @@ function AnswerInput({ question, onSubmit, submitted }) {
   if (t === "place-value") return <MCRowInput items={question.items} labelFn={item => item.number} onSubmit={onSubmit} submitted={submitted} />;
   if (t === "decimal-desc") return <MultiRowInput items={question.items} labelFn={item => item.desc} onSubmit={onSubmit} submitted={submitted} placeholder="e.g. 5.3" />;
   if (t === "dec-frac-free") return <MultiRowInput items={question.items} labelFn={item => String(item.dec)} onSubmit={onSubmit} submitted={submitted} placeholder="e.g. 3/4" />;
-  if (t === "count-places") return <MultiRowInput items={question.items} labelFn={item => `${item.a} and ${item.b}`} onSubmit={onSubmit} submitted={submitted} placeholder="# places" />;
+  if (t === "count-places") return <MultiRowInput items={question.items} labelFn={item => `${item.a} x ${item.b}`} onSubmit={onSubmit} submitted={submitted} placeholder="# places" />;
 
 
   if (t === "add-sub-direct") return <MultiRowInput items={question.problems} labelFn={p => p.expr} onSubmit={onSubmit} submitted={submitted} placeholder="answer" />;
   if (t === "mult-dec-direct") return <MultiRowInput items={question.problems} labelFn={p => p.expr.replace("x", "-")} onSubmit={onSubmit} submitted={submitted} placeholder="answer" />;
-  if (t === "metric-adj" || t === "metric-nonadj" || t === "metric-mixed") return <MultiRowInput items={question.problems} labelFn={p => p.expr} onSubmit={onSubmit} submitted={submitted} placeholder="answer" />;
+  if (t === "metric-adj" || t === "metric-nonadj") return <MultiRowInput items={question.problems} labelFn={p => p.expr} onSubmit={onSubmit} submitted={submitted} placeholder="answer" />;
 
   return null;
 }
@@ -327,8 +325,7 @@ function StudentReveal({ result, question }) {
     "place-value": gradePlaceValueItem, "decimal-desc": gradeDecimalDescItem, "dec-frac-free": gradeDecToFracFreeItem,
     "count-places": gradeCountPlacesItem,
     "add-sub-direct": gradeAddSubDirectItem, "mult-dec-direct": gradeMultDecDirectItem,
-    "metric-adj": gradeMetricAdjItem, "metric-nonadj": gradeMetricNonAdjItem, "metric-mixed": gradeMetricMixedItem,
-  };
+    "metric-adj": gradeMetricAdjItem, "metric-nonadj": gradeMetricNonAdjItem, };
 
   return (
     <div>
@@ -338,7 +335,7 @@ function StudentReveal({ result, question }) {
       {isMulti ? (
         <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
           {(question.items || question.problems || []).map((item, i) => {
-            let studentAns = "", correctAns = item.answer || item.answer1, itemOk = false;
+            let studentAns = "", correctAns = item.total !== undefined ? String(item.total) : (item.answer || item.answer1 || ""), itemOk = false;
             try {
               const parsed = JSON.parse(result.answer);
               const raw = parsed[i];
@@ -360,7 +357,7 @@ function StudentReveal({ result, question }) {
             } catch {}
             return (
               <div key={i} style={{ background: "var(--bg2)", borderRadius: "var(--radius-sm)", padding: "6px 12px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 6, border: "1px solid " + (itemOk ? "rgba(22,163,74,0.2)" : "rgba(239,68,68,0.2)") }}>
-                <span style={{ fontFamily: "var(--mono)", fontSize: 18, fontWeight: 700 }}>{item.expr || item.desc || item.number || (item.a && `${item.a} | ${item.b}`) || String(i + 1)}</span>
+                <span style={{ fontFamily: "var(--mono)", fontSize: 18, fontWeight: 700 }}>{item.expr || item.desc || item.number || (item.a !== undefined ? `${item.a} x ${item.b}` : String(i + 1))}</span>
                 <div style={{ display: "flex", gap: 8 }}>
                   {!itemOk && <span style={{ fontSize: 17, color: "var(--red)", fontWeight: 700 }}>You: {studentAns || "-"}</span>}
                   <span style={{ fontSize: 17, color: "var(--green)", fontWeight: 700 }}>{correctAns}</span>

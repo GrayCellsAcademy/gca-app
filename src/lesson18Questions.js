@@ -252,14 +252,29 @@ export function gradeAddSubDirect(input,q){
 
 // - A10: Count decimal places -
 const COUNT_PLACES_POOL=[
-  {a:"2.3",b:"4.56",pa:1,pb:2,total:3},{a:"0.5",b:"0.2",pa:1,pb:1,total:2},
-  {a:"1.25",b:"3.4",pa:2,pb:1,total:3},{a:"0.04",b:"2.5",pa:2,pb:1,total:3},
-  {a:"3.125",b:"2",pa:3,pb:0,total:3},{a:"1.2",b:"0.03",pa:1,pb:2,total:3},
-  {a:"0.6",b:"1.45",pa:1,pb:2,total:3},{a:"2.5",b:"0.4",pa:1,pb:1,total:2},
+  {a:"2.3",b:"4.56",pa:1,pb:2,total:3},  // 3
+  {a:"0.5",b:"0.2",pa:1,pb:1,total:2},   // 2
+  {a:"1.25",b:"3.4",pa:2,pb:1,total:3},  // 3
+  {a:"0.04",b:"2",pa:2,pb:0,total:2},    // 2
+  {a:"3.1",b:"2.5",pa:1,pb:1,total:2},   // 2
+  {a:"1.2",b:"0.03",pa:1,pb:2,total:3},  // 3
+  {a:"4",b:"1.5",pa:0,pb:1,total:1},     // 1
+  {a:"3",b:"2.4",pa:0,pb:1,total:1},     // 1
+  {a:"0.125",b:"2",pa:3,pb:0,total:3},   // 3
+  {a:"1.4",b:"0.5",pa:1,pb:1,total:2},   // 2
+  {a:"5",b:"0.7",pa:0,pb:1,total:1},     // 1
+  {a:"0.25",b:"4",pa:2,pb:0,total:2},    // 2
 ];
 export function genCountPlaces(){
-  const items=shuffle([...COUNT_PLACES_POOL]).slice(0,5);
-  return{type:"count-places",items,prompt:"Enter the total number of decimal places in both factors."};
+  // Pick 5 items with no more than 2 sharing the same total
+  const shuffled=shuffle([...COUNT_PLACES_POOL]);
+  const counts={}; const result=[];
+  for(const item of shuffled){
+    const t=item.total;
+    if((counts[t]||0)<2){counts[t]=(counts[t]||0)+1;result.push(item);}
+    if(result.length===5)break;
+  }
+  return{type:"count-places",items:result,prompt:"Enter the total number of decimal places in both factors combined."};
 }
 export function gradeCountPlacesItem(input,item){return parseInt(String(input).trim())===item.total;}
 export function gradeCountPlaces(input,q){
@@ -377,7 +392,6 @@ export const LESSON18_TOPICS=[
   {id:"mult-dec-direct",label:"A6: Multiply Decimals Direct",       description:"4 simultaneous"},
   {id:"metric-adj",     label:"A7: Adjacent Metric Units",          description:"6 simultaneous"},
   {id:"metric-nonadj",  label:"A8: Non-Adjacent Metric Units",      description:"6 simultaneous"},
-  {id:"metric-mixed",   label:"A9: Mixed Metric Conversions",       description:"4 simultaneous"},
 ];
 
 export function generateLesson18Question(topicId){
@@ -394,8 +408,7 @@ case "dec-frac-free":  return genDecToFracFree();
     case "mult-dec-direct":return genMultDecDirect();
     case "metric-adj":     return genMetricAdj();
     case "metric-nonadj":  return genMetricNonAdj();
-    case "metric-mixed":   return genMetricMixed();
-    default:               return genWarmupA();
+default:               return genWarmupA();
   }
 }
 
@@ -414,8 +427,7 @@ case "dec-frac-free":  return gradeDecToFracFree(input,question);
     case "mult-dec-direct":return gradeMultDecDirect(input,question);
     case "metric-adj":     return gradeMetricAdj(input,question);
     case "metric-nonadj":  return gradeMetricNonAdj(input,question);
-    case "metric-mixed":   return gradeMetricMixed(input,question);
-    default:               return false;
+default:               return false;
   }
 }
 
