@@ -111,13 +111,13 @@ function exprKatex(s) {
   return s.replace(/x\^(\d+)/g, (_, e) => `x^{${e}}`);
 }
 function eqKatex(s) {
-  // Convert "(a/b)x" -> "\left(\dfrac{a}{b}\right)x" for proper sized parens
+  // Convert equation: remove wrapping parens from fractions, just show dfrac
   const bs = "\\";
   let r = String(s);
   r = r.replace(/x\^(\d+)/g, (_, e) => `x^{${e}}`);
-  // Replace "(n/d)" with \left(\dfrac{n}{d}\right)
-  r = r.replace(/\((\d+)\/(\d+)\)/g, (_, n, d) => `${bs}left(${bs}dfrac{${n}}{${d}}${bs}right)`);
-  // Replace remaining n/d not in parens
+  // Remove parens wrapping fractions: "(n/d)" -> "\dfrac{n}{d}"
+  r = r.replace(/\((\d+)\/(\d+)\)/g, (_, n, d) => `${bs}dfrac{${n}}{${d}}`);
+  // Replace any remaining bare fractions
   r = r.replace(/(\d+)\/(\d+)/g, (_, n, d) => `${bs}dfrac{${n}}{${d}}`);
   return r;
 }
@@ -149,8 +149,81 @@ function TextInput({ onSubmit, submitted, placeholder }) {
   );
 }
 
+// -- Mixed Input with visual toggle --
+function MixedInput({ onSubmit, submitted }) {
+  const [mode, setMode] = useState("text");
+  const [textVal, setTextVal] = useState("");
+  const [whole, setWhole] = useState(""); const [num, setNum] = useState(""); const [den, setDen] = useState("");
+  const ref = useRef(null);
+  useEffect(() => { setTextVal(""); setWhole(""); setNum(""); setDen(""); setTimeout(() => ref.current?.focus(), 80); }, [submitted]);
+  if (mode === "visual") return (
+    <div>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, justifyContent: "center", marginBottom: 8 }}>
+        <input value={whole} onChange={e => setWhole(e.target.value)} disabled={submitted} placeholder="whole" autoFocus
+          style={{ textAlign: "center", fontSize: 24, fontFamily: "var(--mono)", fontWeight: 800, padding: "8px", width: 70, borderRadius: "var(--radius-sm)", border: "2px solid var(--border)", background: "var(--surface)" }} />
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
+          <input value={num} onChange={e => setNum(e.target.value)} disabled={submitted} placeholder="num"
+            style={{ textAlign: "center", fontSize: 22, fontFamily: "var(--mono)", fontWeight: 800, padding: "4px 8px", width: 60, borderRadius: "var(--radius-sm)", border: "2px solid var(--border)", background: "var(--surface)" }} />
+          <div style={{ width: 60, height: 2, background: "var(--text)", borderRadius: 99 }} />
+          <input value={den} onChange={e => setDen(e.target.value)} disabled={submitted} placeholder="den"
+            style={{ textAlign: "center", fontSize: 22, fontFamily: "var(--mono)", fontWeight: 800, padding: "4px 8px", width: 60, borderRadius: "var(--radius-sm)", border: "2px solid var(--border)", background: "var(--surface)" }} />
+        </div>
+        <button className="btn btn-primary" style={{ fontSize: 20, padding: "10px 20px" }}
+          onClick={() => { if (whole.trim() && num.trim() && den.trim()) onSubmit(`${whole.trim()} ${num.trim()}/${den.trim()}`); }}
+          disabled={submitted || !whole.trim() || !num.trim() || !den.trim()}>OK</button>
+      </div>
+      <button className="btn btn-ghost btn-sm" style={{ width: "100%", fontSize: 18 }} onClick={() => setMode("text")}>Type instead</button>
+    </div>
+  );
+  return (
+    <div>
+      <div style={{ display: "flex", gap: 8, justifyContent: "center", marginBottom: 8 }}>
+        <input ref={ref} value={textVal} onChange={e => setTextVal(e.target.value)}
+          onKeyDown={e => e.key === "Enter" && textVal.trim() && onSubmit(textVal.trim())} disabled={submitted} placeholder=""
+          style={{ textAlign: "center", fontSize: 22, fontFamily: "var(--mono)", fontWeight: 700, padding: "10px", width: 180 }} />
+        <button className="btn btn-primary" style={{ fontSize: 20, padding: "10px 20px" }}
+          onMouseDown={e => { e.preventDefault(); if (textVal.trim()) onSubmit(textVal.trim()); }} disabled={submitted || !textVal.trim()}>OK</button>
+      </div>
+      <button className="btn btn-ghost btn-sm" style={{ width: "100%", fontSize: 18 }} onClick={() => setMode("visual")}>
+        Enter as mixed number &nbsp;<span style={{ fontFamily: "var(--mono)", fontWeight: 900 }}>2 -/-</span>
+      </button>
+    </div>
+  );
+}
+
+function RowMixedInput({ value, onChange }) {
+  const [mode, setMode] = useState("text");
+  const [whole, setWhole] = useState(""); const [num, setNum] = useState(""); const [den, setDen] = useState("");
+  const sync = (w, n, d) => { if (w.trim() && n.trim() && d.trim()) onChange(`${w.trim()} ${n.trim()}/${d.trim()}`); else onChange(""); };
+  if (mode === "visual") return (
+    <div>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 5 }}>
+        <input value={whole} onChange={e => { setWhole(e.target.value); sync(e.target.value, num, den); }} placeholder="whole"
+          style={{ textAlign: "center", fontSize: 20, fontFamily: "var(--mono)", fontWeight: 800, padding: "5px", width: 55, borderRadius: "var(--radius-sm)", border: "2px solid var(--border)", background: "var(--surface)" }} />
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 1 }}>
+          <input value={num} onChange={e => { setNum(e.target.value); sync(whole, e.target.value, den); }} placeholder="num"
+            style={{ textAlign: "center", fontSize: 18, fontFamily: "var(--mono)", fontWeight: 800, padding: "3px 5px", width: 48, borderRadius: "var(--radius-sm)", border: "2px solid var(--border)", background: "var(--surface)" }} />
+          <div style={{ width: 48, height: 2, background: "var(--text)", borderRadius: 99 }} />
+          <input value={den} onChange={e => { setDen(e.target.value); sync(whole, num, e.target.value); }} placeholder="den"
+            style={{ textAlign: "center", fontSize: 18, fontFamily: "var(--mono)", fontWeight: 800, padding: "3px 5px", width: 48, borderRadius: "var(--radius-sm)", border: "2px solid var(--border)", background: "var(--surface)" }} />
+        </div>
+        <button className="btn btn-ghost btn-sm" style={{ fontSize: 14 }} onClick={() => setMode("text")}>Type</button>
+      </div>
+    </div>
+  );
+  return (
+    <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+      <input value={value} onChange={e => onChange(e.target.value)} placeholder=""
+        style={{ textAlign: "center", fontSize: 20, fontFamily: "var(--mono)", fontWeight: 700, padding: "6px 10px", flex: 1, borderRadius: "var(--radius-sm)", border: "1px solid var(--border)", background: "var(--surface)" }} />
+      <button className="btn btn-ghost btn-sm" style={{ fontSize: 14, whiteSpace: "nowrap" }} onClick={() => setMode("visual")}>
+        <span style={{ fontFamily: "var(--mono)", fontWeight: 900 }}>2 -/-</span>
+      </button>
+    </div>
+  );
+}
+
 // -- Six-problem mastery component --
-function SixMastery({ problems, renderProblem, gradeProblem, workedSolution, onCorrect, onWrong }) {
+function SixMastery({ problems, renderProblem, gradeProblem, workedSolution, onCorrect, onWrong, useMixed }) {
   const [answers, setAnswers] = useState(Array(6).fill(""));
   const [feedback, setFeedback] = useState(null);
 
@@ -198,9 +271,13 @@ function SixMastery({ problems, renderProblem, gradeProblem, workedSolution, onC
         {problems.map((p, i) => (
           <div key={i} style={{ background: "var(--bg2)", borderRadius: "var(--radius-sm)", padding: "10px 14px" }}>
             <div style={{ marginBottom: 8 }}>{renderProblem(p)}</div>
-            <input value={answers[i]} onChange={e => setAnswers(prev => prev.map((x, j) => j === i ? e.target.value : x))}
-              placeholder=""
-              style={{ textAlign: "center", fontSize: 20, fontFamily: "var(--mono)", fontWeight: 700, padding: "6px 10px", width: "100%", borderRadius: "var(--radius-sm)", border: "1px solid var(--border)", background: "var(--surface)" }} />
+            {useMixed ? (
+              <RowMixedInput value={answers[i]} onChange={v => setAnswers(prev => prev.map((x, j) => j === i ? v : x))} />
+            ) : (
+              <input value={answers[i]} onChange={e => setAnswers(prev => prev.map((x, j) => j === i ? e.target.value : x))}
+                placeholder=""
+                style={{ textAlign: "center", fontSize: 20, fontFamily: "var(--mono)", fontWeight: 700, padding: "6px 10px", width: "100%", borderRadius: "var(--radius-sm)", border: "1px solid var(--border)", background: "var(--surface)" }} />
+            )}
           </div>
         ))}
       </div>
