@@ -125,16 +125,17 @@ export function gradeDecToFracMC(input,q){
 
 // - A4: Convert decimal to fraction (free response) -
 const DEC_FREE_POOL=[
-  {dec:0.125,rn:1,rd:8,answer:"1/8"},{dec:0.6,rn:3,rd:5,answer:"3/5"},
-  {dec:0.25,rn:1,rd:4,answer:"1/4"},{dec:0.875,rn:7,rd:8,answer:"7/8"},
-  {dec:1.2,rn:6,rd:5,answer:"1 1/5"},{dec:0.4,rn:2,rd:5,answer:"2/5"},
-  {dec:0.75,rn:3,rd:4,answer:"3/4"},{dec:0.05,rn:1,rd:20,answer:"1/20"},
-  {dec:1.5,rn:3,rd:2,answer:"1 1/2"},{dec:0.375,rn:3,rd:8,answer:"3/8"},
-  {dec:0.8,rn:4,rd:5,answer:"4/5"},{dec:2.5,rn:5,rd:2,answer:"2 1/2"},
+  // Fractions that are already in lowest terms (not reducible)
+  {dec:0.7,rn:7,rd:10,answer:"7/10"},{dec:0.3,rn:3,rd:10,answer:"3/10"},
+  {dec:0.9,rn:9,rd:10,answer:"9/10"},{dec:0.11,rn:11,rd:100,answer:"11/100"},
+  {dec:0.13,rn:13,rd:100,answer:"13/100"},{dec:0.17,rn:17,rd:100,answer:"17/100"},
+  {dec:0.21,rn:21,rd:100,answer:"21/100"},{dec:0.37,rn:37,rd:100,answer:"37/100"},
+  {dec:0.43,rn:43,rd:100,answer:"43/100"},{dec:0.09,rn:9,rd:100,answer:"9/100"},
+  {dec:0.007,rn:7,rd:1000,answer:"7/1000"},{dec:0.023,rn:23,rd:1000,answer:"23/1000"},
 ];
 export function genDecToFracFree(){
   const items=shuffle([...DEC_FREE_POOL]).slice(0,5);
-  return{type:"dec-frac-free",items,prompt:"Convert each decimal to a simplified fraction or mixed number."};
+  return{type:"dec-frac-free",items,prompt:"Write each decimal as a fraction."};
 }
 export function gradeDecToFracFreeItem(input,item){return fracOk(input,item.rn,item.rd);}
 export function gradeDecToFracFree(input,q){
@@ -284,10 +285,10 @@ export function gradeMultDecSBSStage3(input,q){return decOk(input,q.answer);}
 
 // - A12: Multiply decimals direct -
 const MULT_DEC_DIRECT=[
-  {expr:"1.2 x 3.4",answer:4.08},{expr:"0.5 x 0.2",answer:0.1},
-  {expr:"2.5 x 0.03",answer:0.075},{expr:"3.75 x 2",answer:7.5},
-  {expr:"0.4 x 0.6",answer:0.24},{expr:"1.5 x 1.2",answer:1.8},
-  {expr:"2.3 x 0.4",answer:0.92},{expr:"0.25 x 0.8",answer:0.2},
+  {expr:"1.2 * 3.4",answer:4.08},{expr:"0.5 * 0.2",answer:0.1},
+  {expr:"2.5 * 0.03",answer:0.075},{expr:"3.75 * 2",answer:7.5},
+  {expr:"0.4 * 0.6",answer:0.24},{expr:"1.5 * 1.2",answer:1.8},
+  {expr:"2.3 * 0.4",answer:0.92},{expr:"0.25 * 0.8",answer:0.2},
 ];
 export function genMultDecDirect(){
   const probs=shuffle([...MULT_DEC_DIRECT]).slice(0,4);
@@ -371,16 +372,12 @@ export const LESSON18_TOPICS=[
   {id:"place-value",    label:"A1: Place Value",                     description:"6 simultaneous MC"},
   {id:"decimal-desc",   label:"A2: Write Decimal from Description",  description:"5 problems"},
   {id:"dec-frac-free",  label:"A3: Decimal to Fraction",             description:"5 problems"},
-  {id:"align-dec",      label:"A4: Align Decimals",                  description:"3 problems"},
-  {id:"add-dec-sbs",    label:"A5: Add Decimals (Steps)",            description:"2-stage"},
-  {id:"sub-dec-sbs",    label:"A6: Subtract Decimals (Steps)",       description:"2-stage"},
-  {id:"add-sub-direct", label:"A7: Add/Subtract Direct",             description:"4 simultaneous"},
-  {id:"count-places",   label:"A8: Count Decimal Places",           description:"5 problems"},
-  {id:"mult-dec-sbs",   label:"A9: Multiply Decimals (Steps)",      description:"3-stage"},
-  {id:"mult-dec-direct",label:"A10: Multiply Decimals Direct",       description:"4 simultaneous"},
-  {id:"metric-adj",     label:"A11: Adjacent Metric Units",          description:"6 simultaneous"},
-  {id:"metric-nonadj",  label:"A12: Non-Adjacent Metric Units",      description:"6 simultaneous"},
-  {id:"metric-mixed",   label:"A13: Mixed Metric Conversions",       description:"4 simultaneous"},
+  {id:"add-sub-direct", label:"A4: Add/Subtract Direct",             description:"4 simultaneous"},
+  {id:"count-places",   label:"A5: Count Decimal Places",           description:"5 problems"},
+  {id:"mult-dec-direct",label:"A6: Multiply Decimals Direct",       description:"4 simultaneous"},
+  {id:"metric-adj",     label:"A7: Adjacent Metric Units",          description:"6 simultaneous"},
+  {id:"metric-nonadj",  label:"A8: Non-Adjacent Metric Units",      description:"6 simultaneous"},
+  {id:"metric-mixed",   label:"A9: Mixed Metric Conversions",       description:"4 simultaneous"},
 ];
 
 export function generateLesson18Question(topicId){
@@ -392,12 +389,8 @@ export function generateLesson18Question(topicId){
     case "place-value":    return genPlaceValue();
     case "decimal-desc":   return genDecimalDesc();
 case "dec-frac-free":  return genDecToFracFree();
-case "align-dec":      return genAlignDec();
-    case "add-dec-sbs":    return genAddDecSBS();
-    case "sub-dec-sbs":    return genSubDecSBS();
     case "add-sub-direct": return genAddSubDirect();
     case "count-places":   return genCountPlaces();
-    case "mult-dec-sbs":   return genMultDecSBS();
     case "mult-dec-direct":return genMultDecDirect();
     case "metric-adj":     return genMetricAdj();
     case "metric-nonadj":  return genMetricNonAdj();
@@ -416,12 +409,8 @@ export function gradeLesson18Answer(input,question){
     case "place-value":    return gradePlaceValue(input,question);
     case "decimal-desc":   return gradeDecimalDesc(input,question);
 case "dec-frac-free":  return gradeDecToFracFree(input,question);
-case "align-dec":      return gradeAlignDec(input,question);
-    case "add-dec-sbs":    return gradeAddDecSBSStage2(input,question);
-    case "sub-dec-sbs":    return gradeSubDecSBSStage2(input,question);
     case "add-sub-direct": return gradeAddSubDirect(input,question);
     case "count-places":   return gradeCountPlaces(input,question);
-    case "mult-dec-sbs":   return gradeMultDecSBSStage3(input,question);
     case "mult-dec-direct":return gradeMultDecDirect(input,question);
     case "metric-adj":     return gradeMetricAdj(input,question);
     case "metric-nonadj":  return gradeMetricNonAdj(input,question);

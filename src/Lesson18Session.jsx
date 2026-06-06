@@ -7,9 +7,6 @@ import {
   gradeDecToFracFreeItem, gradeCountPlacesItem,
   gradeAddSubDirectItem, gradeMultDecDirectItem,
   gradeMetricAdjItem, gradeMetricNonAdjItem, gradeMetricMixedItem,
-  gradeAddDecSBSStage1, gradeAddDecSBSStage2,
-  gradeSubDecSBSStage1, gradeSubDecSBSStage2,
-  gradeMultDecSBSStage1, gradeMultDecSBSStage2, gradeMultDecSBSStage3,
 } from "./lesson18Questions";
 
 const POINTS = 5;
@@ -240,11 +237,11 @@ function PlaceValueDisplay({ item }) {
   );
 }
 
-const STEP_TYPES = ["add-dec-sbs", "sub-dec-sbs", "mult-dec-sbs"];
+const STEP_TYPES = [];
 const MULTI_TYPES = ["add-sub-direct", "mult-dec-direct", "metric-adj", "metric-nonadj", "metric-mixed"];
 const MC_TYPES = ["place-value"];
 const LIST_TYPES = ["decimal-desc", "dec-frac-free", "count-places"];
-const TWO_FIELD_TYPES = ["align-dec"];
+const TWO_FIELD_TYPES = [];
 
 function gradeAnswer(input, question) {
   if (!input || !question) return false;
@@ -313,34 +310,11 @@ function AnswerInput({ question, onSubmit, submitted }) {
   if (t === "dec-frac-free") return <MultiRowInput items={question.items} labelFn={item => String(item.dec)} onSubmit={onSubmit} submitted={submitted} placeholder="e.g. 3/4" />;
   if (t === "count-places") return <MultiRowInput items={question.items} labelFn={item => `${item.a} and ${item.b}`} onSubmit={onSubmit} submitted={submitted} placeholder="# places" />;
 
-  if (t === "align-dec") return <TwoFieldInput items={question.items} labelFn={item => `${item.a} and ${item.b}`} onSubmit={onSubmit} submitted={submitted} ph1={`${question.items?.[0]?.a || ""}`} ph2={`${question.items?.[0]?.b || ""}`} />;
 
   if (t === "add-sub-direct") return <MultiRowInput items={question.problems} labelFn={p => p.expr} onSubmit={onSubmit} submitted={submitted} placeholder="answer" />;
   if (t === "mult-dec-direct") return <MultiRowInput items={question.problems} labelFn={p => p.expr.replace("x", "-")} onSubmit={onSubmit} submitted={submitted} placeholder="answer" />;
   if (t === "metric-adj" || t === "metric-nonadj" || t === "metric-mixed") return <MultiRowInput items={question.problems} labelFn={p => p.expr} onSubmit={onSubmit} submitted={submitted} placeholder="answer" />;
 
-  if (t === "add-dec-sbs") {
-    const stages = [
-      { label: "Step 1: Rewrite both numbers with the same decimal places (enter as: X.XX and Y.YY)", placeholder: `e.g. ${question.aligned_a} and ${question.aligned_b}`, grader: gradeAddDecSBSStage1, correctAnswer: q => `${q.aligned_a} and ${q.aligned_b}` },
-      { label: "Step 2: Enter the sum", placeholder: "e.g. 17.97", grader: gradeAddDecSBSStage2, correctAnswer: q => String(q.sum) },
-    ];
-    return <StepInput question={question} onSubmit={onSubmit} submitted={submitted} stages={stages} />;
-  }
-  if (t === "sub-dec-sbs") {
-    const stages = [
-      { label: "Step 1: Rewrite both numbers with the same decimal places (enter as: X.XX and Y.YY)", placeholder: `e.g. ${question.aligned_a} and ${question.aligned_b}`, grader: gradeSubDecSBSStage1, correctAnswer: q => `${q.aligned_a} and ${q.aligned_b}` },
-      { label: "Step 2: Enter the difference", placeholder: "e.g. 8.42", grader: gradeSubDecSBSStage2, correctAnswer: q => String(q.diff) },
-    ];
-    return <StepInput question={question} onSubmit={onSubmit} submitted={submitted} stages={stages} />;
-  }
-  if (t === "mult-dec-sbs") {
-    const stages = [
-      { label: "Step 1: Multiply ignoring decimal points - enter the whole number product", placeholder: `e.g. ${question.whole_prod}`, grader: gradeMultDecSBSStage1, correctAnswer: q => String(q.whole_prod) },
-      { label: "Step 2: Total decimal places in both factors", placeholder: "e.g. 3", grader: gradeMultDecSBSStage2, correctAnswer: q => String(q.places) },
-      { label: "Step 3: Place the decimal point - enter final answer", placeholder: `e.g. ${question.answer}`, grader: gradeMultDecSBSStage3, correctAnswer: q => String(q.answer) },
-    ];
-    return <StepInput question={question} onSubmit={onSubmit} submitted={submitted} stages={stages} />;
-  }
   return null;
 }
 
