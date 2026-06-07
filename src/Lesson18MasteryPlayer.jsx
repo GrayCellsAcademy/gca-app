@@ -267,20 +267,30 @@ function DecMentalMastery({ onComplete }) {
 // -- Activity 2: Place Value --
 const PLACE_NAMES = ["tenths", "hundredths", "thousandths", "ten-thousandths"];
 const PLACE_VALUE_POOL = [
-  { number: "34.567", underlineIdx: 5, digit: 6, answer: "hundredths" },
   { number: "12.309", underlineIdx: 3, digit: 3, answer: "tenths" },
-  { number: "0.0084", underlineIdx: 5, digit: 8, answer: "thousandths" },
-  { number: "7.4251", underlineIdx: 6, digit: 5, answer: "thousandths" },
+  { number: "12.309", underlineIdx: 4, digit: 0, answer: "hundredths" },
+  { number: "0.0084", underlineIdx: 3, digit: 0, answer: "tenths" },
+  { number: "0.0084", underlineIdx: 4, digit: 8, answer: "thousandths" },
+  { number: "7.4251", underlineIdx: 2, digit: 4, answer: "tenths" },
+  { number: "7.4251", underlineIdx: 3, digit: 2, answer: "hundredths" },
+  { number: "7.4251", underlineIdx: 4, digit: 5, answer: "thousandths" },
+  { number: "100.37", underlineIdx: 4, digit: 3, answer: "tenths" },
   { number: "100.37", underlineIdx: 5, digit: 7, answer: "hundredths" },
-  { number: "0.1234", underlineIdx: 4, digit: 2, answer: "hundredths" },
-  { number: "5.0067", underlineIdx: 6, digit: 6, answer: "thousandths" },
-  { number: "23.4", underlineIdx: 3, digit: 4, answer: "tenths" },
-  { number: "9.0003", underlineIdx: 6, digit: 3, answer: "ten-thousandths" },
+  { number: "0.1234", underlineIdx: 2, digit: 1, answer: "tenths" },
+  { number: "0.1234", underlineIdx: 3, digit: 2, answer: "hundredths" },
+  { number: "0.1234", underlineIdx: 4, digit: 3, answer: "thousandths" },
+  { number: "23.4",   underlineIdx: 3, digit: 4, answer: "tenths" },
+  { number: "9.0003", underlineIdx: 2, digit: 0, answer: "tenths" },
+  { number: "9.0003", underlineIdx: 5, digit: 3, answer: "ten-thousandths" },
+  { number: "0.7891", underlineIdx: 2, digit: 7, answer: "tenths" },
   { number: "0.7891", underlineIdx: 3, digit: 8, answer: "hundredths" },
-  { number: "4.5", underlineIdx: 2, digit: 5, answer: "tenths" },
-  { number: "0.0405", underlineIdx: 6, digit: 5, answer: "ten-thousandths" },
+  { number: "4.5",    underlineIdx: 2, digit: 5, answer: "tenths" },
+  { number: "0.0405", underlineIdx: 3, digit: 4, answer: "hundredths" },
+  { number: "0.0405", underlineIdx: 5, digit: 5, answer: "ten-thousandths" },
+  { number: "15.678", underlineIdx: 3, digit: 6, answer: "tenths" },
+  { number: "15.678", underlineIdx: 4, digit: 7, answer: "hundredths" },
+  { number: "15.678", underlineIdx: 5, digit: 8, answer: "thousandths" },
 ];
-
 function PlaceValueDisplay({ item }) {
   const s = item.number;
   const idx = item.underlineIdx;
@@ -668,5 +678,4 @@ export function DecMentalPlayer({ user, topic, onHome }) {
     </div>
   );
 }
-
 
