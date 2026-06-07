@@ -19,6 +19,7 @@ import Lesson15Session, { Lesson15TeacherView, Lesson15StudentView } from "../Le
 import Lesson16Session, { Lesson16TeacherView, Lesson16StudentView } from "../Lesson16Session";
 import Lesson17Session, { Lesson17TeacherView, Lesson17StudentView } from "../Lesson17Session";
 import Lesson18Session, { Lesson18TeacherView, Lesson18StudentView } from "../Lesson18Session";
+import Lesson19Session, { Lesson19TeacherView, Lesson19StudentView } from "../Lesson19Session";
 
 // Join a session by code (student flow)
 async function findSessionByCode(code) {
@@ -141,6 +142,11 @@ export default function LiveSession({ user, onHome }) {
         ? <Lesson18TeacherView session={session} sessionId={sessionId} uid={user.id} />
         : <Lesson18StudentView session={session} sessionId={sessionId} uid={user.id} />;
     }
+    if (session.type === "lesson19") {
+      return user.role === "teacher"
+        ? <Lesson19TeacherView session={session} sessionId={sessionId} uid={user.id} />
+        : <Lesson19StudentView session={session} sessionId={sessionId} uid={user.id} />;
+    }
   }
 
   // Lesson session views (teacher creates)
@@ -162,6 +168,7 @@ export default function LiveSession({ user, onHome }) {
   if (view === "lesson16") return <Lesson16Session user={user} onHome={() => setView("menu")} />;
   if (view === "lesson17") return <Lesson17Session user={user} onHome={() => setView("menu")} />;
   if (view === "lesson18") return <Lesson18Session user={user} onHome={() => setView("menu")} />;
+  if (view === "lesson19") return <Lesson19Session user={user} onHome={() => setView("menu")} />;
 
   // Student join flow
   if (view === "join") {
@@ -370,6 +377,14 @@ export default function LiveSession({ user, onHome }) {
                     <div>
                       <div style={{ fontWeight: 800, fontSize: 20, marginBottom: 4 }}>(18) Decimals: Place Value, Operations, and Metric Length</div>
                       <div style={{ color: "var(--text2)", fontSize: 20 }}>Place value, fractions, add/subtract/multiply decimals, metric length conversions.</div>
+                    </div>
+                  </div>
+                  <div className="card" onClick={() => setView("lesson19")}
+                    style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 16 }}>
+                    <div style={{ fontSize: 20, fontWeight: 800, color: "var(--blue)", minWidth: 36 }}>L19</div>
+                    <div>
+                      <div style={{ fontWeight: 800, fontSize: 20, marginBottom: 4 }}>(19) Decimal Division and Equations</div>
+                      <div style={{ color: "var(--text2)", fontSize: 20 }}>Dividing decimals, fraction-to-decimal, dividing by decimals, solving decimal equations.</div>
                     </div>
                   </div>
             </>
