@@ -6,10 +6,6 @@ import {
   gradeDivDecDirectItem, gradeFracToDecItem, gradeRepeatingItem,
   gradeClassifyItem, gradeDecDivWholeDirectItem, gradeConvDivItem,
   gradeDivDecDirect2Item, gradeClearDecEqItem, gradeSolveDecDirectItem,
-  gradeDivDecSBSStage1, gradeDivDecSBSStage2, gradeDivDecSBSStage3,
-  gradeDecDivWholeSBSStage1, gradeDecDivWholeSBSStage2,
-  gradeDivDecSBS2Stage1, gradeDivDecSBS2Stage2, gradeDivDecSBS2Stage3,
-  gradeClearSolveSBSStage1, gradeClearSolveSBSStage2, gradeClearSolveSBSStage3,
 } from "./lesson19Questions";
 
 const POINTS = 5;
@@ -195,7 +191,7 @@ function PlaceValueDisplay({ item }) {
   );
 }
 
-const STEP_TYPES = ["div-dec-sbs", "dec-div-whole-sbs", "div-dec-sbs2", "clear-solve-sbs"];
+const STEP_TYPES = [];
 const MULTI_TYPES = ["div-dec-direct", "frac-to-dec", "repeating-dec", "dec-div-whole-direct", "div-dec-direct2", "solve-dec-direct"];
 const MC_TYPES = ["classify", "conv-div", "clear-dec-eq"];
 
@@ -276,37 +272,6 @@ function AnswerInput({ question, onSubmit, submitted }) {
   if (t === "clear-dec-eq") return <MultiRowInput items={question.problems} labelFn={p => <span style={{ fontFamily: "var(--mono)", fontSize: 19 }}>{p.eq}</span>} onSubmit={onSubmit} submitted={submitted} placeholder="10, 100..." />;
   if (t === "classify") return <MCRowInput items={question.items} labelFn={item => <KaTeX expr={item.latex} />} onSubmit={onSubmit} submitted={submitted} />;
 
-  if (t === "div-dec-sbs") {
-    const stages = [
-      { label: "Step 1: Enter quotient and remainder (e.g. 3 R1)", placeholder: "e.g. 3 R1", grader: gradeDivDecSBSStage1, correctAnswer: q => `${q.quotient} R${q.remainder}` },
-      { label: "Step 2: Rewrite dividend with decimal point (e.g. 13.00)", placeholder: "e.g. 13.00", grader: gradeDivDecSBSStage2, correctAnswer: q => `${q.dividend}.00` },
-      { label: "Step 3: Enter the decimal quotient", placeholder: "e.g. 3.25", grader: gradeDivDecSBSStage3, correctAnswer: q => q.displayAnswer },
-    ];
-    return <StepInput question={question} onSubmit={onSubmit} submitted={submitted} stages={stages} />;
-  }
-  if (t === "dec-div-whole-sbs") {
-    const stages = [
-      { label: "Step 1: Begin dividing - write the quotient with decimal point aligned", placeholder: "e.g. 2.5", grader: gradeDecDivWholeSBSStage1, correctAnswer: q => q.displayAnswer },
-      { label: "Step 2: Enter the final quotient", placeholder: "e.g. 2.5", grader: gradeDecDivWholeSBSStage2, correctAnswer: q => q.displayAnswer },
-    ];
-    return <StepInput question={question} onSubmit={onSubmit} submitted={submitted} stages={stages} />;
-  }
-  if (t === "div-dec-sbs2") {
-    const stages = [
-      { label: "Step 1: Enter the multiplier (10 or 100) to make divisor a whole number", placeholder: "e.g. 10", grader: gradeDivDecSBS2Stage1, correctAnswer: q => String(q.factor) },
-      { label: "Step 2: Write the new division problem (e.g. 45/5)", placeholder: "e.g. 45/5", grader: gradeDivDecSBS2Stage2, correctAnswer: q => `${q.newDividend}/${q.newDivisor}` },
-      { label: "Step 3: Enter the quotient", placeholder: "answer", grader: gradeDivDecSBS2Stage3, correctAnswer: q => q.displayAnswer },
-    ];
-    return <StepInput question={question} onSubmit={onSubmit} submitted={submitted} stages={stages} />;
-  }
-  if (t === "clear-solve-sbs") {
-    const stages = [
-      { label: "Step 1: Enter the multiplier to clear all decimals", placeholder: "e.g. 100", grader: gradeClearSolveSBSStage1, correctAnswer: q => String(q.multiplier) },
-      { label: "Step 2: Enter the equation with decimals cleared", placeholder: "e.g. 50x + 25 = 125", grader: gradeClearSolveSBSStage2, correctAnswer: q => q.cleared },
-      { label: "Step 3: Solve for x", placeholder: "x = ?", grader: gradeClearSolveSBSStage3, correctAnswer: q => q.answer },
-    ];
-    return <StepInput question={question} onSubmit={onSubmit} submitted={submitted} stages={stages} />;
-  }
   return null;
 }
 

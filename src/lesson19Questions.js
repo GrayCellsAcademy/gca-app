@@ -370,19 +370,15 @@ export const LESSON19_TOPICS=[
   {id:"warmup-b",            label:"Warm-up: Decimal to Fraction",      description:"0.125"},
   {id:"warmup-c",            label:"Warm-up: Add Decimals",             description:"12.35 + 6.7"},
   {id:"warmup-d",            label:"Warm-up: Place Value",              description:"345.678"},
-  {id:"div-dec-sbs",         label:"A1: Whole Num Division (Steps)",    description:"3-stage"},
-  {id:"div-dec-direct",      label:"A2: Whole Num Division (Direct)",   description:"4 simultaneous"},
-  {id:"frac-to-dec",         label:"A3: Fraction to Decimal",           description:"4 simultaneous"},
-  {id:"repeating-dec",       label:"A4: Repeating Decimals",            description:"4 simultaneous"},
-  {id:"classify",            label:"A5: Classify Term./Repeating",      description:"6 simultaneous"},
-  {id:"dec-div-whole-sbs",   label:"A6: Decimal / Whole (Steps)",       description:"2-stage"},
-  {id:"dec-div-whole-direct",label:"A7: Decimal / Whole (Direct)",      description:"4 simultaneous"},
-  {id:"conv-div",            label:"A8: Convert Div by Decimal",        description:"5 simultaneous"},
-  {id:"div-dec-sbs2",        label:"A9: Divide by Decimal (Steps)",     description:"3-stage"},
-  {id:"div-dec-direct2",     label:"A10: Divide by Decimal (Direct)",   description:"4 simultaneous"},
-  {id:"clear-dec-eq",        label:"A11: Identify Multiplier",          description:"5 simultaneous"},
-  {id:"clear-solve-sbs",     label:"A12: Clear Decimals (Steps)",       description:"3-stage"},
-  {id:"solve-dec-direct",    label:"A13: Solve Decimal Equations",      description:"4 simultaneous"},
+  {id:"div-dec-direct",      label:"A1: Whole Num Division (Direct)",   description:"4 simultaneous"},
+  {id:"frac-to-dec",         label:"A2: Fraction to Decimal",           description:"4 simultaneous"},
+  {id:"repeating-dec",       label:"A3: Repeating Decimals",            description:"4 simultaneous"},
+  {id:"classify",            label:"A4: Classify Term./Repeating",      description:"6 simultaneous"},
+  {id:"dec-div-whole-direct",label:"A5: Decimal / Whole (Direct)",      description:"4 simultaneous"},
+  {id:"conv-div",            label:"A6: Convert Div by Decimal",        description:"5 simultaneous"},
+  {id:"div-dec-direct2",     label:"A7: Divide by Decimal (Direct)",   description:"4 simultaneous"},
+  {id:"clear-dec-eq",        label:"A8: Identify Multiplier",          description:"5 simultaneous"},
+  {id:"solve-dec-direct",    label:"A9: Solve Decimal Equations",      description:"4 simultaneous"},
 ];
 
 export function generateLesson19Question(topicId){
@@ -391,18 +387,14 @@ export function generateLesson19Question(topicId){
     case "warmup-b":             return genWarmupB();
     case "warmup-c":             return genWarmupC();
     case "warmup-d":             return genWarmupD();
-    case "div-dec-sbs":          return genDivDecSBS();
     case "div-dec-direct":       return genDivDecDirect();
     case "frac-to-dec":          return genFracToDec();
     case "repeating-dec":        return genRepeatingDec();
     case "classify":             return genClassify();
-    case "dec-div-whole-sbs":    return genDecDivWholeSBS();
     case "dec-div-whole-direct": return genDecDivWholeDirect();
     case "conv-div":             return genConvDiv();
-    case "div-dec-sbs2":         return genDivDecSBS2();
     case "div-dec-direct2":      return genDivDecDirect2();
     case "clear-dec-eq":         return genClearDecEq();
-    case "clear-solve-sbs":      return genClearSolveSBS();
     case "solve-dec-direct":     return genSolveDecDirect();
     default:                     return genWarmupA();
   }
@@ -415,18 +407,14 @@ export function gradeLesson19Answer(input,question){
     case "warmup-b":             return gradeWarmupB(input,question);
     case "warmup-c":             return gradeWarmupC(input);
     case "warmup-d":             return gradeWarmupD(input);
-    case "div-dec-sbs":          return gradeDivDecSBSStage3(input,question);
     case "div-dec-direct":       return gradeDivDecDirect(input,question);
     case "frac-to-dec":          return gradeFracToDec(input,question);
     case "repeating-dec":        return gradeRepeating(input,question);
     case "classify":             return gradeClassify(input,question);
-    case "dec-div-whole-sbs":    return gradeDecDivWholeSBSStage2(input,question);
     case "dec-div-whole-direct": return gradeDecDivWholeDirect(input,question);
     case "conv-div":             return gradeConvDiv(input,question);
-    case "div-dec-sbs2":         return gradeDivDecSBS2Stage3(input,question);
     case "div-dec-direct2":      return gradeDivDecDirect2(input,question);
     case "clear-dec-eq":         return gradeClearDecEq(input,question);
-    case "clear-solve-sbs":      return gradeClearSolveSBSStage3(input,question);
     case "solve-dec-direct":     return gradeSolveDecDirect(input,question);
     default:                     return false;
   }
