@@ -69,6 +69,160 @@ function TextInput({ onSubmit, submitted, placeholder, wide }) {
   );
 }
 
+// -- Repeating Decimal Input --
+// Stores answer as "0.3[3]" where [3] means 3 has overline (repeating period)
+// Displays with CSS overline on the bracketed portion
+function RepeatingDecimalInput({ onSubmit, submitted }) {
+  const [text, setText] = useState("");
+  const [period, setPeriod] = useState(""); // the repeating part
+  const [mode, setMode] = useState("typing"); // "typing" | "selecting"
+  const [selStart, setSelStart] = useState(null);
+  const [selEnd, setSelEnd] = useState(null);
+  const [finalStr, setFinalStr] = useState(""); // formatted for display: "0.1[6]"
+  const inputRef = useRef(null);
+
+  useEffect(() => { setText(""); setPeriod(""); setMode("typing"); setFinalStr(""); setTimeout(() => inputRef.current?.focus(), 80); }, [submitted]);
+
+  const handleTextChange = (e) => {
+    setText(e.target.value);
+    setPeriod(""); setFinalStr("");
+  };
+
+  const handleSelect = () => {
+    const el = inputRef.current; if (!el) return;
+    const s = el.selectionStart, e2 = el.selectionEnd;
+    if (s !== null && e2 !== null && s < e2) {
+      setSelStart(s); setSelEnd(e2);
+      const sel = text.slice(s, e2);
+      setPeriod(sel);
+      setFinalStr(text.slice(0, s) + "[" + sel + "]" + text.slice(e2));
+    }
+  };
+
+  const clearPeriod = () => { setPeriod(""); setFinalStr(""); setMode("typing"); };
+
+  const handleSubmit = () => {
+    if (!text.trim()) return;
+    // Submit as "value[period]" format if period selected, else plain text
+    const submitVal = finalStr || text.trim();
+    onSubmit(submitVal);
+  };
+
+  // Render with KaTeX overline notation
+  function renderPreview(str) {
+    if (!str) return null;
+    const m = str.match(/^(.*)\[(.+)\](.*)$/);
+    if (!m) return <span style={{ fontFamily: "var(--mono)", fontSize: 22, fontWeight: 700 }}>{str}</span>;
+    const bs = "\\";
+    const expr = `${m[1]}${bs}overline{${m[2]}}${m[3]}`;
+    return <KaTeX expr={expr} />;
+  }
+
+  return (
+    <div>
+      <div style={{ background: "rgba(27,143,255,0.06)", border: "1px solid rgba(27,143,255,0.2)", borderRadius: "var(--radius-sm)", padding: "10px 14px", marginBottom: 12, fontSize: 18, color: "var(--text2)", lineHeight: 1.6 }}>
+        <strong>How to enter a repeating decimal:</strong>
+        <ol style={{ margin: "6px 0 0 18px", padding: 0 }}>
+          <li>Type the decimal (e.g. <span style={{ fontFamily: "var(--mono)" }}>0.1666</span>)</li>
+          <li>Highlight the repeating digits with your mouse or keyboard</li>
+          <li>Press the <span style={{ fontFamily: "var(--mono)", fontWeight: 900, background: "var(--surface)", padding: "1px 6px", borderRadius: 4, border: "1px solid var(--border)" }}><KaTeX expr="\\overline{abc}" /></span> button to mark them</li>
+          <li>Press OK to submit</li>
+        </ol>
+      </div>
+      <div style={{ display: "flex", gap: 8, marginBottom: 8, alignItems: "center" }}>
+        <input ref={inputRef} value={text} onChange={handleTextChange}
+          onMouseUp={handleSelect} onKeyUp={handleSelect}
+          disabled={submitted} placeholder="e.g. 0.1666"
+          style={{ textAlign: "left", fontSize: 22, fontFamily: "var(--mono)", fontWeight: 700, padding: "10px", flex: 1 }} />
+        <button title="Mark selected digits as repeating"
+          onClick={handleSelect}
+          disabled={submitted}
+          style={{ padding: "8px 14px", fontSize: 20, fontFamily: "var(--mono)", fontWeight: 900, border: "2px solid var(--border)", borderRadius: "var(--radius-sm)", background: "var(--surface)", cursor: "pointer", minWidth: 52, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <KaTeX expr="\\overline{abc}" />
+        </button>
+      </div>
+      {finalStr ? (
+        <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 8 }}>
+          <div style={{ flex: 1, background: "var(--bg2)", borderRadius: "var(--radius-sm)", padding: "8px 14px" }}>
+            Preview: {renderPreview(finalStr)}
+          </div>
+          <button onClick={clearPeriod} style={{ fontSize: 18, padding: "6px 12px", borderRadius: "var(--radius-sm)", border: "1px solid var(--border)", background: "var(--surface)", cursor: "pointer", color: "var(--text3)" }}>Clear</button>
+        </div>
+      ) : text && (
+        <div style={{ fontSize: 17, color: "var(--text3)", marginBottom: 8 }}>No repeating period selected - submits as-is, or select digits and press <span style={{ textDecoration: "overline", fontFamily: "var(--mono)" }}>abc</span></div>
+      )}
+      <div style={{ display: "flex", gap: 8, justifyContent: "center" }}>
+        <button className="btn btn-primary" style={{ flex: 1, fontSize: 20 }}
+          onMouseDown={e => { e.preventDefault(); handleSubmit(); }} disabled={submitted || !text.trim()}>OK</button>
+      </div>
+    </div>
+  );
+}
+
+// Multi-row repeating decimal input
+function MultiRepeatingInput({ items, labelFn, onSubmit, submitted }) {
+  const [answers, setAnswers] = useState((items || []).map(() => ""));
+  const [texts, setTexts] = useState((items || []).map(() => ""));
+  const allDone = answers.every(a => a.trim() !== "");
+
+  const handleSelect = (i) => {
+    const el = document.getElementById(`rep-input-${i}`);
+    if (!el) return;
+    const s = el.selectionStart, e2 = el.selectionEnd;
+    if (s !== null && e2 !== null && s < e2) {
+      const t = texts[i];
+      const formatted = t.slice(0, s) + "[" + t.slice(s, e2) + "]" + t.slice(e2);
+      setAnswers(prev => prev.map((x, j) => j === i ? formatted : x));
+    }
+  };
+
+  const clearRow = (i) => { setAnswers(prev => prev.map((x, j) => j === i ? "" : x)); };
+
+  function renderPreview(str) {
+    if (!str) return null;
+    const m = str.match(/^(.*)\[(.+)\](.*)$/);
+    if (!m) return <span style={{ fontFamily: "var(--mono)", fontSize: 19 }}>{str}</span>;
+    const bs = "\\";
+    const expr = `${m[1]}${bs}overline{${m[2]}}${m[3]}`;
+    return <KaTeX expr={expr} />;
+  }
+
+  if (!items?.length) return null;
+  return (
+    <div>
+      <div style={{ background: "rgba(27,143,255,0.06)", border: "1px solid rgba(27,143,255,0.2)", borderRadius: "var(--radius-sm)", padding: "8px 12px", marginBottom: 10, fontSize: 17, color: "var(--text2)" }}>
+        Type the decimal, highlight repeating digits, press <KaTeX expr="\\overline{abc}" /> to mark them.
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 12 }}>
+        {items.map((item, i) => (
+          <div key={i} style={{ background: "var(--bg2)", borderRadius: "var(--radius-sm)", padding: "10px 14px" }}>
+            <div style={{ marginBottom: 6 }}>{labelFn(item)}</div>
+            <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+              <input id={`rep-input-${i}`} value={texts[i]}
+                onChange={e => { setTexts(prev => prev.map((x, j) => j === i ? e.target.value : x)); setAnswers(prev => prev.map((x, j) => j === i ? e.target.value : x)); }}
+                onMouseUp={() => handleSelect(i)} onKeyUp={() => handleSelect(i)}
+                disabled={submitted} placeholder="e.g. 0.333"
+                style={{ fontSize: 19, fontFamily: "var(--mono)", fontWeight: 700, padding: "6px 8px", flex: 1, borderRadius: "var(--radius-sm)", border: "1px solid var(--border)", background: "var(--surface)" }} />
+              <button title="Mark selection as repeating" onClick={() => handleSelect(i)} disabled={submitted}
+                style={{ padding: "5px 10px", fontSize: 18, fontFamily: "var(--mono)", fontWeight: 900, border: "2px solid var(--border)", borderRadius: "var(--radius-sm)", background: "var(--surface)", cursor: "pointer" }}>
+                <KaTeX expr="\\overline{abc}" />
+              </button>
+            </div>
+            {answers[i] && answers[i] !== texts[i] && (
+              <div style={{ display: "flex", gap: 6, alignItems: "center", marginTop: 4 }}>
+                <span style={{ fontSize: 17, color: "var(--text3)" }}>Preview: {renderPreview(answers[i])}</span>
+                <button onClick={() => clearRow(i)} style={{ fontSize: 15, padding: "2px 8px", border: "1px solid var(--border)", borderRadius: "var(--radius-sm)", background: "var(--surface)", cursor: "pointer", color: "var(--text3)" }}>Clear</button>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+      <button className="btn btn-primary" style={{ width: "100%", fontSize: 20 }}
+        onClick={() => onSubmit(JSON.stringify(answers))} disabled={submitted || !allDone}>Submit All</button>
+    </div>
+  );
+}
+
 // -- Multi-row text input --
 function MultiRowInput({ items, labelFn, onSubmit, submitted, placeholder }) {
   const [answers, setAnswers] = useState((items || []).map(() => ""));
@@ -264,7 +418,7 @@ function AnswerInput({ question, onSubmit, submitted }) {
 
   if (t === "div-dec-direct") return <MultiRowInput items={question.problems} labelFn={p => <KaTeX expr={p.display} />} onSubmit={onSubmit} submitted={submitted} placeholder="decimal" />;
   if (t === "frac-to-dec") return <MultiRowInput items={question.problems} labelFn={p => <KaTeX expr={p.latex} />} onSubmit={onSubmit} submitted={submitted} placeholder="decimal" />;
-  if (t === "repeating-dec") return <MultiRowInput items={question.problems} labelFn={p => <KaTeX expr={p.latex} />} onSubmit={onSubmit} submitted={submitted} placeholder="e.g. 0.333..." />;
+  if (t === "repeating-dec") return <MultiRepeatingInput items={question.problems} labelFn={p => <KaTeX expr={p.latex} />} onSubmit={onSubmit} submitted={submitted} />;
   if (t === "dec-div-whole-direct") return <MultiRowInput items={question.problems} labelFn={p => <KaTeX expr={p.display} />} onSubmit={onSubmit} submitted={submitted} placeholder="decimal" />;
   if (t === "div-dec-direct2") return <MultiRowInput items={question.problems} labelFn={p => <KaTeX expr={p.expr} />} onSubmit={onSubmit} submitted={submitted} placeholder="answer" />;
   if (t === "solve-dec-direct") return <MultiRowInput items={question.problems} labelFn={p => <span style={{ fontFamily: "var(--mono)", fontSize: 19 }}>{p.eq}</span>} onSubmit={onSubmit} submitted={submitted} placeholder="x = ?" />;

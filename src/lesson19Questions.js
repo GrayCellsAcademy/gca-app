@@ -140,9 +140,27 @@ export function genRepeatingDec(){
 }
 export function gradeRepeatingItem(input,item){
   const s=String(input||"").trim().replace(/\s+/g,"");
-  // Accept any of the alts or the main answer
+  // Accept plain alts
   const all=[item.answer,...item.alts];
-  return all.some(a=>s.toLowerCase()===a.toLowerCase());
+  if(all.some(a=>s.toLowerCase()===a.toLowerCase()))return true;
+  // Accept bracket notation: "0.1[6]" means 0.1666...
+  // Extract the non-repeating part and repeating period
+  const bm=s.match(/^(\d*\.?\d*)\[([\d]+)\]$/);
+  if(bm){
+    const base=bm[1],period=bm[2];
+    // Build a long string to compare
+    const expanded=base+period.repeat(4)+"...";
+    const alt=base+period+"...";
+    if(all.some(a=>a.startsWith(base)&&a.includes(period)))return true;
+    // Also accept if numeric value matches
+    // Compute actual value: e.g. 0.1[6] = 1/6 = 0.1666...
+    // Check against item.answer prefix
+    if(item.answer.startsWith(base.slice(0,base.length-1)))return true;
+  }
+  // Accept overline unicode too (just in case)
+  const stripped=s.replace(/[\u0305\u0332]/g,"");
+  if(all.some(a=>stripped.toLowerCase()===a.replace(/\.\.\./,"").toLowerCase()))return true;
+  return false;
 }
 export function gradeRepeating(input,q){
   try{const ans=JSON.parse(input);return q.problems.every((p,i)=>gradeRepeatingItem(ans[i],p));}catch{return false;}
