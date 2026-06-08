@@ -125,20 +125,19 @@ function RepeatingDecimalInput({ onSubmit, submitted }) {
         <ol style={{ margin: "6px 0 0 18px", padding: 0 }}>
           <li>Type the decimal (e.g. <span style={{ fontFamily: "var(--mono)" }}>0.1666</span>)</li>
           <li>Highlight the repeating digits with your mouse or keyboard</li>
-          <li>Press the <span style={{ fontFamily: "var(--mono)", fontWeight: 900, background: "var(--surface)", padding: "1px 6px", borderRadius: 4, border: "1px solid var(--border)" }}><KaTeX expr="\\overline{abc}" /></span> button to mark them</li>
+          <li>Press the <span style={{ fontFamily: "var(--mono)", fontWeight: 900, background: "var(--surface)", padding: "1px 6px", borderRadius: 4, border: "1px solid var(--border)", borderTop: "3px solid var(--text)" }}>abc</span> button to mark them</li>
           <li>Press OK to submit</li>
         </ol>
       </div>
       <div style={{ display: "flex", gap: 8, marginBottom: 8, alignItems: "center" }}>
         <input ref={inputRef} value={text} onChange={handleTextChange}
-          onMouseUp={handleSelect} onKeyUp={handleSelect}
           disabled={submitted} placeholder="e.g. 0.1666"
           style={{ textAlign: "left", fontSize: 22, fontFamily: "var(--mono)", fontWeight: 700, padding: "10px", flex: 1 }} />
         <button title="Mark selected digits as repeating"
           onClick={handleSelect}
           disabled={submitted}
           style={{ padding: "8px 14px", fontSize: 20, fontFamily: "var(--mono)", fontWeight: 900, border: "2px solid var(--border)", borderRadius: "var(--radius-sm)", background: "var(--surface)", cursor: "pointer", minWidth: 52, display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <KaTeX expr="\\overline{abc}" />
+          <span style={{ fontFamily: "var(--mono)", fontWeight: 900, fontSize: 18, display: "inline-block", borderTop: "2px solid currentColor", paddingTop: 1 }}>abc</span>
         </button>
       </div>
       {finalStr ? (
@@ -149,7 +148,7 @@ function RepeatingDecimalInput({ onSubmit, submitted }) {
           <button onClick={clearPeriod} style={{ fontSize: 18, padding: "6px 12px", borderRadius: "var(--radius-sm)", border: "1px solid var(--border)", background: "var(--surface)", cursor: "pointer", color: "var(--text3)" }}>Clear</button>
         </div>
       ) : text && (
-        <div style={{ fontSize: 17, color: "var(--text3)", marginBottom: 8 }}>No repeating period selected - submits as-is, or select digits and press <span style={{ textDecoration: "overline", fontFamily: "var(--mono)" }}>abc</span></div>
+        <div style={{ fontSize: 17, color: "var(--text3)", marginBottom: 8 }}>No repeating period selected - submits as-is, or select digits and press the button to mark them.</div>
       )}
       <div style={{ display: "flex", gap: 8, justifyContent: "center" }}>
         <button className="btn btn-primary" style={{ flex: 1, fontSize: 20 }}
@@ -191,7 +190,7 @@ function MultiRepeatingInput({ items, labelFn, onSubmit, submitted }) {
   return (
     <div>
       <div style={{ background: "rgba(27,143,255,0.06)", border: "1px solid rgba(27,143,255,0.2)", borderRadius: "var(--radius-sm)", padding: "8px 12px", marginBottom: 10, fontSize: 17, color: "var(--text2)" }}>
-        Type the decimal, highlight repeating digits, press <KaTeX expr="\\overline{abc}" /> to mark them.
+        Type the decimal, highlight repeating digits, press <span style={{ fontFamily: "var(--mono)", fontWeight: 900, borderTop: "2px solid currentColor", paddingTop: 1 }}>abc</span> to mark them.
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 12 }}>
         {items.map((item, i) => (
@@ -200,12 +199,11 @@ function MultiRepeatingInput({ items, labelFn, onSubmit, submitted }) {
             <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
               <input id={`rep-input-${i}`} value={texts[i]}
                 onChange={e => { setTexts(prev => prev.map((x, j) => j === i ? e.target.value : x)); setAnswers(prev => prev.map((x, j) => j === i ? e.target.value : x)); }}
-                onMouseUp={() => handleSelect(i)} onKeyUp={() => handleSelect(i)}
                 disabled={submitted} placeholder="e.g. 0.333"
                 style={{ fontSize: 19, fontFamily: "var(--mono)", fontWeight: 700, padding: "6px 8px", flex: 1, borderRadius: "var(--radius-sm)", border: "1px solid var(--border)", background: "var(--surface)" }} />
               <button title="Mark selection as repeating" onClick={() => handleSelect(i)} disabled={submitted}
                 style={{ padding: "5px 10px", fontSize: 18, fontFamily: "var(--mono)", fontWeight: 900, border: "2px solid var(--border)", borderRadius: "var(--radius-sm)", background: "var(--surface)", cursor: "pointer" }}>
-                <KaTeX expr="\\overline{abc}" />
+                <span style={{ fontFamily: "var(--mono)", fontWeight: 900, fontSize: 16, display: "inline-block", borderTop: "2px solid currentColor", paddingTop: 1 }}>abc</span>
               </button>
             </div>
             {answers[i] && answers[i] !== texts[i] && (
@@ -347,7 +345,7 @@ function PlaceValueDisplay({ item }) {
 
 const STEP_TYPES = [];
 const MULTI_TYPES = ["div-dec-direct", "frac-to-dec", "repeating-dec", "dec-div-whole-direct", "div-dec-direct2", "solve-dec-direct"];
-const MC_TYPES = ["classify", "conv-div", "clear-dec-eq"];
+const MC_TYPES = ["conv-div", "clear-dec-eq"];
 
 function gradeAnswer(input, question) {
   if (!input || !question) return false;
@@ -424,8 +422,6 @@ function AnswerInput({ question, onSubmit, submitted }) {
   if (t === "solve-dec-direct") return <MultiRowInput items={question.problems} labelFn={p => <span style={{ fontFamily: "var(--mono)", fontSize: 19 }}>{p.eq}</span>} onSubmit={onSubmit} submitted={submitted} placeholder="x = ?" />;
   if (t === "conv-div") return <MultiRowInput items={question.problems} labelFn={p => <KaTeX expr={p.expr} />} onSubmit={onSubmit} submitted={submitted} placeholder="e.g. 63/3" />;
   if (t === "clear-dec-eq") return <MultiRowInput items={question.problems} labelFn={p => <span style={{ fontFamily: "var(--mono)", fontSize: 19 }}>{p.eq}</span>} onSubmit={onSubmit} submitted={submitted} placeholder="10, 100..." />;
-  if (t === "classify") return <MCRowInput items={question.items} labelFn={item => <KaTeX expr={item.latex} />} onSubmit={onSubmit} submitted={submitted} />;
-
   return null;
 }
 
@@ -435,8 +431,7 @@ function StudentReveal({ result, question }) {
   const isMulti = [...MULTI_TYPES, ...MC_TYPES].includes(question?.type);
   const graderMap = {
     "div-dec-direct": gradeDivDecDirectItem, "frac-to-dec": gradeFracToDecItem,
-    "repeating-dec": gradeRepeatingItem, "classify": gradeClassifyItem,
-    "dec-div-whole-direct": gradeDecDivWholeDirectItem, "div-dec-direct2": gradeDivDecDirect2Item,
+    "repeating-dec": gradeRepeatingItem, "dec-div-whole-direct": gradeDecDivWholeDirectItem, "div-dec-direct2": gradeDivDecDirect2Item,
     "solve-dec-direct": gradeSolveDecDirectItem, "conv-div": gradeConvDivItem,
     "clear-dec-eq": gradeClearDecEqItem,
   };

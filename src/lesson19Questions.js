@@ -391,12 +391,11 @@ export const LESSON19_TOPICS=[
   {id:"div-dec-direct",      label:"A1: Whole Num Division (Direct)",   description:"4 simultaneous"},
   {id:"frac-to-dec",         label:"A2: Fraction to Decimal",           description:"4 simultaneous"},
   {id:"repeating-dec",       label:"A3: Repeating Decimals",            description:"4 simultaneous"},
-  {id:"classify",            label:"A4: Classify Term./Repeating",      description:"6 simultaneous"},
-  {id:"dec-div-whole-direct",label:"A5: Decimal / Whole (Direct)",      description:"4 simultaneous"},
-  {id:"conv-div",            label:"A6: Convert Div by Decimal",        description:"5 simultaneous"},
-  {id:"div-dec-direct2",     label:"A7: Divide by Decimal (Direct)",   description:"4 simultaneous"},
-  {id:"clear-dec-eq",        label:"A8: Identify Multiplier",          description:"5 simultaneous"},
-  {id:"solve-dec-direct",    label:"A9: Solve Decimal Equations",      description:"4 simultaneous"},
+  {id:"dec-div-whole-direct",label:"A4: Decimal / Whole (Direct)",      description:"4 simultaneous"},
+  {id:"conv-div",            label:"A5: Convert Div by Decimal",        description:"5 simultaneous"},
+  {id:"div-dec-direct2",     label:"A6: Divide by Decimal (Direct)",   description:"4 simultaneous"},
+  {id:"clear-dec-eq",        label:"A7: Identify Multiplier",          description:"5 simultaneous"},
+  {id:"solve-dec-direct",    label:"A8: Solve Decimal Equations",      description:"4 simultaneous"},
 ];
 
 export function generateLesson19Question(topicId){
@@ -408,7 +407,6 @@ export function generateLesson19Question(topicId){
     case "div-dec-direct":       return genDivDecDirect();
     case "frac-to-dec":          return genFracToDec();
     case "repeating-dec":        return genRepeatingDec();
-    case "classify":             return genClassify();
     case "dec-div-whole-direct": return genDecDivWholeDirect();
     case "conv-div":             return genConvDiv();
     case "div-dec-direct2":      return genDivDecDirect2();
@@ -428,7 +426,6 @@ export function gradeLesson19Answer(input,question){
     case "div-dec-direct":       return gradeDivDecDirect(input,question);
     case "frac-to-dec":          return gradeFracToDec(input,question);
     case "repeating-dec":        return gradeRepeating(input,question);
-    case "classify":             return gradeClassify(input,question);
     case "dec-div-whole-direct": return gradeDecDivWholeDirect(input,question);
     case "conv-div":             return gradeConvDiv(input,question);
     case "div-dec-direct2":      return gradeDivDecDirect2(input,question);
