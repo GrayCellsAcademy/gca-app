@@ -219,10 +219,19 @@ export function gradeDecDivWholeSBSStage2(input,q){return decOk(input,q.answer);
 
 // - A7: Decimal / whole number direct -
 const DEC_DIV_WHOLE_DIRECT=[
-  {dividend:8.4,divisor:4,answer:2.1},{dividend:15.75,divisor:3,answer:5.25},
-  {dividend:6.25,divisor:5,answer:1.25},{dividend:22.5,divisor:6,answer:3.75},
-  {dividend:9.6,divisor:4,answer:2.4},{dividend:7.2,divisor:6,answer:1.2},
-  {dividend:18.9,divisor:7,answer:2.7},{dividend:4.8,divisor:4,answer:1.2},
+  // Terminating answers
+  {dividend:8.4,divisor:4,answer:2.1,displayAnswer:"2.1"},
+  {dividend:15.75,divisor:3,answer:5.25,displayAnswer:"5.25"},
+  {dividend:6.25,divisor:5,answer:1.25,displayAnswer:"1.25"},
+  {dividend:9.6,divisor:4,answer:2.4,displayAnswer:"2.4"},
+  {dividend:4.8,divisor:4,answer:1.2,displayAnswer:"1.2"},
+  // Repeating answers (store as bracket notation for display)
+  {dividend:1,divisor:3,answer:0.3333,displayAnswer:"0.[3]",repeating:true},
+  {dividend:2,divisor:3,answer:0.6667,displayAnswer:"0.[6]",repeating:true},
+  {dividend:1,divisor:6,answer:0.1667,displayAnswer:"0.1[6]",repeating:true},
+  {dividend:5,divisor:9,answer:0.5556,displayAnswer:"0.[5]",repeating:true},
+  // 2-digit repeating period
+  {dividend:1,divisor:7,answer:0.1429,displayAnswer:"0.[142857]",repeating:true},
 ];
 export function genDecDivWholeDirect(){
   const probs=shuffle([...DEC_DIV_WHOLE_DIRECT]).slice(0,4).map(p=>({
@@ -230,7 +239,28 @@ export function genDecDivWholeDirect(){
   }));
   return{type:"dec-div-whole-direct",problems:probs,prompt:"Divide. Enter the decimal quotient."};
 }
-export function gradeDecDivWholeDirectItem(input,item){return decOk(input,item.answer);}
+export function gradeDecDivWholeDirectItem(input,item){
+  if(item.repeating){
+    // Accept bracket notation e.g. "0.[3]" or plain repeating formats
+    return gradeRepeatingLike(input,item.displayAnswer);
+  }
+  return decOk(input,item.answer);
+}
+function gradeRepeatingLike(input,displayAnswer){
+  const s=String(input||"").trim().replace(/\s+/g,"");
+  if(!s)return false;
+  // Extract period from displayAnswer e.g. "0.[3]" -> period="3"
+  const dm=displayAnswer.match(/^(.*)\[(.+)\](.*)$/);
+  if(!dm)return decOk(input,parseFloat(displayAnswer));
+  const base=dm[1],period=dm[2];
+  // Accept bracket notation
+  if(s===displayAnswer)return true;
+  const bm=s.match(/^(.*)\[(.+)\](.*)$/);
+  if(bm&&bm[1]===base&&bm[2]===period)return true;
+  // Accept if starts with base and contains period
+  if(s.startsWith(base+period))return true;
+  return false;
+}
 export function gradeDecDivWholeDirect(input,q){
   try{const ans=JSON.parse(input);return q.problems.every((p,i)=>gradeDecDivWholeDirectItem(ans[i],p));}catch{return false;}
 }

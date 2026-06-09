@@ -69,6 +69,15 @@ function TextInput({ onSubmit, submitted, placeholder, wide }) {
   );
 }
 
+// Convert "[period]" bracket notation to KaTeX overline expression
+function bracketToKatex(str) {
+  if (!str) return str;
+  const bs = "\\";
+  const m = String(str).match(/^(.*)\[(.+)\](.*)$/);
+  if (!m) return str;
+  return `${m[1]}${bs}overline{${m[2]}}${m[3]}`;
+}
+
 // -- Repeating Decimal Input --
 // Stores answer as "0.3[3]" where [3] means 3 has overline (repeating period)
 // Displays with CSS overline on the bracketed portion
@@ -390,7 +399,11 @@ function QuestionDisplay({ question: q, revealCorrect }) {
       {items.map((item, i) => (
         <div key={i} style={{ background: "var(--bg2)", borderRadius: "var(--radius-sm)", padding: "8px 14px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
           <span><KaTeX expr={item.latex || item.expr || item.eq || item.display || String(i + 1)} /></span>
-          <span style={{ fontFamily: "var(--mono)", color: "var(--green)", fontWeight: 700, fontSize: 19 }}>{item.displayAnswer || item.answer}</span>
+          {(item.displayAnswer || item.answer || "").includes("[") ? (
+            <span style={{ color: "var(--green)", fontWeight: 700, fontSize: 19 }}><KaTeX expr={bracketToKatex(item.displayAnswer || item.answer)} /></span>
+          ) : (
+            <span style={{ fontFamily: "var(--mono)", color: "var(--green)", fontWeight: 700, fontSize: 19 }}>{item.displayAnswer || item.answer}</span>
+          )}
         </div>
       ))}
     </div>
@@ -417,7 +430,7 @@ function AnswerInput({ question, onSubmit, submitted }) {
   if (t === "div-dec-direct") return <MultiRowInput items={question.problems} labelFn={p => <KaTeX expr={p.display} />} onSubmit={onSubmit} submitted={submitted} placeholder="decimal" />;
   if (t === "frac-to-dec") return <MultiRowInput items={question.problems} labelFn={p => <KaTeX expr={p.latex} />} onSubmit={onSubmit} submitted={submitted} placeholder="decimal" />;
   if (t === "repeating-dec") return <MultiRepeatingInput items={question.problems} labelFn={p => <KaTeX expr={p.latex} />} onSubmit={onSubmit} submitted={submitted} />;
-  if (t === "dec-div-whole-direct") return <MultiRowInput items={question.problems} labelFn={p => <KaTeX expr={p.display} />} onSubmit={onSubmit} submitted={submitted} placeholder="decimal" />;
+  if (t === "dec-div-whole-direct") return <MultiRepeatingInput items={question.problems} labelFn={p => <KaTeX expr={p.display} />} onSubmit={onSubmit} submitted={submitted} />;
   if (t === "div-dec-direct2") return <MultiRowInput items={question.problems} labelFn={p => <KaTeX expr={p.expr} />} onSubmit={onSubmit} submitted={submitted} placeholder="answer" />;
   if (t === "solve-dec-direct") return <MultiRowInput items={question.problems} labelFn={p => <span style={{ fontFamily: "var(--mono)", fontSize: 19 }}>{p.eq}</span>} onSubmit={onSubmit} submitted={submitted} placeholder="x = ?" />;
   if (t === "conv-div") return <MultiRowInput items={question.problems} labelFn={p => <KaTeX expr={p.expr} />} onSubmit={onSubmit} submitted={submitted} placeholder="e.g. 63/3" />;
@@ -455,7 +468,11 @@ function StudentReveal({ result, question }) {
                 <span><KaTeX expr={item.latex || item.expr || item.eq || item.display || String(i + 1)} /></span>
                 <div style={{ display: "flex", gap: 8 }}>
                   {!itemOk && <span style={{ fontSize: 17, color: "var(--red)", fontWeight: 700, fontFamily: "var(--mono)" }}>You: {studentAns || "-"}</span>}
-                  <span style={{ fontSize: 17, color: "var(--green)", fontWeight: 700, fontFamily: "var(--mono)" }}>{correctAns}</span>
+                  {correctAns && correctAns.includes("[") ? (
+                    <span style={{ fontSize: 17, color: "var(--green)", fontWeight: 700 }}><KaTeX expr={bracketToKatex(correctAns)} /></span>
+                  ) : (
+                    <span style={{ fontSize: 17, color: "var(--green)", fontWeight: 700, fontFamily: "var(--mono)" }}>{correctAns}</span>
+                  )}
                 </div>
               </div>
             );
