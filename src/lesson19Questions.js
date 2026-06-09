@@ -127,16 +127,18 @@ export function gradeFracToDec(input,q){
 
 // - A4: Repeating decimals -
 const REPEATING_POOL=[
-  {latex:"\\dfrac{1}{3}",answer:"0.333...",alts:["0.3...","0.33...","0.3333...","1/3"],display:"1/3"},
-  {latex:"\\dfrac{2}{3}",answer:"0.666...",alts:["0.6...","0.67...","0.6666...","2/3"],display:"2/3"},
-  {latex:"\\dfrac{5}{6}",answer:"0.8333...",alts:["0.83...","0.833...","0.8333...","5/6"],display:"5/6"},
-  {latex:"\\dfrac{4}{9}",answer:"0.444...",alts:["0.4...","0.44...","0.4444...","4/9"],display:"4/9"},
-  {latex:"\\dfrac{1}{6}",answer:"0.1666...",alts:["0.16...","0.166...","0.1666...","1/6"],display:"1/6"},
-  {latex:"\\dfrac{1}{9}",answer:"0.111...",alts:["0.1...","0.11...","0.1111...","1/9"],display:"1/9"},
+  {latex:"\\dfrac{1}{3}",answer:"0.333...",displayAnswer:"0.[3]",alts:["0.3...","0.33...","0.3333...","1/3"],display:"1/3"},
+  {latex:"\\dfrac{2}{3}",answer:"0.666...",displayAnswer:"0.[6]",alts:["0.6...","0.67...","0.6666...","2/3"],display:"2/3"},
+  {latex:"\\dfrac{5}{6}",answer:"0.8333...",displayAnswer:"0.8[3]",alts:["0.83...","0.833...","0.8333...","5/6"],display:"5/6"},
+  {latex:"\\dfrac{4}{9}",answer:"0.444...",displayAnswer:"0.[4]",alts:["0.4...","0.44...","0.4444...","4/9"],display:"4/9"},
+  {latex:"\\dfrac{1}{6}",answer:"0.1666...",displayAnswer:"0.1[6]",alts:["0.16...","0.166...","0.1666...","1/6"],display:"1/6"},
+  {latex:"\\dfrac{1}{9}",answer:"0.111...",displayAnswer:"0.[1]",alts:["0.1...","0.11...","0.1111...","1/9"],display:"1/9"},
+  {latex:"\\dfrac{2}{9}",answer:"0.222...",displayAnswer:"0.[2]",alts:["0.2...","0.22...","0.2222..."],display:"2/9"},
+  {latex:"\\dfrac{1}{11}",answer:"0.0909...",displayAnswer:"0.[09]",alts:["0.09...","0.0909..."],display:"1/11"},
 ];
 export function genRepeatingDec(){
   const probs=shuffle([...REPEATING_POOL]).slice(0,4).map(p=>({...p}));
-  return{type:"repeating-dec",problems:probs,prompt:"Express each fraction as a repeating decimal (use ... to show repeating)."};
+  return{type:"repeating-dec",problems:probs,prompt:"Express each fraction as a repeating decimal. Use the overline button to mark the repeating period."};
 }
 export function gradeRepeatingItem(input,item){
   const s=String(input||"").trim().replace(/\s+/g,"");
@@ -225,20 +227,22 @@ const DEC_DIV_WHOLE_DIRECT=[
   {dividend:6.25,divisor:5,answer:1.25,displayAnswer:"1.25"},
   {dividend:9.6,divisor:4,answer:2.4,displayAnswer:"2.4"},
   {dividend:4.8,divisor:4,answer:1.2,displayAnswer:"1.2"},
-  // Repeating answers (store as bracket notation for display)
-  {dividend:1,divisor:3,answer:0.3333,displayAnswer:"0.[3]",repeating:true},
-  {dividend:2,divisor:3,answer:0.6667,displayAnswer:"0.[6]",repeating:true},
-  {dividend:1,divisor:6,answer:0.1667,displayAnswer:"0.1[6]",repeating:true},
-  {dividend:5,divisor:9,answer:0.5556,displayAnswer:"0.[5]",repeating:true},
-  // 2-digit repeating period
-  {dividend:1,divisor:7,answer:0.1429,displayAnswer:"0.[142857]",repeating:true},
+  {dividend:7.5,divisor:6,answer:1.25,displayAnswer:"1.25"},
+  {dividend:4.2,divisor:6,answer:0.7,displayAnswer:"0.7"},
+  // Exactly 1 repeating entry (2-digit period)
+  {dividend:2,divisor:11,answer:0.1818,displayAnswer:"0.[18]",repeating:true},
 ];
+// genDecDivWholeDirect always picks exactly 1 repeating + 3 terminating
 export function genDecDivWholeDirect(){
-  const probs=shuffle([...DEC_DIV_WHOLE_DIRECT]).slice(0,4).map(p=>({
-    ...p,display:`${p.dividend} \\div ${p.divisor}`,displayAnswer:fmtDec(p.answer),
+  const terminating=DEC_DIV_WHOLE_DIRECT.filter(p=>!p.repeating);
+  const repeating=DEC_DIV_WHOLE_DIRECT.filter(p=>p.repeating);
+  const picked=[...shuffle(terminating).slice(0,3),...shuffle(repeating).slice(0,1)];
+  const probs=shuffle(picked).map(p=>({
+    ...p,display:`${p.dividend} \\div ${p.divisor}`,
   }));
-  return{type:"dec-div-whole-direct",problems:probs,prompt:"Divide. Enter the decimal quotient."};
+  return{type:"dec-div-whole-direct",problems:probs,prompt:"Divide. Enter the decimal quotient. Use the overline button if the answer repeats."};
 }
+
 export function gradeDecDivWholeDirectItem(input,item){
   if(item.repeating){
     // Accept bracket notation e.g. "0.[3]" or plain repeating formats
@@ -393,21 +397,37 @@ export function gradeClearSolveSBSStage3(input,q){
 }
 
 // - A13: Solve decimal equations direct -
-const SOLVE_DEC_DIRECT=[
+const SOLVE_DEC_DIRECT_INT=[
   {eq:"0.3x - 0.2 = 0.4",xNum:2,xDen:1,answer:"2"},
-  {eq:"0.25x + 0.5 = 1",xNum:2,xDen:1,answer:"2"},
   {eq:"1.2x = 3.6",xNum:3,xDen:1,answer:"3"},
   {eq:"0.05x + 0.1 = 0.3",xNum:4,xDen:1,answer:"4"},
-  {eq:"0.4x - 0.8 = 1.2",xNum:5,xDen:1,answer:"5"},
-  {eq:"0.6x - 0.3 = 0.9",xNum:2,xDen:1,answer:"2"},
   {eq:"0.5x + 1 = 2.5",xNum:3,xDen:1,answer:"3"},
-  {eq:"0.2x - 0.6 = 0.4",xNum:5,xDen:1,answer:"5"},
+];
+const SOLVE_DEC_DIRECT_FRAC=[
+  {eq:"0.4x + 0.3 = 0.7",xNum:1,xDen:1,answer:"1"},
+  {eq:"0.2x + 0.1 = 0.2",xNum:1,xDen:2,answer:"1/2"},
+  {eq:"0.6x - 0.1 = 0.2",xNum:1,xDen:2,answer:"1/2"},
+  {eq:"0.3x + 0.4 = 0.7",xNum:1,xDen:1,answer:"1"},
+  {eq:"0.5x - 0.2 = 0.05",xNum:1,xDen:2,answer:"1/2"},
+  {eq:"0.4x + 0.1 = 0.5",xNum:1,xDen:1,answer:"1"},
+  {eq:"0.6x + 0.2 = 0.5",xNum:1,xDen:2,answer:"1/2"},
+  {eq:"0.3x - 0.1 = 0.05",xNum:1,xDen:2,answer:"1/2"},
+  {eq:"0.25x + 0.25 = 0.5",xNum:1,xDen:1,answer:"1"},
+  {eq:"0.5x - 0.1 = 0.15",xNum:1,xDen:2,answer:"1/2"},
 ];
 export function genSolveDecDirect(){
-  const probs=shuffle([...SOLVE_DEC_DIRECT]).slice(0,4).map(p=>({...p}));
-  return{type:"solve-dec-direct",problems:probs,prompt:"Solve for x."};
+  const intProb=randChoice(SOLVE_DEC_DIRECT_INT);
+  const fracProbs=shuffle([...SOLVE_DEC_DIRECT_FRAC]).slice(0,3);
+  const probs=shuffle([intProb,...fracProbs]);
+  return{type:"solve-dec-direct",problems:probs,prompt:"Solve for x. Enter integer or fraction."};
 }
-export function gradeSolveDecDirectItem(input,item){return decOk(input,item.xNum/item.xDen);}
+export function gradeSolveDecDirectItem(input,item){
+  // Accept decimal or fraction form
+  const s=String(input||"").trim();
+  const fx=s.match(/^(-?\d+)\/(-?\d+)$/);
+  if(fx){const[,n,d]=[null,parseInt(fx[1]),parseInt(fx[2])];const g=gcd(Math.abs(n),Math.abs(d));return n/g===item.xNum/gcd(Math.abs(item.xNum),item.xDen)&&d/g===item.xDen/gcd(Math.abs(item.xNum),item.xDen);}
+  return decOk(input,item.xNum/item.xDen);
+}
 export function gradeSolveDecDirect(input,q){
   try{const ans=JSON.parse(input);return q.problems.every((p,i)=>gradeSolveDecDirectItem(ans[i],p));}catch{return false;}
 }

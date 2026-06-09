@@ -432,7 +432,7 @@ function AnswerInput({ question, onSubmit, submitted }) {
   if (t === "repeating-dec") return <MultiRepeatingInput items={question.problems} labelFn={p => <KaTeX expr={p.latex} />} onSubmit={onSubmit} submitted={submitted} />;
   if (t === "dec-div-whole-direct") return <MultiRepeatingInput items={question.problems} labelFn={p => <KaTeX expr={p.display} />} onSubmit={onSubmit} submitted={submitted} />;
   if (t === "div-dec-direct2") return <MultiRowInput items={question.problems} labelFn={p => <KaTeX expr={p.expr} />} onSubmit={onSubmit} submitted={submitted} placeholder="answer" />;
-  if (t === "solve-dec-direct") return <MultiRowInput items={question.problems} labelFn={p => <span style={{ fontFamily: "var(--mono)", fontSize: 19 }}>{p.eq}</span>} onSubmit={onSubmit} submitted={submitted} placeholder="x = ?" />;
+  if (t === "solve-dec-direct") return <MultiRowInput items={question.problems} labelFn={p => <span style={{ fontFamily: "var(--mono)", fontSize: 19 }}>{p.eq}</span>} onSubmit={onSubmit} submitted={submitted} placeholder="integer or fraction" />;
   if (t === "conv-div") return <MultiRowInput items={question.problems} labelFn={p => <KaTeX expr={p.expr} />} onSubmit={onSubmit} submitted={submitted} placeholder="e.g. 63/3" />;
   if (t === "clear-dec-eq") return <MultiRowInput items={question.problems} labelFn={p => <span style={{ fontFamily: "var(--mono)", fontSize: 19 }}>{p.eq}</span>} onSubmit={onSubmit} submitted={submitted} placeholder="10, 100..." />;
   return null;
