@@ -460,12 +460,13 @@ function genDivByDec() {
 }
 
 function DivByDec({ onCorrect, onWrong }) {
-  const [problems, setProblems] = useState(() => [...genDivByDec(), ...shuffle([randChoice(A6_INT), randChoice(A6_1DEC)]).slice(0, 2)]);
-  // Actually 6 problems: 2 int, 2 decimal variations, 1 two-dec, 1 repeating
   const gen6 = () => {
-    const int1 = randChoice(A6_INT); const int2 = randChoice(A6_INT.filter(x => x.latex !== int1.latex));
-    const d1 = randChoice(A6_1DEC); const d2 = randChoice(A6_2DEC);
-    return shuffle([int1, int2, d1, d2, randChoice(A6_1DEC.filter(x => x.latex !== d1.latex)), A6_REP[0]]);
+    const int1 = randChoice(A6_INT);
+    const int2 = randChoice(A6_INT.filter(x => x.latex !== int1.latex));
+    const d1 = randChoice(A6_1DEC);
+    const d2a = randChoice(A6_2DEC);
+    const d1b = randChoice(A6_1DEC.filter(x => x.latex !== d1.latex));
+    return shuffle([int1, int2, d1, d2a, d1b, A6_REP[0]]);
   };
   const [probs, setProbs] = useState(() => gen6());
   return <SixMastery
