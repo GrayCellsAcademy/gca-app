@@ -401,6 +401,8 @@ function QuestionDisplay({ question: q, revealCorrect }) {
           <span><KaTeX expr={item.latex || item.expr || item.eq || item.display || String(i + 1)} /></span>
           {(item.displayAnswer || item.answer || "").includes("[") ? (
             <span style={{ color: "var(--green)", fontWeight: 700, fontSize: 19 }}><KaTeX expr={bracketToKatex(item.displayAnswer || item.answer)} /></span>
+          ) : (item.displayAnswer || item.answer || "").includes("\\div") || (item.displayAnswer || item.answer || "").includes("\\dfrac") ? (
+            <span style={{ color: "var(--green)", fontWeight: 700, fontSize: 19 }}><KaTeX expr={item.displayAnswer || item.answer} /></span>
           ) : (
             <span style={{ fontFamily: "var(--mono)", color: "var(--green)", fontWeight: 700, fontSize: 19 }}>{item.displayAnswer || item.answer}</span>
           )}
@@ -470,6 +472,8 @@ function StudentReveal({ result, question }) {
                   {!itemOk && <span style={{ fontSize: 17, color: "var(--red)", fontWeight: 700, fontFamily: "var(--mono)" }}>You: {studentAns || "-"}</span>}
                   {correctAns && correctAns.includes("[") ? (
                     <span style={{ fontSize: 17, color: "var(--green)", fontWeight: 700 }}><KaTeX expr={bracketToKatex(correctAns)} /></span>
+                  ) : correctAns && (correctAns.includes("\\div") || correctAns.includes("\\dfrac")) ? (
+                    <span style={{ fontSize: 17, color: "var(--green)", fontWeight: 700 }}><KaTeX expr={correctAns} /></span>
                   ) : (
                     <span style={{ fontSize: 17, color: "var(--green)", fontWeight: 700, fontFamily: "var(--mono)" }}>{correctAns}</span>
                   )}

@@ -220,26 +220,34 @@ export function gradeDecDivWholeSBSStage1(input,q){
 export function gradeDecDivWholeSBSStage2(input,q){return decOk(input,q.answer);}
 
 // - A7: Decimal / whole number direct -
-const DEC_DIV_WHOLE_DIRECT=[
-  // Terminating answers
+// A6 pools: 1 integer, 1 one-decimal, 1 two-decimal, 1 repeating (fixed)
+const DEC_DIV_WHOLE_INT=[
+  {dividend:9,divisor:3,answer:3,displayAnswer:"3"},
+  {dividend:12,divisor:4,answer:3,displayAnswer:"3"},
+  {dividend:15,divisor:5,answer:3,displayAnswer:"3"},
+];
+const DEC_DIV_WHOLE_1DEC=[
   {dividend:8.4,divisor:4,answer:2.1,displayAnswer:"2.1"},
-  {dividend:15.75,divisor:3,answer:5.25,displayAnswer:"5.25"},
-  {dividend:6.25,divisor:5,answer:1.25,displayAnswer:"1.25"},
   {dividend:9.6,divisor:4,answer:2.4,displayAnswer:"2.4"},
   {dividend:4.8,divisor:4,answer:1.2,displayAnswer:"1.2"},
-  {dividend:7.5,divisor:6,answer:1.25,displayAnswer:"1.25"},
-  {dividend:4.2,divisor:6,answer:0.7,displayAnswer:"0.7"},
-  // Exactly 1 repeating entry (2-digit period)
+  {dividend:7.5,divisor:5,answer:1.5,displayAnswer:"1.5"},
+];
+const DEC_DIV_WHOLE_2DEC=[
+  {dividend:15.75,divisor:3,answer:5.25,displayAnswer:"5.25"},
+  {dividend:6.25,divisor:5,answer:1.25,displayAnswer:"1.25"},
+  {dividend:3.75,divisor:3,answer:1.25,displayAnswer:"1.25"},
+  {dividend:4.50,divisor:4,answer:1.125,displayAnswer:"1.125"},
+];
+const DEC_DIV_WHOLE_REP=[
   {dividend:2,divisor:11,answer:0.1818,displayAnswer:"0.[18]",repeating:true},
 ];
-// genDecDivWholeDirect always picks exactly 1 repeating + 3 terminating
 export function genDecDivWholeDirect(){
-  const terminating=DEC_DIV_WHOLE_DIRECT.filter(p=>!p.repeating);
-  const repeating=DEC_DIV_WHOLE_DIRECT.filter(p=>p.repeating);
-  const picked=[...shuffle(terminating).slice(0,3),...shuffle(repeating).slice(0,1)];
-  const probs=shuffle(picked).map(p=>({
-    ...p,display:`${p.dividend} \\div ${p.divisor}`,
-  }));
+  const probs=shuffle([
+    randChoice(DEC_DIV_WHOLE_INT),
+    randChoice(DEC_DIV_WHOLE_1DEC),
+    randChoice(DEC_DIV_WHOLE_2DEC),
+    DEC_DIV_WHOLE_REP[0],
+  ]).map(p=>({...p,display:`${p.dividend} \\div ${p.divisor}`}));
   return{type:"dec-div-whole-direct",problems:probs,prompt:"Divide. Enter the decimal quotient. Use the overline button if the answer repeats."};
 }
 
@@ -403,22 +411,26 @@ const SOLVE_DEC_DIRECT_INT=[
   {eq:"0.05x + 0.1 = 0.3",xNum:4,xDen:1,answer:"4"},
   {eq:"0.5x + 1 = 2.5",xNum:3,xDen:1,answer:"3"},
 ];
-const SOLVE_DEC_DIRECT_FRAC=[
-  {eq:"0.4x + 0.3 = 0.7",xNum:1,xDen:1,answer:"1"},
+// 3 different fraction values: 1/2, 1/4, 3/4
+const SOLVE_DEC_DIRECT_HALF=[
   {eq:"0.2x + 0.1 = 0.2",xNum:1,xDen:2,answer:"1/2"},
   {eq:"0.6x - 0.1 = 0.2",xNum:1,xDen:2,answer:"1/2"},
-  {eq:"0.3x + 0.4 = 0.7",xNum:1,xDen:1,answer:"1"},
   {eq:"0.5x - 0.2 = 0.05",xNum:1,xDen:2,answer:"1/2"},
-  {eq:"0.4x + 0.1 = 0.5",xNum:1,xDen:1,answer:"1"},
-  {eq:"0.6x + 0.2 = 0.5",xNum:1,xDen:2,answer:"1/2"},
-  {eq:"0.3x - 0.1 = 0.05",xNum:1,xDen:2,answer:"1/2"},
-  {eq:"0.25x + 0.25 = 0.5",xNum:1,xDen:1,answer:"1"},
-  {eq:"0.5x - 0.1 = 0.15",xNum:1,xDen:2,answer:"1/2"},
+];
+const SOLVE_DEC_DIRECT_QUARTER=[
+  {eq:"0.4x + 0.2 = 0.3",xNum:1,xDen:4,answer:"1/4"},
+  {eq:"0.8x - 0.1 = 0.1",xNum:1,xDen:4,answer:"1/4"},
+];
+const SOLVE_DEC_DIRECT_3QTR=[
+  {eq:"0.4x + 0.1 = 0.4",xNum:3,xDen:4,answer:"3/4"},
+  {eq:"0.8x - 0.2 = 0.4",xNum:3,xDen:4,answer:"3/4"},
 ];
 export function genSolveDecDirect(){
   const intProb=randChoice(SOLVE_DEC_DIRECT_INT);
-  const fracProbs=shuffle([...SOLVE_DEC_DIRECT_FRAC]).slice(0,3);
-  const probs=shuffle([intProb,...fracProbs]);
+  const halfProb=randChoice(SOLVE_DEC_DIRECT_HALF);
+  const quarterProb=randChoice(SOLVE_DEC_DIRECT_QUARTER);
+  const threeQtrProb=randChoice(SOLVE_DEC_DIRECT_3QTR);
+  const probs=shuffle([intProb,halfProb,quarterProb,threeQtrProb]);
   return{type:"solve-dec-direct",problems:probs,prompt:"Solve for x. Enter integer or fraction."};
 }
 export function gradeSolveDecDirectItem(input,item){
