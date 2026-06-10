@@ -334,19 +334,44 @@ export function gradeDivDecSBS2Stage2(input,q){
 export function gradeDivDecSBS2Stage3(input,q){return decOk(input,q.answer);}
 
 // - A10: Divide by decimal direct -
-const DIV_DEC_DIRECT2=[
-  {expr:"7.2 \\div 0.8",answer:9},{expr:"3.6 \\div 0.12",answer:30},
-  {expr:"0.45 \\div 0.05",answer:9},{expr:"2.5 \\div 0.2",answer:12.5},
-  {expr:"6.3 \\div 0.7",answer:9},{expr:"4.8 \\div 0.6",answer:8},
-  {expr:"1.8 \\div 0.06",answer:30},{expr:"0.9 \\div 0.03",answer:30},
+const DIV_DEC_DIRECT2_INT=[
+  {expr:"7.2 \\div 0.8",answer:9,displayAnswer:"9"},
+  {expr:"4.8 \\div 0.6",answer:8,displayAnswer:"8"},
+  {expr:"6.3 \\div 0.7",answer:9,displayAnswer:"9"},
+  {expr:"0.45 \\div 0.05",answer:9,displayAnswer:"9"},
+];
+const DIV_DEC_DIRECT2_1DEC=[
+  {expr:"2.5 \\div 0.2",answer:12.5,displayAnswer:"12.5"},
+  {expr:"1.5 \\div 0.4",answer:3.75,displayAnswer:"3.75"},
+  {expr:"0.7 \\div 0.4",answer:1.75,displayAnswer:"1.75"},
+];
+const DIV_DEC_DIRECT2_2DEC=[
+  {expr:"3.6 \\div 0.12",answer:30,displayAnswer:"30"},
+  {expr:"1.8 \\div 0.06",answer:30,displayAnswer:"30"},
+  {expr:"4.5 \\div 0.15",answer:30,displayAnswer:"30"},
+];
+// Use 2+ decimal place answers from above or define dedicated ones
+const DIV_DEC_DIRECT2_MULTI=[
+  {expr:"1.4 \\div 0.08",answer:17.5,displayAnswer:"17.5"},
+  {expr:"2.7 \\div 0.12",answer:22.5,displayAnswer:"22.5"},
+  {expr:"0.9 \\div 0.04",answer:22.5,displayAnswer:"22.5"},
+];
+const DIV_DEC_DIRECT2_REP=[
+  {expr:"0.3 \\div 0.9",answer:0.3333,displayAnswer:"0.[3]",repeating:true},
 ];
 export function genDivDecDirect2(){
-  const probs=shuffle([...DIV_DEC_DIRECT2]).slice(0,4).map(p=>({
-    ...p,displayAnswer:fmtDec(p.answer),
-  }));
-  return{type:"div-dec-direct2",problems:probs,prompt:"Divide. Enter the quotient."};
+  const probs=shuffle([
+    randChoice(DIV_DEC_DIRECT2_INT),
+    randChoice(DIV_DEC_DIRECT2_1DEC),
+    randChoice(DIV_DEC_DIRECT2_MULTI),
+    DIV_DEC_DIRECT2_REP[0],
+  ]).map(p=>({...p}));
+  return{type:"div-dec-direct2",problems:probs,prompt:"Divide. Use the overline button if the answer is a repeating decimal."};
 }
-export function gradeDivDecDirect2Item(input,item){return decOk(input,item.answer);}
+export function gradeDivDecDirect2Item(input,item){
+  if(item.repeating) return gradeRepeatingLike(input,item.displayAnswer);
+  return decOk(input,item.answer);
+}
 export function gradeDivDecDirect2(input,q){
   try{const ans=JSON.parse(input);return q.problems.every((p,i)=>gradeDivDecDirect2Item(ans[i],p));}catch{return false;}
 }
