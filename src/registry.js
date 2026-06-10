@@ -32,6 +32,7 @@ import Lesson15MasteryPlayer, { PerfectCubes2Player } from "./Lesson15MasteryPla
 import Lesson16MasteryPlayer, { MultZerosPlayer } from "./Lesson16MasteryPlayer";
 import Lesson17MasteryPlayer, { DivZerosPlayer } from "./Lesson17MasteryPlayer";
 import Lesson18MasteryPlayer, { DecMentalPlayer } from "./Lesson18MasteryPlayer";
+import Lesson19MasteryPlayer, { FracDecDrillPlayer } from "./Lesson19MasteryPlayer";
 
 export const TOPICS = {
   "addition-tables-v1": {
@@ -250,6 +251,20 @@ export const TOPICS = {
     description: "6-second timed drill: multiply or divide decimals by powers of 10.",
     subject: "math", gradeLevel: "6+", icon: "", type: "drill", status: "published", order: 33,
     Player: DecMentalPlayer,
+  },
+  "frac-dec-drill-v1": {
+    id: "frac-dec-drill-v1",
+    title: "Fraction-Decimal Conversions",
+    description: "Memorize then drill: 1/2, 1/4, 1/5, 1/10. 5-second timer, 2 correct each.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "drill", status: "published", order: 35,
+    Player: FracDecDrillPlayer,
+  },
+  "lesson19-mastery-v1": {
+    id: "lesson19-mastery-v1",
+    title: "HW 19 (019)",
+    description: "Decimal division, fraction-to-decimal, divide by decimal, decimal equations.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 36,
+    Player: Lesson19MasteryPlayer,
   },
   "lesson18-mastery-v1": {
     id: "lesson18-mastery-v1",
