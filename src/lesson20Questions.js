@@ -48,23 +48,34 @@ export function genWarmupD(){return{type:"warmup-d",eq:"0.25x + 0.5 = 1",answer:
 export function gradeWarmupD(input){return decOk(input,2);}
 
 // - A1: Write ratio from statement -
-const RATIO_STATEMENTS=[
+// Part-to-part statements
+const RATIO_STMT_PP=[
   {stmt:"There are 3 red marbles and 5 blue marbles. What is the ratio of red to blue?",a:3,b:5},
   {stmt:"A class has 12 boys and 16 girls. What is the ratio of boys to girls?",a:3,b:4},
   {stmt:"A bag has 8 apples and 6 oranges. What is the ratio of apples to oranges?",a:4,b:3},
   {stmt:"A team won 9 games and lost 3. What is the ratio of wins to losses?",a:3,b:1},
   {stmt:"There are 10 students and 2 teachers. What is the ratio of students to teachers?",a:5,b:1},
   {stmt:"A recipe uses 4 cups of flour and 2 cups of sugar. What is the ratio of flour to sugar?",a:2,b:1},
-  {stmt:"A class has 20 students total and 8 wear glasses. What is the ratio of glasses-wearers to total students?",a:2,b:5},
   {stmt:"A parking lot has 15 cars and 5 trucks. What is the ratio of cars to trucks?",a:3,b:1},
   {stmt:"A bouquet has 6 roses and 9 tulips. What is the ratio of roses to tulips?",a:2,b:3},
   {stmt:"There are 14 fiction books and 21 non-fiction books. What is the ratio of fiction to non-fiction?",a:2,b:3},
 ];
+// Part-to-whole statements (answer uses part and total)
+const RATIO_STMT_PW=[
+  {stmt:"There are 5 red marbles and 3 green marbles. What is the ratio of green marbles to the total number of marbles?",a:3,b:8},
+  {stmt:"A class has 20 students total and 8 wear glasses. What is the ratio of glasses-wearers to total students?",a:2,b:5},
+  {stmt:"A bag has 4 apples and 6 oranges. What is the ratio of apples to the total number of fruits?",a:2,b:5},
+  {stmt:"A team has 7 wins and 3 losses. What is the ratio of losses to total games played?",a:3,b:10},
+  {stmt:"There are 9 girls and 6 boys in a club. What is the ratio of girls to total members?",a:3,b:5},
+];
 export function genRatioStatements(){
-  const probs=shuffle([...RATIO_STATEMENTS]).slice(0,5).map(p=>({
+  // Always include exactly 2 part-to-whole problems
+  const pw=shuffle([...RATIO_STMT_PW]).slice(0,2);
+  const pp=shuffle([...RATIO_STMT_PP]).slice(0,3);
+  const probs=shuffle([...pp,...pw]).map(p=>({
     ...p,answer:`${p.a}:${p.b}`,displayAnswer:`${p.a}:${p.b}`,
   }));
-  return{type:"ratio-stmt",problems:probs,prompt:"Write each ratio in simplest form."};
+  return{type:"ratio-stmt",problems:probs,prompt:"Write each ratio in simplest form. For part-to-whole, the second term is the total."};
 }
 export function gradeRatioStmtItem(input,item){return ratioOk(input,item.a,item.b);}
 export function gradeRatioStmt(input,q){
@@ -131,11 +142,12 @@ const PROPORTION_CHECK_POOL=[
 export function genProportionCheck(){
   const items=shuffle([...PROPORTION_CHECK_POOL]).slice(0,6).map(p=>({
     ...p,
-    latex:`\\dfrac{${p.a}}{${p.b}} \\text{ and } \\dfrac{${p.c}}{${p.d}}`,
+    latex:`${p.a}:${p.b} = ${p.c}:${p.d}`,
+    isLatex:false,
     answer:p.isProp?"Yes":"No",
     options:["Yes","No"],
   }));
-  return{type:"prop-check",items,prompt:"Is each pair of ratios a proportion? Select Yes or No."};
+  return{type:"prop-check",items,prompt:"Is each equation a true proportion? Select Yes or No."};
 }
 export function gradePropCheckItem(input,item){
   return String(input||"").trim().toLowerCase()===(item.isProp?"yes":"no");

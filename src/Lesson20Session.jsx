@@ -205,6 +205,43 @@ function gradeAnswer(input, question) {
   try { return gradeLesson20Answer(input, question); } catch { return false; }
 }
 
+// -- Picture Ratio Display: renders simple colored shapes as SVG --
+function PictureRatioDisplay({ item }) {
+  // Parse desc to figure out shapes and counts
+  const desc = item.desc || "";
+  const colors = ["#3b82f6","#ef4444","#22c55e","#f59e0b","#8b5cf6","#ec4899"];
+  // Build a simple shape display from the description
+  const parts = desc.match(/(\d+)\s+(\w+)/g) || [];
+  let shapes = [];
+  parts.forEach((p, idx) => {
+    const m = p.match(/(\d+)\s+(\w+)/);
+    if (!m) return;
+    const count = parseInt(m[1]);
+    const label = m[2];
+    const color = colors[idx % colors.length];
+    for (let i = 0; i < count; i++) shapes.push({ label, color, idx });
+  });
+  const size = 36, gap = 8, perRow = 8;
+  const rows = Math.ceil(shapes.length / perRow);
+  const svgW = Math.min(shapes.length, perRow) * (size + gap);
+  const svgH = rows * (size + gap);
+  return (
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, marginBottom: 8 }}>
+      <svg width={svgW} height={svgH} style={{ overflow: "visible" }}>
+        {shapes.map((s, i) => {
+          const col = i % perRow, row = Math.floor(i / perRow);
+          const x = col * (size + gap) + size / 2, y = row * (size + gap) + size / 2;
+          // Alternate between circle and square by group
+          return s.idx % 2 === 0
+            ? <circle key={i} cx={x} cy={y} r={size/2} fill={s.color} opacity={0.85} />
+            : <rect key={i} x={x - size/2} y={y - size/2} width={size} height={size} fill={s.color} opacity={0.85} rx={4} />;
+        })}
+      </svg>
+      <div style={{ fontSize: 18, color: "var(--text2)", textAlign: "center" }}>{desc}</div>
+    </div>
+  );
+}
+
 // -- Question Display --
 function QuestionDisplay({ question: q, revealCorrect }) {
   useKaTeX();
@@ -223,8 +260,8 @@ function QuestionDisplay({ question: q, revealCorrect }) {
   if (q.type === "warmup-d") return simple(`0.25x + 0.5 = 1`, q.displayAnswer);
   if (q.type === "picture-ratio") return (
     <div style={{ textAlign: "center" }}>
-      <div style={{ fontSize: 20, color: "var(--text2)", marginBottom: 8 }}>{q.desc}</div>
-      {revealCorrect && <div style={{ color: "var(--green)", fontWeight: 800, fontSize: 22, fontFamily: "var(--mono)" }}>{q.displayAnswer}</div>}
+      <PictureRatioDisplay item={q} />
+      {revealCorrect && <div style={{ color: "var(--green)", fontWeight: 800, fontSize: 22, fontFamily: "var(--mono)", marginTop: 8 }}>{q.displayAnswer}</div>}
     </div>
   );
   if (STEP_TYPES.includes(q.type)) return (
@@ -242,7 +279,7 @@ function QuestionDisplay({ question: q, revealCorrect }) {
       {items.map((item, i) => (
         <div key={i} style={{ background: "var(--bg2)", borderRadius: "var(--radius-sm)", padding: "8px 14px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
           <span style={{ flex: 1 }}>
-            {item.latex ? <KaTeX expr={item.latex} /> : <span style={{ fontFamily: "var(--mono)", fontSize: 19 }}>{item.stmt || item.display || item.ratioDisplay || item.problem || String(i + 1)}</span>}
+            {item.latex && !item.isLatex ? <KaTeX expr={item.latex} /> : item.latex ? <span style={{ fontFamily: "var(--mono)", fontSize: 20, fontWeight: 700 }}>{item.latex}</span> : <span style={{ fontFamily: "var(--mono)", fontSize: 19 }}>{item.stmt || item.display || item.ratioDisplay || item.problem || String(i + 1)}</span>}
           </span>
           <span style={{ fontFamily: "var(--mono)", fontSize: 19, color: "var(--green)", fontWeight: 700 }}>{item.displayAnswer || item.answer}</span>
         </div>
@@ -268,7 +305,7 @@ function AnswerInput({ question, onSubmit, submitted }) {
   if (t === "in-to-yd") return <MultiRowInput items={question.problems} labelFn={p => <span style={{ fontFamily: "var(--mono)", fontSize: 19 }}>{p.display}</span>} onSubmit={onSubmit} submitted={submitted} placeholder="yards" />;
   if (t === "prop-setup") return <MultiRowInput items={question.problems} labelFn={p => <span style={{ fontSize: 17 }}>{p.problem}</span>} onSubmit={onSubmit} submitted={submitted} placeholder="e.g. 2/3=x/9" wide />;
   if (t === "word-prob") return <MultiRowInput items={question.problems} labelFn={p => <span style={{ fontSize: 17 }}>{p.problem}</span>} onSubmit={onSubmit} submitted={submitted} placeholder="answer" />;
-  if (t === "prop-check") return <MCRowInput items={question.items} labelFn={item => <KaTeX expr={item.latex} />} onSubmit={onSubmit} submitted={submitted} />;
+  if (t === "prop-check") return <MCRowInput items={question.items} labelFn={item => <span style={{ fontFamily: "var(--mono)", fontSize: 22, fontWeight: 700 }}>{item.latex}</span>} onSubmit={onSubmit} submitted={submitted} />;
 
   if (t === "cross-mult-sbs") {
     const stages = [
@@ -316,7 +353,7 @@ function StudentReveal({ result, question }) {
             return (
               <div key={i} style={{ background: "var(--bg2)", borderRadius: "var(--radius-sm)", padding: "6px 12px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 6, border: "1px solid " + (itemOk ? "rgba(22,163,74,0.2)" : "rgba(239,68,68,0.2)") }}>
                 <span style={{ flex: 1 }}>
-                  {item.latex ? <KaTeX expr={item.latex} /> : <span style={{ fontSize: 17 }}>{item.stmt || item.display || item.ratioDisplay || item.problem || String(i + 1)}</span>}
+                  {item.latex && !item.isLatex ? <KaTeX expr={item.latex} /> : item.latex ? <span style={{ fontFamily: "var(--mono)", fontSize: 19, fontWeight: 700 }}>{item.latex}</span> : <span style={{ fontSize: 17 }}>{item.stmt || item.display || item.ratioDisplay || item.problem || String(i + 1)}</span>}
                 </span>
                 <div style={{ display: "flex", gap: 8 }}>
                   {!itemOk && <span style={{ fontSize: 17, color: "var(--red)", fontWeight: 700, fontFamily: "var(--mono)" }}>You: {studentAns || "-"}</span>}
