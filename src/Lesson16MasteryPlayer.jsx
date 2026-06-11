@@ -302,7 +302,7 @@ const MIX_DIV_POOL = [
   { type: "m/m", w1: 4, n1: 1, d1: 2, w2: 1, n2: 3, d2: 4, rn: 18, rd: 7 },
   { type: "m/m", w1: 3, n1: 3, d1: 4, w2: 1, n2: 2, d2: 3, rn: 9, rd: 4 },
   { type: "m/m", w1: 2, n1: 1, d1: 2, w2: 1, n2: 1, d2: 3, rn: 15, rd: 8 },
-  { type: "m/m", w1: 3, n1: 1, d1: 3, w2: 1, n2: 1, d2: 4, rn: 32, rd: 15 },
+  { type: "m/m", w1: 3, n1: 1, d1: 3, w2: 1, n2: 1, d2: 4, rn: 8, rd: 3 },
   { type: "m/w", w1: 3, n1: 1, d1: 2, w2: 2, rn: 7, rd: 4 },
   { type: "m/w", w1: 4, n1: 1, d1: 2, w2: 3, rn: 3, rd: 2 },
   { type: "m/f", w1: 2, n1: 1, d1: 3, n: 2, d: 3, rn: 7, rd: 2 },
