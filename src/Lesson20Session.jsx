@@ -5,9 +5,6 @@ import {
   LESSON20_TOPICS, generateLesson20Question, gradeLesson20Answer,
   gradeRatioStmtItem, gradeSimplifyRatioItem, gradeRatioFracItem,
   gradePropCheckItem, gradeMissingDirectItem,
-  gradeYdToInItem, gradeInToYdItem, gradePropSetupItem, gradeWordProbItem,
-  gradeCrossMultStage1, gradeCrossMultStage2, gradeCrossMultStage3,
-  gradeMissingSBSStage1, gradeMissingSBSStage2,
 } from "./lesson20Questions";
 
 const POINTS = 5;
@@ -196,8 +193,8 @@ function StepInput({ question, onSubmit, submitted, stages }) {
   );
 }
 
-const STEP_TYPES = ["cross-mult-sbs", "missing-sbs"];
-const MULTI_TYPES = ["ratio-stmt", "simplify-ratio", "ratio-frac", "missing-direct", "yd-to-in", "in-to-yd", "prop-setup", "word-prob"];
+const STEP_TYPES = [];
+const MULTI_TYPES = ["ratio-stmt", "simplify-ratio", "ratio-frac", "missing-direct"];
 const MC_TYPES = ["prop-check"];
 
 function gradeAnswer(input, question) {
@@ -258,12 +255,7 @@ function QuestionDisplay({ question: q, revealCorrect }) {
   if (q.type === "warmup-b") return simple(`12.75 \\div 3`, q.displayAnswer);
   if (q.type === "warmup-c") return simple(`4.5 \\div 0.5`, q.displayAnswer);
   if (q.type === "warmup-d") return simple(`0.25x + 0.5 = 1`, q.displayAnswer);
-  if (q.type === "picture-ratio") return (
-    <div style={{ textAlign: "center" }}>
-      <PictureRatioDisplay item={q} />
-      {revealCorrect && <div style={{ color: "var(--green)", fontWeight: 800, fontSize: 22, fontFamily: "var(--mono)", marginTop: 8 }}>{q.displayAnswer}</div>}
-    </div>
-  );
+
   if (STEP_TYPES.includes(q.type)) return (
     <div style={{ textAlign: "center" }}>
       <KaTeX expr={q.latex || q.prompt?.replace("Check: ", "")} block />
@@ -295,17 +287,13 @@ function AnswerInput({ question, onSubmit, submitted }) {
 
   if (t === "warmup-a" || t === "warmup-b" || t === "warmup-c" || t === "warmup-d")
     return <TextInput onSubmit={onSubmit} submitted={submitted} placeholder="" />;
-  if (t === "picture-ratio") return <TextInput onSubmit={onSubmit} submitted={submitted} placeholder="e.g. 2:3" />;
 
   if (t === "ratio-stmt") return <MultiRowInput items={question.problems} labelFn={p => <span style={{ fontSize: 18 }}>{p.stmt}</span>} onSubmit={onSubmit} submitted={submitted} placeholder="e.g. 3:5" />;
   if (t === "simplify-ratio") return <MultiRowInput items={question.problems} labelFn={p => <span style={{ fontFamily: "var(--mono)", fontSize: 20, fontWeight: 700 }}>{p.display}</span>} onSubmit={onSubmit} submitted={submitted} placeholder="e.g. 2:3" />;
   if (t === "ratio-frac") return <MultiRowInput items={question.problems} labelFn={p => <span style={{ fontFamily: "var(--mono)", fontSize: 20, fontWeight: 700 }}>{p.ratioDisplay}</span>} onSubmit={onSubmit} submitted={submitted} placeholder="e.g. 3/4" />;
-  if (t === "missing-direct") return <MultiRowInput items={question.problems} labelFn={p => <KaTeX expr={p.latex} />} onSubmit={onSubmit} submitted={submitted} placeholder="x = ?" />;
-  if (t === "yd-to-in") return <MultiRowInput items={question.problems} labelFn={p => <span style={{ fontFamily: "var(--mono)", fontSize: 19 }}>{p.display}</span>} onSubmit={onSubmit} submitted={submitted} placeholder="inches" />;
-  if (t === "in-to-yd") return <MultiRowInput items={question.problems} labelFn={p => <span style={{ fontFamily: "var(--mono)", fontSize: 19 }}>{p.display}</span>} onSubmit={onSubmit} submitted={submitted} placeholder="yards" />;
-  if (t === "prop-setup") return <MultiRowInput items={question.problems} labelFn={p => <span style={{ fontSize: 17 }}>{p.problem}</span>} onSubmit={onSubmit} submitted={submitted} placeholder="e.g. 2/3=x/9" wide />;
-  if (t === "word-prob") return <MultiRowInput items={question.problems} labelFn={p => <span style={{ fontSize: 17 }}>{p.problem}</span>} onSubmit={onSubmit} submitted={submitted} placeholder="answer" />;
+  if (t === "missing-direct") return <MultiRowInput items={question.problems} labelFn={p => <span style={{ fontFamily: "var(--mono)", fontSize: 20, fontWeight: 700 }}>{p.latex}</span>} onSubmit={onSubmit} submitted={submitted} placeholder="x = ?" />;
   if (t === "prop-check") return <MCRowInput items={question.items} labelFn={item => <span style={{ fontFamily: "var(--mono)", fontSize: 22, fontWeight: 700 }}>{item.latex}</span>} onSubmit={onSubmit} submitted={submitted} />;
+  if (t === "word-prob") return <TextInput onSubmit={onSubmit} submitted={submitted} placeholder="answer" />;
 
   if (t === "cross-mult-sbs") {
     const stages = [
@@ -315,13 +303,7 @@ function AnswerInput({ question, onSubmit, submitted }) {
     ];
     return <StepInput question={question} onSubmit={onSubmit} submitted={submitted} stages={stages} />;
   }
-  if (t === "missing-sbs") {
-    const stages = [
-      { label: "Step 1: Write the cross-multiplication equation (enter the constant product, e.g. 20)", placeholder: "e.g. 20", grader: gradeMissingSBSStage1, correctAnswer: q => String(q.a !== undefined ? q.a * q.d : q.b * q.c) },
-      { label: "Step 2: Solve for x", placeholder: "x = ?", grader: gradeMissingSBSStage2, correctAnswer: q => q.displayAnswer },
-    ];
-    return <StepInput question={question} onSubmit={onSubmit} submitted={submitted} stages={stages} />;
-  }
+
   return null;
 }
 
@@ -332,8 +314,7 @@ function StudentReveal({ result, question }) {
   const graderMap = {
     "ratio-stmt": gradeRatioStmtItem, "simplify-ratio": gradeSimplifyRatioItem,
     "ratio-frac": gradeRatioFracItem, "prop-check": gradePropCheckItem,
-    "missing-direct": gradeMissingDirectItem, "yd-to-in": gradeYdToInItem,
-    "in-to-yd": gradeInToYdItem, "prop-setup": gradePropSetupItem, "word-prob": gradeWordProbItem,
+    "missing-direct": gradeMissingDirectItem,
   };
   return (
     <div>

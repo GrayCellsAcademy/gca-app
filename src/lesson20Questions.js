@@ -211,20 +211,15 @@ export function gradeMissingSBSStage2(input,q){return decOk(input,q.x);}
 
 // - A8: Find missing term (direct) -
 const MISSING_DIRECT_POOL=[
-  {latex:"\\dfrac{3}{4} = \\dfrac{x}{12}",x:9,pos:"top-right"},
-  {latex:"\\dfrac{5}{6} = \\dfrac{10}{x}",x:12,pos:"bottom-right"},
-  {latex:"\\dfrac{x}{7} = \\dfrac{4}{14}",x:2,pos:"top-left"},
-  {latex:"\\dfrac{8}{x} = \\dfrac{2}{3}",x:12,pos:"bottom-left"},
-  {latex:"\\dfrac{2}{3} = \\dfrac{x}{9}",x:6,pos:"top-right"},
-  {latex:"\\dfrac{3}{5} = \\dfrac{x}{15}",x:9,pos:"top-right"},
-  {latex:"\\dfrac{x}{4} = \\dfrac{6}{8}",x:3,pos:"top-left"},
-  {latex:"\\dfrac{4}{x} = \\dfrac{8}{10}",x:5,pos:"bottom-left"},
-  {latex:"\\dfrac{1}{3} = \\dfrac{x}{12}",x:4,pos:"top-right"},
-  {latex:"\\dfrac{7}{x} = \\dfrac{14}{10}",x:5,pos:"bottom-left"},
+  {ratio:"3:4 = x:12",x:9},{ratio:"5:6 = 10:x",x:12},
+  {ratio:"x:7 = 4:14",x:2},{ratio:"8:x = 2:3",x:12},
+  {ratio:"2:3 = x:9",x:6},{ratio:"3:5 = x:15",x:9},
+  {ratio:"x:4 = 6:8",x:3},{ratio:"4:x = 8:10",x:5},
+  {ratio:"1:3 = x:12",x:4},{ratio:"7:x = 14:10",x:5},
 ];
 export function genMissingDirect(){
   const probs=shuffle([...MISSING_DIRECT_POOL]).slice(0,4).map(p=>({
-    ...p,answer:String(p.x),displayAnswer:String(p.x),
+    ...p,latex:p.ratio,answer:String(p.x),displayAnswer:String(p.x),
   }));
   return{type:"missing-direct",problems:probs,prompt:"Find the value of x."};
 }
@@ -316,15 +311,11 @@ const WORD_PROB_POOL=[
   {problem:"If 5 apples weigh 2 pounds, how many pounds do 15 apples weigh?",answer:6},
 ];
 export function genWordProb(){
-  const probs=shuffle([...WORD_PROB_POOL]).slice(0,4).map(p=>({
-    ...p,displayAnswer:String(p.answer),
-  }));
-  return{type:"word-prob",problems:probs,prompt:"Solve each word problem."};
+  const p=randChoice(WORD_PROB_POOL);
+  return{type:"word-prob",problem:p.problem,answer:p.answer,displayAnswer:String(p.answer),prompt:p.problem};
 }
 export function gradeWordProbItem(input,item){return decOk(input,item.answer);}
-export function gradeWordProb(input,q){
-  try{const ans=JSON.parse(input);return q.problems.every((p,i)=>gradeWordProbItem(ans[i],p));}catch{return false;}
-}
+export function gradeWordProb(input,q){return decOk(input,q.answer);}
 
 // - Topic registry -
 export const LESSON20_TOPICS=[
@@ -333,17 +324,11 @@ export const LESSON20_TOPICS=[
   {id:"warmup-c",      label:"Warm-up: Divide by Decimal",      description:"4.5 / 0.5"},
   {id:"warmup-d",      label:"Warm-up: Decimal Equation",       description:"0.25x + 0.5 = 1"},
   {id:"ratio-stmt",    label:"A1: Write Ratio from Statement",  description:"5 simultaneous"},
-  {id:"picture-ratio", label:"A2: Ratio from Picture",          description:"Teacher-paced"},
-  {id:"simplify-ratio",label:"A3: Simplify Ratio",              description:"4 simultaneous"},
-  {id:"ratio-frac",    label:"A4: Ratio to Fraction",           description:"4 simultaneous"},
-  {id:"prop-check",    label:"A5: Is it a Proportion?",         description:"6 simultaneous"},
-  {id:"cross-mult-sbs",label:"A6: Cross Multiplication (Steps)",description:"3-stage"},
-  {id:"missing-sbs",   label:"A7: Missing Term (Steps)",        description:"2-stage"},
-  {id:"missing-direct",label:"A8: Missing Term (Direct)",       description:"4 simultaneous"},
-  {id:"yd-to-in",      label:"A9: Yards to Inches",            description:"5 simultaneous"},
-  {id:"in-to-yd",      label:"A10: Inches to Yards",           description:"5 simultaneous"},
-  {id:"prop-setup",    label:"A11: Set Up Proportion",          description:"5 simultaneous"},
-  {id:"word-prob",     label:"A12: Solve Word Problems",        description:"4 simultaneous"},
+  {id:"simplify-ratio",label:"A2: Simplify Ratio",              description:"4 simultaneous"},
+  {id:"ratio-frac",    label:"A3: Ratio to Fraction",           description:"4 simultaneous"},
+  {id:"prop-check",    label:"A4: Is it a Proportion?",         description:"6 simultaneous"},
+  {id:"missing-direct",label:"A5: Missing Term",       description:"4 simultaneous"},
+  {id:"word-prob",     label:"A6: Solve Word Problem",        description:"4 simultaneous"},
 ];
 
 export function generateLesson20Question(topicId){
@@ -353,16 +338,10 @@ export function generateLesson20Question(topicId){
     case "warmup-c":       return genWarmupC();
     case "warmup-d":       return genWarmupD();
     case "ratio-stmt":     return genRatioStatements();
-    case "picture-ratio":  return genPictureRatio();
     case "simplify-ratio": return genSimplifyRatio();
     case "ratio-frac":     return genRatioToFrac();
     case "prop-check":     return genProportionCheck();
-    case "cross-mult-sbs": return genCrossMultSBS();
-    case "missing-sbs":    return genMissingSBS();
     case "missing-direct": return genMissingDirect();
-    case "yd-to-in":       return genYdToIn();
-    case "in-to-yd":       return genInToYd();
-    case "prop-setup":     return genPropSetup();
     case "word-prob":      return genWordProb();
     default:               return genWarmupA();
   }
@@ -376,16 +355,10 @@ export function gradeLesson20Answer(input,question){
     case "warmup-c":       return gradeWarmupC(input);
     case "warmup-d":       return gradeWarmupD(input);
     case "ratio-stmt":     return gradeRatioStmt(input,question);
-    case "picture-ratio":  return gradePictureRatio(input,question);
     case "simplify-ratio": return gradeSimplifyRatio(input,question);
     case "ratio-frac":     return gradeRatioFrac(input,question);
     case "prop-check":     return gradePropCheck(input,question);
-    case "cross-mult-sbs": return gradeCrossMultStage3(input,question);
-    case "missing-sbs":    return gradeMissingSBSStage2(input,question);
     case "missing-direct": return gradeMissingDirect(input,question);
-    case "yd-to-in":       return gradeYdToIn(input,question);
-    case "in-to-yd":       return gradeInToYd(input,question);
-    case "prop-setup":     return gradePropSetup(input,question);
     case "word-prob":      return gradeWordProb(input,question);
     default:               return false;
   }
