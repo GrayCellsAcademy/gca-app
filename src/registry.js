@@ -33,6 +33,7 @@ import Lesson16MasteryPlayer, { MultZerosPlayer } from "./Lesson16MasteryPlayer"
 import Lesson17MasteryPlayer, { DivZerosPlayer } from "./Lesson17MasteryPlayer";
 import Lesson18MasteryPlayer, { DecMentalPlayer } from "./Lesson18MasteryPlayer";
 import Lesson19MasteryPlayer, { FracDecDrillPlayer } from "./Lesson19MasteryPlayer";
+import Lesson20MasteryPlayer, { DecConvDrillPlayer } from "./Lesson20MasteryPlayer";
 
 export const TOPICS = {
   "addition-tables-v1": {
@@ -258,6 +259,20 @@ export const TOPICS = {
     description: "Memorize then drill: 1/2, 1/4, 1/5, 1/10. 5-second timer, 2 correct each.",
     subject: "math", gradeLevel: "6+", icon: "", type: "drill", status: "published", order: 35,
     Player: FracDecDrillPlayer,
+  },
+  "dec-conv-drill-v1": {
+    id: "dec-conv-drill-v1",
+    title: "Decimal Conversions: 1/20, 1/25, 1/50, 1/100",
+    description: "Memorize then drill: 5s timer, 2 correct each.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "drill", status: "published", order: 37,
+    Player: DecConvDrillPlayer,
+  },
+  "lesson20-mastery-v1": {
+    id: "lesson20-mastery-v1",
+    title: "HW 20 (019)",
+    description: "Writing ratios, simplifying ratios, missing term in proportion.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 38,
+    Player: Lesson20MasteryPlayer,
   },
   "lesson19-mastery-v1": {
     id: "lesson19-mastery-v1",
