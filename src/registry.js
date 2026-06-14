@@ -34,6 +34,7 @@ import Lesson17MasteryPlayer, { DivZerosPlayer } from "./Lesson17MasteryPlayer";
 import Lesson18MasteryPlayer, { DecMentalPlayer } from "./Lesson18MasteryPlayer";
 import Lesson19MasteryPlayer, { FracDecDrillPlayer } from "./Lesson19MasteryPlayer";
 import Lesson20MasteryPlayer, { DecConvDrillPlayer } from "./Lesson20MasteryPlayer";
+import Lesson21MasteryPlayer, { RepDecDrillPlayer } from "./Lesson21MasteryPlayer";
 
 export const TOPICS = {
   "addition-tables-v1": {
@@ -266,6 +267,20 @@ export const TOPICS = {
     description: "Memorize then drill: 5s timer, 2 correct each.",
     subject: "math", gradeLevel: "6+", icon: "", type: "drill", status: "published", order: 37,
     Player: DecConvDrillPlayer,
+  },
+  "rep-dec-drill-v1": {
+    id: "rep-dec-drill-v1",
+    title: "Repeating Decimals: 1/3, 1/6, 1/9",
+    description: "Memorize then drill: 5s timer, 2 correct each.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "drill", status: "published", order: 39,
+    Player: RepDecDrillPlayer,
+  },
+  "lesson21-mastery-v1": {
+    id: "lesson21-mastery-v1",
+    title: "HW 21 (019)",
+    description: "Repeating decimals to fractions: single-digit, two-digit, mixed, and combined review.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 40,
+    Player: Lesson21MasteryPlayer,
   },
   "lesson20-mastery-v1": {
     id: "lesson20-mastery-v1",
