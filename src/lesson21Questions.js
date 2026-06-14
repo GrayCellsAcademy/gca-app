@@ -242,12 +242,9 @@ export const LESSON21_TOPICS=[
   {id:"warmup-b",          label:"Warm-up: Missing Term",            description:"3:4 = x:20"},
   {id:"warmup-c",          label:"Warm-up: Fraction to Decimal",     description:"1/3"},
   {id:"warmup-d",          label:"Warm-up: Write Ratio",             description:"Statement"},
-  {id:"single-rep-sbs",    label:"A1: Single-Digit Repeat (Steps)",  description:"5-stage"},
-  {id:"single-rep-direct", label:"A2: Single-Digit Repeat (Direct)", description:"4 simultaneous"},
-  {id:"two-rep-sbs",       label:"A3: Two-Digit Repeat (Steps)",     description:"4-stage"},
-  {id:"two-rep-direct",    label:"A4: Two-Digit Repeat (Direct)",    description:"3 simultaneous"},
-  {id:"mixed-rep-sbs",     label:"A5: Non-Repeating Part (Steps)",   description:"4-stage"},
-  {id:"mixed-rep-direct",  label:"A6: Mixed Repeating (Direct)",     description:"4 simultaneous"},
+  {id:"single-rep-direct", label:"A1: Single-Digit Repeat", description:"4 simultaneous"},
+  {id:"two-rep-direct",    label:"A2: Two-Digit Repeat",    description:"3 simultaneous"},
+  {id:"mixed-rep-direct",  label:"A3: Mixed Repeating",     description:"4 simultaneous"},
 ];
 
 export function generateLesson21Question(topicId){
@@ -256,11 +253,8 @@ export function generateLesson21Question(topicId){
     case "warmup-b":          return genWarmupB();
     case "warmup-c":          return genWarmupC();
     case "warmup-d":          return genWarmupD();
-    case "single-rep-sbs":    return genSingleRepSBS();
     case "single-rep-direct": return genSingleRepDirect();
-    case "two-rep-sbs":       return genTwoRepSBS();
     case "two-rep-direct":    return genTwoRepDirect();
-    case "mixed-rep-sbs":     return genMixedRepSBS();
     case "mixed-rep-direct":  return genMixedRepDirect();
     default:                  return genWarmupA();
   }
@@ -273,11 +267,8 @@ export function gradeLesson21Answer(input,question){
     case "warmup-b":          return gradeWarmupB(input);
     case "warmup-c":          return gradeWarmupC(input);
     case "warmup-d":          return gradeWarmupD(input);
-    case "single-rep-sbs":    return gradeSingleRepS5(input,question);
     case "single-rep-direct": return gradeSingleRepDirect(input,question);
-    case "two-rep-sbs":       return gradeTwoRepS4(input,question);
     case "two-rep-direct":    return gradeTwoRepDirect(input,question);
-    case "mixed-rep-sbs":     return gradeMixedRepS4(input,question);
     case "mixed-rep-direct":  return gradeMixedRepDirect(input,question);
     default:                  return false;
   }

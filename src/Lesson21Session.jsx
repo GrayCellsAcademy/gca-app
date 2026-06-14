@@ -5,9 +5,6 @@ import {
   LESSON21_TOPICS, generateLesson21Question, gradeLesson21Answer,
   gradeSingleRepDirectItem, gradeTwoRepDirectItem,
   gradeMixedRepDirectItem,
-  gradeSingleRepS1, gradeSingleRepS2, gradeSingleRepS3, gradeSingleRepS4, gradeSingleRepS5,
-  gradeTwoRepS1, gradeTwoRepS2, gradeTwoRepS3, gradeTwoRepS4,
-  gradeMixedRepS1, gradeMixedRepS2, gradeMixedRepS3, gradeMixedRepS4,
 } from "./lesson21Questions";
 
 const POINTS = 5;
@@ -170,7 +167,7 @@ function StepInput({ question, onSubmit, submitted, stages }) {
   );
 }
 
-const STEP_TYPES = ["single-rep-sbs", "two-rep-sbs", "mixed-rep-sbs"];
+const STEP_TYPES = [];
 const MULTI_TYPES = ["single-rep-direct", "two-rep-direct", "mixed-rep-direct"];
 
 function gradeAnswer(input, question) {
@@ -199,8 +196,8 @@ function QuestionDisplay({ question: q, revealCorrect }) {
   if (q.type === "warmup-c") return (
     <div style={{ textAlign: "center" }}>
       <KaTeX expr="\\dfrac{1}{3}" block />
-      {revealCorrect && <div style={{ color: "var(--green)", fontWeight: 800, fontSize: 22 }}>
-        <KaTeX expr={`0.\\overline{3}`} />
+      {revealCorrect && <div style={{ color: "var(--green)", fontWeight: 800, fontSize: 22, marginTop: 6 }}>
+        <KaTeX expr="0.\\overline{3}" />
       </div>}
     </div>
   );
@@ -255,34 +252,9 @@ function AnswerInput({ question, onSubmit, submitted }) {
   if (t === "mixed-rep-direct")
     return <MultiRowInput items={question.problems} labelFn={p => <KaTeX expr={p.overline} />} onSubmit={onSubmit} submitted={submitted} />;
 
-  if (t === "single-rep-sbs") {
-    const stages = [
-      { label: "Step 1: Let x equal the repeating decimal", hint: "Write: x = " + question.dec, placeholder: "x = 0.333...", grader: gradeSingleRepS1, correctAnswer: q => `x = ${q.dec}` },
-      { label: "Step 2: Multiply both sides by 10", hint: `10x = ${question.tenX}`, placeholder: `10x = ${question.tenX}`, grader: gradeSingleRepS2, correctAnswer: q => `10x = ${q.tenX}` },
-      { label: "Step 3: Subtract x from 10x", hint: `10x - x = 9x = ${question.nineX}`, placeholder: `9x = ${question.nineX}`, grader: gradeSingleRepS3, correctAnswer: q => `9x = ${q.nineX}` },
-      { label: "Step 4: Solve for x - enter as a fraction (simplify if possible)", hint: `x = ${question.nineX}/9`, placeholder: "e.g. 1/3", grader: gradeSingleRepS4, correctAnswer: q => q.intermediate },
-      { label: "Step 5: Enter the simplified fraction", placeholder: "e.g. 1/3", grader: gradeSingleRepS5, correctAnswer: q => q.displayAnswer },
-    ];
-    return <StepInput question={question} onSubmit={onSubmit} submitted={submitted} stages={stages} />;
-  }
-  if (t === "two-rep-sbs") {
-    const stages = [
-      { label: "Step 1: Let x equal the repeating decimal", hint: "Write: x = " + question.dec, placeholder: "x = 0.272727...", grader: gradeTwoRepS1, correctAnswer: q => `x = ${q.dec}` },
-      { label: "Step 2: Multiply both sides by 100", hint: `100x = ${question.hundX}`, placeholder: `100x = ${question.hundX}`, grader: gradeTwoRepS2, correctAnswer: q => `100x = ${q.hundX}` },
-      { label: "Step 3: Subtract x from 100x", hint: `99x = ${question.ninetyNineX}`, placeholder: `99x = ${question.ninetyNineX}`, grader: gradeTwoRepS3, correctAnswer: q => `99x = ${q.ninetyNineX}` },
-      { label: "Step 4: Solve and simplify", placeholder: "e.g. 3/11", grader: gradeTwoRepS4, correctAnswer: q => q.displayAnswer },
-    ];
-    return <StepInput question={question} onSubmit={onSubmit} submitted={submitted} stages={stages} />;
-  }
-  if (t === "mixed-rep-sbs") {
-    const stages = [
-      { label: "Step 1: Let x equal the repeating decimal", hint: "Write: x = " + question.dec, placeholder: "x = 0.8333...", grader: gradeMixedRepS1, correctAnswer: q => `x = ${q.dec}` },
-      { label: "Step 2: Multiply both sides by " + question.mult, hint: `${question.mult}x = ${question.tenX}`, placeholder: `${question.mult}x = ${question.tenX}`, grader: gradeMixedRepS2, correctAnswer: q => `${q.mult}x = ${q.tenX}` },
-      { label: "Step 3: Subtract x - enter the right-hand side", hint: `${question.mult}x - x = ${question.nineX}`, placeholder: `${question.nineX}`, grader: gradeMixedRepS3, correctAnswer: q => `${q.mult-1}x = ${q.nineX}` },
-      { label: "Step 4: Solve and simplify", placeholder: "e.g. 5/6", grader: gradeMixedRepS4, correctAnswer: q => q.displayAnswer },
-    ];
-    return <StepInput question={question} onSubmit={onSubmit} submitted={submitted} stages={stages} />;
-  }
+
+
+
   return null;
 }
 
@@ -328,7 +300,9 @@ function StudentReveal({ result, question }) {
           </div>
           {!result.correct && question?.displayAnswer && (
             <div style={{ fontSize: 20, color: "var(--green)", fontWeight: 700, marginTop: 4 }}>
-              Correct: <KaTeX expr={`\\dfrac{${question.rn}}{${question.rd}}`} />
+              Correct: {question.displayAnswer.includes("overline") || question.displayAnswer.includes("\\")
+                ? <KaTeX expr={question.displayAnswer} />
+                : <span style={{ fontFamily: "var(--mono)" }}>{question.displayAnswer}</span>}
             </div>
           )}
         </div>
