@@ -77,7 +77,7 @@ const MASS_POOL=[
 ];
 export function genMassConv(){
   const probs=shuffle([...MASS_POOL]).slice(0,4).map(p=>({...p,displayAnswer:String(p.answer)}));
-  return{type:"mass-conv",problems:probs,prompt:"Convert each mass measurement."};
+  return{type:"mass-conv",problems:probs,prompt:"Convert each mass measurement. Give answers in decimal form."};
 }
 export function gradeMassConvItem(input,item){return decOk(input,item.answer);}
 export function gradeMassConv(input,q){
@@ -152,7 +152,7 @@ const CF_POOL=[
 export function genConvFactor(){
   const items=shuffle([...CF_POOL]).slice(0,5).map(p=>{
     const opts=shuffle([p.latex,p.latex_wrong]);
-    return{...p,options:opts,answer:p.latex};
+    return{...p,options:opts,answer:p.latex,displayAnswer:p.correct};
   });
   return{type:"conv-factor",items,prompt:"Select the correct conversion factor."};
 }
@@ -309,19 +309,16 @@ export const LESSON22_TOPICS=[
   {id:"warmup-b",     label:"Warm-up: Inches to Feet",         description:"42 in = ? ft"},
   {id:"warmup-c",     label:"Warm-up: cm to mm",               description:"8.2 cm"},
   {id:"warmup-d",     label:"Warm-up: km to m",                description:"3.25 km"},
-  {id:"prefix-id",    label:"A1: Identify Metric Prefix",      description:"4 simultaneous"},
-  {id:"mass-conv",    label:"A2: Metric Mass Conversions",     description:"4 simultaneous"},
-  {id:"vol-conv",     label:"A3: Metric Volume Conversions",   description:"4 simultaneous"},
-  {id:"cm3-conv",     label:"A4: cm\u00b3, mL, g Connection", description:"2-stage"},
-  {id:"tank-problem", label:"A5: Fish Tank Word Problem",      description:"3-stage"},
-  {id:"conv-factor",  label:"A6: Write Conversion Factor",     description:"5 simultaneous MC"},
-  {id:"da-sbs",       label:"A7: Dimensional Analysis (Steps)",description:"3-stage"},
-  {id:"da-direct",    label:"A8: Dimensional Analysis (Direct)",description:"4 simultaneous"},
-  {id:"ms-to-kmh",    label:"A9: m/s to km/h",                description:"5 simultaneous"},
-  {id:"kmh-to-ms",    label:"A10: km/h to m/s",               description:"5 simultaneous"},
-  {id:"mph-to-fts",   label:"A11: mph to ft/s",               description:"5 simultaneous"},
-  {id:"vel-mixed",    label:"A12: Mixed Velocity",             description:"4 simultaneous"},
-  {id:"mixed-review", label:"A13: Mixed Review",              description:"2 simultaneous"},
+  {id:"mass-conv",    label:"A1: Metric Mass Conversions",     description:"4 simultaneous"},
+  {id:"tank-problem", label:"A2: Fish Tank Word Problem",      description:"3-stage"},
+  {id:"conv-factor",  label:"A3: Write Conversion Factor",     description:"5 simultaneous MC"},
+  {id:"da-sbs",       label:"A4: Dimensional Analysis (Steps)",description:"3-stage"},
+  {id:"da-direct",    label:"A5: Dimensional Analysis (Direct)",description:"4 simultaneous"},
+  {id:"ms-to-kmh",    label:"A6: m/s to km/h",                description:"5 simultaneous"},
+  {id:"kmh-to-ms",    label:"A7: km/h to m/s",               description:"5 simultaneous"},
+  {id:"mph-to-fts",   label:"A8: mph to ft/s",               description:"5 simultaneous"},
+  {id:"vel-mixed",    label:"A9: Mixed Velocity",             description:"4 simultaneous"},
+  {id:"mixed-review", label:"A10: Mixed Review",              description:"2 simultaneous"},
 ];
 
 export function generateLesson22Question(topicId){
@@ -330,10 +327,7 @@ export function generateLesson22Question(topicId){
     case "warmup-b":     return genWarmupB();
     case "warmup-c":     return genWarmupC();
     case "warmup-d":     return genWarmupD();
-    case "prefix-id":    return genPrefixID();
     case "mass-conv":    return genMassConv();
-    case "vol-conv":     return genVolConv();
-    case "cm3-conv":     return genCm3Conv();
     case "tank-problem": return genTankProblem();
     case "conv-factor":  return genConvFactor();
     case "da-sbs":       return genDASBS();
@@ -354,10 +348,7 @@ export function gradeLesson22Answer(input,question){
     case "warmup-b":     return gradeWarmupB(input);
     case "warmup-c":     return gradeWarmupC(input);
     case "warmup-d":     return gradeWarmupD(input);
-    case "prefix-id":    return gradePrefixID(input,question);
     case "mass-conv":    return gradeMassConv(input,question);
-    case "vol-conv":     return gradeVolConv(input,question);
-    case "cm3-conv":     return gradeCm3Stage2(input,question);
     case "tank-problem": return gradeTankStage3(input,question);
     case "conv-factor":  return gradeConvFactor(input,question);
     case "da-sbs":       return gradeDASBSS3(input,question);

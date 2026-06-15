@@ -3,10 +3,9 @@ import { setDoc, doc, updateDoc } from "firebase/firestore";
 import { onSessionChange, onClassworkAnswersChange, getTeacherClasses, addToScore, db } from "./core/firebase";
 import {
   LESSON22_TOPICS, generateLesson22Question, gradeLesson22Answer,
-  gradePrefixIDItem, gradeMassConvItem, gradeVolConvItem,
+  gradeMassConvItem, gradeVolConvItem,
   gradeConvFactorItem, gradeDADirectItem, gradeMsToKmhItem,
   gradeKmhToMsItem, gradeMphToFtsItem, gradeVelMixedItem, gradeMixedReviewItem,
-  gradeCm3Stage1, gradeCm3Stage2,
   gradeTankStage1, gradeTankStage2, gradeTankStage3,
   gradeDASBSS1, gradeDASBSS2, gradeDASBSS3,
 } from "./lesson22Questions";
@@ -190,8 +189,8 @@ function StepInput({ question, onSubmit, stages }) {
   );
 }
 
-const STEP_TYPES = ["cm3-conv", "tank-problem", "da-sbs"];
-const MULTI_TYPES = ["prefix-id", "mass-conv", "vol-conv", "da-direct", "ms-to-kmh", "kmh-to-ms", "mph-to-fts", "vel-mixed", "mixed-review"];
+const STEP_TYPES = ["tank-problem", "da-sbs"];
+const MULTI_TYPES = ["mass-conv", "da-direct", "ms-to-kmh", "kmh-to-ms", "mph-to-fts", "vel-mixed", "mixed-review"];
 const MC_TYPES = ["conv-factor"];
 
 function gradeAnswer(input, question) {
@@ -206,38 +205,32 @@ function QuestionDisplay({ question: q, revealCorrect }) {
 
   // Warmups
   if (q.type === "warmup-a") return (
-    <div style={{ textAlign: "center" }}>
-      <KaTeX expr="0.\\overline{6}" block />
-      {revealCorrect && <div style={{ color: "var(--green)", fontWeight: 800, fontSize: 22, fontFamily: "var(--mono)" }}>2/3</div>}
+    <div style={{ textAlign: "center", fontSize: 24, marginBottom: 6 }}>
+      <KaTeX expr="0.\\overline{6} = \\text{ ?}" />
+      {revealCorrect && <div style={{ color: "var(--green)", fontWeight: 800, fontSize: 22, fontFamily: "var(--mono)", marginTop: 8 }}>2/3</div>}
     </div>
   );
   if (q.type === "warmup-b") return (
-    <div style={{ textAlign: "center" }}>
-      <KaTeX expr="42 \\text{ in} = \\text{ ? ft}" block />
-      {revealCorrect && <div style={{ color: "var(--green)", fontWeight: 800, fontSize: 22, fontFamily: "var(--mono)" }}>3.5</div>}
+    <div style={{ textAlign: "center", fontSize: 24, marginBottom: 6 }}>
+      <span style={{ fontFamily: "var(--mono)", fontSize: 26, fontWeight: 700 }}>42 in = ? ft</span>
+      {revealCorrect && <div style={{ color: "var(--green)", fontWeight: 800, fontSize: 22, fontFamily: "var(--mono)", marginTop: 8 }}>3.5</div>}
     </div>
   );
   if (q.type === "warmup-c") return (
-    <div style={{ textAlign: "center" }}>
-      <KaTeX expr="8.2 \\text{ cm} = \\text{ ? mm}" block />
-      {revealCorrect && <div style={{ color: "var(--green)", fontWeight: 800, fontSize: 22, fontFamily: "var(--mono)" }}>82</div>}
+    <div style={{ textAlign: "center", fontSize: 24, marginBottom: 6 }}>
+      <span style={{ fontFamily: "var(--mono)", fontSize: 26, fontWeight: 700 }}>8.2 cm = ? mm</span>
+      {revealCorrect && <div style={{ color: "var(--green)", fontWeight: 800, fontSize: 22, fontFamily: "var(--mono)", marginTop: 8 }}>82</div>}
     </div>
   );
   if (q.type === "warmup-d") return (
-    <div style={{ textAlign: "center" }}>
-      <KaTeX expr="3.25 \\text{ km} = \\text{ ? m}" block />
-      {revealCorrect && <div style={{ color: "var(--green)", fontWeight: 800, fontSize: 22, fontFamily: "var(--mono)" }}>3250</div>}
+    <div style={{ textAlign: "center", fontSize: 24, marginBottom: 6 }}>
+      <span style={{ fontFamily: "var(--mono)", fontSize: 26, fontWeight: 700 }}>3.25 km = ? m</span>
+      {revealCorrect && <div style={{ color: "var(--green)", fontWeight: 800, fontSize: 22, fontFamily: "var(--mono)", marginTop: 8 }}>3250</div>}
     </div>
   );
 
   // Step types: show prompt/expression
-  if (q.type === "cm3-conv") return (
-    <div style={{ textAlign: "center" }}>
-      <div style={{ fontSize: 20, color: "var(--text2)", marginBottom: 8 }}>1 cm&sup3; = 1 mL = 1 g (water)</div>
-      <KaTeX expr={q.stage1} block />
-      {revealCorrect && <div style={{ color: "var(--green)", fontWeight: 800, fontSize: 22, fontFamily: "var(--mono)" }}>{q.a2}</div>}
-    </div>
-  );
+
   if (q.type === "tank-problem") return (
     <div>
       <div style={{ fontSize: 20, color: "var(--text2)", lineHeight: 1.6 }}>{q.prompt}</div>
@@ -253,7 +246,7 @@ function QuestionDisplay({ question: q, revealCorrect }) {
   if (q.type === "da-sbs") return (
     <div style={{ textAlign: "center" }}>
       <div style={{ fontSize: 20, color: "var(--text2)", marginBottom: 6 }}>{q.prompt}</div>
-      <KaTeX expr={q.startDisplay} block />
+      <span style={{ fontFamily: "var(--mono)", fontSize: 24, fontWeight: 700 }}>{q.value} {q.fromU}</span>
       {revealCorrect && <div style={{ color: "var(--green)", fontWeight: 800, fontSize: 22, fontFamily: "var(--mono)" }}>{q.answerDisplay}</div>}
     </div>
   );
@@ -286,9 +279,7 @@ function AnswerInput({ question, onSubmit, submitted }) {
   if (t === "warmup-a") return <TextInput onSubmit={onSubmit} submitted={submitted} placeholder="e.g. 2/3" />;
   if (t === "warmup-b" || t === "warmup-c" || t === "warmup-d") return <TextInput onSubmit={onSubmit} submitted={submitted} placeholder="number" />;
 
-  if (t === "prefix-id") return <MultiRowInput items={question.items} labelFn={p => <span style={{ fontSize: 19 }}>{p.stmt}</span>} onSubmit={onSubmit} submitted={submitted} placeholder="unit name" />;
   if (t === "mass-conv") return <MultiRowInput items={question.problems} labelFn={p => <KaTeX expr={p.expr} />} onSubmit={onSubmit} submitted={submitted} placeholder="number" />;
-  if (t === "vol-conv") return <MultiRowInput items={question.problems} labelFn={p => <KaTeX expr={p.expr} />} onSubmit={onSubmit} submitted={submitted} placeholder="number" />;
   if (t === "da-direct") return <MultiRowInput items={question.problems} labelFn={p => <KaTeX expr={p.expr} />} onSubmit={onSubmit} submitted={submitted} placeholder="number" />;
   if (t === "ms-to-kmh") return <MultiRowInput items={question.problems} labelFn={p => <KaTeX expr={p.expr} />} onSubmit={onSubmit} submitted={submitted} placeholder="km/h" />;
   if (t === "kmh-to-ms") return <MultiRowInput items={question.problems} labelFn={p => <KaTeX expr={p.expr} />} onSubmit={onSubmit} submitted={submitted} placeholder="m/s" />;
@@ -301,13 +292,7 @@ function AnswerInput({ question, onSubmit, submitted }) {
       onSubmit={onSubmit} submitted={submitted} />
   );
 
-  if (t === "cm3-conv") {
-    const stages = [
-      { label: "Stage 1: " + question.stage1.replace(/\\text\{|\}/g, "").replace(/\\/g, ""), placeholder: "number", grader: gradeCm3Stage1, correctAnswer: q => String(q.a1) },
-      { label: "Stage 2: " + question.stage2.replace(/\\text\{|\}/g, "").replace(/\\/g, ""), placeholder: "number", grader: gradeCm3Stage2, correctAnswer: q => String(q.a2) },
-    ];
-    return <StepInput question={question} onSubmit={onSubmit} stages={stages} />;
-  }
+
   if (t === "tank-problem") {
     const stages = [
       { label: "Stage 1: Volume in cm\u00b3 (length x width x height)", placeholder: "cm\u00b3", grader: gradeTankStage1, correctAnswer: q => String(q.vol) },
@@ -332,8 +317,8 @@ function StudentReveal({ result, question }) {
   if (!result) return <div style={{ textAlign: "center", color: "var(--text3)", fontSize: 20 }}>No answer submitted.</div>;
   const isMulti = [...MULTI_TYPES, ...MC_TYPES].includes(question?.type);
   const graderMap = {
-    "prefix-id": gradePrefixIDItem, "mass-conv": gradeMassConvItem,
-    "vol-conv": gradeVolConvItem, "da-direct": gradeDADirectItem,
+    "mass-conv": gradeMassConvItem,
+    "da-direct": gradeDADirectItem,
     "ms-to-kmh": gradeMsToKmhItem, "kmh-to-ms": gradeKmhToMsItem,
     "mph-to-fts": gradeMphToFtsItem, "vel-mixed": gradeVelMixedItem,
     "mixed-review": gradeMixedReviewItem, "conv-factor": gradeConvFactorItem,
