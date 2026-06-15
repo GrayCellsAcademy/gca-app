@@ -22,6 +22,7 @@ import Lesson18Session, { Lesson18TeacherView, Lesson18StudentView } from "../Le
 import Lesson19Session, { Lesson19TeacherView, Lesson19StudentView } from "../Lesson19Session";
 import Lesson20Session, { Lesson20TeacherView, Lesson20StudentView } from "../Lesson20Session";
 import Lesson21Session, { Lesson21TeacherView, Lesson21StudentView } from "../Lesson21Session";
+import Lesson22Session, { Lesson22TeacherView, Lesson22StudentView } from "../Lesson22Session";
 
 // Join a session by code (student flow)
 async function findSessionByCode(code) {
@@ -159,6 +160,11 @@ export default function LiveSession({ user, onHome }) {
         ? <Lesson21TeacherView session={session} sessionId={sessionId} uid={user.id} />
         : <Lesson21StudentView session={session} sessionId={sessionId} uid={user.id} />;
     }
+    if (session.type === "lesson22") {
+      return user.role === "teacher"
+        ? <Lesson22TeacherView session={session} sessionId={sessionId} uid={user.id} />
+        : <Lesson22StudentView session={session} sessionId={sessionId} uid={user.id} />;
+    }
   }
 
   // Lesson session views (teacher creates)
@@ -183,6 +189,7 @@ export default function LiveSession({ user, onHome }) {
   if (view === "lesson19") return <Lesson19Session user={user} onHome={() => setView("menu")} />;
   if (view === "lesson20") return <Lesson20Session user={user} onHome={() => setView("menu")} />;
   if (view === "lesson21") return <Lesson21Session user={user} onHome={() => setView("menu")} />;
+  if (view === "lesson22") return <Lesson22Session user={user} onHome={() => setView("menu")} />;
 
   // Student join flow
   if (view === "join") {
@@ -415,6 +422,14 @@ export default function LiveSession({ user, onHome }) {
                     <div>
                       <div style={{ fontWeight: 800, fontSize: 20, marginBottom: 4 }}>(21) Converting Repeating Decimals to Fractions</div>
                       <div style={{ color: "var(--text2)", fontSize: 20 }}>Single-digit, two-digit, and mixed repeating decimal conversions.</div>
+                    </div>
+                  </div>
+                  <div className="card" onClick={() => setView("lesson22")}
+                    style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 16 }}>
+                    <div style={{ fontSize: 20, fontWeight: 800, color: "var(--blue)", minWidth: 36 }}>L22</div>
+                    <div>
+                      <div style={{ fontWeight: 800, fontSize: 20, marginBottom: 4 }}>(22) Metric Units, Dimensional Analysis, and Velocity</div>
+                      <div style={{ color: "var(--text2)", fontSize: 20 }}>Mass/volume conversions, cm-mL-g, dimensional analysis, velocity conversion.</div>
                     </div>
                   </div>
             </>
