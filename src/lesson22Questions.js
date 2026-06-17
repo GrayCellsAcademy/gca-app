@@ -17,34 +17,7 @@ function fracOk(input,rn,rd){
 }
 
 // - Warm-ups -
-export function genWarmupA(){
-  return{type:"warmup-a",overline:"0.\\overline{6}",rn:2,rd:3,displayAnswer:"2/3",prompt:"Convert to a fraction."};
-}
 
-// - A1: Identify metric prefix -
-const PREFIX_POOL=[
-  {stmt:"One thousandth of a gram is a ___",accept:["milligram","mg"],display:"milligram (mg)"},
-  {stmt:"One hundredth of a liter is a ___",accept:["centiliter","cl","cL"],display:"centiliter (cL)"},
-  {stmt:"One tenth of a gram is a ___",accept:["decigram","dg"],display:"decigram (dg)"},
-  {stmt:"One thousand grams is a ___",accept:["kilogram","kg"],display:"kilogram (kg)"},
-  {stmt:"One thousandth of a liter is a ___",accept:["milliliter","ml","mL"],display:"milliliter (mL)"},
-  {stmt:"One thousand liters is a ___",accept:["kiloliter","kl","kL"],display:"kiloliter (kL)"},
-  {stmt:"One hundredth of a gram is a ___",accept:["centigram","cg"],display:"centigram (cg)"},
-  {stmt:"One tenth of a liter is a ___",accept:["deciliter","dl","dL"],display:"deciliter (dL)"},
-  {stmt:"1000 mg equals one ___",accept:["gram","g"],display:"gram (g)"},
-  {stmt:"1000 mL equals one ___",accept:["liter","l","L"],display:"liter (L)"},
-];
-export function genPrefixID(){
-  const items=shuffle([...PREFIX_POOL]).slice(0,4);
-  return{type:"prefix-id",items,prompt:"Identify the correct metric unit."};
-}
-export function gradePrefixIDItem(input,item){
-  const s=String(input||"").trim().toLowerCase();
-  return item.accept.some(a=>s===a.toLowerCase());
-}
-export function gradePrefixID(input,q){
-  try{const ans=JSON.parse(input);return q.items.every((p,i)=>gradePrefixIDItem(ans[i],p));}catch{return false;}
-}
 
 // - A2: Convert metric mass -
 const MASS_POOL=[
