@@ -7,7 +7,6 @@ import {
   gradeConvFactorItem, gradeDADirectItem, gradeMsToKmhItem,
   gradeKmhToMsItem, gradeMphToFtsItem, gradeVelMixedItem, gradeMixedReviewItem,
   gradeTankStage1, gradeTankStage2, gradeTankStage3,
-  gradeDASBSS1, gradeDASBSS2, gradeDASBSS3,
 } from "./lesson22Questions";
 
 const POINTS = 5;
@@ -189,7 +188,7 @@ function StepInput({ question, onSubmit, stages }) {
   );
 }
 
-const STEP_TYPES = ["tank-problem", "da-sbs"];
+const STEP_TYPES = ["tank-problem"];
 const MULTI_TYPES = ["mass-conv", "da-direct", "ms-to-kmh", "kmh-to-ms", "mph-to-fts", "vel-mixed", "mixed-review"];
 const MC_TYPES = ["conv-factor"];
 
@@ -204,28 +203,13 @@ function QuestionDisplay({ question: q, revealCorrect }) {
   if (!q) return null;
 
   // Warmups
-  if (q.type === "warmup-a") return (
-    <div style={{ textAlign: "center", fontSize: 24, marginBottom: 6 }}>
-      <KaTeX expr="0.\\overline{6} = \\text{ ?}" />
-      {revealCorrect && <div style={{ color: "var(--green)", fontWeight: 800, fontSize: 22, fontFamily: "var(--mono)", marginTop: 8 }}>2/3</div>}
-    </div>
-  );
-  if (q.type === "warmup-b") return (
-    <div style={{ textAlign: "center", fontSize: 24, marginBottom: 6 }}>
-      <span style={{ fontFamily: "var(--mono)", fontSize: 26, fontWeight: 700 }}>42 in = ? ft</span>
-      {revealCorrect && <div style={{ color: "var(--green)", fontWeight: 800, fontSize: 22, fontFamily: "var(--mono)", marginTop: 8 }}>3.5</div>}
-    </div>
-  );
-  if (q.type === "warmup-c") return (
-    <div style={{ textAlign: "center", fontSize: 24, marginBottom: 6 }}>
-      <span style={{ fontFamily: "var(--mono)", fontSize: 26, fontWeight: 700 }}>8.2 cm = ? mm</span>
-      {revealCorrect && <div style={{ color: "var(--green)", fontWeight: 800, fontSize: 22, fontFamily: "var(--mono)", marginTop: 8 }}>82</div>}
-    </div>
-  );
-  if (q.type === "warmup-d") return (
-    <div style={{ textAlign: "center", fontSize: 24, marginBottom: 6 }}>
-      <span style={{ fontFamily: "var(--mono)", fontSize: 26, fontWeight: 700 }}>3.25 km = ? m</span>
-      {revealCorrect && <div style={{ color: "var(--green)", fontWeight: 800, fontSize: 22, fontFamily: "var(--mono)", marginTop: 8 }}>3250</div>}
+  if (q.type === "warmup-a" || q.type === "warmup-b" || q.type === "warmup-c" || q.type === "warmup-d") return (
+    <div style={{ textAlign: "center" }}>
+      {q.overline
+        ? <div style={{ fontSize: 26, fontWeight: 700, marginBottom: 6 }}><KaTeX expr={q.overline} /> = ?</div>
+        : <div style={{ fontFamily: "var(--mono)", fontSize: 26, fontWeight: 700, marginBottom: 6 }}>{q.expr}</div>
+      }
+      {revealCorrect && <div style={{ color: "var(--green)", fontWeight: 800, fontSize: 22, fontFamily: "var(--mono)", marginTop: 8 }}>{q.displayAnswer}</div>}
     </div>
   );
 
@@ -243,13 +227,7 @@ function QuestionDisplay({ question: q, revealCorrect }) {
       )}
     </div>
   );
-  if (q.type === "da-sbs") return (
-    <div style={{ textAlign: "center" }}>
-      <div style={{ fontSize: 20, color: "var(--text2)", marginBottom: 6 }}>{q.prompt}</div>
-      <span style={{ fontFamily: "var(--mono)", fontSize: 24, fontWeight: 700 }}>{q.value} {q.fromU}</span>
-      {revealCorrect && <div style={{ color: "var(--green)", fontWeight: 800, fontSize: 22, fontFamily: "var(--mono)" }}>{q.answerDisplay}</div>}
-    </div>
-  );
+
 
   // Reveal for multi/mc types
   if (!revealCorrect) return null;
@@ -276,8 +254,7 @@ function AnswerInput({ question, onSubmit, submitted }) {
   if (!question) return null;
   const t = question.type;
 
-  if (t === "warmup-a") return <TextInput onSubmit={onSubmit} submitted={submitted} placeholder="e.g. 2/3" />;
-  if (t === "warmup-b" || t === "warmup-c" || t === "warmup-d") return <TextInput onSubmit={onSubmit} submitted={submitted} placeholder="number" />;
+  if (t === "warmup-a" || t === "warmup-b" || t === "warmup-c" || t === "warmup-d") return <TextInput onSubmit={onSubmit} submitted={submitted} placeholder={question.rn ? "e.g. 2/3" : "number"} />;
 
   if (t === "mass-conv") return <MultiRowInput items={question.problems} labelFn={p => <KaTeX expr={p.expr} />} onSubmit={onSubmit} submitted={submitted} placeholder="number" />;
   if (t === "da-direct") return <MultiRowInput items={question.problems} labelFn={p => <KaTeX expr={p.expr} />} onSubmit={onSubmit} submitted={submitted} placeholder="number" />;
@@ -301,14 +278,7 @@ function AnswerInput({ question, onSubmit, submitted }) {
     ];
     return <StepInput question={question} onSubmit={onSubmit} stages={stages} />;
   }
-  if (t === "da-sbs") {
-    const stages = [
-      { label: "Step 1: Write the starting value with units", placeholder: `e.g. ${question.value} ${question.fromU}`, grader: gradeDASBSS1, correctAnswer: q => `${q.value} ${q.fromU}` },
-      { label: "Step 2: Write the conversion factor (enter as fraction e.g. 1ft/12in)", placeholder: "e.g. 1ft/12in", grader: gradeDASBSS2, correctAnswer: q => q.factor.replace(/\\[a-z]+\{([^}]*)\}/g, "$1").replace(/\\/g, "") },
-      { label: "Step 3: Cancel units and enter the final numerical answer", placeholder: "number", grader: gradeDASBSS3, correctAnswer: q => String(q.answer) },
-    ];
-    return <StepInput question={question} onSubmit={onSubmit} stages={stages} />;
-  }
+
   return null;
 }
 

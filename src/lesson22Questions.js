@@ -192,14 +192,16 @@ export function gradeDASBSS3(input,q){return decOk(input,q.answer);}
 
 // - A8: Dimensional analysis direct -
 const DA_DIRECT=[
-  {expr:"2.5 \\text{ miles} \\to \\text{ft}",answer:13200,display:"2.5 miles to ft"},
   {expr:"1500 \\text{ mg} \\to \\text{g}",answer:1.5,display:"1500 mg to g"},
   {expr:"3.2 \\text{ L} \\to \\text{mL}",answer:3200,display:"3.2 L to mL"},
   {expr:"4.5 \\text{ kg} \\to \\text{g}",answer:4500,display:"4.5 kg to g"},
   {expr:"180 \\text{ cm} \\to \\text{m}",answer:1.8,display:"180 cm to m"},
-  {expr:"5280 \\text{ ft} \\to \\text{miles}",answer:1,display:"5280 ft to miles"},
   {expr:"2500 \\text{ mL} \\to \\text{L}",answer:2.5,display:"2500 mL to L"},
   {expr:"750 \\text{ g} \\to \\text{kg}",answer:0.75,display:"750 g to kg"},
+  {expr:"36 \\text{ in} \\to \\text{ft}",answer:3,display:"36 in to ft"},
+  {expr:"4.5 \\text{ ft} \\to \\text{in}",answer:54,display:"4.5 ft to in"},
+  {expr:"6 \\text{ ft} \\to \\text{yd}",answer:2,display:"6 ft to yd"},
+  {expr:"2.5 \\text{ yd} \\to \\text{ft}",answer:7.5,display:"2.5 yd to ft"},
 ];
 export function genDADirect(){
   const probs=shuffle([...DA_DIRECT]).slice(0,4).map(p=>({...p,displayAnswer:String(p.answer)}));
@@ -286,7 +288,7 @@ const MIXED_REVIEW_POOL=[
   {expr:"2.5 \\text{ kg} \\to \\text{g}",answer:2500,display:"2.5 kg to g"},
   {expr:"750 \\text{ mL} \\to \\text{L}",answer:0.75,display:"750 mL to L"},
   {expr:"500 \\text{ cm}^3 \\text{ water} \\to \\text{g}",answer:500,display:"500 cm- water to g"},
-  {expr:"3 \\text{ miles} \\to \\text{ft}",answer:15840,display:"3 miles to ft"},
+  {expr:"6 \\text{ ft} \\to \\text{yd}",answer:2,display:"6 ft to yd"},
   {expr:"15 \\text{ m/s} \\to \\text{km/h}",answer:54,display:"15 m/s to km/h"},
   {expr:"108 \\text{ km/h} \\to \\text{m/s}",answer:30,display:"108 km/h to m/s"},
   {expr:"45 \\text{ mph} \\to \\text{ft/s}",answer:66,display:"45 mph to ft/s"},
@@ -312,13 +314,12 @@ export const LESSON22_TOPICS=[
   {id:"mass-conv",    label:"A1: Metric Mass Conversions",     description:"4 simultaneous"},
   {id:"tank-problem", label:"A2: Fish Tank Word Problem",      description:"3-stage"},
   {id:"conv-factor",  label:"A3: Write Conversion Factor",     description:"5 simultaneous MC"},
-  {id:"da-sbs",       label:"A4: Dimensional Analysis (Steps)",description:"3-stage"},
-  {id:"da-direct",    label:"A5: Dimensional Analysis (Direct)",description:"4 simultaneous"},
-  {id:"ms-to-kmh",    label:"A6: m/s to km/h",                description:"5 simultaneous"},
-  {id:"kmh-to-ms",    label:"A7: km/h to m/s",               description:"5 simultaneous"},
-  {id:"mph-to-fts",   label:"A8: mph to ft/s",               description:"5 simultaneous"},
-  {id:"vel-mixed",    label:"A9: Mixed Velocity",             description:"4 simultaneous"},
-  {id:"mixed-review", label:"A10: Mixed Review",              description:"2 simultaneous"},
+  {id:"da-direct",    label:"A4: Dimensional Analysis (Direct)",description:"4 simultaneous"},
+  {id:"ms-to-kmh",    label:"A5: m/s to km/h",                description:"5 simultaneous"},
+  {id:"kmh-to-ms",    label:"A6: km/h to m/s",               description:"5 simultaneous"},
+  {id:"mph-to-fts",   label:"A7: mph to ft/s",               description:"5 simultaneous"},
+  {id:"vel-mixed",    label:"A8: Mixed Velocity",             description:"4 simultaneous"},
+  {id:"mixed-review", label:"A9: Mixed Review",              description:"2 simultaneous"},
 ];
 
 export function generateLesson22Question(topicId){
@@ -330,7 +331,6 @@ export function generateLesson22Question(topicId){
     case "mass-conv":    return genMassConv();
     case "tank-problem": return genTankProblem();
     case "conv-factor":  return genConvFactor();
-    case "da-sbs":       return genDASBS();
     case "da-direct":    return genDADirect();
     case "ms-to-kmh":    return genMsToKmh();
     case "kmh-to-ms":    return genKmhToMs();
@@ -344,14 +344,13 @@ export function generateLesson22Question(topicId){
 export function gradeLesson22Answer(input,question){
   if(!input||!question)return false;
   switch(question.type){
-    case "warmup-a":     return gradeWarmupA(input);
-    case "warmup-b":     return gradeWarmupB(input);
-    case "warmup-c":     return gradeWarmupC(input);
-    case "warmup-d":     return gradeWarmupD(input);
+    case "warmup-a":     return gradeWarmupA(input,question);
+    case "warmup-b":     return gradeWarmupB(input,question);
+    case "warmup-c":     return gradeWarmupC(input,question);
+    case "warmup-d":     return gradeWarmupD(input,question);
     case "mass-conv":    return gradeMassConv(input,question);
     case "tank-problem": return gradeTankStage3(input,question);
     case "conv-factor":  return gradeConvFactor(input,question);
-    case "da-sbs":       return gradeDASBSS3(input,question);
     case "da-direct":    return gradeDADirect(input,question);
     case "ms-to-kmh":    return gradeMsToKmh(input,question);
     case "kmh-to-ms":    return gradeKmhToMs(input,question);
@@ -360,5 +359,42 @@ export function gradeLesson22Answer(input,question){
     case "mixed-review": return gradeMixedReview(input,question);
     default:             return false;
   }
+}// -- Warm-ups --
+const WARMUP_REP_POOL=[
+  {overline:"0.\\overline{6}",rn:2,rd:3,displayAnswer:"2/3"},
+  {overline:"0.\\overline{3}",rn:1,rd:3,displayAnswer:"1/3"},
+  {overline:"0.\\overline{1}",rn:1,rd:9,displayAnswer:"1/9"},
+  {overline:"0.\\overline{4}",rn:4,rd:9,displayAnswer:"4/9"},
+  {overline:"0.\\overline{7}",rn:7,rd:9,displayAnswer:"7/9"},
+];
+const WARMUP_UNIT_POOL=[
+  {expr:"42 in = ? ft",answer:3.5,displayAnswer:"3.5"},
+  {expr:"8.2 cm = ? mm",answer:82,displayAnswer:"82"},
+  {expr:"3.25 km = ? m",answer:3250,displayAnswer:"3250"},
+  {expr:"2.5 kg = ? g",answer:2500,displayAnswer:"2500"},
+  {expr:"1500 mL = ? L",answer:1.5,displayAnswer:"1.5"},
+  {expr:"36 in = ? ft",answer:3,displayAnswer:"3"},
+  {expr:"4.5 m = ? dm",answer:45,displayAnswer:"45"},
+  {expr:"750 g = ? kg",answer:0.75,displayAnswer:"0.75"},
+];
+function genWarmupSet(){
+  const rep=randChoice(WARMUP_REP_POOL);
+  const units=shuffle([...WARMUP_UNIT_POOL]).slice(0,3);
+  return shuffle([
+    {type:"warmup-a",...rep,prompt:"Convert to a simplified fraction."},
+    {type:"warmup-b",...units[0],prompt:"Convert."},
+    {type:"warmup-c",...units[1],prompt:"Convert."},
+    {type:"warmup-d",...units[2],prompt:"Convert."},
+  ]);
 }
+export function genWarmupA(){return genWarmupSet()[0];}
+export function genWarmupB(){return genWarmupSet()[1];}
+export function genWarmupC(){return genWarmupSet()[2];}
+export function genWarmupD(){return genWarmupSet()[3];}
+export function gradeWarmupA(input,q){return q.rn?fracOk(input,q.rn,q.rd):decOk(input,q.answer);}
+export function gradeWarmupB(input,q){return q.rn?fracOk(input,q.rn,q.rd):decOk(input,q.answer);}
+export function gradeWarmupC(input,q){return q.rn?fracOk(input,q.rn,q.rd):decOk(input,q.answer);}
+export function gradeWarmupD(input,q){return q.rn?fracOk(input,q.rn,q.rd):decOk(input,q.answer);}
+
+
 
