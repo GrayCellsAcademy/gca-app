@@ -20,22 +20,6 @@ function fracOk(input,rn,rd){
 export function genWarmupA(){
   return{type:"warmup-a",overline:"0.\\overline{6}",rn:2,rd:3,displayAnswer:"2/3",prompt:"Convert to a fraction."};
 }
-export function gradeWarmupA(input){return fracOk(input,2,3);}
-
-export function genWarmupB(){
-  return{type:"warmup-b",from:42,fromU:"inches",toU:"feet",answer:3.5,displayAnswer:"3.5",prompt:"Convert."};
-}
-export function gradeWarmupB(input){return decOk(input,3.5);}
-
-export function genWarmupC(){
-  return{type:"warmup-c",from:8.2,fromU:"cm",toU:"mm",answer:82,displayAnswer:"82",prompt:"Convert."};
-}
-export function gradeWarmupC(input){return decOk(input,82);}
-
-export function genWarmupD(){
-  return{type:"warmup-d",from:3.25,fromU:"km",toU:"m",answer:3250,displayAnswer:"3250",prompt:"Convert."};
-}
-export function gradeWarmupD(input){return decOk(input,3250);}
 
 // - A1: Identify metric prefix -
 const PREFIX_POOL=[
