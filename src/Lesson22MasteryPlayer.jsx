@@ -440,9 +440,6 @@ export default function Lesson22MasteryPlayer({ user, topic, onHome }) {
   );
 
   const step = STEPS[stepIdx]; if (!step) return null;
-  const renderProblem = p => <span style={{ fontFamily: "var(--mono)", fontSize: 20, fontWeight: 700 }}>{p.expr}</span>;
-  const gradeProblem = (input, p) => decOk(input, p.answer);
-
   return (
     <div style={{ minHeight: "100vh", background: "var(--bg)", padding: "clamp(16px,3vw,32px)" }} className="dot-bg">
       <div style={{ maxWidth: 680, margin: "0 auto" }}>
@@ -471,26 +468,11 @@ export default function Lesson22MasteryPlayer({ user, topic, onHome }) {
             <div style={{ fontSize: 22, fontWeight: 800 }}>{step.label}</div>
             <div style={{ fontSize: 20, color: "var(--text2)" }}>{step.description}</div>
           </div>
-          {step.id === "mass" && (
-            <TwoProbStreak key={stepIdx} problems={genTwo(MASS_POOL)} renderProblem={renderProblem}
-              gradeProblem={gradeProblem} workedSolution={p => p.work} onCorrect={handleCorrect} onWrong={handleWrong} />
-          )}
-          {step.id === "vol" && (
-            <TwoProbStreak key={stepIdx} problems={genTwo(VOL_POOL)} renderProblem={renderProblem}
-              gradeProblem={gradeProblem} workedSolution={p => p.work} onCorrect={handleCorrect} onWrong={handleWrong} />
-          )}
-          {step.id === "cm3" && (
-            <TwoProbStreak key={stepIdx} problems={genTwo(CM3_POOL)} renderProblem={renderProblem}
-              gradeProblem={gradeProblem} workedSolution={null} onCorrect={handleCorrect} onWrong={handleWrong} />
-          )}
-          {step.id === "da" && (
-            <TwoProbStreak key={stepIdx} problems={genTwo(DA_POOL)} renderProblem={renderProblem}
-              gradeProblem={gradeProblem} workedSolution={p => p.work} onCorrect={handleCorrect} onWrong={handleWrong} />
-          )}
-          {step.id === "vel" && (
-            <TwoProbStreak key={stepIdx} problems={genTwo(VEL_POOL)} renderProblem={renderProblem}
-              gradeProblem={gradeProblem} workedSolution={p => p.work} onCorrect={handleCorrect} onWrong={handleWrong} />
-          )}
+          {step.id === "mass" && <MassMastery    key={stepIdx} onCorrect={handleCorrect} onWrong={handleWrong} />}
+          {step.id === "vol"  && <VolMastery     key={stepIdx} onCorrect={handleCorrect} onWrong={handleWrong} />}
+          {step.id === "cm3"  && <Cm3Mastery     key={stepIdx} onCorrect={handleCorrect} onWrong={handleWrong} />}
+          {step.id === "da"   && <DAMastery      key={stepIdx} onCorrect={handleCorrect} onWrong={handleWrong} />}
+          {step.id === "vel"  && <VelMastery     key={stepIdx} onCorrect={handleCorrect} onWrong={handleWrong} />}
           {step.id === "mixed12" && <TwelveMastery key={stepIdx} onCorrect={handleCorrect} onWrong={handleWrong} />}
         </div>
       </div>
