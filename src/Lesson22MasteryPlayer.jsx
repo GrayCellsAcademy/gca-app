@@ -56,7 +56,8 @@ function StreakDots({ current, needed }) {
 }
 
 // - Two-problem streak mastery -
-function TwoProbStreak({ problems, renderProblem, gradeProblem, workedSolution, placeholder, onCorrect, onWrong }) {
+function TwoProbStreak({ genProblems, renderProblem, gradeProblem, workedSolution, placeholder, onCorrect, onWrong }) {
+  const [problems, setProblems] = useState(() => genProblems());
   const [answers, setAnswers] = useState(["", ""]);
   const [feedback, setFeedback] = useState(null);
   const [streak, setStreak] = useState(0);
@@ -70,6 +71,7 @@ function TwoProbStreak({ problems, renderProblem, gradeProblem, workedSolution, 
   };
 
   const handleNext = () => {
+    setProblems(genProblems());
     setAnswers(["", ""]); setFeedback(null);
   };
 
@@ -395,30 +397,22 @@ function TwelveMastery({ onCorrect, onWrong }) {
 }
 
 // -- Wrapper components --
+function _rpExpr(p) { return <span style={{ fontFamily: "var(--mono)", fontSize: 20, fontWeight: 700 }}>{p.expr}</span>; }
+function _gpAns(inp, p) { return decOk(inp, p.answer); }
 function MassMastery({ onCorrect, onWrong }) {
-  const [probs] = useState(() => genTwo(MASS_POOL));
-  const rp = p => <span style={{ fontFamily: "var(--mono)", fontSize: 20, fontWeight: 700 }}>{p.expr}</span>;
-  return <TwoProbStreak problems={probs} renderProblem={rp} gradeProblem={(inp,p) => decOk(inp,p.answer)} workedSolution={p => p.work} onCorrect={onCorrect} onWrong={onWrong} />;
+  return <TwoProbStreak genProblems={() => genTwo(MASS_POOL)} renderProblem={_rpExpr} gradeProblem={_gpAns} workedSolution={p => p.work} onCorrect={onCorrect} onWrong={onWrong} />;
 }
 function VolMastery({ onCorrect, onWrong }) {
-  const [probs] = useState(() => genTwo(VOL_POOL));
-  const rp = p => <span style={{ fontFamily: "var(--mono)", fontSize: 20, fontWeight: 700 }}>{p.expr}</span>;
-  return <TwoProbStreak problems={probs} renderProblem={rp} gradeProblem={(inp,p) => decOk(inp,p.answer)} workedSolution={p => p.work} onCorrect={onCorrect} onWrong={onWrong} />;
+  return <TwoProbStreak genProblems={() => genTwo(VOL_POOL)} renderProblem={_rpExpr} gradeProblem={_gpAns} workedSolution={p => p.work} onCorrect={onCorrect} onWrong={onWrong} />;
 }
 function Cm3Mastery({ onCorrect, onWrong }) {
-  const [probs] = useState(() => genTwo(CM3_POOL));
-  const rp = p => <span style={{ fontFamily: "var(--mono)", fontSize: 20, fontWeight: 700 }}>{p.expr}</span>;
-  return <TwoProbStreak problems={probs} renderProblem={rp} gradeProblem={(inp,p) => decOk(inp,p.answer)} workedSolution={null} onCorrect={onCorrect} onWrong={onWrong} />;
+  return <TwoProbStreak genProblems={() => genTwo(CM3_POOL)} renderProblem={_rpExpr} gradeProblem={_gpAns} workedSolution={null} onCorrect={onCorrect} onWrong={onWrong} />;
 }
 function DAMastery({ onCorrect, onWrong }) {
-  const [probs] = useState(() => genTwo(DA_POOL));
-  const rp = p => <span style={{ fontFamily: "var(--mono)", fontSize: 20, fontWeight: 700 }}>{p.expr}</span>;
-  return <TwoProbStreak problems={probs} renderProblem={rp} gradeProblem={(inp,p) => decOk(inp,p.answer)} workedSolution={p => p.work} onCorrect={onCorrect} onWrong={onWrong} />;
+  return <TwoProbStreak genProblems={() => genTwo(DA_POOL)} renderProblem={_rpExpr} gradeProblem={_gpAns} workedSolution={p => p.work} onCorrect={onCorrect} onWrong={onWrong} />;
 }
 function VelMastery({ onCorrect, onWrong }) {
-  const [probs] = useState(() => genTwo(VEL_POOL));
-  const rp = p => <span style={{ fontFamily: "var(--mono)", fontSize: 20, fontWeight: 700 }}>{p.expr}</span>;
-  return <TwoProbStreak problems={probs} renderProblem={rp} gradeProblem={(inp,p) => decOk(inp,p.answer)} workedSolution={p => p.work} onCorrect={onCorrect} onWrong={onWrong} />;
+  return <TwoProbStreak genProblems={() => genTwo(VEL_POOL)} renderProblem={_rpExpr} gradeProblem={_gpAns} workedSolution={p => p.work} onCorrect={onCorrect} onWrong={onWrong} />;
 }
 // - Steps -
 const STEPS = [
