@@ -35,6 +35,7 @@ import Lesson18MasteryPlayer, { DecMentalPlayer } from "./Lesson18MasteryPlayer"
 import Lesson19MasteryPlayer, { FracDecDrillPlayer } from "./Lesson19MasteryPlayer";
 import Lesson20MasteryPlayer, { DecConvDrillPlayer } from "./Lesson20MasteryPlayer";
 import Lesson21MasteryPlayer, { RepDecDrillPlayer } from "./Lesson21MasteryPlayer";
+import Lesson22MasteryPlayer, { FracEighthDrillPlayer } from "./Lesson22MasteryPlayer";
 
 export const TOPICS = {
   "addition-tables-v1": {
@@ -274,6 +275,20 @@ export const TOPICS = {
     description: "Memorize then drill: 5s timer, 2 correct each.",
     subject: "math", gradeLevel: "6+", icon: "", type: "drill", status: "published", order: 39,
     Player: RepDecDrillPlayer,
+  },
+  "frac-eighth-drill-v1": {
+    id: "frac-eighth-drill-v1",
+    title: "Decimal Conversions: 1/8 and 1/12",
+    description: "Memorize then drill: 5s timer, 2 correct each.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "drill", status: "published", order: 41,
+    Player: FracEighthDrillPlayer,
+  },
+  "lesson22-mastery-v1": {
+    id: "lesson22-mastery-v1",
+    title: "HW 22 (019)",
+    description: "Metric mass/volume, cm3-mL-g, dimensional analysis, velocity conversions.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 42,
+    Player: Lesson22MasteryPlayer,
   },
   "lesson21-mastery-v1": {
     id: "lesson21-mastery-v1",
