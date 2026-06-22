@@ -4,7 +4,7 @@ import { saveProgress as fbSaveProgress, getProgress } from "./core/firebase";
 export const LESSON18_MASTERY_TOPIC_ID = "lesson18-mastery-v1";
 export const DEC_MENTAL_TOPIC_ID = "dec-mental-v1";
 
-const TIMER = 6;
+const TIMER = 15;
 
 // -- Math helpers --
 function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
