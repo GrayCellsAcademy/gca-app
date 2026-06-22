@@ -416,12 +416,9 @@ function VelMastery({ onCorrect, onWrong }) {
 }
 // - Steps -
 const STEPS = [
-  { id: "mass",    label: "Metric Mass Conversions",              description: "2 problems, 3 correct sets to pass." },
-  { id: "vol",     label: "Metric Volume Conversions",            description: "2 problems, 3 correct sets to pass." },
-  { id: "cm3",     label: "cm\u00b3, mL, g Connection",          description: "2 problems, 3 correct sets to pass." },
-  { id: "da",      label: "Dimensional Analysis",                 description: "2 problems, 3 correct sets to pass." },
-  { id: "vel",     label: "Velocity Unit Conversions",            description: "2 problems, 3 correct sets to pass." },
-  { id: "mixed12", label: "Mixed Review (12 problems)",           description: "All correct to pass." },
+  { id: "mass", label: "Metric Mass Conversions",   description: "2 problems, 3 correct sets to pass." },
+  { id: "vol",  label: "Metric Volume Conversions", description: "2 problems, 3 correct sets to pass." },
+  { id: "vel",  label: "Velocity Unit Conversions", description: "2 problems, 3 correct sets to pass." },
 ];
 
 export default function Lesson22MasteryPlayer({ user, topic, onHome }) {
@@ -490,10 +487,7 @@ export default function Lesson22MasteryPlayer({ user, topic, onHome }) {
           </div>
           {step.id === "mass" && <MassMastery    key={stepIdx} onCorrect={handleCorrect} onWrong={handleWrong} />}
           {step.id === "vol"  && <VolMastery     key={stepIdx} onCorrect={handleCorrect} onWrong={handleWrong} />}
-          {step.id === "cm3"  && <Cm3Mastery     key={stepIdx} onCorrect={handleCorrect} onWrong={handleWrong} />}
-          {step.id === "da"   && <DAMastery      key={stepIdx} onCorrect={handleCorrect} onWrong={handleWrong} />}
           {step.id === "vel"  && <VelMastery     key={stepIdx} onCorrect={handleCorrect} onWrong={handleWrong} />}
-          {step.id === "mixed12" && <TwelveMastery key={stepIdx} onCorrect={handleCorrect} onWrong={handleWrong} />}
         </div>
       </div>
     </div>
