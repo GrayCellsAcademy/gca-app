@@ -1,4 +1,4 @@
-﻿//  Topic Registry
+//  Topic Registry
 import AdditionTablesPlayer from "./AdditionTablesPlayer";
 import ColumnAdditionPlayer from "./ColumnAdditionPlayer";
 import Lesson01MasteryPlayer from "./Lesson01MasteryPlayer";
@@ -8,8 +8,35 @@ import Lesson02MasteryPlayer from "./Lesson02MasteryPlayer";
 import SubtractionTablesPlayer from "./SubtractionTablesPlayer";
 import TimesTablesPlayer from "./TimesTablesPlayer";
 import TimesTablesPlayer45 from "./TimesTablesPlayer45";
+import TimesTablesPlayer6 from "./TimesTablesPlayer6";
+import TimesTablesPlayer7 from "./TimesTablesPlayer7";
+import TimesTablesPlayer8 from "./TimesTablesPlayer8";
+import TimesTablesPlayer9 from "./TimesTablesPlayer9";
+import DivisionTablesPlayer from "./DivisionTablesPlayer";
+import DivisionTablesPlayer67 from "./DivisionTablesPlayer67";
+import DivisionTablesPlayer8 from "./DivisionTablesPlayer8";
+import DivisionTablesPlayer9 from "./DivisionTablesPlayer9";
 import Lesson03MasteryPlayer from "./Lesson03MasteryPlayer";
 import Lesson04MasteryPlayer from "./Lesson04MasteryPlayer";
+import Lesson05MasteryPlayer from "./Lesson05MasteryPlayer";
+import Lesson06MasteryPlayer from "./Lesson06MasteryPlayer";
+import Lesson07MasteryPlayer from "./Lesson07MasteryPlayer";
+import Lesson08MasteryPlayer from "./Lesson08MasteryPlayer";
+import Lesson09MasteryPlayer from "./Lesson09MasteryPlayer";
+import Lesson10MasteryPlayer from "./Lesson10MasteryPlayer";
+import Lesson11MasteryPlayer from "./Lesson11MasteryPlayer";
+import Lesson12MasteryPlayer, { PerfectSquares12Player } from "./Lesson12MasteryPlayer";
+import Lesson13MasteryPlayer, { PerfectSquares13Player } from "./Lesson13MasteryPlayer";
+import Lesson14MasteryPlayer, { PerfectCubesPlayer14 } from "./Lesson14MasteryPlayer";
+import Lesson15MasteryPlayer, { PerfectCubes2Player } from "./Lesson15MasteryPlayer";
+import Lesson16MasteryPlayer, { MultZerosPlayer } from "./Lesson16MasteryPlayer";
+import Lesson17MasteryPlayer, { DivZerosPlayer } from "./Lesson17MasteryPlayer";
+import Lesson18MasteryPlayer, { DecMentalPlayer } from "./Lesson18MasteryPlayer";
+import Lesson19MasteryPlayer, { FracDecDrillPlayer } from "./Lesson19MasteryPlayer";
+import Lesson20MasteryPlayer, { DecConvDrillPlayer } from "./Lesson20MasteryPlayer";
+import Lesson21MasteryPlayer, { RepDecDrillPlayer } from "./Lesson21MasteryPlayer";
+import Lesson22MasteryPlayer, { FracEighthDrillPlayer } from "./Lesson22MasteryPlayer";
+import Lesson23MasteryPlayer from "./Lesson23MasteryPlayer";
 
 export const TOPICS = {
   "addition-tables-v1": {
@@ -57,16 +84,282 @@ export const TOPICS = {
   "times-tables-45-v1": {
     id: "times-tables-45-v1",
     title: "Times Table (4 & 5)",
-    description: "Master the 4s and 5s times tables with skip counting, in-order, and random drills.",
+    description: "Master the 4s and 5s times tables.",
     subject: "math", gradeLevel: "6+", icon: "", type: "drill", status: "published", order: 8,
     Player: TimesTablesPlayer45,
   },
+  "times-tables-6-v1": {
+    id: "times-tables-6-v1",
+    title: "Times Table (6)",
+    description: "Master the 6s times table.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "drill", status: "published", order: 9,
+    Player: TimesTablesPlayer6,
+  },
+  "times-tables-7-v1": {
+    id: "times-tables-7-v1",
+    title: "Times Table (7)",
+    description: "Master the 7s times table.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "drill", status: "published", order: 10,
+    Player: TimesTablesPlayer7,
+  },
+  "times-tables-8-v1": {
+    id: "times-tables-8-v1",
+    title: "Times Table (8)",
+    description: "Master the 8s times table.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "drill", status: "published", order: 11,
+    Player: TimesTablesPlayer8,
+  },
+  "times-tables-9-v1": {
+    id: "times-tables-9-v1",
+    title: "Times Table (9)",
+    description: "Master the 9s times table.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "drill", status: "published", order: 12,
+    Player: TimesTablesPlayer9,
+  },
+  "division-tables-v1": {
+    id: "division-tables-v1",
+    title: "Division Tables (2-5)",
+    description: "Master dividing by 2, 3, 4, and 5.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "drill", status: "published", order: 13,
+    Player: DivisionTablesPlayer,
+  },
+  "division-tables-67-v1": {
+    id: "division-tables-67-v1",
+    title: "Division Tables (6-7)",
+    description: "Master dividing by 6 and 7.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "drill", status: "published", order: 14,
+    Player: DivisionTablesPlayer67,
+  },
+  "division-tables-8-v1": {
+    id: "division-tables-8-v1",
+    title: "Division Tables (8)",
+    description: "Master dividing by 8.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "drill", status: "published", order: 15,
+    Player: DivisionTablesPlayer8,
+  },
+  "division-tables-9-v1": {
+    id: "division-tables-9-v1",
+    title: "Division Tables (9)",
+    description: "Master dividing by 9.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "drill", status: "published", order: 16,
+    Player: DivisionTablesPlayer9,
+  },
   "lesson04-mastery-v1": {
     id: "lesson04-mastery-v1",
-    title: "HW 5 (019)",
+    title: "HW 4 (019)",
     description: "Exponents, square roots, cube roots, order of operations, and variable expressions.",
-    subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 9,
+    subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 12,
     Player: Lesson04MasteryPlayer,
+  },
+  "lesson05-mastery-v1": {
+    id: "lesson05-mastery-v1",
+    title: "HW 5 (019)",
+    description: "Comparing signed numbers, absolute value, multiple minus signs, and signed operations.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 13,
+    Player: Lesson05MasteryPlayer,
+  },
+  "lesson06-mastery-v1": {
+    id: "lesson06-mastery-v1",
+    title: "HW 6 (019)",
+    description: "Multiple signed numbers, distributive property, combining like terms, product rule.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 14,
+    Player: Lesson06MasteryPlayer,
+  },
+  "lesson07-mastery-v1": {
+    id: "lesson07-mastery-v1",
+    title: "HW 7 (019)",
+    description: "Sign of products, negative base powers, roots of negatives, signed OoO and variable expressions.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 16,
+    Player: Lesson07MasteryPlayer,
+  },
+  "lesson08-mastery-v1": {
+    id: "lesson08-mastery-v1",
+    title: "HW 8 (019)",
+    description: "Expression vs equation, identifying solutions, one-step equations, and speed/distance/time.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 17,
+    Player: Lesson08MasteryPlayer,
+  },
+  "lesson09-mastery-v1": {
+    id: "lesson09-mastery-v1",
+    title: "HW 9 (019)",
+    description: "Rectangle perimeter/missing side, two-step equations, distributive property, and power equations.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 18,
+    Player: Lesson09MasteryPlayer,
+  },
+  "lesson10-mastery-v1": {
+    id: "lesson10-mastery-v1",
+    title: "HW 10 (019)",
+    description: "Linear equations with simplification, variables on both sides, no solution, and radical equations.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 19,
+    Player: Lesson10MasteryPlayer,
+  },
+  "lesson11-mastery-v1": {
+    id: "lesson11-mastery-v1",
+    title: "HW 11 (019)",
+    description: "Checking solutions, one-step and two-step inequalities, special cases, and mixed practice.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 20,
+    Player: Lesson11MasteryPlayer,
+  },
+  "perfect-squares-12-v1": {
+    id: "perfect-squares-12-v1",
+    title: "Perfect Squares (11-15)",
+    description: "Memorize and drill perfect squares from 11 to 15.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "drill", status: "published", order: 21,
+    Player: PerfectSquares12Player,
+  },
+  "perfect-squares-13-v1": {
+    id: "perfect-squares-13-v1",
+    title: "Perfect Squares (16-20)",
+    description: "Memorize and drill perfect squares 16-20, then review all 11-20.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "drill", status: "published", order: 23,
+    Player: PerfectSquares13Player,
+  },
+  "lesson13-mastery-v1": {
+    id: "lesson13-mastery-v1",
+    title: "HW 13 (019)",
+    description: "Factors, multiples, GCF, LCM, and word problems.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 24,
+    Player: Lesson13MasteryPlayer,
+  },
+  "perfect-cubes-v1": {
+    id: "perfect-cubes-v1",
+    title: "Perfect Cubes (1-5)",
+    description: "Memorize and drill perfect cubes 1- through 5-.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "drill", status: "published", order: 25,
+    Player: PerfectCubesPlayer14,
+  },
+  "perfect-cubes-2-v1": {
+    id: "perfect-cubes-2-v1",
+    title: "Perfect Cubes (6-10)",
+    description: "Memorize and drill perfect cubes 6-10, then review all 1-10.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "drill", status: "published", order: 27,
+    Player: PerfectCubes2Player,
+  },
+  "mult-zeros-v1": {
+    id: "mult-zeros-v1",
+    title: "Multiplying with Zeros",
+    description: "Tutorial and 8-second timed drill, 3 in a row.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "drill", status: "published", order: 29,
+    Player: MultZerosPlayer,
+  },
+  "div-zeros-v1": {
+    id: "div-zeros-v1",
+    title: "Division with Zeros",
+    description: "Tutorial and 8-second timed drill, 3 in a row.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "drill", status: "published", order: 31,
+    Player: DivZerosPlayer,
+  },
+  "dec-mental-v1": {
+    id: "dec-mental-v1",
+    title: "Decimal x 10 / 100 / 1000",
+    description: "6-second timed drill: multiply or divide decimals by powers of 10.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "drill", status: "published", order: 33,
+    Player: DecMentalPlayer,
+  },
+  "frac-dec-drill-v1": {
+    id: "frac-dec-drill-v1",
+    title: "Fraction-Decimal Conversions",
+    description: "Memorize then drill: 1/2, 1/4, 1/5, 1/10. 5-second timer, 2 correct each.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "drill", status: "published", order: 35,
+    Player: FracDecDrillPlayer,
+  },
+  "dec-conv-drill-v1": {
+    id: "dec-conv-drill-v1",
+    title: "Decimal Conversions: 1/20, 1/25, 1/50, 1/100",
+    description: "Memorize then drill: 5s timer, 2 correct each.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "drill", status: "published", order: 37,
+    Player: DecConvDrillPlayer,
+  },
+  "rep-dec-drill-v1": {
+    id: "rep-dec-drill-v1",
+    title: "Repeating Decimals: 1/3, 1/6, 1/9",
+    description: "Memorize then drill: 5s timer, 2 correct each.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "drill", status: "published", order: 39,
+    Player: RepDecDrillPlayer,
+  },
+  "frac-eighth-drill-v1": {
+    id: "frac-eighth-drill-v1",
+    title: "Decimal Conversions: 1/8 and 1/12",
+    description: "Memorize then drill: 5s timer, 2 correct each.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "drill", status: "published", order: 41,
+    Player: FracEighthDrillPlayer,
+  },
+  "lesson23-mastery-v1": {
+    id: "lesson23-mastery-v1",
+    title: "HW 23 (019)",
+    description: "Percent to fraction, fraction to percent, percent/decimal, percent of a number, word problems.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 43,
+    Player: Lesson23MasteryPlayer,
+  },
+  "lesson22-mastery-v1": {
+    id: "lesson22-mastery-v1",
+    title: "HW 22 (019)",
+    description: "Metric mass/volume, cm3-mL-g, dimensional analysis, velocity conversions.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 42,
+    Player: Lesson22MasteryPlayer,
+  },
+  "lesson21-mastery-v1": {
+    id: "lesson21-mastery-v1",
+    title: "HW 21 (019)",
+    description: "Repeating decimals to fractions: single-digit, two-digit, mixed, and combined review.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 40,
+    Player: Lesson21MasteryPlayer,
+  },
+  "lesson20-mastery-v1": {
+    id: "lesson20-mastery-v1",
+    title: "HW 20 (019)",
+    description: "Writing ratios, simplifying ratios, missing term in proportion.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 38,
+    Player: Lesson20MasteryPlayer,
+  },
+  "lesson19-mastery-v1": {
+    id: "lesson19-mastery-v1",
+    title: "HW 19 (019)",
+    description: "Decimal division, fraction-to-decimal, divide by decimal, decimal equations.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 36,
+    Player: Lesson19MasteryPlayer,
+  },
+  "lesson18-mastery-v1": {
+    id: "lesson18-mastery-v1",
+    title: "HW 18 (019)",
+    description: "Place value, decimal-fraction conversion, operations, and metric length.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 34,
+    Player: Lesson18MasteryPlayer,
+  },
+  "lesson17-mastery-v1": {
+    id: "lesson17-mastery-v1",
+    title: "HW 17 (019)",
+    description: "Quotient rule, factoring GCF, and solving equations with fractional coefficients.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 32,
+    Player: Lesson17MasteryPlayer,
+  },
+  "lesson16-mastery-v1": {
+    id: "lesson16-mastery-v1",
+    title: "HW 16 (019)",
+    description: "Multiplying and dividing fractions, reciprocals, mixed numbers, and mixed operations.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 30,
+    Player: Lesson16MasteryPlayer,
+  },
+  "lesson15-mastery-v1": {
+    id: "lesson15-mastery-v1",
+    title: "HW 15 (019)",
+    description: "Adding and subtracting fractions - common denominators, different denominators, mixed numbers.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 28,
+    Player: Lesson15MasteryPlayer,
+  },
+  "lesson14-mastery-v1": {
+    id: "lesson14-mastery-v1",
+    title: "HW 14 (019)",
+    description: "Fraction pictures, classification, number lines, conversions, equivalent fractions, and reducing.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 26,
+    Player: Lesson14MasteryPlayer,
+  },
+  "lesson12-mastery-v1": {
+    id: "lesson12-mastery-v1",
+    title: "HW 12 (019)",
+    description: "Perfect squares 11-15, divisibility rules, prime/composite, and prime factorization.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 22,
+    Player: Lesson12MasteryPlayer,
   },
   "review-homework-v1": {
     id: "review-homework-v1",
@@ -94,4 +387,3 @@ export const TOPICS = {
 export function getTopic(id) { return TOPICS[id] || null; }
 export function getPublishedTopics() { return Object.values(TOPICS).filter(t => t.status === "published"); }
 export function getAllTopics() { return Object.values(TOPICS); }
-
