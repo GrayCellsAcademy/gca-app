@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { saveProgress as fbSaveProgress, getProgress } from "./core/firebase";
 
 export const LESSON23_MASTERY_TOPIC_ID = "lesson23-mastery-v1";
@@ -231,14 +231,18 @@ const WORD_PROB_POOL = [
     work: "Increase: 200 x 0.10 = 20\nNew total: 200 + 20 = 220" },
   { problem: "A $60 jacket is marked down 30%. What is the sale price?", answer: 42,
     work: "Discount: 60 x 0.30 = 18\nSale price: 60 - 18 = 42" },
-  { problem: "After a 20% increase, a price is $60. What was the original price?", answer: 50,
-    work: "60 = 1.20 x original\noriginal = 60 / 1.20 = 50" },
-  { problem: "After a 10% discount, an item costs $45. What was the original price?", answer: 50,
-    work: "45 = 0.90 x original\noriginal = 45 / 0.90 = 50" },
   { problem: "A $80 item has 5% sales tax added. What is the total cost?", answer: 84,
     work: "Tax: 80 x 0.05 = 4\nTotal: 80 + 4 = 84" },
   { problem: "A $90 restaurant bill gets an 18% tip. What is the tip amount?", answer: 16.2,
     work: "Tip: 90 x 0.18 = 16.2" },
+  { problem: "A $120 bicycle is on sale for 20% off. What is the sale price?", answer: 96,
+    work: "Discount: 120 x 0.20 = 24\nSale price: 120 - 24 = 96" },
+  { problem: "A class of 150 students grows by 6%. How many students are there now?", answer: 159,
+    work: "Increase: 150 x 0.06 = 9\nNew total: 150 + 9 = 159" },
+  { problem: "A $70 video game has a 7% sales tax added. What is the total cost?", answer: 74.9,
+    work: "Tax: 70 x 0.07 = 4.9\nTotal: 70 + 4.9 = 74.9" },
+  { problem: "A $200 phone is discounted 35%. What is the sale price?", answer: 130,
+    work: "Discount: 200 x 0.35 = 70\nSale price: 200 - 70 = 130" },
 ];
 function genWordProbSet() {
   return shuffle([...WORD_PROB_POOL]).slice(0, 2).map(p => ({ ...p, displayAnswer: "$" + p.answer }));
@@ -337,4 +341,3 @@ export default function Lesson23MasteryPlayer({ user, topic, onHome }) {
     </div>
   );
 }
-
