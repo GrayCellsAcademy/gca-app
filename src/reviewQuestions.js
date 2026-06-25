@@ -799,7 +799,7 @@ export function genQ31() {
 
 //  Q32: Add/Subtract Mixed Numbers (Same Denominator) 
 export function genQ32() {
-  const d = randInt(2, 9);
+  const d = randInt(3, 9); // d=2 excluded: with "+" the only possible f1n,f2n=1 always sums to >=d, making the retry loop unsatisfiable (infinite loop)
   const op = Math.random() < 0.5 ? "+" : "-";
   let w1, f1n, w2, f2n, rw, rfn;
   do {
@@ -830,7 +830,7 @@ export function genQ33() {
   do {
     w1 = randInt(2, 10); f1n = randInt(0, d - 1);
     w2 = randInt(1, w1);  f2n = randInt(1, d - 1);
-  } while (f1n >= f2n || w1 - w2 < 0);
+  } while (f1n >= f2n || w1 - w2 < 1);
   const borrowedF = f1n + d - f2n;
   const rw = w1 - 1 - w2;
   const answer = rw + " " + borrowedF + "/" + d;
@@ -890,7 +890,7 @@ export function genQ35() {
     const aWhole = randInt(1, 9);
     const bWhole = randInt(0, 9);
     const aFrac = aDecimals > 0 ? randInt(1, 9) : 0;
-    const bFrac = randInt(10, 99);
+    const bFrac = bDecimals === 1 ? randInt(1, 9) : randInt(10, 99);
     a = aWhole + aFrac / Math.pow(10, aDecimals);
     b = bWhole + bFrac / Math.pow(10, bDecimals);
     if (a <= b) continue;
@@ -1287,7 +1287,7 @@ export function gradeReviewAnswer(input, question) {
     case "q11": {
       const splitTerms = s => {
         const raw = String(s).trim().replace(/\s*-\s*/g, " -").replace(/\s*\+\s*/g, " +").trim();
-        return raw.split(/\s+/).filter(Boolean).map(t => norm(t)).sort();
+        return raw.split(/\s+/).filter(Boolean).map(t => norm(t.replace(/^\+/, ""))).sort();
       };
       const correctTerms = question.answerTerms
         ? question.answerTerms.map(t => norm(t)).sort()
