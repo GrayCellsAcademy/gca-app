@@ -214,14 +214,13 @@ export default function Lesson01MasteryPlayer({ user, topic, onHome }) {
       // Wrong  reset streak, back to subtype 0 of current topic
       setStreak(0);
       setPhase("wrong");
-      await saveCurrentProgress(topicIdx, 0, 0);
+      await saveCurrentProgress(topicIdx, subtypeIdx, 0);
     }
   };
 
   const handleWrongContinue = () => {
-    setSubtypeIdx(0);
     setStreak(0);
-    newProblem(topicIdx, 0);
+    newProblem(topicIdx, subtypeIdx);
   };
 
   if (loading) return (
@@ -294,7 +293,7 @@ export default function Lesson01MasteryPlayer({ user, topic, onHome }) {
               Not quite! Here's the worked solution:
             </div>
             <div style={{ fontSize: 20, color: "var(--text3)", textAlign: "center", marginBottom: 16 }}>
-              Streak reset  starting back at {currentTopic.subtypes[0].label}
+              Streak reset - try another {currentSubtype?.label} problem
             </div>
             <button className="btn btn-success" style={{ width: "100%", fontSize: 20, padding: "13px" }}
               onClick={handleWrongContinue}>
