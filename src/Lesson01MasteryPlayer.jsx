@@ -19,15 +19,12 @@ function ColumnProblem({ problem, showAnswer = false, showWorking = false }) {
   const maxLen = Math.max(...numbers.map(n => String(n).length));
   const padded = numbers.map(n => String(n).padStart(maxLen, " "));
   const answer = problem.answer;
-  const ansStr = String(answer).padStart(maxLen + 1, " "); // +1 for possible carry
 
-  // Compute carry/borrow marks for working
   const carries = (showWorking && isAddition && problem.type !== "add-no-carry")
     ? computeCarries(problem.numbers) : {};
   const { borrows } = (showWorking && !isAddition && problem.type !== "sub-no-borrow")
     ? computeBorrows(problem.top, problem.bot) : { borrows: [] };
 
-  // Build borrow map: colIndex (from left in maxLen) -> { original, newVal }
   const borrowMap = {};
   borrows.forEach(b => { borrowMap[b.col] = b; });
 
@@ -36,11 +33,9 @@ function ColumnProblem({ problem, showAnswer = false, showWorking = false }) {
 
   return (
     <div style={{ display: "inline-block", background: "var(--bg2)", borderRadius: "var(--radius)", padding: "16px 24px", fontFamily: "var(--mono)" }}>
-      {/* Carry row (addition) */}
       {isAddition && Object.keys(carries).length > 0 && (
         <div style={{ display: "flex", gap: 2, paddingLeft: 32, marginBottom: 2 }}>
           {Array.from({ length: maxLen }, (_, ci) => {
-            // carries key is col index from left in padded string
             const carryVal = carries[ci];
             return (
               <div key={ci} style={{ width: cellW, height: 20, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, fontWeight: 800, color: "var(--amber)" }}>
@@ -51,7 +46,6 @@ function ColumnProblem({ problem, showAnswer = false, showWorking = false }) {
         </div>
       )}
 
-      {/* Number rows */}
       {padded.map((row, ri) => (
         <div key={ri} style={{ display: "flex", alignItems: "center", gap: 2, marginBottom: 2 }}>
           <div style={{ width: 28, textAlign: "right", fontSize: 28, color: "var(--text3)", paddingRight: 4 }}>
@@ -61,7 +55,6 @@ function ColumnProblem({ problem, showAnswer = false, showWorking = false }) {
             const borrow = borrowMap[ci];
             return (
               <div key={ci} style={{ width: cellW, height: cellH, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", position: "relative" }}>
-                {/* Borrow mark above digit */}
                 {showWorking && !isAddition && ri === 0 && borrow && (
                   <div style={{ position: "absolute", top: -2, right: 2, display: "flex", flexDirection: "column", alignItems: "center" }}>
                     <div style={{ fontSize: 20, color: "var(--red)", textDecoration: "line-through", lineHeight: 1 }}>
@@ -81,10 +74,8 @@ function ColumnProblem({ problem, showAnswer = false, showWorking = false }) {
         </div>
       ))}
 
-      {/* Divider */}
       <div style={{ borderTop: "2.5px solid var(--text2)", margin: "4px 0 4px 30px" }} />
 
-      {/* Answer row */}
       {showAnswer && (
         <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
           <div style={{ width: 28 }} />
@@ -102,9 +93,6 @@ function ColumnProblem({ problem, showAnswer = false, showWorking = false }) {
 //  Missing Digit Problem Display + Input
 function MissingDigitProblem({ problem, inputs, onInputChange, onFocus, focusedCell, submitted, correct }) {
   const { aStr, bStr, sumStr, sumIs5, hiddenAddends, hiddenSumCol } = problem;
-  // Build lookup sets for hidden cells
-  // hiddenAddends: [{ row: 0|1, col: 0-3, value }]  col 0=thousands, 3=ones
-  // hiddenSumCol: col from right (0=ones, 3=thousands) -> sumStr index = 4 - hiddenSumCol
   const hiddenAddendSet = new Set(hiddenAddends.map(h => `${h.row}-${h.col}`));
   const hiddenSumStrIdx = 4 - hiddenSumCol;
 
@@ -131,7 +119,6 @@ function MissingDigitProblem({ problem, inputs, onInputChange, onFocus, focusedC
   };
 
   const renderRow = (str, rowIdx, isSum) => {
-    // str is 4 chars for addends (padded), 5 chars for sum
     return str.split("").map((ch, ci) => {
       const key = isSum ? `sum-${ci}` : `${rowIdx}-${ci}`;
       const isHidden = isSum
@@ -150,19 +137,15 @@ function MissingDigitProblem({ problem, inputs, onInputChange, onFocus, focusedC
 
   return (
     <div style={{ display: "inline-block", background: "var(--bg2)", borderRadius: "var(--radius)", padding: "16px 24px", fontFamily: "var(--mono)" }}>
-      {/* Row A */}
       <div style={{ display: "flex", alignItems: "center", gap: 2, marginBottom: 2 }}>
         <div style={{ width: 28 }} />
         {renderRow(aStr, 0, false)}
       </div>
-      {/* Row B */}
       <div style={{ display: "flex", alignItems: "center", gap: 2, marginBottom: 2 }}>
         <div style={{ width: 28, textAlign: "right", fontSize: 28, color: "var(--text3)", paddingRight: 4 }}>+</div>
         {renderRow(bStr, 1, false)}
       </div>
-      {/* Divider */}
       <div style={{ borderTop: "2.5px solid var(--text2)", margin: "4px 0 4px 30px" }} />
-      {/* Sum row */}
       <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
         <div style={{ width: 28 }} />
         {renderRow(sumStr, 2, true)}
@@ -194,22 +177,23 @@ export default function Lesson01MasteryPlayer({ user, topic, onHome }) {
   useActivityTracking(user, "lesson01-mastery-v1", "HW 1 (019)");
   const topicId = topic?.id || TOPIC_ID;
 
-  // Progress: { topicIdx, subtypeIdx, streak, completed }
   const [topicIdx, setTopicIdx] = useState(0);
   const [subtypeIdx, setSubtypeIdx] = useState(0);
   const [streak, setStreak] = useState(0);
   const [problem, setProblem] = useState(null);
   const [input, setInput] = useState("");
-  const [phase, setPhase] = useState("question"); // question | wrong | celebration
+  const [phase, setPhase] = useState("question"); // question | correct | wrong | celebration
   const [loading, setLoading] = useState(true);
   const inputRef = useRef(null);
+
+  // Pending progress to save when student presses Next after correct answer
+  const pendingProgress = useRef(null);
 
   // Missing digit state
   const [mdInputs, setMdInputs] = useState({});
   const [mdFocused, setMdFocused] = useState(null);
   const [mdSubmitted, setMdSubmitted] = useState(false);
   const [mdCorrect, setMdCorrect] = useState({});
-  const mdKeyRef = useRef(null);
 
   const currentTopic = TOPICS[topicIdx];
   const currentSubtype = currentTopic?.subtypes[subtypeIdx];
@@ -247,14 +231,12 @@ export default function Lesson01MasteryPlayer({ user, topic, onHome }) {
       setMdFocused(null);
       setMdSubmitted(false);
       setMdCorrect({});
+      pendingProgress.current = null;
       setTimeout(() => inputRef.current?.focus(), 80);
     }
   };
 
   const computePercent = (ti) => {
-    // Core topics: up to 100%; extra credit: +10% each beyond CORE_TOPICS
-    const coreTopics = TOPICS.slice(0, CORE_TOPICS);
-    const extraTopics = TOPICS.slice(CORE_TOPICS);
     const coreCount = Math.min(ti, CORE_TOPICS);
     const extraCount = Math.max(0, ti - CORE_TOPICS);
     return Math.round((coreCount / CORE_TOPICS) * 100) + extraCount * 10;
@@ -277,39 +259,50 @@ export default function Lesson01MasteryPlayer({ user, topic, onHome }) {
 
     if (val === problem.answer) {
       const newStreak = streak + 1;
+      setStreak(newStreak);
+      setPhase("correct");
       if (newStreak >= STREAK_NEEDED) {
-        // Advance to next subtype or topic
         const nextSi = subtypeIdx + 1;
         const subtypes = currentTopic.subtypes;
         if (nextSi < subtypes.length) {
-          // Move to next subtype within same topic
-          setSubtypeIdx(nextSi);
-          setStreak(0);
-          await saveCurrentProgress(topicIdx, nextSi, 0);
+          pendingProgress.current = { action: "nextSubtype", ti: topicIdx, si: nextSi };
         } else {
-          // Topic complete - move to next topic
           const nextTi = topicIdx + 1;
           if (nextTi >= TOPICS.length) {
-            // All done!
-            setPhase("celebration");
-            await saveCurrentProgress(nextTi, 0, 0);
+            pendingProgress.current = { action: "done", ti: nextTi };
           } else {
-            setTopicIdx(nextTi);
-            setSubtypeIdx(0);
-            setStreak(0);
-            await saveCurrentProgress(nextTi, 0, 0);
+            pendingProgress.current = { action: "nextTopic", ti: nextTi };
           }
         }
       } else {
-        setStreak(newStreak);
-        await saveCurrentProgress(topicIdx, subtypeIdx, newStreak);
-        newProblem(topicIdx, subtypeIdx);
+        pendingProgress.current = { action: "stay", ti: topicIdx, si: subtypeIdx, st: newStreak };
       }
+      await saveCurrentProgress(
+        pendingProgress.current.ti ?? topicIdx,
+        pendingProgress.current.si ?? subtypeIdx,
+        pendingProgress.current.st ?? newStreak
+      );
     } else {
-      // Wrong - reset streak on current subtype only
       setStreak(0);
       setPhase("wrong");
       await saveCurrentProgress(topicIdx, subtypeIdx, 0);
+    }
+  };
+
+  const handleCorrectNext = () => {
+    const p = pendingProgress.current;
+    if (!p) return;
+    if (p.action === "done") {
+      setPhase("celebration");
+    } else if (p.action === "nextTopic") {
+      setTopicIdx(p.ti);
+      setSubtypeIdx(0);
+      setStreak(0);
+    } else if (p.action === "nextSubtype") {
+      setSubtypeIdx(p.si);
+      setStreak(0);
+    } else {
+      newProblem(topicIdx, subtypeIdx);
     }
   };
 
@@ -318,7 +311,7 @@ export default function Lesson01MasteryPlayer({ user, topic, onHome }) {
     newProblem(topicIdx, subtypeIdx);
   };
 
-  // Missing digit handlers
+  // Missing digit keyboard handler
   const handleMdKeyDown = (e) => {
     if (!mdFocused) return;
     const digit = e.key;
@@ -336,15 +329,13 @@ export default function Lesson01MasteryPlayer({ user, topic, onHome }) {
 
   const handleMdSubmit = async () => {
     if (!problem || mdSubmitted) return;
-    const { hiddenAddends, hiddenSumCol, hiddenSumValue, sumStr } = problem;
-    // Check all cells filled
+    const { hiddenAddends, hiddenSumCol, hiddenSumValue } = problem;
     const allCells = [
       ...hiddenAddends.map(h => `${h.row}-${h.col}`),
       `sum-${4 - hiddenSumCol}`,
     ];
     if (allCells.some(k => mdInputs[k] === undefined)) return;
 
-    // Grade each cell
     const correct = {};
     let allCorrect = true;
     hiddenAddends.forEach(h => {
@@ -363,29 +354,38 @@ export default function Lesson01MasteryPlayer({ user, topic, onHome }) {
 
     if (allCorrect) {
       const newStreak = streak + 1;
+      setStreak(newStreak);
       if (newStreak >= EC_STREAK_NEEDED) {
         const nextTi = topicIdx + 1;
         if (nextTi >= TOPICS.length) {
-          setPhase("celebration");
-          await saveCurrentProgress(nextTi, 0, 0);
+          pendingProgress.current = { action: "done", ti: nextTi };
         } else {
-          setTopicIdx(nextTi);
-          setSubtypeIdx(0);
-          setStreak(0);
-          await saveCurrentProgress(nextTi, 0, 0);
+          pendingProgress.current = { action: "nextTopic", ti: nextTi };
         }
+        await saveCurrentProgress(nextTi, 0, 0);
       } else {
-        setStreak(newStreak);
+        pendingProgress.current = { action: "stay", ti: topicIdx, si: subtypeIdx, st: newStreak };
         await saveCurrentProgress(topicIdx, subtypeIdx, newStreak);
       }
     } else {
       setStreak(0);
+      pendingProgress.current = null;
       await saveCurrentProgress(topicIdx, subtypeIdx, 0);
     }
   };
 
   const handleMdNext = () => {
-    newProblem(topicIdx, subtypeIdx);
+    const p = pendingProgress.current;
+    if (!p) { newProblem(topicIdx, subtypeIdx); return; }
+    if (p.action === "done") {
+      setPhase("celebration");
+    } else if (p.action === "nextTopic") {
+      setTopicIdx(p.ti);
+      setSubtypeIdx(0);
+      setStreak(0);
+    } else {
+      newProblem(topicIdx, subtypeIdx);
+    }
   };
 
   if (loading) return (
@@ -409,12 +409,9 @@ export default function Lesson01MasteryPlayer({ user, topic, onHome }) {
     </div>
   );
 
-  // Progress indicator
-  const coreDone = Math.min(topicIdx, CORE_TOPICS);
   const totalSubtypes = TOPICS.reduce((s, t) => s + t.subtypes.length, 0);
   const completedSubtypes = TOPICS.slice(0, topicIdx).reduce((s, t) => s + t.subtypes.length, 0) + subtypeIdx;
 
-  // Extra credit locked until core done
   if (isMissingDigit && topicIdx < CORE_TOPICS) {
     return (
       <div style={{ maxWidth: 520, margin: "0 auto", textAlign: "center", animation: "fadeUp 0.4s ease" }}>
@@ -462,7 +459,6 @@ export default function Lesson01MasteryPlayer({ user, topic, onHome }) {
         <StreakDots current={streak} needed={streakNeeded} />
 
         {isMissingDigit ? (
-          // Missing digit UI
           <>
             <p style={{ textAlign: "center", fontSize: 19, fontWeight: 600, color: "var(--text2)", marginBottom: 14 }}>
               Click each blank and type the missing digit.
@@ -499,19 +495,18 @@ export default function Lesson01MasteryPlayer({ user, topic, onHome }) {
                 </div>
                 <button className="btn btn-success" style={{ width: "100%", fontSize: 20, padding: "13px" }}
                   onClick={handleMdNext}>
-                  {Object.values(mdCorrect).every(Boolean) ? "Next problem" : "Try another"}
+                  {Object.values(mdCorrect).every(Boolean) ? " Next problem" : " Try another"}
                 </button>
               </div>
             ) : (
               <button className="btn btn-primary" style={{ width: "100%", fontSize: 20, padding: "14px" }}
                 onClick={handleMdSubmit}
-                disabled={[...problem?.hiddenAddends?.map(h=>`${h.row}-${h.col}`) || [], `sum-${4-(problem?.hiddenSumCol||0)}`].some(k => mdInputs[k] === undefined)}>
+                disabled={[...( problem?.hiddenAddends?.map(h => `${h.row}-${h.col}`) || []), `sum-${4 - (problem?.hiddenSumCol || 0)}`].some(k => mdInputs[k] === undefined)}>
                 Submit
               </button>
             )}
           </>
         ) : (
-          // Standard column addition/subtraction UI
           <>
             <div style={{ display: "flex", justifyContent: "center", marginBottom: 20 }}>
               {problem && (
@@ -523,7 +518,19 @@ export default function Lesson01MasteryPlayer({ user, topic, onHome }) {
               )}
             </div>
 
-            {phase === "wrong" ? (
+            {phase === "correct" ? (
+              <div style={{ animation: "popIn 0.25s ease", textAlign: "center" }}>
+                <div style={{ fontSize: 28, marginBottom: 8 }}></div>
+                <div style={{ fontSize: 22, fontWeight: 800, color: "var(--green)", marginBottom: 6 }}>Correct!</div>
+                <div style={{ fontSize: 19, color: "var(--text3)", marginBottom: 20 }}>
+                  Streak: {streak}/{streakNeeded}
+                </div>
+                <button className="btn btn-success" style={{ width: "100%", fontSize: 20, padding: "13px" }}
+                  onClick={handleCorrectNext}>
+                   Next problem
+                </button>
+              </div>
+            ) : phase === "wrong" ? (
               <div style={{ animation: "popIn 0.25s ease" }}>
                 <div style={{ fontSize: 19, fontWeight: 700, color: "#fca5a5", marginBottom: 8, textAlign: "center" }}>
                   Not quite! Here's the worked solution:
