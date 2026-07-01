@@ -154,6 +154,57 @@ export function computeBorrows(top, bot) {
   return { borrows, workTop };
 }
 
+//  Extra Credit: Missing Digit Addition (4+4 digit)
+export function genMissingDigitAdd() {
+  let attempts = 0;
+  while (attempts < 5000) {
+    attempts++;
+    const a = randInt(4);
+    const b = randInt(4);
+    const sum = a + b;
+    const aStr = String(a).padStart(4, "0");
+    const bStr = String(b).padStart(4, "0");
+    const sumStr = String(sum).padStart(5, "0");
+    const sumIs5 = sum >= 10000;
+    // Require carrying
+    let hasCarry = false;
+    let carry = 0;
+    for (let col = 3; col >= 0; col--) {
+      const colSum = parseInt(aStr[col]) + parseInt(bStr[col]) + carry;
+      carry = Math.floor(colSum / 10);
+      if (carry > 0) hasCarry = true;
+    }
+    if (!hasCarry) continue;
+    // Pick 3 distinct columns for missing addend digits (one per column)
+    const allCols = [0, 1, 2, 3];
+    for (let i = allCols.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [allCols[i], allCols[j]] = [allCols[j], allCols[i]];
+    }
+    const missingAddendCols = allCols.slice(0, 3);
+    // For each missing col, randomly pick which addend row is hidden
+    const hiddenAddends = missingAddendCols.map(col => {
+      const row = Math.random() < 0.5 ? 0 : 1;
+      return { row, col, value: row === 0 ? parseInt(aStr[col]) : parseInt(bStr[col]) };
+    });
+    // Pick 1 hidden sum digit from a column where both addends are visible
+    const coveredCols = new Set(missingAddendCols);
+    const availableForSum = [0, 1, 2, 3].filter(c => !coveredCols.has(c));
+    if (availableForSum.length === 0) continue;
+    const hiddenSumColFromRight = availableForSum[Math.floor(Math.random() * availableForSum.length)];
+    const sumStrIdx = 4 - hiddenSumColFromRight;
+    const hiddenSumValue = parseInt(sumStr[sumStrIdx]);
+    return {
+      type: "missing-digit-add",
+      a, b, sum, aStr, bStr, sumStr, sumIs5,
+      hiddenAddends,
+      hiddenSumCol: hiddenSumColFromRight,
+      hiddenSumValue,
+    };
+  }
+  throw new Error("genMissingDigitAdd: failed after 5000 attempts");
+}
+
 //  Topic definitions 
 export const TOPICS = [
   {
@@ -212,6 +263,15 @@ export const TOPICS = [
       { label: "3-digit  3-digit", gen: () => genSubBorrowZero(3, 3) },
       { label: "4-digit  4-digit", gen: () => genSubBorrowZero(4, 4) },
       { label: "5-digit  5-digit", gen: () => genSubBorrowZero(5, 5) },
+    ],
+  },
+  {
+    id: "missing-digit-add",
+    label: "Missing Digit Addition",
+    icon: "",
+    isExtraCredit: true,
+    subtypes: [
+      { label: "4-digit + 4-digit, find missing digits", gen: () => genMissingDigitAdd() },
     ],
   },
 ];
