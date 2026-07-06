@@ -48,7 +48,7 @@ function ColumnProblem({ problem, showAnswer = false, showWorking = false }) {
       {padded.map((row, ri) => (
         <div key={ri} style={{ display: "flex", alignItems: "center", gap: 2, marginBottom: 2 }}>
           <div style={{ width: 28, textAlign: "right", fontSize: 28, color: "var(--text3)", paddingRight: 4 }}>
-            {ri === padded.length - 1 ? (isAddition ? "+" : "") : ""}
+            {ri === padded.length - 1 ? (isAddition ? "+" : "-") : ""}
           </div>
           {row.split("").map((ch, ci) => {
             const borrow = borrowMap[ci];
