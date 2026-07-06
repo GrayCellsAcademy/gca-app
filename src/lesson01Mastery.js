@@ -205,6 +205,95 @@ export function genMissingDigitAdd() {
   throw new Error("genMissingDigitAdd: failed after 5000 attempts");
 }
 
+//  Extra Credit 2: Missing Digit Addition (4+4+4 three numbers)
+export function genMissingDigitAdd3() {
+  let attempts = 0;
+  while (attempts < 5000) {
+    attempts++;
+    const a = randInt(4), b = randInt(4), c = randInt(4);
+    const sum = a + b + c;
+    const aStr = String(a).padStart(4, "0");
+    const bStr = String(b).padStart(4, "0");
+    const cStr = String(c).padStart(4, "0");
+    const sumStr = String(sum).padStart(5, "0");
+    const sumIs5 = sum >= 10000;
+    let hasCarry = false, carry = 0;
+    for (let col = 3; col >= 0; col--) {
+      const colSum = parseInt(aStr[col]) + parseInt(bStr[col]) + parseInt(cStr[col]) + carry;
+      carry = Math.floor(colSum / 10);
+      if (carry > 0) hasCarry = true;
+    }
+    if (!hasCarry) continue;
+    const allCols = [0, 1, 2, 3];
+    for (let i = allCols.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [allCols[i], allCols[j]] = [allCols[j], allCols[i]];
+    }
+    const missingCols = allCols.slice(0, 3);
+    const hiddenAddends = missingCols.map(col => {
+      const row = Math.floor(Math.random() * 3);
+      const strs = [aStr, bStr, cStr];
+      return { row, col, value: parseInt(strs[row][col]) };
+    });
+    const coveredCols = new Set(missingCols);
+    const availableForSum = [0, 1, 2, 3].filter(c => !coveredCols.has(c));
+    if (availableForSum.length === 0) continue;
+    const hiddenSumColFromRight = availableForSum[Math.floor(Math.random() * availableForSum.length)];
+    const sumStrIdx = 4 - hiddenSumColFromRight;
+    const hiddenSumValue = parseInt(sumStr[sumStrIdx]);
+    return {
+      type: "missing-digit-add3",
+      a, b, c, sum, aStr, bStr, cStr, sumStr, sumIs5,
+      hiddenAddends, hiddenSumCol: hiddenSumColFromRight, hiddenSumValue,
+    };
+  }
+  throw new Error("genMissingDigitAdd3: failed after 5000 attempts");
+}
+
+//  Extra Credit 3: Missing Digit Subtraction (5-digit minus 4-digit)
+export function genMissingDigitSub5() {
+  let attempts = 0;
+  while (attempts < 5000) {
+    attempts++;
+    const top = randInt(4) + 10000;
+    const bot = randInt(4);
+    if (top - bot < 1000 || top - bot > 9999) continue;
+    const result = top - bot;
+    const topStr = String(top).padStart(5, "0");
+    const botStr = String(bot).padStart(4, "0");
+    const resultStr = String(result).padStart(4, "0");
+    let hasBorrow = false, borrow = 0;
+    for (let col = 4; col >= 0; col--) {
+      const t = parseInt(topStr[col] || "0") - borrow;
+      const botDigit = col === 0 ? 0 : parseInt(botStr[col - 1]);
+      if (botDigit > t) { hasBorrow = true; borrow = 1; } else { borrow = 0; }
+    }
+    if (!hasBorrow) continue;
+    const allCols = [1, 2, 3, 4];
+    for (let i = allCols.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [allCols[i], allCols[j]] = [allCols[j], allCols[i]];
+    }
+    const missingCols = allCols.slice(0, 3);
+    const hiddenNums = missingCols.map(col => {
+      const row = Math.floor(Math.random() * 2);
+      const value = row === 0 ? parseInt(topStr[col]) : parseInt(botStr[col - 1]);
+      return { row, col, value };
+    });
+    const coveredCols = new Set(missingCols);
+    const availableForResult = [1, 2, 3, 4].filter(c => !coveredCols.has(c));
+    if (availableForResult.length === 0) continue;
+    const hiddenResultCol = availableForResult[Math.floor(Math.random() * availableForResult.length)];
+    const hiddenResultValue = parseInt(resultStr[hiddenResultCol - 1]);
+    return {
+      type: "missing-digit-sub5",
+      top, bot, result, topStr, botStr, resultStr,
+      hiddenNums, hiddenResultCol, hiddenResultValue,
+    };
+  }
+  throw new Error("genMissingDigitSub5: failed after 5000 attempts");
+}
+
 //  Topic definitions 
 export const TOPICS = [
   {
@@ -272,6 +361,24 @@ export const TOPICS = [
     isExtraCredit: true,
     subtypes: [
       { label: "4-digit + 4-digit, find missing digits", gen: () => genMissingDigitAdd() },
+    ],
+  },
+  {
+    id: "missing-digit-add3",
+    label: "Missing Digit Addition (3 Numbers)",
+    icon: "",
+    isExtraCredit: true,
+    subtypes: [
+      { label: "4+4+4 digit, find missing digits", gen: () => genMissingDigitAdd3() },
+    ],
+  },
+  {
+    id: "missing-digit-sub5",
+    label: "Missing Digit Subtraction",
+    icon: "",
+    isExtraCredit: true,
+    subtypes: [
+      { label: "5-digit minus 4-digit, find missing digits", gen: () => genMissingDigitSub5() },
     ],
   },
 ];

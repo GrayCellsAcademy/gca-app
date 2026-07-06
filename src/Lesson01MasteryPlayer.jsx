@@ -45,7 +45,6 @@ function ColumnProblem({ problem, showAnswer = false, showWorking = false }) {
           })}
         </div>
       )}
-
       {padded.map((row, ri) => (
         <div key={ri} style={{ display: "flex", alignItems: "center", gap: 2, marginBottom: 2 }}>
           <div style={{ width: 28, textAlign: "right", fontSize: 28, color: "var(--text3)", paddingRight: 4 }}>
@@ -57,12 +56,8 @@ function ColumnProblem({ problem, showAnswer = false, showWorking = false }) {
               <div key={ci} style={{ width: cellW, height: cellH, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", position: "relative" }}>
                 {showWorking && !isAddition && ri === 0 && borrow && (
                   <div style={{ position: "absolute", top: -2, right: 2, display: "flex", flexDirection: "column", alignItems: "center" }}>
-                    <div style={{ fontSize: 20, color: "var(--red)", textDecoration: "line-through", lineHeight: 1 }}>
-                      {borrow.original}
-                    </div>
-                    <div style={{ fontSize: 20, color: "var(--amber)", fontWeight: 800, lineHeight: 1 }}>
-                      {borrow.newVal}
-                    </div>
+                    <div style={{ fontSize: 20, color: "var(--red)", textDecoration: "line-through", lineHeight: 1 }}>{borrow.original}</div>
+                    <div style={{ fontSize: 20, color: "var(--amber)", fontWeight: 800, lineHeight: 1 }}>{borrow.newVal}</div>
                   </div>
                 )}
                 <div style={{ fontSize: 28, fontWeight: 700, color: ch === " " ? "transparent" : "var(--text)" }}>
@@ -73,9 +68,7 @@ function ColumnProblem({ problem, showAnswer = false, showWorking = false }) {
           })}
         </div>
       ))}
-
       <div style={{ borderTop: "2.5px solid var(--text2)", margin: "4px 0 4px 30px" }} />
-
       {showAnswer && (
         <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
           <div style={{ width: 28 }} />
@@ -91,21 +84,49 @@ function ColumnProblem({ problem, showAnswer = false, showWorking = false }) {
 }
 
 //  Missing Digit Problem Display + Input
-function MissingDigitProblem({ problem, inputs, onInputChange, onFocus, focusedCell, submitted, correct }) {
-  const { aStr, bStr, sumStr, sumIs5, hiddenAddends, hiddenSumCol } = problem;
-  const hiddenAddendSet = new Set(hiddenAddends.map(h => `${h.row}-${h.col}`));
-  const hiddenSumStrIdx = 4 - hiddenSumCol;
+//  Handles EC1 (2-addend add), EC2 (3-addend add), EC3 (5-digit sub)
+function MissingDigitProblem({ problem, inputs, onFocus, focusedCell, submitted, correct }) {
+  const topicId = problem.type;
+  const isEC3 = topicId === "missing-digit-sub5";
+  const isEC2 = topicId === "missing-digit-add3";
 
-  const cellW = 44;
-  const cellH = 52;
-  const fontSize = 28;
+  // Build display rows
+  // EC1: rows = [aStr, bStr], sumStr 5-char, hiddenAddends [{row,col,value}], hiddenSumCol (from right)
+  // EC2: rows = [aStr, bStr, cStr], sumStr 5-char, same hidden structure
+  // EC3: rows = [topStr(5), botStr(4 padded to 5)], resultStr(4 padded to 5), hiddenNums [{row,col,value}], hiddenResultCol (topStr index)
+
+  const cellW = 40;
+  const cellH = 48;
+  const fontSize = 26;
+
+  const getHiddenSet = () => {
+    if (isEC3) {
+      const s = new Set();
+      problem.hiddenNums.forEach(h => s.add(`${h.row}-${h.col}`));
+      return s;
+    }
+    const s = new Set();
+    problem.hiddenAddends.forEach(h => s.add(`${h.row}-${h.col}`));
+    return s;
+  };
+
+  const hiddenSet = getHiddenSet();
+
+  const getResultHiddenKey = () => {
+    if (isEC3) return `result-${problem.hiddenResultCol}`;
+    return `sum-${4 - problem.hiddenSumCol}`;
+  };
+
+  const resultHiddenKey = getResultHiddenKey();
+
+  const isResultHidden = (ci) => {
+    if (isEC3) return ci === problem.hiddenResultCol;
+    return ci === (4 - problem.hiddenSumCol);
+  };
 
   const cellStyle = (isHidden, key) => {
     const isFocused = focusedCell === key;
-    const userVal = inputs[key];
-    let bg = "transparent";
-    let border = "2px solid transparent";
-    let color = "var(--text)";
+    let bg = "transparent", border = "2px solid transparent", color = "var(--text)";
     if (isHidden) {
       bg = submitted
         ? (correct?.[key] ? "rgba(16,185,129,0.15)" : "rgba(239,68,68,0.15)")
@@ -118,37 +139,53 @@ function MissingDigitProblem({ problem, inputs, onInputChange, onFocus, focusedC
     return { width: cellW, height: cellH, display: "flex", alignItems: "center", justifyContent: "center", fontSize, fontWeight: 700, fontFamily: "var(--mono)", background: bg, border, borderRadius: 6, color, cursor: isHidden ? "pointer" : "default", transition: "all 0.2s" };
   };
 
-  const renderRow = (str, rowIdx, isSum) => {
-    return str.split("").map((ch, ci) => {
-      const key = isSum ? `sum-${ci}` : `${rowIdx}-${ci}`;
-      const isHidden = isSum
-        ? ci === hiddenSumStrIdx
-        : hiddenAddendSet.has(`${rowIdx}-${ci}`);
-      const displayVal = isHidden ? (inputs[key] !== undefined ? inputs[key] : "") : (ch === "0" && ci === 0 && isSum && !sumIs5 ? "" : ch);
-      return (
-        <div key={ci} style={cellStyle(isHidden, key)} onClick={() => isHidden && onFocus(key)}>
-          {isHidden && inputs[key] === undefined ? (
-            <div style={{ width: 20, height: 3, background: "var(--blue)", borderRadius: 2, opacity: 0.6 }} />
-          ) : displayVal}
-        </div>
-      );
-    });
-  };
+  const renderCell = (ch, key, isHidden, isLeadingZero) => (
+    <div key={key} style={cellStyle(isHidden, key)} onClick={() => isHidden && onFocus(key)}>
+      {isHidden ? (
+        inputs[key] !== undefined ? inputs[key] : (
+          <div style={{ width: 18, height: 3, background: "var(--blue)", borderRadius: 2, opacity: 0.6 }} />
+        )
+      ) : (isLeadingZero ? "" : ch)}
+    </div>
+  );
+
+  // Addend rows (EC1: 2 rows, EC2: 3 rows, EC3: top+bot)
+  const addendStrs = isEC3
+    ? [problem.topStr, problem.botStr.padStart(5, " ")]
+    : isEC2
+    ? [problem.aStr, problem.bStr, problem.cStr]
+    : [problem.aStr, problem.bStr];
+
+  const resultStr = isEC3
+    ? " " + problem.resultStr  // pad to 5 chars with leading space
+    : problem.sumStr;
+
+  const totalRows = addendStrs.length;
 
   return (
-    <div style={{ display: "inline-block", background: "var(--bg2)", borderRadius: "var(--radius)", padding: "16px 24px", fontFamily: "var(--mono)" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 2, marginBottom: 2 }}>
-        <div style={{ width: 28 }} />
-        {renderRow(aStr, 0, false)}
-      </div>
-      <div style={{ display: "flex", alignItems: "center", gap: 2, marginBottom: 2 }}>
-        <div style={{ width: 28, textAlign: "right", fontSize: 28, color: "var(--text3)", paddingRight: 4 }}>+</div>
-        {renderRow(bStr, 1, false)}
-      </div>
+    <div style={{ display: "inline-block", background: "var(--bg2)", borderRadius: "var(--radius)", padding: "16px 20px", fontFamily: "var(--mono)" }}>
+      {addendStrs.map((rowStr, ri) => (
+        <div key={ri} style={{ display: "flex", alignItems: "center", gap: 2, marginBottom: 2 }}>
+          <div style={{ width: 28, textAlign: "right", fontSize: 26, color: "var(--text3)", paddingRight: 4 }}>
+            {ri === totalRows - 1 ? (isEC3 ? "-" : "+") : ""}
+          </div>
+          {rowStr.split("").map((ch, ci) => {
+            const key = `${ri}-${ci}`;
+            const isHidden = hiddenSet.has(key);
+            const isLeadingZero = ch === " " || (ch === "0" && ci === 0 && isEC3 && ri === 1);
+            return renderCell(ch, key, isHidden, isLeadingZero);
+          })}
+        </div>
+      ))}
       <div style={{ borderTop: "2.5px solid var(--text2)", margin: "4px 0 4px 30px" }} />
       <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
         <div style={{ width: 28 }} />
-        {renderRow(sumStr, 2, true)}
+        {resultStr.split("").map((ch, ci) => {
+          const key = `result-${ci}`;
+          const isHidden = isResultHidden(ci);
+          const isLeadingZero = ch === " " || (ch === "0" && ci === 0 && !problem.sumIs5 && !isEC3);
+          return renderCell(ch, key, isHidden, isLeadingZero);
+        })}
       </div>
     </div>
   );
@@ -185,8 +222,6 @@ export default function Lesson01MasteryPlayer({ user, topic, onHome }) {
   const [phase, setPhase] = useState("question"); // question | correct | wrong | celebration
   const [loading, setLoading] = useState(true);
   const inputRef = useRef(null);
-
-  // Pending progress to save when student presses Next after correct answer
   const pendingProgress = useRef(null);
 
   // Missing digit state
@@ -197,7 +232,8 @@ export default function Lesson01MasteryPlayer({ user, topic, onHome }) {
 
   const currentTopic = TOPICS[topicIdx];
   const currentSubtype = currentTopic?.subtypes[subtypeIdx];
-  const isMissingDigit = currentTopic?.id === "missing-digit-add";
+  const isEC = currentTopic?.isExtraCredit;
+  const isMissingDigit = isEC;
 
   // Load progress
   useEffect(() => {
@@ -214,7 +250,6 @@ export default function Lesson01MasteryPlayer({ user, topic, onHome }) {
     load();
   }, []);
 
-  // Generate new problem when topic/subtype changes
   useEffect(() => {
     if (!loading && TOPICS[topicIdx]) {
       newProblem(topicIdx, subtypeIdx);
@@ -268,11 +303,9 @@ export default function Lesson01MasteryPlayer({ user, topic, onHome }) {
           pendingProgress.current = { action: "nextSubtype", ti: topicIdx, si: nextSi };
         } else {
           const nextTi = topicIdx + 1;
-          if (nextTi >= TOPICS.length) {
-            pendingProgress.current = { action: "done", ti: nextTi };
-          } else {
-            pendingProgress.current = { action: "nextTopic", ti: nextTi };
-          }
+          pendingProgress.current = nextTi >= TOPICS.length
+            ? { action: "done", ti: nextTi }
+            : { action: "nextTopic", ti: nextTi };
         }
       } else {
         pendingProgress.current = { action: "stay", ti: topicIdx, si: subtypeIdx, st: newStreak };
@@ -292,18 +325,10 @@ export default function Lesson01MasteryPlayer({ user, topic, onHome }) {
   const handleCorrectNext = () => {
     const p = pendingProgress.current;
     if (!p) return;
-    if (p.action === "done") {
-      setPhase("celebration");
-    } else if (p.action === "nextTopic") {
-      setTopicIdx(p.ti);
-      setSubtypeIdx(0);
-      setStreak(0);
-    } else if (p.action === "nextSubtype") {
-      setSubtypeIdx(p.si);
-      setStreak(0);
-    } else {
-      newProblem(topicIdx, subtypeIdx);
-    }
+    if (p.action === "done") { setPhase("celebration"); }
+    else if (p.action === "nextTopic") { setTopicIdx(p.ti); setSubtypeIdx(0); setStreak(0); }
+    else if (p.action === "nextSubtype") { setSubtypeIdx(p.si); setStreak(0); }
+    else { newProblem(topicIdx, subtypeIdx); }
   };
 
   const handleWrongContinue = () => {
@@ -311,12 +336,55 @@ export default function Lesson01MasteryPlayer({ user, topic, onHome }) {
     newProblem(topicIdx, subtypeIdx);
   };
 
-  // Missing digit keyboard handler
+  // Missing digit: get all hidden cell keys from problem
+  const getMdCells = (prob) => {
+    if (!prob) return [];
+    if (prob.type === "missing-digit-sub5") {
+      return [
+        ...prob.hiddenNums.map(h => `${h.row}-${h.col}`),
+        `result-${prob.hiddenResultCol}`,
+      ];
+    }
+    return [
+      ...prob.hiddenAddends.map(h => `${h.row}-${h.col}`),
+      `sum-${4 - prob.hiddenSumCol}`,
+    ];
+  };
+
+  // Missing digit: grade a submitted answer
+  const gradeMd = (prob, inputs) => {
+    const correct = {};
+    let allCorrect = true;
+    if (prob.type === "missing-digit-sub5") {
+      prob.hiddenNums.forEach(h => {
+        const key = `${h.row}-${h.col}`;
+        const ok = String(inputs[key]) === String(h.value);
+        correct[key] = ok;
+        if (!ok) allCorrect = false;
+      });
+      const rKey = `result-${prob.hiddenResultCol}`;
+      const rOk = String(inputs[rKey]) === String(prob.hiddenResultValue);
+      correct[rKey] = rOk;
+      if (!rOk) allCorrect = false;
+    } else {
+      prob.hiddenAddends.forEach(h => {
+        const key = `${h.row}-${h.col}`;
+        const ok = String(inputs[key]) === String(h.value);
+        correct[key] = ok;
+        if (!ok) allCorrect = false;
+      });
+      const sKey = `sum-${4 - prob.hiddenSumCol}`;
+      const sOk = String(inputs[sKey]) === String(prob.hiddenSumValue);
+      correct[sKey] = sOk;
+      if (!sOk) allCorrect = false;
+    }
+    return { correct, allCorrect };
+  };
+
   const handleMdKeyDown = (e) => {
     if (!mdFocused) return;
-    const digit = e.key;
-    if (/^[0-9]$/.test(digit)) {
-      setMdInputs(prev => ({ ...prev, [mdFocused]: digit }));
+    if (/^[0-9]$/.test(e.key)) {
+      setMdInputs(prev => ({ ...prev, [mdFocused]: e.key }));
     } else if (e.key === "Backspace") {
       setMdInputs(prev => ({ ...prev, [mdFocused]: undefined }));
     }
@@ -329,26 +397,10 @@ export default function Lesson01MasteryPlayer({ user, topic, onHome }) {
 
   const handleMdSubmit = async () => {
     if (!problem || mdSubmitted) return;
-    const { hiddenAddends, hiddenSumCol, hiddenSumValue } = problem;
-    const allCells = [
-      ...hiddenAddends.map(h => `${h.row}-${h.col}`),
-      `sum-${4 - hiddenSumCol}`,
-    ];
+    const allCells = getMdCells(problem);
     if (allCells.some(k => mdInputs[k] === undefined)) return;
 
-    const correct = {};
-    let allCorrect = true;
-    hiddenAddends.forEach(h => {
-      const key = `${h.row}-${h.col}`;
-      const ok = String(mdInputs[key]) === String(h.value);
-      correct[key] = ok;
-      if (!ok) allCorrect = false;
-    });
-    const sumKey = `sum-${4 - hiddenSumCol}`;
-    const sumOk = String(mdInputs[sumKey]) === String(hiddenSumValue);
-    correct[sumKey] = sumOk;
-    if (!sumOk) allCorrect = false;
-
+    const { correct, allCorrect } = gradeMd(problem, mdInputs);
     setMdCorrect(correct);
     setMdSubmitted(true);
 
@@ -357,11 +409,9 @@ export default function Lesson01MasteryPlayer({ user, topic, onHome }) {
       setStreak(newStreak);
       if (newStreak >= EC_STREAK_NEEDED) {
         const nextTi = topicIdx + 1;
-        if (nextTi >= TOPICS.length) {
-          pendingProgress.current = { action: "done", ti: nextTi };
-        } else {
-          pendingProgress.current = { action: "nextTopic", ti: nextTi };
-        }
+        pendingProgress.current = nextTi >= TOPICS.length
+          ? { action: "done", ti: nextTi }
+          : { action: "nextTopic", ti: nextTi };
         await saveCurrentProgress(nextTi, 0, 0);
       } else {
         pendingProgress.current = { action: "stay", ti: topicIdx, si: subtypeIdx, st: newStreak };
@@ -377,15 +427,9 @@ export default function Lesson01MasteryPlayer({ user, topic, onHome }) {
   const handleMdNext = () => {
     const p = pendingProgress.current;
     if (!p) { newProblem(topicIdx, subtypeIdx); return; }
-    if (p.action === "done") {
-      setPhase("celebration");
-    } else if (p.action === "nextTopic") {
-      setTopicIdx(p.ti);
-      setSubtypeIdx(0);
-      setStreak(0);
-    } else {
-      newProblem(topicIdx, subtypeIdx);
-    }
+    if (p.action === "done") { setPhase("celebration"); }
+    else if (p.action === "nextTopic") { setTopicIdx(p.ti); setSubtypeIdx(0); setStreak(0); }
+    else { newProblem(topicIdx, subtypeIdx); }
   };
 
   if (loading) return (
@@ -412,7 +456,7 @@ export default function Lesson01MasteryPlayer({ user, topic, onHome }) {
   const totalSubtypes = TOPICS.reduce((s, t) => s + t.subtypes.length, 0);
   const completedSubtypes = TOPICS.slice(0, topicIdx).reduce((s, t) => s + t.subtypes.length, 0) + subtypeIdx;
 
-  if (isMissingDigit && topicIdx < CORE_TOPICS) {
+  if (isEC && topicIdx < CORE_TOPICS) {
     return (
       <div style={{ maxWidth: 520, margin: "0 auto", textAlign: "center", animation: "fadeUp 0.4s ease" }}>
         <div className="card">
@@ -427,24 +471,26 @@ export default function Lesson01MasteryPlayer({ user, topic, onHome }) {
     );
   }
 
-  const streakNeeded = isMissingDigit ? EC_STREAK_NEEDED : STREAK_NEEDED;
+  const streakNeeded = isEC ? EC_STREAK_NEEDED : STREAK_NEEDED;
+  const allMdCells = isMissingDigit ? getMdCells(problem) : [];
+  const mdAllFilled = allMdCells.length > 0 && allMdCells.every(k => mdInputs[k] !== undefined);
 
   return (
-    <div style={{ maxWidth: 600, margin: "0 auto", animation: "fadeUp 0.3s ease" }}>
+    <div style={{ maxWidth: 620, margin: "0 auto", animation: "fadeUp 0.3s ease" }}>
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16, flexWrap: "wrap", gap: 8 }}>
         <div>
           <div style={{ fontSize: 19, color: "var(--text3)", marginBottom: 2 }}>
-            {isMissingDigit ? "Extra Credit" : `Topic ${topicIdx + 1} of ${CORE_TOPICS}`}  {currentTopic.label}
+            {isEC ? "Extra Credit" : `Topic ${topicIdx + 1} of ${CORE_TOPICS}`}  {currentTopic.label}
           </div>
-          <div style={{ fontSize: 20, fontWeight: 700, color: isMissingDigit ? "var(--amber)" : "var(--blue)" }}>
+          <div style={{ fontSize: 20, fontWeight: 700, color: isEC ? "var(--amber)" : "var(--blue)" }}>
             {currentSubtype?.label}
           </div>
         </div>
         <button className="btn btn-ghost btn-sm" onClick={onHome}> Home</button>
       </div>
 
-      {/* Overall progress bar */}
+      {/* Progress bar */}
       <div style={{ marginBottom: 16 }}>
         <div style={{ display: "flex", justifyContent: "space-between", fontSize: 20, color: "var(--text3)", marginBottom: 4 }}>
           <span>Overall progress</span>
@@ -468,7 +514,6 @@ export default function Lesson01MasteryPlayer({ user, topic, onHome }) {
                 <MissingDigitProblem
                   problem={problem}
                   inputs={mdInputs}
-                  onInputChange={setMdInputs}
                   onFocus={setMdFocused}
                   focusedCell={mdFocused}
                   submitted={mdSubmitted}
@@ -500,8 +545,7 @@ export default function Lesson01MasteryPlayer({ user, topic, onHome }) {
               </div>
             ) : (
               <button className="btn btn-primary" style={{ width: "100%", fontSize: 20, padding: "14px" }}
-                onClick={handleMdSubmit}
-                disabled={[...( problem?.hiddenAddends?.map(h => `${h.row}-${h.col}`) || []), `sum-${4 - (problem?.hiddenSumCol || 0)}`].some(k => mdInputs[k] === undefined)}>
+                onClick={handleMdSubmit} disabled={!mdAllFilled}>
                 Submit
               </button>
             )}
@@ -517,7 +561,6 @@ export default function Lesson01MasteryPlayer({ user, topic, onHome }) {
                 />
               )}
             </div>
-
             {phase === "correct" ? (
               <div style={{ animation: "popIn 0.25s ease", textAlign: "center" }}>
                 <div style={{ fontSize: 28, marginBottom: 8 }}></div>
@@ -573,15 +616,15 @@ export default function Lesson01MasteryPlayer({ user, topic, onHome }) {
         {TOPICS.map((t, i) => {
           const done = i < topicIdx;
           const active = i === topicIdx;
-          const isEC = t.isExtraCredit;
+          const ecTopic = t.isExtraCredit;
           return (
             <div key={t.id} style={{
               fontSize: 20, fontWeight: 700, padding: "4px 10px", borderRadius: 99,
-              background: done ? "rgba(16,185,129,0.15)" : active ? (isEC ? "rgba(245,158,11,0.15)" : "rgba(59,130,246,0.15)") : "var(--surface)",
-              color: done ? "var(--green)" : active ? (isEC ? "var(--amber)" : "var(--blue)") : "var(--text3)",
-              border: `1px solid ${done ? "rgba(16,185,129,0.3)" : active ? (isEC ? "rgba(245,158,11,0.3)" : "rgba(59,130,246,0.3)") : "var(--border)"}`,
+              background: done ? "rgba(16,185,129,0.15)" : active ? (ecTopic ? "rgba(245,158,11,0.15)" : "rgba(59,130,246,0.15)") : "var(--surface)",
+              color: done ? "var(--green)" : active ? (ecTopic ? "var(--amber)" : "var(--blue)") : "var(--text3)",
+              border: `1px solid ${done ? "rgba(16,185,129,0.3)" : active ? (ecTopic ? "rgba(245,158,11,0.3)" : "rgba(59,130,246,0.3)") : "var(--border)"}`,
             }}>
-              {done ? " " : active ? " " : ""}{t.icon} {isEC ? "EC" : (t.id.includes("add") ? "Add" : "Sub")} {isEC ? "" : i + 1}
+              {done ? " " : active ? " " : ""}{t.icon} {ecTopic ? "EC" : (t.id.includes("add") ? "Add" : "Sub")} {ecTopic ? "" : i + 1}
             </div>
           );
         })}
