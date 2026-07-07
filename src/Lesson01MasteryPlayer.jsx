@@ -472,7 +472,7 @@ export default function Lesson01MasteryPlayer({ user, topic, onHome }) {
   }
 
   const streakNeeded = isEC ? EC_STREAK_NEEDED : STREAK_NEEDED;
-  const allMdCells = isMissingDigit ? getMdCells(problem) : [];
+  const allMdCells = isMissingDigit && problem ? getMdCells(problem) : [];
   const mdAllFilled = allMdCells.length > 0 && allMdCells.every(k => mdInputs[k] !== undefined);
 
   return (
