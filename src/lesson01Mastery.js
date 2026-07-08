@@ -1,4 +1,4 @@
-//  Lesson 1 Mastery  Problem Generation 
+//  Lesson 1 Mastery  Problem Generation
 
 function randInt(digits) {
   const min = Math.pow(10, digits - 1);
@@ -6,7 +6,7 @@ function randInt(digits) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-//  Addition: No Carrying 
+//  Addition: No Carrying
 export function genAddNoCarry(aDigits, bDigits) {
   while (true) {
     const a = randInt(aDigits);
@@ -21,7 +21,7 @@ export function genAddNoCarry(aDigits, bDigits) {
   }
 }
 
-//  Addition: With Carrying 
+//  Addition: With Carrying
 export function genAddCarry(aDigits, bDigits) {
   while (true) {
     const a = randInt(aDigits);
@@ -37,7 +37,7 @@ export function genAddCarry(aDigits, bDigits) {
   }
 }
 
-//  Addition: Multiple Numbers (2d+4d+3d+3d) 
+//  Addition: Multiple Numbers (2d+4d+3d+3d)
 export function genAddMulti() {
   const a = randInt(2);
   const b = randInt(4);
@@ -46,7 +46,7 @@ export function genAddMulti() {
   return { numbers: [a, b, c, d], answer: a + b + c + d, type: "add-multi" };
 }
 
-//  Subtraction: No Borrowing 
+//  Subtraction: No Borrowing
 export function genSubNoBorow(aDigits, bDigits) {
   while (true) {
     const a = randInt(aDigits);
@@ -62,7 +62,7 @@ export function genSubNoBorow(aDigits, bDigits) {
   }
 }
 
-//  Subtraction: With Borrowing (not from zero) 
+//  Subtraction: With Borrowing (not from zero)
 export function genSubBorrow(aDigits, bDigits) {
   while (true) {
     const a = randInt(aDigits);
@@ -86,7 +86,7 @@ export function genSubBorrow(aDigits, bDigits) {
   }
 }
 
-//  Subtraction: Borrowing From Zero 
+//  Subtraction: Borrowing From Zero
 export function genSubBorrowZero(aDigits, bDigits) {
   while (true) {
     const a = randInt(aDigits);
@@ -108,39 +108,36 @@ export function genSubBorrowZero(aDigits, bDigits) {
   }
 }
 
-//  Compute carry digits for addition 
+//  Compute carry digits for addition
 export function computeCarries(numbers) {
   const maxLen = Math.max(...numbers.map(n => String(n).length));
   const padded = numbers.map(n => String(n).padStart(maxLen, "0"));
-  const carries = {}; // colIndex (from right, 0=ones) -> carry digit
+  const carries = {};
   let carry = 0;
   for (let col = maxLen - 1; col >= 0; col--) {
     const colSum = padded.reduce((s, row) => s + parseInt(row[col]), 0) + carry;
     carry = Math.floor(colSum / 10);
-    if (carry > 0 && col > 0) carries[col - 1] = carry; // carry goes to next column left
+    if (carry > 0 && col > 0) carries[col - 1] = carry;
   }
-  return carries; // key = colIndex from LEFT in padded string
+  return carries;
 }
 
-//  Compute borrow marks for subtraction 
-// Returns array of { colIndex, originalDigit, newDigit, borrowedFrom } per borrow
+//  Compute borrow marks for subtraction
 export function computeBorrows(top, bot) {
   const maxLen = Math.max(String(top).length, String(bot).length);
   const topStr = String(top).padStart(maxLen, "0").split("").map(Number);
   const botStr = String(bot).padStart(maxLen, "0").split("").map(Number);
-  const borrows = []; // { col (from right), topOriginal, topNew }
+  const borrows = [];
   const workTop = [...topStr];
-  
+
   for (let i = maxLen - 1; i >= 0; i--) {
     if (botStr[i] > workTop[i]) {
-      // Need to borrow from left
       let borrowFrom = i - 1;
       while (borrowFrom >= 0 && workTop[borrowFrom] === 0) borrowFrom--;
       if (borrowFrom >= 0) {
         const original = workTop[borrowFrom];
         workTop[borrowFrom] -= 1;
         borrows.push({ col: borrowFrom, original, newVal: workTop[borrowFrom] });
-        // Fill zeros in between
         for (let k = borrowFrom + 1; k < i; k++) {
           const orig = workTop[k];
           workTop[k] = 9;
@@ -154,7 +151,7 @@ export function computeBorrows(top, bot) {
   return { borrows, workTop };
 }
 
-//  Extra Credit: Missing Digit Addition (4+4 digit)
+//  Extra Credit 1: Missing Digit Addition (4+4 digit)
 export function genMissingDigitAdd() {
   let attempts = 0;
   while (attempts < 5000) {
@@ -166,7 +163,6 @@ export function genMissingDigitAdd() {
     const bStr = String(b).padStart(4, "0");
     const sumStr = String(sum).padStart(5, "0");
     const sumIs5 = sum >= 10000;
-    // Require carrying
     let hasCarry = false;
     let carry = 0;
     for (let col = 3; col >= 0; col--) {
@@ -175,19 +171,16 @@ export function genMissingDigitAdd() {
       if (carry > 0) hasCarry = true;
     }
     if (!hasCarry) continue;
-    // Pick 3 distinct columns for missing addend digits (one per column)
     const allCols = [0, 1, 2, 3];
     for (let i = allCols.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [allCols[i], allCols[j]] = [allCols[j], allCols[i]];
     }
     const missingAddendCols = allCols.slice(0, 3);
-    // For each missing col, randomly pick which addend row is hidden
     const hiddenAddends = missingAddendCols.map(col => {
       const row = Math.random() < 0.5 ? 0 : 1;
       return { row, col, value: row === 0 ? parseInt(aStr[col]) : parseInt(bStr[col]) };
     });
-    // Pick 1 hidden sum digit from a column where both addends are visible
     const coveredCols = new Set(missingAddendCols);
     const availableForSum = [0, 1, 2, 3].filter(c => !coveredCols.has(c));
     if (availableForSum.length === 0) continue;
@@ -294,7 +287,7 @@ export function genMissingDigitSub5() {
   throw new Error("genMissingDigitSub5: failed after 5000 attempts");
 }
 
-//  Topic definitions 
+//  Topic definitions
 export const TOPICS = [
   {
     id: "add-no-carry",
