@@ -257,6 +257,7 @@ export default function Lesson01MasteryPlayer({ user, topic, onHome }) {
   }, [topicIdx, subtypeIdx, loading]);
 
   const newProblem = (ti, si) => {
+    setProblem(null);
     const gen = TOPICS[ti]?.subtypes[si]?.gen;
     if (gen) {
       setProblem(gen());
