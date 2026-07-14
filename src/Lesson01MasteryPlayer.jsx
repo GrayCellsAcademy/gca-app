@@ -55,9 +55,9 @@ function ColumnProblem({ problem, showAnswer = false, showWorking = false }) {
             return (
               <div key={ci} style={{ width: cellW, height: cellH, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", position: "relative" }}>
                 {showWorking && !isAddition && ri === 0 && borrow && (
-                  <div style={{ position: "absolute", top: -2, right: 2, display: "flex", flexDirection: "column", alignItems: "center" }}>
+                  <div style={{ position: "absolute", top: -30, left: "50%", transform: "translateX(-50%)", display: "flex", flexDirection: "column", alignItems: "center", minWidth: 28 }}>
                     <div style={{ fontSize: 20, color: "var(--red)", textDecoration: "line-through", lineHeight: 1 }}>{borrow.original}</div>
-                    <div style={{ fontSize: 20, color: "var(--amber)", fontWeight: 800, lineHeight: 1 }}>{borrow.newVal}</div>
+                    <div style={{ fontSize: borrow.newVal >= 10 ? 14 : 20, color: "var(--amber)", fontWeight: 800, lineHeight: 1 }}>{borrow.newVal}</div>
                   </div>
                 )}
                 <div style={{ fontSize: 28, fontWeight: 700, color: ch === " " ? "transparent" : "var(--text)" }}>
