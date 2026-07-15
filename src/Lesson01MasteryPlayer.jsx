@@ -327,7 +327,7 @@ export default function Lesson01MasteryPlayer({ user, topic, onHome }) {
     const p = pendingProgress.current;
     if (!p) return;
     if (p.action === "done") { setPhase("celebration"); }
-    else if (p.action === "nextTopic") { setTopicIdx(p.ti); setSubtypeIdx(0); setStreak(0); }
+    else if (p.action === "nextTopic") { setProblem(null); setTopicIdx(p.ti); setSubtypeIdx(0); setStreak(0); }
     else if (p.action === "nextSubtype") { setSubtypeIdx(p.si); setStreak(0); }
     else { newProblem(topicIdx, subtypeIdx); }
   };
