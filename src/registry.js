@@ -3,6 +3,7 @@ import AdditionTablesPlayer from "./AdditionTablesPlayer";
 import ColumnAdditionPlayer from "./ColumnAdditionPlayer";
 import Lesson01MasteryPlayer from "./Lesson01MasteryPlayer";
 import ExtraCredit01Player from "./ExtraCredit01Player";
+import MissingDigitPlayer from "./MissingDigitPlayer";
 import ReviewHomework from "./ReviewHomework";
 import Lesson02MasteryPlayer from "./Lesson02MasteryPlayer";
 import SubtractionTablesPlayer from "./SubtractionTablesPlayer";
@@ -67,18 +68,25 @@ export const TOPICS = {
     subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 4,
     Player: Lesson01MasteryPlayer,
   },
+  "lesson01-ec-v1": {
+    id: "lesson01-ec-v1",
+    title: "HW 1 Extra Credit (019)",
+    description: "Missing digit challenges: find hidden digits in column addition and subtraction problems.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "extra-credit", status: "published", order: 5,
+    Player: MissingDigitPlayer,
+  },
   "lesson02-mastery-v1": {
     id: "lesson02-mastery-v1",
     title: "HW 2 (019)",
     description: "Geometry mastery: segments, polygons, rectangles, squares, and composite shapes.",
-    subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 5,
+    subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 6,
     Player: Lesson02MasteryPlayer,
   },
   "lesson03-mastery-v1": {
     id: "lesson03-mastery-v1",
     title: "HW 3 (019)",
     description: "Column multiplication, long division, and area mastery.",
-    subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 6,
+    subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 7,
     Player: Lesson03MasteryPlayer,
   },
   "times-tables-45-v1": {
@@ -365,21 +373,21 @@ export const TOPICS = {
     id: "review-homework-v1",
     title: "Final Exam Review",
     description: "Practice all 44 final exam topics at your own pace. No grade - just build your streak on each question type.",
-    subject: "math", gradeLevel: "6+", icon: "", type: "homework", status: "published", order: 7,
+    subject: "math", gradeLevel: "6+", icon: "", type: "homework", status: "published", order: 44,
     Player: ReviewHomework,
   },
   "column-addition-v1": {
     id: "column-addition-v1",
     title: "Column Addition",
     description: "Learn to add multi-digit numbers using column addition.",
-    subject: "math", gradeLevel: "6+", icon: "", type: "guided-practice", status: "published", order: 10,
+    subject: "math", gradeLevel: "6+", icon: "", type: "guided-practice", status: "published", order: 45,
     Player: ColumnAdditionPlayer,
   },
   "lesson01-extra-credit-v1": {
     id: "lesson01-extra-credit-v1",
     title: "Missing Digit Challenge",
     description: "Find the missing digit in column addition and subtraction problems.",
-    subject: "math", gradeLevel: "6+", icon: "", type: "extra-credit", status: "published", order: 11,
+    subject: "math", gradeLevel: "6+", icon: "", type: "extra-credit", status: "published", order: 46,
     Player: ExtraCredit01Player,
   },
 };

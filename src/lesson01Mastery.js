@@ -347,31 +347,4 @@ export const TOPICS = [
       { label: "5-digit  5-digit", gen: () => genSubBorrowZero(5, 5) },
     ],
   },
-  {
-    id: "missing-digit-add",
-    label: "Missing Digit Addition",
-    icon: "",
-    isExtraCredit: true,
-    subtypes: [
-      { label: "4-digit + 4-digit, find missing digits", gen: () => genMissingDigitAdd() },
-    ],
-  },
-  {
-    id: "missing-digit-add3",
-    label: "Missing Digit Addition (3 Numbers)",
-    icon: "",
-    isExtraCredit: true,
-    subtypes: [
-      { label: "4+4+4 digit, find missing digits", gen: () => genMissingDigitAdd3() },
-    ],
-  },
-  {
-    id: "missing-digit-sub5",
-    label: "Missing Digit Subtraction",
-    icon: "",
-    isExtraCredit: true,
-    subtypes: [
-      { label: "5-digit minus 4-digit, find missing digits", gen: () => genMissingDigitSub5() },
-    ],
-  },
 ];
