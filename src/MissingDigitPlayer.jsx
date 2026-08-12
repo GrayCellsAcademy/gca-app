@@ -43,7 +43,7 @@ function MissingDigitProblem({ problem, inputs, onFocus, focusedCell, submitted,
     if (isEC3) {
       problem.hiddenNums.forEach(h => s.add(`${h.row}-${h.col}`));
     } else {
-      problem.hiddenAddends.forEach(h => s.add(`${h.row}-${h.col}`));
+      problem.hiddenAddends.forEach(h => s.add(`${h.row}-${h.col + 1}`));
     }
     return s;
   };
@@ -200,7 +200,7 @@ export default function MissingDigitPlayer({ user, topic, onHome }) {
       ];
     }
     return [
-      ...prob.hiddenAddends.map(h => `${h.row}-${h.col}`),
+      ...prob.hiddenAddends.map(h => `${h.row}-${h.col + 1}`),
       `result-${4 - prob.hiddenSumCol}`,
     ];
   };
@@ -221,7 +221,7 @@ export default function MissingDigitPlayer({ user, topic, onHome }) {
       if (!rOk) allCorrect = false;
     } else {
       prob.hiddenAddends.forEach(h => {
-        const key = `${h.row}-${h.col}`;
+        const key = `${h.row}-${h.col + 1}`;
         const ok = String(inputs[key]) === String(h.value);
         correct[key] = ok;
         if (!ok) allCorrect = false;
