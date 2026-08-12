@@ -85,8 +85,8 @@ function MissingDigitProblem({ problem, inputs, onFocus, focusedCell, submitted,
   const addendStrs = isEC3
     ? [problem.topStr, problem.botStr.padStart(5, " ")]
     : isEC2
-    ? [problem.aStr, problem.bStr, problem.cStr]
-    : [problem.aStr, problem.bStr];
+    ? [" " + problem.aStr, " " + problem.bStr, " " + problem.cStr]
+    : [" " + problem.aStr, " " + problem.bStr];
 
   const resultStr = isEC3
     ? " " + problem.resultStr
