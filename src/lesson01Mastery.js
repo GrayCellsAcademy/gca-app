@@ -181,7 +181,7 @@ export function genMissingDigitAdd() {
       const row = Math.random() < 0.5 ? 0 : 1;
       return { row, col, value: row === 0 ? parseInt(aStr[col]) : parseInt(bStr[col]) };
     });
-    const coveredCols = new Set(missingAddendCols);
+    const coveredCols = new Set(missingAddendCols.map(c => 3 - c));
     const availableForSum = [0, 1, 2, 3].filter(c => !coveredCols.has(c));
     if (availableForSum.length === 0) continue;
     const hiddenSumColFromRight = availableForSum[Math.floor(Math.random() * availableForSum.length)];
@@ -228,7 +228,7 @@ export function genMissingDigitAdd3() {
       const strs = [aStr, bStr, cStr];
       return { row, col, value: parseInt(strs[row][col]) };
     });
-    const coveredCols = new Set(missingCols);
+    const coveredCols = new Set(missingCols.map(c => 3 - c));
     const availableForSum = [0, 1, 2, 3].filter(c => !coveredCols.has(c));
     if (availableForSum.length === 0) continue;
     const hiddenSumColFromRight = availableForSum[Math.floor(Math.random() * availableForSum.length)];
