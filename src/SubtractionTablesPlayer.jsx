@@ -173,7 +173,7 @@ export default function SubtractionTablesPlayer({ user, topic, onHome }) {
         : q
     );
     setQuestions(updated);
-    setShowCorrect(currentQ?.answer ?? 0);
+    setShowCorrect(questions[qIdx % questions.length]?.answer ?? 0);
   };
 
   const handleWrongContinue = () => {
