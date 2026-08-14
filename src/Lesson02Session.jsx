@@ -72,18 +72,28 @@ function PolygonSVG({ question }) {
   const offY = (H - (maxY - minY) * scale) / 2;
   const sv = vertices.map(v => ({ x: (v.x - minX) * scale + offX, y: (v.y - minY) * scale + offY }));
   const n = sv.length;
+  const cx = sv.reduce((s, p) => s + p.x, 0) / n;
+  const cy = sv.reduce((s, p) => s + p.y, 0) / n;
   const pathD = sv.map((p, i) => (i === 0 ? "M" : "L") + " " + p.x.toFixed(1) + " " + p.y.toFixed(1)).join(" ") + " Z";
   const mids = sv.map((p, i) => ({ x: (p.x + sv[(i + 1) % n].x) / 2, y: (p.y + sv[(i + 1) % n].y) / 2 }));
   return (
     <svg viewBox={"0 0 " + W + " " + H} style={{ width: "100%", maxWidth: 320, display: "block", margin: "0 auto" }}>
       <path d={pathD} stroke="var(--blue)" strokeWidth="2.5" fill="rgba(59,130,246,0.07)" />
       {sv.map((p, i) => <circle key={i} cx={p.x} cy={p.y} r="4" fill="var(--blue)" />)}
-      {mids.map((m, i) => (
+      {mids.map((m, i) => {
+        const ex = sv[(i + 1) % n].x - sv[i].x, ey = sv[(i + 1) % n].y - sv[i].y;
+        const el = Math.sqrt(ex * ex + ey * ey) || 1;
+        const perpX = -ey / el, perpY = ex / el;
+        const outDir = (m.x - cx) * perpX + (m.y - cy) * perpY > 0 ? 1 : -1;
+        const lx = m.x + perpX * outDir * 22;
+        const ly = m.y + perpY * outDir * 22;
+        return (
         <g key={i}>
-          <rect x={m.x - 34} y={m.y - 14} width={68} height={28} rx={5} fill="var(--bg)" stroke="var(--border)" strokeWidth="1" />
-          <text x={m.x} y={m.y + 6} textAnchor="middle" fontSize="14" fontWeight="700" fill="var(--text)" fontFamily="var(--mono)">{lengths[i]}{unit}</text>
+          <rect x={lx - 36} y={ly - 14} width={72} height={28} rx={5} fill="var(--bg)" stroke="var(--border)" strokeWidth="1" />
+          <text x={lx} y={ly + 6} textAnchor="middle" fontSize="14" fontWeight="700" fill="var(--text)" fontFamily="var(--mono)">{lengths[i]}{unit}</text>
         </g>
-      ))}
+        );
+      })}
       <text x={W / 2} y={H - 8} textAnchor="middle" fontSize="11" fill="var(--text3)" fontStyle="italic">Not drawn to scale</text>
     </svg>
   );
@@ -206,7 +216,7 @@ function RectilinearSVG({ question, selectedSides, onSideClick, highlightSideIdx
             {showLabels && (!isHidden || activityType === "5B" || (activityType === "5C" && revealedAnswers)) && (
               <g style={{ cursor: activityType === "5B" && isHidden ? "pointer" : "default" }}
                 onClick={() => activityType === "5B" && isHidden && onSideClick && onSideClick(i)}>
-                <rect x={lx - 32} y={ly - 14} width={64} height={28} rx={5}
+                <rect x={lx - 38} y={ly - 14} width={76} height={28} rx={5}
                   fill={isActiveMissing ? "rgba(59,130,246,0.3)" : isHidden ? "rgba(251,191,36,0.15)" : "var(--bg2)"}
                   stroke={isActiveMissing ? "var(--blue)" : isHidden ? "var(--amber)" : "var(--border)"} strokeWidth={isActiveMissing ? 2 : 1} />
                 <text x={lx} y={ly + 6} textAnchor="middle" fontSize="14" fontWeight="700"
