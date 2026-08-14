@@ -1,4 +1,4 @@
-﻿// Lesson 2  Geometry Question Generators
+// Lesson 2  Geometry Question Generators
 
 const UNITS = ["cm", "mm", "m", "km", "in", "ft", "yd", "mi"];
 
@@ -21,8 +21,8 @@ export function genLineSegments() {
   const c = randInt(10, 99);
   const total = a + b + c;
   // Bend angles in degrees, random but visible
-  const angle1 = randInt(-40, 40);
-  const angle2 = randInt(-40, 40);
+  const angle1 = (randInt(20, 40) * (Math.random() < 0.5 ? 1 : -1));
+  const angle2 = (randInt(20, 40) * (Math.random() < 0.5 ? 1 : -1));
   return {
     type: "line-segments",
     segments: [a, b, c],
