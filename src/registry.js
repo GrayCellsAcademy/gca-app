@@ -4,6 +4,7 @@ import ColumnAdditionPlayer from "./ColumnAdditionPlayer";
 import Lesson01MasteryPlayer from "./Lesson01MasteryPlayer";
 import ExtraCredit01Player from "./ExtraCredit01Player";
 import MissingDigitPlayer from "./MissingDigitPlayer";
+import Lesson02WarmupPlayer from "./Lesson02WarmupPlayer";
 import ReviewHomework from "./ReviewHomework";
 import Lesson02MasteryPlayer from "./Lesson02MasteryPlayer";
 import SubtractionTablesPlayer from "./SubtractionTablesPlayer";
@@ -74,6 +75,13 @@ export const TOPICS = {
     description: "Missing digit challenges: find hidden digits in column addition and subtraction problems.",
     subject: "math", gradeLevel: "6+", icon: "", type: "extra-credit", status: "published", order: 5,
     Player: MissingDigitPlayer,
+  },
+  "lesson02-warmup-v1": {
+    id: "lesson02-warmup-v1",
+    title: "Warmup 2 (019)",
+    description: "Practice adding 3-4 numbers and subtracting with borrowing through zero before starting HW 2.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 5,
+    Player: Lesson02WarmupPlayer,
   },
   "lesson02-mastery-v1": {
     id: "lesson02-mastery-v1",
