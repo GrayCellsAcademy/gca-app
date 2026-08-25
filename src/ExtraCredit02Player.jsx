@@ -138,13 +138,13 @@ function StaircaseSVG({ question, activityType }) {
               <line x1={p1.x} y1={p1.y} x2={p2.x} y2={p2.y}
                 stroke="var(--amber)" strokeWidth="3" strokeDasharray="8 4" />
             )}
-            <rect x={lx - boxW / 2} y={ly - 14} width={boxW} height={28} rx={5}
+            {!hidden && <rect x={lx - boxW / 2} y={ly - 14} width={boxW} height={28} rx={5}
               fill={hidden ? "rgba(251,191,36,0.15)" : "var(--bg2)"}
-              stroke={hidden ? "var(--amber)" : "var(--border)"} strokeWidth={hidden ? 2 : 1} />
-            <text x={lx} y={ly + 6} textAnchor="middle" fontSize="14" fontWeight="700"
+              stroke={hidden ? "var(--amber)" : "var(--border)"} strokeWidth={hidden ? 2 : 1} />}
+            {!hidden && <text x={lx} y={ly + 6} textAnchor="middle" fontSize="14" fontWeight="700"
               fill={hidden ? "var(--amber)" : "var(--text)"} fontFamily="var(--mono)">
-              {hidden ? "?" : side.length + " " + unit}
-            </text>
+              {side.length + " " + unit}
+            </text>}
           </g>
         );
       })}
@@ -157,7 +157,7 @@ const ACTIVITIES = [
   {
     id: "A",
     label: "Staircase - Sum of Short Sides",
-    prompt: () => "The highlighted sides are missing their labels. What is their total length? Include units.",
+    prompt: () => "The highlighted sides have no labels. What is their combined length? Include units.",
     getAnswer: (q) => (q.hideDir === "h" ? q.H : q.V) + q.unit,
     getExplanation: (q) => {
       const val = q.hideDir === "h" ? q.H : q.V;
@@ -168,7 +168,7 @@ const ACTIVITIES = [
   {
     id: "B",
     label: "Staircase - Perimeter",
-    prompt: () => "Find the perimeter of the shape. The highlighted sides are unlabeled but can be worked out. Include units.",
+    prompt: () => "Find the perimeter of the shape. Some sides are highlighted but have no labels. Include units.",
     getAnswer: (q) => q.perimeter + q.unit,
     getExplanation: (q) => {
       const shortSum = q.hideDir === "h" ? q.H : q.V;
@@ -183,7 +183,7 @@ const ACTIVITIES = [
     prompt: (q) => {
       const dir = q.hideDir === "h" ? "horizontal" : "vertical";
       const oppDir = q.hideDir === "h" ? "vertical" : "horizontal";
-      return `The short ${dir} sides and the long ${oppDir} side are all unlabeled. Work out the missing lengths and find the perimeter. Include units.`;
+      return `Find the perimeter. Some sides are highlighted but have no labels. Include units.`;
     },
     getAnswer: (q) => q.perimeter + q.unit,
     getExplanation: (q) => {
