@@ -100,7 +100,7 @@ function StreakDots({ current, needed }) {
 
 //  Main Player
 export default function Lesson01MasteryPlayer({ user, topic, onHome }) {
-  useActivityTracking(user, "lesson01-mastery-v1", "HW 1 (019)");
+  useActivityTracking(user, "lesson01-mastery-v1", "Classwork 1 (019)");
   const topicId = topic?.id || TOPIC_ID;
 
   const [topicIdx, setTopicIdx] = useState(0);
