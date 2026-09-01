@@ -764,12 +764,28 @@ function MasterySection({ masteryData, onSave, onComplete }) {
                 {isMul && <ColumnMultiplyWork a={question.a} b={question.b} />}
                 {isDiv && <LongDivisionWork dividend={question.dividend} divisor={question.divisor} quotient={question.quotient} remainder={question.remainder} />}
                 {isArea && (
-                  <div style={{ fontSize: 14, color: "var(--green)", fontFamily: "var(--mono)", fontWeight: 700 }}>
-                    <div>Area = {question.area} sq {question.unit}</div>
-                    {question.type === "rectangle-area" && question.areaYd !== null && <div>or {question.areaYd} sq yd</div>}
-                    {question.type === "composite-area" && question.missingAnswers && question.missingAnswers.length >= 2 && (
-                      <div style={{ fontSize: 13, color: "var(--text2)", marginTop: 4 }}>
-                        Missing sides: {question.missingAnswers[0].length} {question.unit} and {question.missingAnswers[1].length} {question.unit}
+                  <div style={{ fontSize: 14, fontFamily: "var(--mono)", fontWeight: 700 }}>
+                    {question.type === "rectangle-area" && (
+                      <div>
+                        <div style={{ color: "var(--text2)", marginBottom: 4 }}>
+                          {question.lengthVal}{question.lengthUnit} x {question.widthVal}{question.widthUnit}
+                          {question.lengthUnit !== question.widthUnit && (
+                            <span> (convert to same unit first)</span>
+                          )}
+                        </div>
+                        <div style={{ color: "var(--green)" }}>Area = {question.areaFt} sq ft{question.areaYd !== null ? " = " + question.areaYd + " sq yd" : ""}</div>
+                      </div>
+                    )}
+                    {question.type === "square-area" && (
+                      <div>
+                        <div style={{ color: "var(--text2)", marginBottom: 4 }}>{question.s} x {question.s} = ?</div>
+                        <div style={{ color: "var(--green)" }}>Area = {question.area} sq {question.unit}</div>
+                      </div>
+                    )}
+                    {question.type === "composite-area" && (
+                      <div>
+                        <div style={{ color: "var(--text2)", marginBottom: 4 }}>{question.splitExplanation}</div>
+                        <div style={{ color: "var(--green)" }}>Area = {question.area} sq {question.unit}</div>
                       </div>
                     )}
                   </div>
@@ -799,7 +815,7 @@ function MasterySection({ masteryData, onSave, onComplete }) {
 
 // - Main Player -
 export default function Lesson03MasteryPlayer({ user, topic, onHome }) {
-  useActivityTracking(user, "lesson03-mastery-v1", "HW 3 (019)");
+  useActivityTracking(user, "lesson03-mastery-v1", "Classwork 3 (019)");
   const topicId = topic?.id || LESSON03_MASTERY_TOPIC_ID;
   const [loading, setLoading] = useState(true);
   const [masteryData, setMasteryData] = useState({ globalStep: 0, streak: 0 });
@@ -847,7 +863,7 @@ export default function Lesson03MasteryPlayer({ user, topic, onHome }) {
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <div style={{ width: 40, height: 40, borderRadius: 12, background: "linear-gradient(135deg,var(--blue),var(--purple))", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 800, color: "#fff" }}>L3</div>
             <div>
-              <div style={{ fontWeight: 800, fontSize: 17 }}>HW 3 (019): Multiply, Divide & Area Mastery</div>
+              <div style={{ fontWeight: 800, fontSize: 17 }}>Classwork 3 (019): Multiply, Divide & Area Mastery</div>
               <div style={{ color: "var(--text3)", fontSize: 12 }}>3 correct in a row to advance each topic</div>
             </div>
           </div>
