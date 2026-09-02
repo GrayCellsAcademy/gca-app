@@ -7,6 +7,7 @@ import MissingDigitPlayer from "./MissingDigitPlayer";
 import Lesson02WarmupPlayer from "./Lesson02WarmupPlayer";
 import ExtraCredit02Player from "./ExtraCredit02Player";
 import Lesson03WarmupPlayer from "./Lesson03WarmupPlayer";
+import ExtraCredit03Player from "./ExtraCredit03Player";
 import ReviewHomework from "./ReviewHomework";
 import Lesson02MasteryPlayer from "./Lesson02MasteryPlayer";
 import SubtractionTablesPlayer from "./SubtractionTablesPlayer";
@@ -98,6 +99,13 @@ export const TOPICS = {
     description: "Practice finding missing sides of L/T/U rectilinear shapes before starting Classwork 3.",
     subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 7,
     Player: Lesson03WarmupPlayer,
+  },
+  "lesson03-ec-v1": {
+    id: "lesson03-ec-v1",
+    title: "Classwork 3 Extra Credit (019)",
+    description: "Find the area of a missing region in a divided shape.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "extra-credit", status: "published", order: 8,
+    Player: ExtraCredit03Player,
   },
   "lesson02-mastery-v1": {
     id: "lesson02-mastery-v1",
