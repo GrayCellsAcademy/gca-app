@@ -1,11 +1,11 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import {
   getTeacherClasses, createClass, getStudentsForClass,
   assignTopicToClass, unassignTopicFromClass, reorderTopics,
   updateAssignment, saveCategories, getClassProgress,
   normalizeAssignments, calculateGrade, gradeToLetter,
   resetStudentProgress, resetClassProgress, getStudentActivity,
-  updateUser,
+  updateUser, archiveClass,
 } from "../core/firebase";
 import { getPublishedTopics, getTopic } from "../registry";
 
@@ -626,7 +626,7 @@ function RosterView({ cls, students }) {
 }
 
 //  Class Panel 
-function ClassPanel({ cls, onUpdate }) {
+function ClassPanel({ cls, onUpdate, onArchive }) {
   const [expanded, setExpanded] = useState(false);
   const [tab, setTab] = useState("assignments"); // assignments | gradebook | roster
   const [students, setStudents] = useState([]);
@@ -759,7 +759,14 @@ function ClassPanel({ cls, onUpdate }) {
             {"  "}{categories.length} categor{categories.length !== 1 ? "ies" : "y"}
           </div>
         </div>
-        <div style={{ width: 28, height: 28, borderRadius: "50%", background: "var(--bg2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, color: "var(--text2)", transition: "transform 0.2s", transform: expanded ? "rotate(180deg)" : "none" }}></div>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <button
+            onClick={e => { e.stopPropagation(); onArchive(); }}
+            style={{ background: cls.archived ? "rgba(16,185,129,0.1)" : "rgba(100,116,139,0.1)", color: cls.archived ? "var(--green)" : "var(--text3)", border: "1px solid " + (cls.archived ? "rgba(16,185,129,0.3)" : "rgba(100,116,139,0.3)"), borderRadius: "var(--radius-sm)", padding: "4px 12px", fontSize: 19, cursor: "pointer", fontFamily: "var(--font)", fontWeight: 600, whiteSpace: "nowrap" }}>
+            {cls.archived ? " Unarchive" : " Archive"}
+          </button>
+          <div style={{ width: 28, height: 28, borderRadius: "50%", background: "var(--bg2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, color: "var(--text2)", transition: "transform 0.2s", transform: expanded ? "rotate(180deg)" : "none" }}></div>
+        </div>
       </div>
 
       {expanded && (
@@ -885,6 +892,8 @@ export default function TeacherHome({ user, onLogout, onLiveSession }) {
   const [newPass, setNewPass] = useState("");
   const [createErr, setCreateErr] = useState("");
 
+  const [showArchived, setShowArchived] = useState(false);
+
   const loadClasses = async () => {
     const cls = await getTeacherClasses(user.id);
     setClasses(cls);
@@ -954,7 +963,32 @@ export default function TeacherHome({ user, onLogout, onLiveSession }) {
             <button className="btn btn-primary btn-lg" onClick={() => setShowCreate(true)}>+ Create Your First Class</button>
           </div>
         ) : (
-          classes.map(cls => <ClassPanel key={cls.id} cls={cls} onUpdate={loadClasses} />)
+          <>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+              <div style={{ fontSize: 19, color: "var(--text3)" }}>
+                {classes.filter(c => !c.archived).length} active class{classes.filter(c => !c.archived).length !== 1 ? "es" : ""}
+                {classes.some(c => c.archived) && ` - ${classes.filter(c => c.archived).length} archived`}
+              </div>
+              {classes.some(c => c.archived) && (
+                <button className="btn btn-ghost btn-sm" onClick={() => setShowArchived(s => !s)}>
+                  {showArchived ? "Hide Archived" : "Show Archived"}
+                </button>
+              )}
+            </div>
+            {classes.filter(c => !c.archived).map(cls => (
+              <ClassPanel key={cls.id} cls={cls} onUpdate={loadClasses}
+                onArchive={async () => { await archiveClass(cls.id, true); loadClasses(); }} />
+            ))}
+            {showArchived && classes.some(c => c.archived) && (
+              <div style={{ marginTop: 24 }}>
+                <div style={{ fontSize: 19, fontWeight: 700, color: "var(--text3)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 12 }}>Archived Classes</div>
+                {classes.filter(c => c.archived).map(cls => (
+                  <ClassPanel key={cls.id} cls={cls} onUpdate={loadClasses}
+                    onArchive={async () => { await archiveClass(cls.id, false); loadClasses(); }} />
+                ))}
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>
