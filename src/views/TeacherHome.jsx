@@ -144,22 +144,13 @@ function SchedulePanel({ cls, assignments, onUpdate }) {
     if (!schedule.startDate || !schedule.days.length || !schedule.time) return [];
     const days = classDays;
     const published = getPublishedTopics();
-    const warmups = published.filter(t => /^Warmup \d+/.test(t.title)).sort((a, b) => (extractNum(a.title) || 0) - (extractNum(b.title) || 0));
+    // Warmups excluded from auto-assign (not yet created for all courses)
     const classworks = published.filter(t => /^Classwork \d+/.test(t.title)).sort((a, b) => (extractNum(a.title) || 0) - (extractNum(b.title) || 0));
     const drills = published.filter(t => t.type === "drill").sort((a, b) => (a.order || 0) - (b.order || 0));
     const results = [];
     const [h, m] = schedule.time.split(":").map(Number);
     const dueMin = h * 60 + m + 10;
     const dueSuffix = "T" + String(Math.floor(dueMin / 60)).padStart(2, "0") + ":" + String(dueMin % 60).padStart(2, "0");
-
-    warmups.forEach(w => {
-      const n = extractNum(w.title);
-      if (!n) return;
-      const dayIdx = n;
-      if (dayIdx >= days.length) return;
-      const classDay = days[dayIdx];
-      results.push({ topicId: w.id, categoryId: "warmup", dueDate: classDay + dueSuffix, openDate: classDay + "T" + schedule.time });
-    });
 
     classworks.forEach(c => {
       const n = extractNum(c.title);
