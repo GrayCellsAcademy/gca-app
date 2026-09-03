@@ -114,6 +114,10 @@ export async function getTeacherClasses(teacherId) {
   return snap.docs.map(d => d.data());
 }
 
+export async function archiveClass(classId, archived) {
+  await updateDoc(doc(db, "classes", classId), { archived });
+}
+
 export async function getAllClasses() {
   const snap = await getDocs(collection(db, "classes"));
   return snap.docs.map(d => d.data());
