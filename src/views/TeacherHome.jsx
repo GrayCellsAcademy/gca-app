@@ -16,6 +16,43 @@ function weightTotal(categories) {
   return categories.reduce((s, c) => s + (Number(c.weight) || 0), 0);
 }
 
+//  Eastern Time Helpers
+function easternNowStr() {
+  // Returns current datetime as "YYYY-MM-DDTHH:MM" in Eastern time
+  return new Date().toLocaleString("sv", { timeZone: "America/New_York" }).slice(0, 16);
+}
+
+function easternTodayStr() {
+  return easternNowStr().slice(0, 10);
+}
+
+function isPastDue(dueDateStr) {
+  if (!dueDateStr) return false;
+  const due = dueDateStr.length === 10 ? dueDateStr + "T00:00" : dueDateStr.slice(0, 16);
+  return easternNowStr() > due;
+}
+
+function fmtDue(dueDateStr) {
+  if (!dueDateStr) return "";
+  // Parse as Eastern time
+  const dtStr = dueDateStr.length === 10 ? dueDateStr + "T00:00:00" : dueDateStr.slice(0, 16) + ":00";
+  // Append ET offset to parse correctly (approximate: use -05:00 for ET, DST may shift by 1hr)
+  const etOffset = (() => {
+    const d = new Date(dtStr);
+    const etStr = d.toLocaleString("en-US", { timeZone: "America/New_York", hour12: false,
+      year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" });
+    return etStr;
+  });
+  const d = new Date(new Date(dtStr).toLocaleString("en-US", { timeZone: "UTC" }));
+  // Use Intl to format properly in ET
+  const formatted = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/New_York",
+    month: "short", day: "numeric",
+    hour: "numeric", minute: "2-digit",
+  }).format(new Date(dtStr + (dtStr.length === 16 ? ":00" : "")));
+  return formatted + " ET";
+}
+
 //  Category Manager 
 function CategoryManager({ categories, onChange }) {
   const [cats, setCats] = useState(categories);
@@ -169,7 +206,7 @@ function AssignmentRow({ assignment, categories, onUpdate, onRemove, onReset, on
           <div style={{ fontWeight:700,fontSize:20 }}>{topic?.title || assignment.topicId}</div>
           <div style={{ fontSize:19,color:"var(--text3)",marginTop:2,display:"flex",gap:12,flexWrap:"wrap" }}>
             {assignment.points && <span>{assignment.points} pts</span>}
-            {assignment.dueDate && <span>Due {assignment.dueDate}</span>}
+            {assignment.dueDate && <span>Due {fmtDue(assignment.dueDate)}</span>}
             {assignment.allowLate && assignment.latePenalty && <span style={{ color:"var(--orange)" }}>{assignment.latePenalty}% late penalty</span>}
             {assignment.allowLate === false && assignment.dueDate && <span style={{ color:"var(--red)" }}>No late submissions</span>}
           </div>
@@ -214,10 +251,11 @@ function AssignmentRow({ assignment, categories, onUpdate, onRemove, onReset, on
 
           {/* Due date */}
           <div>
-            <div style={{ fontSize:19,fontWeight:700,color:"var(--text2)",marginBottom:6 }}>Due Date</div>
-            <input type="date" value={assignment.dueDate||""}
+            <div style={{ fontSize:19,fontWeight:700,color:"var(--text2)",marginBottom:6 }}>Due Date & Time (Eastern)</div>
+            <input type="datetime-local" value={assignment.dueDate||""}
               onChange={e=>onUpdate({dueDate:e.target.value||null})}
               style={{ fontSize:19,padding:"6px 10px",width:"100%" }} />
+            <div style={{ fontSize:17,color:"var(--text3)",marginTop:3 }}>Time is Eastern (ET)</div>
           </div>
 
           {/* Late submissions */}
@@ -274,14 +312,14 @@ function Gradebook({ students, assignments, categories, onResetStudent }) {
   if (!students.length) return <p style={{ color: "var(--text3)", fontSize: 20 }}>No students enrolled yet.</p>;
   if (!assignments.length) return <p style={{ color: "var(--text3)", fontSize: 20 }}>No assignments yet. Add topics above.</p>;
 
-  const today = new Date().toISOString().split("T")[0];
+  const today = easternTodayStr();
 
   // Compute effective score for a student on an assignment
   const effectiveScore = (a, p) => {
     if (!p || p.percentComplete == null) return null;
     const raw = p.percentComplete;
     if (!a.dueDate) return raw; // no deadline = no penalty
-    const isLate = p.updatedAt && new Date(p.updatedAt).toISOString().split("T")[0] > a.dueDate;
+    const isLate = p.updatedAt && isPastDue(a.dueDate) && new Date(p.updatedAt).toLocaleString("sv", { timeZone: "America/New_York" }).slice(0, 16) > (a.dueDate.length === 10 ? a.dueDate + "T00:00" : a.dueDate.slice(0, 16));
     if (!isLate) return raw;
     if (a.allowLate === false) return 0; // no late allowed = 0
     if (a.allowLate === true && a.latePenalty != null) return Math.round(raw * a.latePenalty / 100);
@@ -316,7 +354,7 @@ function Gradebook({ students, assignments, categories, onResetStudent }) {
             {assignments.map(a => {
               const topic = getTopic(a.topicId);
               const cat = categories.find(c => c.id === a.categoryId);
-              const overdue = a.dueDate && a.dueDate < today;
+              const overdue = a.dueDate && isPastDue(a.dueDate);
               return (
                 <th key={a.topicId} style={{ textAlign: "center", minWidth: 120 }}>
                   <div>{topic?.icon} {topic?.title || a.topicId}</div>
@@ -324,7 +362,7 @@ function Gradebook({ students, assignments, categories, onResetStudent }) {
                   {cat && <div style={{ fontSize:10,color:"var(--text3)",fontWeight:400 }}>{cat.name}</div>}
                   {a.dueDate && (
                     <div style={{ fontSize:10,color:overdue?"var(--red)":"var(--text3)",fontWeight:400 }}>
-                      Due {a.dueDate}
+                      Due {fmtDue(a.dueDate)}
                     </div>
                   )}
                   {a.allowLate===true && a.latePenalty!=null && (
@@ -355,9 +393,9 @@ function Gradebook({ students, assignments, categories, onResetStudent }) {
                   const p = studentProg[a.topicId];
                   const raw = p?.percentComplete ?? null;
                   const score = effectiveScore(a, p);
-                  const isLate = a.dueDate && p?.updatedAt && new Date(p.updatedAt).toISOString().split("T")[0] > a.dueDate;
+                  const isLate = a.dueDate && p?.updatedAt && new Date(p.updatedAt).toLocaleString("sv", { timeZone: "America/New_York" }).slice(0, 16) > (a.dueDate.length === 10 ? a.dueDate + "T00:00" : a.dueDate.slice(0, 16));
                   const notAllowed = a.allowLate===false && isLate;
-                  const overdue = a.dueDate && a.dueDate < today && raw===null;
+                  const overdue = a.dueDate && isPastDue(a.dueDate) && raw===null;
 
                   return (
                     <td key={a.topicId} style={{ textAlign:"center" }}>
