@@ -5,17 +5,12 @@ import {
   updateAssignment, saveCategories, getClassProgress,
   normalizeAssignments, calculateGrade, gradeToLetter,
   resetStudentProgress, resetClassProgress, getStudentActivity,
-  updateUser, db,
+  updateUser, archiveClass,
 } from "../core/firebase";
-import { doc, updateDoc } from "firebase/firestore";
 import { getPublishedTopics, getTopic } from "../registry";
 
 //  Helpers 
 function uid4() { return Math.random().toString(36).slice(2, 6); }
-
-async function archiveClass(classId, archived) {
-  await updateDoc(doc(db, "classes", classId), { archived });
-}
 
 function weightTotal(categories) {
   return categories.reduce((s, c) => s + (Number(c.weight) || 0), 0);
