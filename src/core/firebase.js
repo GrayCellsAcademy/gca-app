@@ -94,7 +94,7 @@ export async function createClass(name, password, teacherId) {
     id: classId, name, password, teacherId,
     studentIds: [],
     assignedTopics: [],
-    categories: [],
+    categories: [{ id: "warmup", name: "Warmup", weight: 5, defaultPoints: null, defaultAllowLate: null, defaultLatePenalty: null }, { id: "classwork", name: "Classwork", weight: 15, defaultPoints: null, defaultAllowLate: null, defaultLatePenalty: null }, { id: "mentalmath", name: "Mental Math", weight: 15, defaultPoints: null, defaultAllowLate: null, defaultLatePenalty: null }, { id: "exams", name: "Exams", weight: 45, defaultPoints: null, defaultAllowLate: null, defaultLatePenalty: null }, { id: "aleks", name: "ALEKS", weight: 20, defaultPoints: null, defaultAllowLate: null, defaultLatePenalty: null }],
     createdAt: Date.now(),
   });
   await updateDoc(doc(db, "users", teacherId), {
@@ -116,6 +116,10 @@ export async function getTeacherClasses(teacherId) {
 
 export async function archiveClass(classId, archived) {
   await updateDoc(doc(db, "classes", classId), { archived });
+}
+
+export async function saveScheduleToClass(classId, schedule) {
+  await updateDoc(doc(db, "classes", classId), { schedule });
 }
 
 export async function getAllClasses() {
