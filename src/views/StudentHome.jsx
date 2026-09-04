@@ -3,14 +3,43 @@ import { getClass, getProgress, leaveClass, joinClass, normalizeAssignments, cal
 import { getTopic, getPublishedTopics } from "../registry";
 import TopicRouter from "../TopicRouter";
 
+//  Helpers
+function easternNowStr() {
+  return new Date().toLocaleString("sv", { timeZone: "America/New_York" }).slice(0, 16);
+}
+function isAssignmentOpen(assignment) {
+  if (!assignment?.openDate) return true; // no open date = always visible
+  return easternNowStr() >= assignment.openDate.slice(0, 16);
+}
+function fmtOpen(openDateStr) {
+  if (!openDateStr) return "";
+  const dtStr = openDateStr.length === 10 ? openDateStr + "T00:00:00" : openDateStr.slice(0, 16) + ":00";
+  const formatted = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/New_York",
+    month: "short", day: "numeric",
+    hour: "numeric", minute: "2-digit",
+  }).format(new Date(dtStr));
+  return formatted + " ET";
+}
+function fmtDue(dueDateStr) {
+  if (!dueDateStr) return "";
+  const dtStr = dueDateStr.length === 10 ? dueDateStr + "T00:00:00" : dueDateStr.slice(0, 16) + ":00";
+  const formatted = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/New_York",
+    month: "short", day: "numeric",
+    hour: "numeric", minute: "2-digit",
+  }).format(new Date(dtStr));
+  return formatted + " ET";
+}
+
 //  Topic Roadmap Card 
 function TopicRoadmapCard({ topic, progress, assignment, isUnlocked, position, onClick }) {
   const completed = progress?.completed === true;
   const started = progress?.started === true;
   const pct = progress?.percentComplete || 0;
   const notStarted = !started;
-  const today = new Date().toISOString().split("T")[0];
-  const overdue = assignment?.dueDate && assignment.dueDate < today && !completed;
+  const nowET = easternNowStr();
+  const overdue = assignment?.dueDate && !completed && nowET > (assignment.dueDate.length === 10 ? assignment.dueDate + "T00:00" : assignment.dueDate.slice(0, 16));
 
   let statusLabel, statusColor, statusBg;
   if (completed) {
@@ -71,7 +100,7 @@ function TopicRoadmapCard({ topic, progress, assignment, isUnlocked, position, o
         </p>
         {assignment?.dueDate && !completed && (
           <div style={{ fontSize: 19, color: overdue ? "var(--red)" : "var(--text3)", marginTop: 4, marginBottom: 6 }}>
-            {overdue ? " Due date passed: " : " Due: "}{assignment.dueDate}
+            {overdue ? " Due date passed: " : " Due: "}{fmtDue(assignment.dueDate)}
           </div>
         )}
         {isUnlocked && started && (
@@ -121,7 +150,9 @@ function ClassView({ cls, userId, onBack, onPlayTopic }) {
     load();
   }, [cls, userId]);
 
-  const assignedTopics = assignments.map(a => ({ assignment: a, topic: getTopic(a.topicId) })).filter(t => t.topic);
+  const assignedTopics = assignments
+    .filter(a => isAssignmentOpen(a))
+    .map(a => ({ assignment: a, topic: getTopic(a.topicId) })).filter(t => t.topic);
 
   const isTopicUnlocked = (idx) => true;
 

@@ -192,7 +192,7 @@ function SchedulePanel({ cls, assignments, onUpdate }) {
     for (const a of toAssign) {
       const existing = assignments.find(ex => ex.topicId === a.topicId);
       if (!existing) await assignTopicToClass(cls.id, a.topicId);
-      await updateAssignment(cls.id, a.topicId, { categoryId: a.categoryId, dueDate: a.dueDate });
+      await updateAssignment(cls.id, a.topicId, { categoryId: a.categoryId, dueDate: a.dueDate, openDate: a.openDate || null });
     }
     setSaving(false);
     onUpdate();
@@ -450,7 +450,7 @@ function AssignmentRow({ assignment, categories, onUpdate, onRemove, onReset, on
         background: isDragging ? "rgba(27,143,255,0.08)" : "var(--bg2)",
         border: isDragging ? "2px dashed var(--blue)" : "1px solid var(--border)",
         borderRadius: "var(--radius)", padding: "10px 14px",
-        opacity: isDragging ? 0.5 : 1,
+        opacity: isDragging ? 0.5 : (assignment.openDate && !isPastDue(assignment.openDate)) ? 0.45 : 1,
         transition: "all 0.15s",
       }}>
       {/* Main row */}
@@ -461,6 +461,8 @@ function AssignmentRow({ assignment, categories, onUpdate, onRemove, onReset, on
           <div style={{ fontWeight:700,fontSize:20 }}>{topic?.title || assignment.topicId}</div>
           <div style={{ fontSize:19,color:"var(--text3)",marginTop:2,display:"flex",gap:12,flexWrap:"wrap" }}>
             {assignment.points && <span>{assignment.points} pts</span>}
+            {assignment.openDate && !isPastDue(assignment.openDate) && <span style={{ color:"var(--amber)", fontWeight:700 }}>Opens {fmtDue(assignment.openDate)}</span>}
+            {assignment.openDate && isPastDue(assignment.openDate) && <span style={{ color:"var(--text3)" }}>Opened {fmtDue(assignment.openDate)}</span>}
             {assignment.dueDate && <span>Due {fmtDue(assignment.dueDate)}</span>}
             {assignment.allowLate && assignment.latePenalty && <span style={{ color:"var(--orange)" }}>{assignment.latePenalty}% late penalty</span>}
             {assignment.allowLate === false && assignment.dueDate && <span style={{ color:"var(--red)" }}>No late submissions</span>}
@@ -502,6 +504,15 @@ function AssignmentRow({ assignment, categories, onUpdate, onRemove, onReset, on
               value={assignment.points||""} placeholder="e.g. 100"
               onChange={e=>onUpdate({points:parseInt(e.target.value)||null})}
               style={{ fontSize:19,padding:"6px 10px",width:"100%" }} />
+          </div>
+
+          {/* Open date */}
+          <div>
+            <div style={{ fontSize:19,fontWeight:700,color:"var(--text2)",marginBottom:6 }}>Open Date & Time (Eastern)</div>
+            <input type="datetime-local" value={assignment.openDate||""}
+              onChange={e=>onUpdate({openDate:e.target.value||null})}
+              style={{ fontSize:19,padding:"6px 10px",width:"100%" }} />
+            <div style={{ fontSize:17,color:"var(--text3)",marginTop:3 }}>Hidden from students before this time</div>
           </div>
 
           {/* Due date */}
