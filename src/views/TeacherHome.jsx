@@ -66,6 +66,14 @@ const DEFAULT_CATEGORIES = [
 
 const DAYS_OF_WEEK = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
+function autoCategory(assignment, topic) {
+  if (assignment.categoryId) return assignment.categoryId;
+  if (topic?.type === "drill") return "mentalmath";
+  if (topic?.title && /^Classwork \d+/.test(topic.title) && !topic.title.includes("Extra Credit")) return "classwork";
+  if (topic?.title && /^Warmup \d+/.test(topic.title)) return "warmup";
+  return assignment.categoryId;
+}
+
 function getClassDays(startDate, days, exceptions, count) {
   const exSet = new Set((exceptions || []).filter(e => e.type === "no-class").map(e => e.date));
   const result = [];
@@ -585,6 +593,8 @@ function Gradebook({ students, assignments, categories, onResetStudent }) {
     if (!p || p.percentComplete == null) return null;
     const raw = p.percentComplete;
     if (!a.dueDate) return raw; // no deadline = no penalty
+    const catId = autoCategory(a, getTopic(a.topicId));
+    const aWithCat = { ...a, categoryId: catId };
     const isLate = p.updatedAt && isPastDue(a.dueDate) && new Date(p.updatedAt).toLocaleString("sv", { timeZone: "America/New_York" }).slice(0, 16) > (a.dueDate.length === 10 ? a.dueDate + "T00:00" : a.dueDate.slice(0, 16));
     if (!isLate) return raw;
     if (a.allowLate === false) return 0; // no late allowed = 0
@@ -617,7 +627,11 @@ function Gradebook({ students, assignments, categories, onResetStudent }) {
         <thead>
           <tr>
             <th style={{ minWidth: 130 }}>Student</th>
-            {assignments.map(a => {
+            {[...assignments].sort((a, b) => {
+              const aOpen = a.openDate || "9999", bOpen = b.openDate || "9999";
+              if (aOpen !== bOpen) return aOpen.localeCompare(bOpen);
+              return (a.dueDate || "9999").localeCompare(b.dueDate || "9999");
+            }).map(a => {
               const topic = getTopic(a.topicId);
               const cat = categories.find(c => c.id === a.categoryId);
               const overdue = a.dueDate && isPastDue(a.dueDate);
@@ -655,7 +669,11 @@ function Gradebook({ students, assignments, categories, onResetStudent }) {
             return (
               <tr key={s.id}>
                 <td style={{ fontWeight:600 }}>{s.name}</td>
-                {assignments.map(a => {
+                {[...assignments].sort((a, b) => {
+              const aOpen = a.openDate || "9999", bOpen = b.openDate || "9999";
+              if (aOpen !== bOpen) return aOpen.localeCompare(bOpen);
+              return (a.dueDate || "9999").localeCompare(b.dueDate || "9999");
+            }).map(a => {
                   const p = studentProg[a.topicId];
                   const raw = p?.percentComplete ?? null;
                   const score = effectiveScore(a, p);

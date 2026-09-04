@@ -7,6 +7,14 @@ import TopicRouter from "../TopicRouter";
 function easternNowStr() {
   return new Date().toLocaleString("sv", { timeZone: "America/New_York" }).slice(0, 16);
 }
+function autoCategory(assignment, topic) {
+  if (assignment.categoryId) return assignment.categoryId;
+  if (topic?.type === "drill") return "mentalmath";
+  if (topic?.title && /^Classwork \d+/.test(topic.title) && !topic.title.includes("Extra Credit")) return "classwork";
+  if (topic?.title && /^Warmup \d+/.test(topic.title)) return "warmup";
+  return assignment.categoryId;
+}
+
 function isAssignmentOpen(assignment) {
   if (!assignment?.openDate) return true; // no open date = always visible
   return easternNowStr() >= assignment.openDate.slice(0, 16);
@@ -152,12 +160,24 @@ function ClassView({ cls, userId, onBack, onPlayTopic }) {
 
   const assignedTopics = assignments
     .filter(a => isAssignmentOpen(a))
+    .sort((a, b) => {
+      const aOpen = a.openDate || "9999";
+      const bOpen = b.openDate || "9999";
+      if (aOpen !== bOpen) return aOpen.localeCompare(bOpen);
+      const aDue = a.dueDate || "9999";
+      const bDue = b.dueDate || "9999";
+      return aDue.localeCompare(bDue);
+    })
     .map(a => ({ assignment: a, topic: getTopic(a.topicId) })).filter(t => t.topic);
 
   const isTopicUnlocked = (idx) => true;
 
   // Calculate student's overall grade
-  const grade = calculateGrade(assignments, categories, progress);
+  const normalizedAssignments = assignments.map(a => {
+    const topic = getTopic(a.topicId);
+    return { ...a, categoryId: autoCategory(a, topic) };
+  });
+  const grade = calculateGrade(normalizedAssignments, categories, progress);
   const letter = gradeToLetter(grade);
   const letterColor = letter === "A" ? "var(--green)" : letter === "B" ? "var(--cyan)" : letter === "C" ? "var(--amber)" : letter === "F" ? "var(--red)" : "var(--text2)";
 
