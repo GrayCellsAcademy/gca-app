@@ -197,26 +197,21 @@ function SchedulePanel({ cls, assignments, onUpdate }) {
   const applyAssignments = async (toAssign) => {
     setConfirmOverwrite(false);
     setSaving(true);
-    // Build the full updated assignedTopics array in one pass to avoid race conditions
-    const current = (cls.assignedTopics || []).map ? normalizeAssignments(cls.assignedTopics) : [];
-    const currentMap = Object.fromEntries(current.map(a => [a.topicId, a]));
-    const toAssignMap = Object.fromEntries(toAssign.map(a => [a.topicId, a]));
-    // Merge: start with existing assignments, update those in toAssign, add new ones
-    const allTopicIds = new Set([...current.map(a => a.topicId), ...toAssign.map(a => a.topicId)]);
-    const updated = [];
-    for (const topicId of allTopicIds) {
-      const existing = currentMap[topicId];
-      const newData = toAssignMap[topicId];
-      if (existing && newData) {
-        updated.push({ ...existing, categoryId: newData.categoryId, dueDate: newData.dueDate, openDate: newData.openDate || null });
-      } else if (existing) {
-        updated.push(existing);
-      } else if (newData) {
-        updated.push({ topicId: newData.topicId, categoryId: newData.categoryId, dueDate: newData.dueDate, openDate: newData.openDate || null, addedAt: Date.now() });
+    try {
+      const current = normalizeAssignments(cls.assignedTopics);
+      const merged = [...current];
+      for (const a of toAssign) {
+        const idx = merged.findIndex(x => x.topicId === a.topicId);
+        if (idx >= 0) {
+          merged[idx] = { ...merged[idx], categoryId: a.categoryId, dueDate: a.dueDate, openDate: a.openDate || null };
+        } else {
+          merged.push({ topicId: a.topicId, categoryId: a.categoryId, dueDate: a.dueDate, openDate: a.openDate || null, addedAt: Date.now() });
+        }
       }
+      await batchUpdateAssignments(cls.id, merged);
+    } catch (err) {
+      console.error("Auto-assign failed:", err);
     }
-    // Single Firestore write
-    await batchUpdateAssignments(cls.id, updated);
     setSaving(false);
     onUpdate();
   };
