@@ -197,11 +197,26 @@ function SchedulePanel({ cls, assignments, onUpdate }) {
   const applyAssignments = async (toAssign) => {
     setConfirmOverwrite(false);
     setSaving(true);
-    for (const a of toAssign) {
-      const existing = assignments.find(ex => ex.topicId === a.topicId);
-      if (!existing) await assignTopicToClass(cls.id, a.topicId);
-      await updateAssignment(cls.id, a.topicId, { categoryId: a.categoryId, dueDate: a.dueDate, openDate: a.openDate || null });
+    // Build the full updated assignedTopics array in one pass to avoid race conditions
+    const current = (cls.assignedTopics || []).map ? normalizeAssignments(cls.assignedTopics) : [];
+    const currentMap = Object.fromEntries(current.map(a => [a.topicId, a]));
+    const toAssignMap = Object.fromEntries(toAssign.map(a => [a.topicId, a]));
+    // Merge: start with existing assignments, update those in toAssign, add new ones
+    const allTopicIds = new Set([...current.map(a => a.topicId), ...toAssign.map(a => a.topicId)]);
+    const updated = [];
+    for (const topicId of allTopicIds) {
+      const existing = currentMap[topicId];
+      const newData = toAssignMap[topicId];
+      if (existing && newData) {
+        updated.push({ ...existing, categoryId: newData.categoryId, dueDate: newData.dueDate, openDate: newData.openDate || null });
+      } else if (existing) {
+        updated.push(existing);
+      } else if (newData) {
+        updated.push({ topicId: newData.topicId, categoryId: newData.categoryId, dueDate: newData.dueDate, openDate: newData.openDate || null, addedAt: Date.now() });
+      }
     }
+    // Single Firestore write
+    await batchUpdateAssignments(cls.id, updated);
     setSaving(false);
     onUpdate();
   };
@@ -627,11 +642,7 @@ function Gradebook({ students, assignments, categories, onResetStudent }) {
         <thead>
           <tr>
             <th style={{ minWidth: 130 }}>Student</th>
-            {[...assignments].sort((a, b) => {
-              const aOpen = a.openDate || "9999", bOpen = b.openDate || "9999";
-              if (aOpen !== bOpen) return aOpen.localeCompare(bOpen);
-              return (a.dueDate || "9999").localeCompare(b.dueDate || "9999");
-            }).map(a => {
+            {assignments.map(a => {
               const topic = getTopic(a.topicId);
               const cat = categories.find(c => c.id === a.categoryId);
               const overdue = a.dueDate && isPastDue(a.dueDate);
@@ -669,11 +680,7 @@ function Gradebook({ students, assignments, categories, onResetStudent }) {
             return (
               <tr key={s.id}>
                 <td style={{ fontWeight:600 }}>{s.name}</td>
-                {[...assignments].sort((a, b) => {
-              const aOpen = a.openDate || "9999", bOpen = b.openDate || "9999";
-              if (aOpen !== bOpen) return aOpen.localeCompare(bOpen);
-              return (a.dueDate || "9999").localeCompare(b.dueDate || "9999");
-            }).map(a => {
+                {assignments.map(a => {
                   const p = studentProg[a.topicId];
                   const raw = p?.percentComplete ?? null;
                   const score = effectiveScore(a, p);

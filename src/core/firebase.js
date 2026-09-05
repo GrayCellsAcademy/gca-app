@@ -186,6 +186,10 @@ export async function updateAssignment(classId, topicId, updates) {
   await updateDoc(doc(db, "classes", classId), { assignedTopics: updated });
 }
 
+export async function batchUpdateAssignments(classId, assignments) {
+  await updateDoc(doc(db, "classes", classId), { assignedTopics: assignments });
+}
+
 export async function reorderTopics(classId, orderedTopicIds) {
   const cls = await getClass(classId);
   const current = normalizeAssignments(cls?.assignedTopics);
