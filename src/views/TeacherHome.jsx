@@ -198,17 +198,15 @@ function SchedulePanel({ cls, assignments, onUpdate }) {
     setConfirmOverwrite(false);
     setSaving(true);
     try {
-      const current = normalizeAssignments(cls.assignedTopics);
-      const merged = [...current];
-      for (const a of toAssign) {
-        const idx = merged.findIndex(x => x.topicId === a.topicId);
-        if (idx >= 0) {
-          merged[idx] = { ...merged[idx], categoryId: a.categoryId, dueDate: a.dueDate, openDate: a.openDate || null };
-        } else {
-          merged.push({ topicId: a.topicId, categoryId: a.categoryId, dueDate: a.dueDate, openDate: a.openDate || null, addedAt: Date.now() });
-        }
-      }
-      await batchUpdateAssignments(cls.id, merged);
+      // Full wipe and rebuild - replace all assignments with the auto-assigned set
+      const freshAssignments = toAssign.map(a => ({
+        topicId: a.topicId,
+        categoryId: a.categoryId,
+        dueDate: a.dueDate,
+        openDate: a.openDate || null,
+        addedAt: Date.now(),
+      }));
+      await batchUpdateAssignments(cls.id, freshAssignments);
     } catch (err) {
       console.error("Auto-assign failed:", err);
     }
