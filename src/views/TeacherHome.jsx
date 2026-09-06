@@ -110,11 +110,6 @@ function SchedulePanel({ cls, assignments, onUpdate }) {
   });
   const [saving, setSaving] = useState(false);
   const [newExDate, setNewExDate] = useState("");
-
-  // Sync schedule state when cls.schedule prop changes (e.g. after save)
-  useEffect(() => {
-    if (cls.schedule) setSchedule(cls.schedule);
-  }, [cls.schedule]);
   const [newExType, setNewExType] = useState("no-class");
   const [confirmOverwrite, setConfirmOverwrite] = useState(false);
   const [pendingAssignments, setPendingAssignments] = useState(null);
@@ -317,11 +312,17 @@ function SchedulePanel({ cls, assignments, onUpdate }) {
           <div style={{ fontSize:19,color:"var(--text2)",marginBottom:12,lineHeight:1.7 }}>
             Auto-assign will assign all Warmup, Classwork, and Mental Math assignments with due dates based on the schedule above.
           </div>
-          <button className="btn btn-primary" onClick={handleAutoAssign}
+          <button className="btn btn-primary" onClick={() => {
+              console.log("Auto-assign clicked", {startDate: schedule.startDate, days: schedule.days, saving, built: buildAutoAssignments().length});
+              handleAutoAssign();
+            }}
             disabled={!schedule.startDate || !schedule.days.length || saving}
             style={{ fontSize:19 }}>
             {saving ? "Assigning..." : " Auto-assign All"}
           </button>
+          <div style={{ fontSize:17, color:"var(--text3)", marginTop:8 }}>
+            Schedule: {schedule.startDate || "no start date"} | Days: {schedule.days.join(",")} | Built: {buildAutoAssignments().length} assignments
+          </div>
         </div>
       </div>
     </div>
