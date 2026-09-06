@@ -110,6 +110,11 @@ function SchedulePanel({ cls, assignments, onUpdate }) {
   });
   const [saving, setSaving] = useState(false);
   const [newExDate, setNewExDate] = useState("");
+
+  // Sync schedule state when cls.schedule prop changes (e.g. after save)
+  useEffect(() => {
+    if (cls.schedule) setSchedule(cls.schedule);
+  }, [cls.schedule]);
   const [newExType, setNewExType] = useState("no-class");
   const [confirmOverwrite, setConfirmOverwrite] = useState(false);
   const [pendingAssignments, setPendingAssignments] = useState(null);
