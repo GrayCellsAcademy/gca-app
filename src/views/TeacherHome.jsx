@@ -634,13 +634,13 @@ function Gradebook({ students, assignments, categories, onResetStudent }) {
       }
       if (total === 0) return null;
       const baseGrade = Math.round((earned / total) * 100);
-      return Math.min(100, baseGrade + ecBonus);
+      return baseGrade + ecBonus;
     }
     // Category-based: apply EC bonus to classwork category score
     const nonEcAssignments = assignments.filter(a => getTopic(a.topicId)?.type !== "extra-credit");
     const baseGrade = calculateGrade(nonEcAssignments, categories, studentProg);
     if (baseGrade === null) return null;
-    return Math.min(100, baseGrade + ecBonus);
+    return baseGrade + ecBonus;
   };
 
   return (
