@@ -588,6 +588,7 @@ function Gradebook({ students, assignments, categories, onResetStudent }) {
   if (!assignments.length) return <p style={{ color: "var(--text3)", fontSize: 20 }}>No assignments yet. Add topics above.</p>;
 
   const today = easternTodayStr();
+  const EC_ACTIVITY_COUNTS = { "lesson01-ec-v1": 3, "lesson02-ec-v1": 3, "lesson03-ec-v1": 1, "lesson04-ec-v1": 1 };
 
   // Compute effective score for a student on an assignment
   const effectiveScore = (a, p) => {
@@ -680,7 +681,7 @@ function Gradebook({ students, assignments, categories, onResetStudent }) {
                     return (et?.type === "extra-credit" || et?.title?.includes("Extra Credit")) && et?.title?.includes("Classwork " + cwNum);
                   }).reduce((sum, ec) => {
                     const ep = studentProg[ec.topicId];
-                    const done = ep.data?.actIdx ?? (ep?.completed || ep?.percentComplete === 100 ? 1 : 0); return sum + done * 10;
+                    const numActs = EC_ACTIVITY_COUNTS[ec.topicId] || 1; const done = (ep.data?.actIdx != null) ? ep.data.actIdx : Math.round((ep.percentComplete || 0) / 100 * numActs); return sum + done * 10;
                   }, 0) : 0;
                   const displayScore = score !== null ? score + ecBonus : null;
 
