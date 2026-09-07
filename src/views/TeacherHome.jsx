@@ -104,231 +104,218 @@ function extractNum(title) {
 }
 
 //  Schedule Panel
-function SchedulePanel({ cls, assignments, onUpdate }) {
-  const [schedule, setSchedule] = useState(cls.schedule || {
-    startDate: "", days: [], time: "09:00", exceptions: []
-  });
-  const [saving, setSaving] = useState(false);
+function SchedulePanel({ cls, onUpdate }) {
+  const sched = cls.schedule || {};
+  const [startDate, setStartDate] = useState(sched.startDate || "");
+  const [days, setDays] = useState(sched.days || []);
+  const [time, setTime] = useState(sched.time || "09:00");
+  const [exceptions, setExceptions] = useState(sched.exceptions || []);
   const [newExDate, setNewExDate] = useState("");
   const [newExType, setNewExType] = useState("no-class");
-  const [confirmOverwrite, setConfirmOverwrite] = useState(false);
-  const [pendingAssignments, setPendingAssignments] = useState(null);
+  const [status, setStatus] = useState("");
 
-  const classDays = schedule.startDate && schedule.days.length > 0
-    ? getClassDays(schedule.startDate, schedule.days, schedule.exceptions)
+  // Re-sync when cls updates (e.g. after save)
+  useEffect(() => {
+    const s = cls.schedule || {};
+    if (s.startDate !== undefined) setStartDate(s.startDate || "");
+    if (s.days !== undefined) setDays(s.days || []);
+    if (s.time !== undefined) setTime(s.time || "09:00");
+    if (s.exceptions !== undefined) setExceptions(s.exceptions || []);
+  }, [cls.id, cls.schedule]);
+
+  const classDays = startDate && days.length > 0
+    ? getClassDays(startDate, days, exceptions)
     : [];
 
-  const saveScheduleData = async (updated) => {
+  const saveSchedule = async (updates) => {
+    const updated = { startDate, days, time, exceptions, ...updates };
     await saveScheduleToClass(cls.id, updated);
     onUpdate();
   };
 
-  const updateSchedule = (changes) => {
-    const updated = { ...schedule, ...changes };
-    setSchedule(updated);
-    saveScheduleData(updated);
-  };
-
   const toggleDay = (dow) => {
-    const days = schedule.days.includes(dow)
-      ? schedule.days.filter(d => d !== dow)
-      : [...schedule.days, dow].sort((a, b) => a - b);
-    updateSchedule({ days });
+    const next = days.includes(dow)
+      ? days.filter(d => d !== dow)
+      : [...days, dow].sort((a, b) => a - b);
+    setDays(next);
+    saveSchedule({ days: next });
   };
 
   const addException = () => {
     if (!newExDate) return;
-    const exceptions = [...(schedule.exceptions || []), { date: newExDate, type: newExType }]
-      .sort((a, b) => a.date.localeCompare(b.date));
+    const next = [...exceptions, { date: newExDate, type: newExType }].sort((a, b) => a.date.localeCompare(b.date));
+    setExceptions(next);
     setNewExDate("");
-    updateSchedule({ exceptions });
+    saveSchedule({ exceptions: next });
   };
 
   const removeException = (date) => {
-    updateSchedule({ exceptions: (schedule.exceptions || []).filter(e => e.date !== date) });
+    const next = exceptions.filter(e => e.date !== date);
+    setExceptions(next);
+    saveSchedule({ exceptions: next });
   };
 
-  const buildAutoAssignments = () => {
-    if (!schedule.startDate || !schedule.days.length || !schedule.time) return [];
-    const days = classDays;
-    const published = getPublishedTopics();
-    // Warmups excluded from auto-assign (not yet created for all courses)
-    const classworks = published.filter(t => /^Classwork \d+/.test(t.title) && !t.title.includes("Extra Credit")).sort((a, b) => (extractNum(a.title) || 0) - (extractNum(b.title) || 0));
-    const drills = published.filter(t => t.type === "drill" && t.type !== "extra-credit").sort((a, b) => (a.order || 0) - (b.order || 0));
-    const results = [];
-    const [h, m] = schedule.time.split(":").map(Number);
-    const dueMin = h * 60 + m + 10;
-    const dueSuffix = "T" + String(Math.floor(dueMin / 60)).padStart(2, "0") + ":" + String(dueMin % 60).padStart(2, "0");
-
-    classworks.forEach(c => {
-      const n = extractNum(c.title);
-      if (!n) return;
-      const dayIdx = n - 1;
-      if (dayIdx >= days.length) return;
-      const classDay = days[dayIdx];
-      const nextClassDay = days[dayIdx + 1];
-      const dueDT = nextClassDay ? prevDay(nextClassDay) + "T23:59" : classDay + "T23:59";
-      results.push({ topicId: c.id, categoryId: "classwork", dueDate: dueDT, openDate: classDay + "T00:00" });
-    });
-
-    drills.forEach((d, i) => {
-      if (i >= days.length) return;
-      const classDay = days[i];
-      const nextClassDay = days[i + 1];
-      const dueDT = nextClassDay ? prevDay(nextClassDay) + "T23:59" : classDay + "T23:59";
-      results.push({ topicId: d.id, categoryId: "mentalmath", dueDate: dueDT, openDate: classDay + "T00:00" });
-    });
-
-    return results;
-  };
-
-  const handleAutoAssign = () => {
-    const built = buildAutoAssignments();
-    if (!built.length) return;
-    const alreadyAssigned = assignments.filter(a => built.some(b => b.topicId === a.topicId && a.dueDate));
-    setPendingAssignments(built);
-    if (alreadyAssigned.length > 0) {
-      setConfirmOverwrite(true);
-    } else {
-      applyAssignments(built);
+  const handleAutoAssign = async () => {
+    if (!startDate || !days.length || !time) {
+      setStatus("Please set a start date, class days, and time first.");
+      return;
     }
-  };
-
-  const applyAssignments = async (toAssign) => {
-    setConfirmOverwrite(false);
-    setSaving(true);
+    setStatus("Working...");
     try {
-      // Full wipe and rebuild - replace all assignments with the auto-assigned set
-      const freshAssignments = toAssign.map(a => ({
-        topicId: a.topicId,
-        categoryId: a.categoryId,
-        dueDate: a.dueDate,
-        openDate: a.openDate || null,
-        addedAt: Date.now(),
-      }));
-      await batchUpdateAssignments(cls.id, freshAssignments);
+      const published = getPublishedTopics();
+      const classworks = published
+        .filter(t => /^Classwork \d+/.test(t.title) && !t.title.includes("Extra Credit"))
+        .sort((a, b) => (extractNum(a.title) || 0) - (extractNum(b.title) || 0));
+      const drills = published
+        .filter(t => t.type === "drill")
+        .sort((a, b) => (a.order || 0) - (b.order || 0));
+
+      const cd = getClassDays(startDate, days, exceptions);
+      const [h, m] = time.split(":").map(Number);
+      const dueMin = h * 60 + m + 10;
+      const dueSuffix = "T" + String(Math.floor(dueMin / 60)).padStart(2, "0") + ":" + String(dueMin % 60).padStart(2, "0");
+
+      const built = [];
+
+      classworks.forEach(c => {
+        const n = extractNum(c.title);
+        if (!n) return;
+        const di = n - 1;
+        if (di >= cd.length) return;
+        const classDay = cd[di];
+        const nextDay = cd[di + 1];
+        built.push({
+          topicId: c.id,
+          categoryId: "classwork",
+          openDate: classDay + "T00:00",
+          dueDate: nextDay ? prevDay(nextDay) + "T23:59" : classDay + "T23:59",
+          addedAt: Date.now(),
+        });
+      });
+
+      drills.forEach((d, i) => {
+        if (i >= cd.length) return;
+        const classDay = cd[i];
+        const nextDay = cd[i + 1];
+        built.push({
+          topicId: d.id,
+          categoryId: "mentalmath",
+          openDate: classDay + "T00:00",
+          dueDate: nextDay ? prevDay(nextDay) + "T23:59" : classDay + "T23:59",
+          addedAt: Date.now(),
+        });
+      });
+
+      if (!built.length) {
+        setStatus("No assignments found to assign.");
+        return;
+      }
+
+      await batchUpdateAssignments(cls.id, built);
+      setStatus("Done! " + built.length + " assignments assigned.");
+      onUpdate();
     } catch (err) {
-      console.error("Auto-assign failed:", err);
+      console.error("Auto-assign error:", err);
+      setStatus("Error: " + err.message);
     }
-    setSaving(false);
-    onUpdate();
   };
 
   const previewDays = classDays.slice(0, 12);
 
   return (
-    <div>
-      {confirmOverwrite && (
-        <div style={{ position:"fixed",inset:0,zIndex:1000,background:"rgba(0,0,0,0.7)",display:"flex",alignItems:"center",justifyContent:"center",padding:20 }}>
-          <div className="card" style={{ maxWidth:480,width:"100%",animation:"popIn 0.2s ease" }}>
-            <div style={{ fontSize:28,marginBottom:12 }}></div>
-            <h3 style={{ fontSize:20,fontWeight:800,marginBottom:8,color:"var(--amber)" }}>Overwrite Existing Due Dates?</h3>
-            <p style={{ fontSize:20,color:"var(--text2)",marginBottom:20,lineHeight:1.7 }}>
-              Some assignments already have due dates. Auto-assigning will overwrite them. Continue?
-            </p>
-            <div style={{ display:"flex",gap:10 }}>
-              <button className="btn btn-ghost" style={{ flex:1 }} onClick={() => { setConfirmOverwrite(false); setPendingAssignments(null); }}>Cancel</button>
-              <button className="btn btn-primary" style={{ flex:1 }} onClick={() => applyAssignments(pendingAssignments)}>Yes, Overwrite</button>
-            </div>
+    <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+
+      <div>
+        <div style={{ fontSize: 19, fontWeight: 700, color: "var(--text2)", marginBottom: 8 }}>Course Start Date</div>
+        <input type="date" value={startDate}
+          onChange={e => { setStartDate(e.target.value); saveSchedule({ startDate: e.target.value }); }}
+          style={{ fontSize: 19, padding: "8px 12px", width: 200 }} />
+      </div>
+
+      <div>
+        <div style={{ fontSize: 19, fontWeight: 700, color: "var(--text2)", marginBottom: 8 }}>Class Days</div>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          {DAYS_OF_WEEK.map((label, dow) => (
+            <button key={dow} onClick={() => toggleDay(dow)}
+              style={{ padding: "8px 16px", borderRadius: "var(--radius-sm)", border: "none",
+                background: days.includes(dow) ? "var(--blue)" : "var(--bg2)",
+                color: days.includes(dow) ? "#fff" : "var(--text2)",
+                fontFamily: "var(--font)", fontWeight: 700, fontSize: 19, cursor: "pointer", transition: "all 0.15s" }}>
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <div style={{ fontSize: 19, fontWeight: 700, color: "var(--text2)", marginBottom: 8 }}>Class Start Time (Eastern)</div>
+        <input type="time" value={time}
+          onChange={e => { setTime(e.target.value); saveSchedule({ time: e.target.value }); }}
+          style={{ fontSize: 19, padding: "8px 12px", width: 160 }} />
+      </div>
+
+      <div>
+        <div style={{ fontSize: 19, fontWeight: 700, color: "var(--text2)", marginBottom: 8 }}>Exceptions (No-class Days & Exams)</div>
+        <div style={{ display: "flex", gap: 8, marginBottom: 10, flexWrap: "wrap" }}>
+          <input type="date" value={newExDate} onChange={e => setNewExDate(e.target.value)}
+            style={{ fontSize: 19, padding: "6px 10px" }} />
+          <select value={newExType} onChange={e => setNewExType(e.target.value)}
+            style={{ fontSize: 19, padding: "6px 10px" }}>
+            <option value="no-class">No class</option>
+            <option value="exam">Exam day</option>
+          </select>
+          <button className="btn btn-ghost btn-sm" onClick={addException}>+ Add</button>
+        </div>
+        {exceptions.length > 0 && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+            {exceptions.map(e => (
+              <div key={e.date} style={{ display: "flex", alignItems: "center", gap: 10, background: "var(--bg2)", borderRadius: "var(--radius-sm)", padding: "6px 12px" }}>
+                <span style={{ fontSize: 19, fontWeight: 600 }}>{e.date}</span>
+                <span style={{ fontSize: 19, color: e.type === "exam" ? "var(--amber)" : "var(--red)", background: e.type === "exam" ? "rgba(245,158,11,0.1)" : "rgba(239,68,68,0.1)", padding: "2px 8px", borderRadius: 99, fontWeight: 700 }}>
+                  {e.type === "exam" ? "Exam" : "No class"}
+                </span>
+                <button onClick={() => removeException(e.date)} style={{ marginLeft: "auto", background: "none", border: "none", color: "var(--red)", cursor: "pointer", fontSize: 20, fontFamily: "var(--font)" }}>x</button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {classDays.length > 0 && (
+        <div>
+          <div style={{ fontSize: 19, fontWeight: 700, color: "var(--text2)", marginBottom: 8 }}>
+            Class Day Preview ({classDays.length} class days)
+          </div>
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+            {previewDays.map((d, i) => (
+              <div key={d} style={{ fontSize: 19, padding: "4px 10px", borderRadius: 99, background: "var(--bg2)", border: "1px solid var(--border)" }}>
+                <span style={{ color: "var(--text3)", marginRight: 4 }}>Day {i + 1}</span>
+                <span style={{ fontWeight: 700 }}>{d}</span>
+              </div>
+            ))}
+            {classDays.length > 12 && <div style={{ fontSize: 19, color: "var(--text3)", padding: "4px 8px" }}>+{classDays.length - 12} more</div>}
           </div>
         </div>
       )}
 
-      <div style={{ display:"flex",flexDirection:"column",gap:20 }}>
-        <div>
-          <div style={{ fontSize:19,fontWeight:700,color:"var(--text2)",marginBottom:8 }}>Course Start Date</div>
-          <input type="date" value={schedule.startDate}
-            onChange={e => updateSchedule({ startDate: e.target.value })}
-            style={{ fontSize:19,padding:"8px 12px",width:200 }} />
+      <div style={{ borderTop: "1px solid var(--border)", paddingTop: 16 }}>
+        <div style={{ fontSize: 19, color: "var(--text2)", marginBottom: 12, lineHeight: 1.7 }}>
+          Auto-assign will wipe all existing assignments and assign all Classwork and Mental Math assignments with due dates based on the schedule above.
         </div>
-
-        <div>
-          <div style={{ fontSize:19,fontWeight:700,color:"var(--text2)",marginBottom:8 }}>Class Days</div>
-          <div style={{ display:"flex",gap:8,flexWrap:"wrap" }}>
-            {DAYS_OF_WEEK.map((label, dow) => (
-              <button key={dow} onClick={() => toggleDay(dow)}
-                style={{ padding:"8px 16px",borderRadius:"var(--radius-sm)",border:"none",
-                  background:schedule.days.includes(dow)?"var(--blue)":"var(--bg2)",
-                  color:schedule.days.includes(dow)?"#fff":"var(--text2)",
-                  fontFamily:"var(--font)",fontWeight:700,fontSize:19,cursor:"pointer",transition:"all 0.15s" }}>
-                {label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div>
-          <div style={{ fontSize:19,fontWeight:700,color:"var(--text2)",marginBottom:8 }}>Class Start Time (Eastern)</div>
-          <input type="time" value={schedule.time}
-            onChange={e => updateSchedule({ time: e.target.value })}
-            style={{ fontSize:19,padding:"8px 12px",width:160 }} />
-        </div>
-
-        <div>
-          <div style={{ fontSize:19,fontWeight:700,color:"var(--text2)",marginBottom:8 }}>Exceptions</div>
-          <div style={{ display:"flex",gap:8,marginBottom:10,flexWrap:"wrap" }}>
-            <input type="date" value={newExDate} onChange={e => setNewExDate(e.target.value)}
-              style={{ fontSize:19,padding:"6px 10px" }} />
-            <select value={newExType} onChange={e => setNewExType(e.target.value)}
-              style={{ fontSize:19,padding:"6px 10px" }}>
-              <option value="no-class">No class</option>
-              <option value="exam">Exam day</option>
-            </select>
-            <button className="btn btn-ghost btn-sm" onClick={addException}>+ Add</button>
-          </div>
-          {(schedule.exceptions || []).length > 0 && (
-            <div style={{ display:"flex",flexDirection:"column",gap:4 }}>
-              {(schedule.exceptions || []).map(e => (
-                <div key={e.date} style={{ display:"flex",alignItems:"center",gap:10,background:"var(--bg2)",borderRadius:"var(--radius-sm)",padding:"6px 12px" }}>
-                  <span style={{ fontSize:19,fontWeight:600 }}>{e.date}</span>
-                  <span style={{ fontSize:19,color:e.type==="exam"?"var(--amber)":"var(--red)",background:e.type==="exam"?"rgba(245,158,11,0.1)":"rgba(239,68,68,0.1)",padding:"2px 8px",borderRadius:99,fontWeight:700 }}>
-                    {e.type === "exam" ? "Exam" : "No class"}
-                  </span>
-                  <button onClick={() => removeException(e.date)} style={{ marginLeft:"auto",background:"none",border:"none",color:"var(--red)",cursor:"pointer",fontSize:20,fontFamily:"var(--font)" }}>x</button>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {classDays.length > 0 && (
-          <div>
-            <div style={{ fontSize:19,fontWeight:700,color:"var(--text2)",marginBottom:8 }}>
-              Class Day Preview
-            </div>
-            <div style={{ display:"flex",gap:6,flexWrap:"wrap" }}>
-              {previewDays.map((d, i) => (
-                <div key={d} style={{ fontSize:19,padding:"4px 10px",borderRadius:99,background:"var(--bg2)",border:"1px solid var(--border)" }}>
-                  <span style={{ color:"var(--text3)",marginRight:4 }}>Day {i+1}</span>
-                  <span style={{ fontWeight:700 }}>{d}</span>
-                </div>
-              ))}
-              {classDays.length > 12 && <div style={{ fontSize:19,color:"var(--text3)",padding:"4px 8px" }}>+{classDays.length-12} more</div>}
-            </div>
+        <button className="btn btn-primary" style={{ fontSize: 19 }}
+          onClick={handleAutoAssign}>
+          Auto-assign All
+        </button>
+        {status && (
+          <div style={{ marginTop: 12, fontSize: 19, fontWeight: 700,
+            color: status.startsWith("Error") ? "var(--red)" : status.startsWith("Done") ? "var(--green)" : "var(--text3)" }}>
+            {status}
           </div>
         )}
-
-        <div style={{ borderTop:"1px solid var(--border)",paddingTop:16 }}>
-          <div style={{ fontSize:19,color:"var(--text2)",marginBottom:12,lineHeight:1.7 }}>
-            Auto-assign will assign all Warmup, Classwork, and Mental Math assignments with due dates based on the schedule above.
-          </div>
-          <button className="btn btn-primary" onClick={() => {
-              console.log("Auto-assign clicked", {startDate: schedule.startDate, days: schedule.days, saving, built: buildAutoAssignments().length});
-              handleAutoAssign();
-            }}
-            disabled={!schedule.startDate || !schedule.days.length || saving}
-            style={{ fontSize:19 }}>
-            {saving ? "Assigning..." : " Auto-assign All"}
-          </button>
-          <div style={{ fontSize:17, color:"var(--text3)", marginTop:8 }}>
-            Schedule: {schedule.startDate || "no start date"} | Days: {schedule.days.join(",")} | Built: {buildAutoAssignments().length} assignments
-          </div>
-        </div>
       </div>
     </div>
   );
 }
-
 
 //  Category Manager 
 function CategoryManager({ categories, onChange }) {
