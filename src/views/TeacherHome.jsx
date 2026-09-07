@@ -673,6 +673,16 @@ function Gradebook({ students, assignments, categories, onResetStudent }) {
                   const isLate = a.dueDate && p?.updatedAt && new Date(p.updatedAt).toLocaleString("sv", { timeZone: "America/New_York" }).slice(0, 16) > (a.dueDate.length === 10 ? a.dueDate + "T00:00" : a.dueDate.slice(0, 16));
                   const notAllowed = a.allowLate===false && isLate;
                   const overdue = a.dueDate && isPastDue(a.dueDate) && raw===null;
+                  const cellTopic = getTopic(a.topicId);
+                  const cwNum = cellTopic?.title ? (cellTopic.title.match(/^Classwork (\d+)/) || [])[1] : null;
+                  const ecBonus = cwNum ? assignments.filter(ec => {
+                    const et = getTopic(ec.topicId);
+                    return et?.type === "extra-credit" && et?.title?.includes("Classwork " + cwNum);
+                  }).reduce((sum, ec) => {
+                    const ep = studentProg[ec.topicId];
+                    return sum + (ep?.completed || ep?.percentComplete === 100 ? 10 : 0);
+                  }, 0) : 0;
+                  const displayScore = score !== null ? score + ecBonus : null;
 
                   return (
                     <td key={a.topicId} style={{ textAlign:"center" }}>
@@ -682,27 +692,9 @@ function Gradebook({ students, assignments, categories, onResetStudent }) {
                         </span>
                       ) : (
                         <div style={{ display:"flex",flexDirection:"column",alignItems:"center",gap:2 }}>
-                          {(() => {
-                            const topic = getTopic(a.topicId);
-                            const cwNum = topic?.title ? (topic.title.match(/^Classwork (\d+)/) || [])[1] : null;
-                            let ecBonus = 0;
-                            if (cwNum) {
-                              const ecTopics = assignments.filter(ec => {
-                                const et = getTopic(ec.topicId);
-                                return et?.type === "extra-credit" && et?.title?.includes("Classwork " + cwNum);
-                              });
-                              ecBonus = ecTopics.reduce((sum, ec) => {
-                                const ep = studentProg[ec.topicId];
-                                return sum + (ep?.completed || ep?.percentComplete === 100 ? 10 : 0);
-                              }, 0);
-                            }
-                            const displayScore = score + ecBonus;
-                            return (
                           <span style={{ fontSize:20,fontWeight:700,color:notAllowed?"var(--red)":isLate?"var(--orange)":displayScore>=100?"var(--green)":"var(--text)" }}>
                             {displayScore}%{ecBonus > 0 && <span style={{ fontSize:13,color:"var(--green)",marginLeft:3 }}>+{ecBonus}EC</span>}
                           </span>
-                            );
-                          })()}
                           {isLate && <span style={{ fontSize:11,color:notAllowed?"var(--red)":"var(--orange)",fontWeight:700 }}>{notAllowed?"Not accepted":"Late"}</span>}
                           <div style={{ width:60,height:4,background:"var(--surface2)",borderRadius:99,overflow:"hidden" }}>
                             <div style={{ height:"100%",width:`${score}%`,background:notAllowed?"var(--red)":isLate?"var(--orange)":score===100?"var(--green)":"var(--blue)",borderRadius:99 }} />
@@ -710,8 +702,6 @@ function Gradebook({ students, assignments, categories, onResetStudent }) {
                           {a.points && score!==null && (
                             <span style={{ fontSize:11,color:"var(--text3)" }}>{Math.round(score/100*a.points)}/{a.points}pts</span>
                           )}
-                            );
-                          })()}
                         </div>
                       )}
                     </td>
