@@ -9,6 +9,7 @@ import ExtraCredit02Player from "./ExtraCredit02Player";
 import Lesson03WarmupPlayer from "./Lesson03WarmupPlayer";
 import ExtraCredit03Player from "./ExtraCredit03Player";
 import Lesson04WarmupPlayer from "./Lesson04WarmupPlayer";
+import ExtraCredit04Player from "./ExtraCredit04Player";
 import ReviewHomework from "./ReviewHomework";
 import Lesson02MasteryPlayer from "./Lesson02MasteryPlayer";
 import SubtractionTablesPlayer from "./SubtractionTablesPlayer";
@@ -114,6 +115,13 @@ export const TOPICS = {
     description: "Practice 3x2 digit column multiplication and 4-digit long division before Classwork 4.",
     subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 9,
     Player: Lesson04WarmupPlayer,
+  },
+  "lesson04-ec-v1": {
+    id: "lesson04-ec-v1",
+    title: "Classwork 4 Extra Credit (019)",
+    description: "Insert parentheses to make equations true, and compare nth root expressions.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "extra-credit", status: "published", order: 10,
+    Player: ExtraCredit04Player,
   },
   "lesson02-mastery-v1": {
     id: "lesson02-mastery-v1",

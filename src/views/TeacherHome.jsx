@@ -588,7 +588,7 @@ function Gradebook({ students, assignments, categories, onResetStudent }) {
   if (!assignments.length) return <p style={{ color: "var(--text3)", fontSize: 20 }}>No assignments yet. Add topics above.</p>;
 
   const today = easternTodayStr();
-  const EC_ACTIVITY_COUNTS = { "lesson01-ec-v1": 3, "lesson02-ec-v1": 3, "lesson03-ec-v1": 1, "lesson04-ec-v1": 1 };
+  const EC_ACTIVITY_COUNTS = { "lesson01-ec-v1": 3, "lesson02-ec-v1": 3, "lesson03-ec-v1": 1, "lesson04-ec-v1": 2 };
 
   // Compute effective score for a student on an assignment
   const effectiveScore = (a, p) => {
