@@ -353,7 +353,7 @@ export function genOrderOfOps2() {
     const result = evalWithPrecedence([a, op1, b, op2, c]);
     if (result === null) continue;
 
-    const latex = latexPair(a, op1, b) + " " + latexOp(op2) + " " + c;
+    const latex = latexPairInline(a, op1, b) + " " + latexOp(op2) + " " + c;
     return {
       type: "order-ops-2", latex, result,
       answer: String(result), displayAnswer: String(result),
@@ -390,7 +390,7 @@ export function genOrderOfOps3() {
     const result = evalWithPrecedence([a, op1, b, op2, c, op3, d]);
     if (result === null) continue;
 
-    const latex = latexPair(a, op1, b) + " " + latexOp(op2) + " " + c + " " + latexOp(op3) + " " + d;
+    const latex = latexPairInline(a, op1, b) + " " + latexOp(op2) + " " + c + " " + latexOp(op3) + " " + d;
     return {
       type: "order-ops-3", latex, result,
       answer: String(result), displayAnswer: String(result),
@@ -485,6 +485,12 @@ function latexPair(a, op, b) {
   if (op === "/") return "\\dfrac{" + a + "}{" + b + "}";
   if (op === "*") return a + " \\times " + b;
   return a + " " + op + " " + b;
+}
+
+// Inline version: uses \div instead of fraction bar for division
+function latexPairInline(a, op, b) {
+  if (op === "/") return a + " \\div " + b;
+  return latexPair(a, op, b);
 }
 
 function formatPair(a, op, b) {
