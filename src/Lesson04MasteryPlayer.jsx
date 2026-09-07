@@ -112,7 +112,6 @@ function WorkedSolution({ question }) {
   if (!question) return null;
   const q = question;
   if (q.type === "power") {
-    const steps = Array.from({ length:q.exp },(_,i) => Math.pow(q.base, i+1));
     return (
       <div style={{ fontSize:14,color:"var(--text2)",marginTop:8,fontFamily:"var(--mono)" }}>
         {q.base}^{q.exp} = {Array.from({ length:q.exp },()=>q.base).join(" x ")} = <strong style={{ color:"var(--green)" }}>{q.result}</strong>
@@ -145,8 +144,9 @@ function MasteryActivity({ stepIdx, onComplete, onSave }) {
 
   useEffect(() => { newQuestion(); }, [stepIdx]);
 
-  const newQuestion = () => {
-    const q = genQuestion(step.id, poolState);
+  const newQuestion = (currentPoolState) => {
+    const ps = currentPoolState || poolState;
+    const q = genQuestion(step.id, ps);
     if (q._nextPool || q._nextIdx !== undefined) {
       const newState = {};
       if (step.id === "sqrt") { newState.sqrtPool = q._nextPool; newState.sqrtIdx = q._nextIdx; }
@@ -165,15 +165,8 @@ function MasteryActivity({ stepIdx, onComplete, onSave }) {
     if (correct) {
       const newStreak = streak + 1;
       setStreak(newStreak);
-      if (newStreak >= MASTERY_STREAK) {
-        const nextStep = stepIdx + 1;
-        await onSave({ stepIdx: nextStep, streak: 0 }, nextStep >= STEPS.length);
-        if (nextStep < STEPS.length) onComplete();
-        else onComplete(true);
-      } else {
-        await onSave({ stepIdx, streak: newStreak }, false);
-        setResult({ correct: true });
-      }
+      await onSave({ stepIdx, streak: newStreak }, false);
+      setResult({ correct: true, final: newStreak >= MASTERY_STREAK });
     } else {
       setStreak(0);
       await onSave({ stepIdx, streak: 0 }, false);
@@ -212,7 +205,9 @@ function MasteryActivity({ stepIdx, onComplete, onSave }) {
         {result ? (
           <div style={{ marginTop:14 }}>
             <div style={{ textAlign:"center",fontSize:18,fontWeight:800,color:result.correct?"var(--green)":"var(--red)",marginBottom:8 }}>
-              {result.correct ? "Correct! " + streak + "/" + MASTERY_STREAK : "Incorrect - streak reset"}
+              {result.correct
+                ? (result.final ? "Activity complete! " : "Correct! " + streak + "/" + MASTERY_STREAK)
+                : "Incorrect - streak reset"}
             </div>
             {!result.correct && (
               <div style={{ background:"rgba(16,185,129,0.06)",border:"1px solid rgba(16,185,129,0.2)",borderRadius:"var(--radius-sm)",padding:"10px 14px",marginBottom:10 }}>
@@ -220,8 +215,17 @@ function MasteryActivity({ stepIdx, onComplete, onSave }) {
                 <WorkedSolution question={question} />
               </div>
             )}
-            <button className="btn btn-primary" style={{ width:"100%" }} onClick={newQuestion}>
-              {result.correct ? "Next question" : "Try again"}
+            <button className="btn btn-primary" style={{ width:"100%" }} onClick={async () => {
+              if (result.correct && result.final) {
+                const nextStep = stepIdx + 1;
+                await onSave({ stepIdx: nextStep, streak: 0 }, nextStep >= STEPS.length);
+                if (nextStep >= STEPS.length) onComplete(true);
+                else onComplete();
+              } else {
+                newQuestion();
+              }
+            }}>
+              {result.correct && result.final ? "Next activity " : result.correct ? "Next question" : "Try again"}
             </button>
           </div>
         ) : (
@@ -236,7 +240,7 @@ function MasteryActivity({ stepIdx, onComplete, onSave }) {
 
 // -- Main Player --
 export default function Lesson04MasteryPlayer({ user, topic, onHome }) {
-  useActivityTracking(user, "lesson04-mastery-v1", "HW 4 (019)");
+  useActivityTracking(user, "lesson04-mastery-v1", "Classwork 4 (019)");
   useKaTeX();
   const topicId = topic?.id || LESSON04_MASTERY_TOPIC_ID;
   const [loading, setLoading] = useState(true);
@@ -274,7 +278,7 @@ export default function Lesson04MasteryPlayer({ user, topic, onHome }) {
     <div style={{ maxWidth:520,margin:"0 auto",textAlign:"center",animation:"fadeUp 0.4s ease" }}>
       <div className="card">
         <div style={{ fontSize:48,fontWeight:900,color:"var(--amber)",marginBottom:16 }}>100%</div>
-        <h2 style={{ fontSize:24,fontWeight:800,marginBottom:8 }}>HW 4 (019) Complete!</h2>
+        <h2 style={{ fontSize:24,fontWeight:800,marginBottom:8 }}>Classwork 4 (019) Complete!</h2>
         <p style={{ color:"var(--text2)",fontSize:15,marginBottom:24 }}>
           Exponents, roots, order of operations, and variable expressions mastered!
         </p>
@@ -290,7 +294,7 @@ export default function Lesson04MasteryPlayer({ user, topic, onHome }) {
           <div style={{ display:"flex",alignItems:"center",gap:12 }}>
             <div style={{ width:40,height:40,borderRadius:12,background:"linear-gradient(135deg,var(--blue),var(--purple))",display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,fontWeight:800,color:"#fff" }}>L4</div>
             <div>
-              <div style={{ fontWeight:800,fontSize:17 }}>HW 4 (019): Mastery Activities</div>
+              <div style={{ fontWeight:800,fontSize:17 }}>Classwork 4 (019): Mastery Activities</div>
               <div style={{ color:"var(--text3)",fontSize:12 }}>3 correct in a row to advance each activity</div>
             </div>
           </div>
