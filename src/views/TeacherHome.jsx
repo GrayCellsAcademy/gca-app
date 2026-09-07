@@ -2,7 +2,7 @@
 import {
   getTeacherClasses, createClass, getStudentsForClass,
   assignTopicToClass, unassignTopicFromClass, reorderTopics,
-  updateAssignment, saveCategories, getClassProgress,
+  updateAssignment, batchUpdateAssignments, saveCategories, getClassProgress,
   normalizeAssignments, calculateGrade, gradeToLetter,
   resetStudentProgress, resetClassProgress, getStudentActivity,
   updateUser, archiveClass, saveScheduleToClass,
