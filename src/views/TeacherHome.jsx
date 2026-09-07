@@ -628,7 +628,7 @@ function Gradebook({ students, assignments, categories, onResetStudent }) {
         <thead>
           <tr>
             <th style={{ minWidth: 130 }}>Student</th>
-            {assignments.map(a => {
+            {assignments.filter(a => !getTopic(a.topicId)?.title?.includes("Extra Credit")).map(a => {
               const topic = getTopic(a.topicId);
               const cat = categories.find(c => c.id === a.categoryId);
               const overdue = a.dueDate && isPastDue(a.dueDate);
@@ -666,7 +666,7 @@ function Gradebook({ students, assignments, categories, onResetStudent }) {
             return (
               <tr key={s.id}>
                 <td style={{ fontWeight:600 }}>{s.name}</td>
-                {assignments.map(a => {
+                {assignments.filter(a => !getTopic(a.topicId)?.title?.includes("Extra Credit")).map(a => {
                   const p = studentProg[a.topicId];
                   const raw = p?.percentComplete ?? null;
                   const score = effectiveScore(a, p);
@@ -677,10 +677,10 @@ function Gradebook({ students, assignments, categories, onResetStudent }) {
                   const cwNum = cellTopic?.title ? (cellTopic.title.match(/^Classwork (\d+)/) || [])[1] : null;
                   const ecBonus = cwNum ? assignments.filter(ec => {
                     const et = getTopic(ec.topicId);
-                    return et?.type === "extra-credit" && et?.title?.includes("Classwork " + cwNum);
+                    return (et?.type === "extra-credit" || et?.title?.includes("Extra Credit")) && et?.title?.includes("Classwork " + cwNum);
                   }).reduce((sum, ec) => {
                     const ep = studentProg[ec.topicId];
-                    return sum + (ep?.completed || ep?.percentComplete === 100 ? 10 : 0);
+                    const done = ep.data?.actIdx ?? (ep?.completed || ep?.percentComplete === 100 ? 1 : 0); return sum + done * 10;
                   }, 0) : 0;
                   const displayScore = score !== null ? score + ecBonus : null;
 
