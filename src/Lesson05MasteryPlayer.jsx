@@ -274,8 +274,10 @@ function SignedOpsMastery({ onComplete, onSave, savedStreak }) {
       if (newStreak >= SIGNED_STREAK) {
         onComplete();
       } else {
-        setStage(1);
-        setQIdx(i => (i + 1) % totalQ);
+        setWrong(false);
+        setWrongStage(null);
+        // Show a brief correct message then move on
+        setStage(0); // 0 = "expression correct" phase
       }
     }
   };
@@ -425,7 +427,17 @@ function SignedOpsMastery({ onComplete, onSave, savedStreak }) {
           <KaTeX expr={expr.latex} />
         </div>
 
-        {wrong ? <WrongDisplay /> : (
+        {wrong ? <WrongDisplay /> : stage === 0 ? (
+          <div style={{ animation:"popIn 0.25s ease", textAlign:"center" }}>
+            <div style={{ fontSize:28, marginBottom:8 }}></div>
+            <div style={{ fontSize:22, fontWeight:800, color:"var(--green)", marginBottom:6 }}>Expression correct!</div>
+            <div style={{ fontSize:20, color:"var(--text3)", marginBottom:20 }}>Streak: {streak}/{SIGNED_STREAK}</div>
+            <button className="btn btn-success" style={{ width:"100%", fontSize:20, padding:"13px" }}
+              onClick={() => { setStage(1); setQIdx(i => (i + 1) % totalQ); }}>
+               Next expression
+            </button>
+          </div>
+        ) : (
           <>
             {stage === 1 && (
               <div>
@@ -522,7 +534,7 @@ const STEPS = [
 
 // - Main Player -
 export default function Lesson05MasteryPlayer({ user, topic, onHome }) {
-  useActivityTracking(user, "lesson05-mastery-v1", "HW 5 (019)");
+  useActivityTracking(user, "lesson05-mastery-v1", "Classwork 5 (019)");
   useKaTeX();
   const topicId = topic?.id || LESSON05_MASTERY_TOPIC_ID;
   const [loading, setLoading] = useState(true);
@@ -554,15 +566,26 @@ export default function Lesson05MasteryPlayer({ user, topic, onHome }) {
     if (done) setCompleted(true);
   };
 
-  const handleCorrect = () => {
+  const [correctPhase, setCorrectPhase] = useState(false);
+  const [pendingSave, setPendingSave] = useState(null);
+
+  const handleCorrect = async () => {
     const newStreak = streak + 1;
     if (newStreak >= MASTERY_STREAK) {
       const nextStep = stepIdx + 1;
       const done = nextStep >= STEPS.length;
-      save(nextStep, 0, done);
+      await save(nextStep, 0, done);
+      if (!done) { setPendingSave({ nextStep, done }); setCorrectPhase(true); }
     } else {
-      save(stepIdx, newStreak, false);
+      await save(stepIdx, newStreak, false);
+      setCorrectPhase(true);
+      setPendingSave(null);
     }
+  };
+
+  const handleCorrectNext = () => {
+    setCorrectPhase(false);
+    setPendingSave(null);
   };
 
   const handleWrong = () => save(stepIdx, 0, false);
@@ -573,7 +596,7 @@ export default function Lesson05MasteryPlayer({ user, topic, onHome }) {
     <div style={{ maxWidth:520,margin:"0 auto",textAlign:"center",animation:"fadeUp 0.4s ease" }}>
       <div className="card">
         <div style={{ fontSize:48,fontWeight:900,color:"var(--amber)",marginBottom:16 }}>100%</div>
-        <h2 style={{ fontSize:24,fontWeight:800,marginBottom:8 }}>HW 5 (019) Complete!</h2>
+        <h2 style={{ fontSize:24,fontWeight:800,marginBottom:8 }}>Classwork 5 (019) Complete!</h2>
         <p style={{ fontSize:20,color:"var(--text2)",marginBottom:24 }}>Signed numbers mastered!</p>
         <button className="btn btn-primary btn-lg" style={{ width:"100%" }} onClick={onHome}>Back to Home</button>
       </div>
@@ -590,7 +613,7 @@ export default function Lesson05MasteryPlayer({ user, topic, onHome }) {
           <div style={{ display:"flex",alignItems:"center",gap:12 }}>
             <div style={{ width:40,height:40,borderRadius:12,background:"linear-gradient(135deg,var(--blue),var(--purple))",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,fontWeight:800,color:"#fff" }}>L5</div>
             <div>
-              <div style={{ fontWeight:800,fontSize:22 }}>HW 5 (019): Signed Numbers Mastery</div>
+              <div style={{ fontWeight:800,fontSize:22 }}>Classwork 5 (019): Signed Numbers Mastery</div>
               <div style={{ fontSize:20,color:"var(--text3)" }}>3 correct in a row to advance</div>
             </div>
           </div>
@@ -619,6 +642,20 @@ export default function Lesson05MasteryPlayer({ user, topic, onHome }) {
             <StreakDots current={streak} needed={MASTERY_STREAK} />
           )}
 
+          {correctPhase ? (
+            <div style={{ animation:"popIn 0.25s ease", textAlign:"center" }}>
+              <div style={{ fontSize:28, marginBottom:8 }}></div>
+              <div style={{ fontSize:22, fontWeight:800, color:"var(--green)", marginBottom:6 }}>Correct!</div>
+              <div style={{ fontSize:20, color:"var(--text3)", marginBottom:20 }}>
+                Streak: {streak}/{MASTERY_STREAK}
+              </div>
+              <button className="btn btn-success" style={{ width:"100%", fontSize:20, padding:"13px" }}
+                onClick={handleCorrectNext}>
+                 Next problem
+              </button>
+            </div>
+          ) : (
+            <>
           {step.id === "compare-signed" && (
             <CompareSignedMastery key={stepIdx+"-"+streak} streak={streak} onCorrect={handleCorrect} onWrong={handleWrong} />
           )}
@@ -627,6 +664,8 @@ export default function Lesson05MasteryPlayer({ user, topic, onHome }) {
           )}
           {step.id === "multiple-minus" && (
             <MultipleMinusMastery key={stepIdx+"-"+streak} streak={streak} onCorrect={handleCorrect} onWrong={handleWrong} />
+          )}
+            </>
           )}
           {step.id === "signed-ops" && (
             <SignedOpsMastery
