@@ -48,11 +48,15 @@ function genInsertParens() {
   return { type:"insert-parens", tokens, target:36, openSlot:0, closeSlot:3, standard:18 };
 }
 
-function tokenDisplay(t) {
+function renderToken(t) {
   if (t.type === "num") return String(t.value);
-  if (t.op === "x") return <span style={{ fontSize:22 }}>&#215;</span>;
-  if (t.op === "^") return <span style={{ fontSize:18, color:"var(--text3)" }}>^</span>;
+  if (t.op === "x") return "\u00d7";
+  if (t.op === "^") return "^";
   return t.op;
+}
+
+function expressionString(tokens) {
+  return tokens.map(renderToken).join(" ");
 }
 
 function ParenProblem({ problem, onSubmit }) {
@@ -61,108 +65,96 @@ function ParenProblem({ problem, onSubmit }) {
   const [evaluated, setEvaluated] = useState(null);
 
   const { tokens, target } = problem;
-  const nSlots = tokens.length + 1;
 
   const handleSlotClick = (idx) => {
     if (openSlot === null) {
-      setOpenSlot(idx);
-      setCloseSlot(null);
-      setEvaluated(null);
+      setOpenSlot(idx); setCloseSlot(null); setEvaluated(null);
     } else if (closeSlot === null) {
-      if (idx <= openSlot) {
-        // Reset and start over
-        setOpenSlot(idx);
-        return;
-      }
+      if (idx <= openSlot) { setOpenSlot(idx); return; }
       setCloseSlot(idx);
-      const val = evalTokens(tokens, openSlot, idx);
-      setEvaluated(val);
+      setEvaluated(evalTokens(tokens, openSlot, idx));
     } else {
-      // Reset
-      setOpenSlot(idx);
-      setCloseSlot(null);
-      setEvaluated(null);
+      setOpenSlot(idx); setCloseSlot(null); setEvaluated(null);
     }
   };
 
   const reset = () => { setOpenSlot(null); setCloseSlot(null); setEvaluated(null); };
-
   const canSubmit = openSlot !== null && closeSlot !== null;
 
   const slotStyle = (idx) => {
-    const isOpen = idx === openSlot;
-    const isClose = idx === closeSlot;
+    const isOpen = idx === openSlot, isClose = idx === closeSlot;
     const inRange = openSlot !== null && closeSlot !== null && idx > openSlot && idx < closeSlot;
     return {
-      width: 18, height: 18, borderRadius: "50%", cursor: "pointer",
-      background: isOpen || isClose ? "var(--blue)" : inRange ? "rgba(59,130,246,0.2)" : "var(--surface2)",
+      width: 20, height: 20, borderRadius: "50%", cursor: "pointer",
+      background: isOpen || isClose ? "var(--blue)" : inRange ? "rgba(59,130,246,0.25)" : "var(--surface2)",
       border: `2px solid ${isOpen || isClose ? "var(--blue)" : "var(--border)"}`,
       display: "inline-flex", alignItems: "center", justifyContent: "center",
-      fontSize: 10, color: "white", fontWeight: 800, flexShrink: 0,
-      transition: "all 0.15s",
+      fontSize: 12, color: "white", fontWeight: 900, flexShrink: 0, transition: "all 0.15s",
     };
   };
 
   return (
     <div>
-      <p style={{ textAlign:"center", fontSize:19, fontWeight:600, color:"var(--text2)", marginBottom:8 }}>
+      <p style={{ textAlign:"center", fontSize:19, fontWeight:600, color:"var(--text2)", marginBottom:6 }}>
         Place one pair of parentheses to make this true:
       </p>
-      <div style={{ textAlign:"center", fontSize:28, fontWeight:800, marginBottom:20, fontFamily:"var(--mono)", color:"var(--blue)" }}>
-        [expression] = {target}
+      <div style={{ textAlign:"center", fontSize:26, fontWeight:800, marginBottom:20, fontFamily:"var(--mono)", color:"var(--blue)" }}>
+        {expressionString(tokens)} = {target}
       </div>
 
-      {/* Token display with clickable slots */}
-      <div style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:4, flexWrap:"wrap", marginBottom:20, background:"var(--bg2)", borderRadius:"var(--radius)", padding:"16px 24px" }}>
-        {tokens.map((t, i) => (
-          <div key={i} style={{ display:"flex", alignItems:"center", gap:4 }}>
-            {/* Slot before this token */}
-            <div style={slotStyle(i)} onClick={() => handleSlotClick(i)} title={`Slot ${i}`}>
-              {i === openSlot ? "(" : i === closeSlot ? ")" : ""}
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:2, flexWrap:"wrap", marginBottom:20, background:"var(--bg2)", borderRadius:"var(--radius)", padding:"20px" }}>
+        {tokens.map((t, i) => {
+          const inRange = openSlot !== null && closeSlot !== null && i >= openSlot && i < closeSlot;
+          return (
+            <div key={i} style={{ display:"flex", alignItems:"center", gap:2 }}>
+              <div style={slotStyle(i)} onClick={() => handleSlotClick(i)}>
+                {i === openSlot ? "(" : i === closeSlot ? ")" : ""}
+              </div>
+              <span style={{
+                fontSize: t.type === "num" ? 28 : t.op === "^" ? 18 : 24,
+                fontWeight: 700,
+                verticalAlign: t.op === "^" ? "super" : "baseline",
+                color: inRange ? "var(--blue)" : "var(--text)",
+                fontFamily: "var(--mono)",
+                background: inRange ? "rgba(59,130,246,0.1)" : "transparent",
+                borderRadius: 4, padding: "0 3px", transition: "all 0.15s",
+              }}>
+                {renderToken(t)}
+              </span>
             </div>
-            {/* Token */}
-            <span style={{
-              fontSize: t.type === "num" ? 28 : 22,
-              fontWeight: 700,
-              color: (openSlot !== null && closeSlot !== null && i >= openSlot && i < closeSlot) ? "var(--blue)" : "var(--text)",
-              fontFamily: "var(--mono)",
-              background: (openSlot !== null && closeSlot !== null && i >= openSlot && i < closeSlot) ? "rgba(59,130,246,0.1)" : "transparent",
-              borderRadius: 4, padding: "0 2px",
-            }}>
-              {t.type === "num" ? t.value : t.op === "x" ? "\u00d7" : t.op === "^" ? <sup style={{ fontSize:16 }}>{tokens[i+1]?.value}</sup> : t.op}
-            </span>
-          </div>
-        ))}
-        {/* Final slot */}
-        <div style={slotStyle(tokens.length)} onClick={() => handleSlotClick(tokens.length)} title={`Slot ${tokens.length}`}>
-          {tokens.length === openSlot ? "(" : tokens.length === closeSlot ? ")" : ""}
+          );
+        })}
+        <div style={slotStyle(tokens.length)} onClick={() => handleSlotClick(tokens.length)}>
+          {tokens.length === closeSlot ? ")" : ""}
         </div>
       </div>
 
-      {/* Preview of current expression */}
       {openSlot !== null && (
-        <div style={{ textAlign:"center", fontSize:22, fontFamily:"var(--mono)", marginBottom:12, color:"var(--text2)" }}>
+        <div style={{ textAlign:"center", fontSize:22, fontFamily:"var(--mono)", marginBottom:12, minHeight:32 }}>
           {tokens.map((t, i) => (
             <span key={i}>
-              {i === openSlot ? <span style={{ color:"var(--blue)", fontWeight:800 }}>(</span> : null}
-              {i === closeSlot ? <span style={{ color:"var(--blue)", fontWeight:800 }}>)</span> : null}
+              {i === openSlot && <span style={{ color:"var(--blue)", fontWeight:900 }}>(</span>}
+              {i === closeSlot && <span style={{ color:"var(--blue)", fontWeight:900 }}>)</span>}
               <span style={{ color: (openSlot !== null && closeSlot !== null && i >= openSlot && i < closeSlot) ? "var(--blue)" : "var(--text)" }}>
-                {t.type === "num" ? t.value : t.op === "x" ? "\u00d7" : t.op === "^" ? "^" : t.op}
+                {renderToken(t)}{t.type === "num" || t.op === "^" ? "" : " "}
               </span>
             </span>
           ))}
-          {tokens.length === closeSlot ? <span style={{ color:"var(--blue)", fontWeight:800 }}>)</span> : null}
-          {evaluated !== null && <span style={{ color:"var(--text3)", marginLeft:8 }}>= {evaluated}</span>}
+          {tokens.length === closeSlot && <span style={{ color:"var(--blue)", fontWeight:900 }}>)</span>}
+          {closeSlot !== null && evaluated !== null && (
+            <span style={{ color: evaluated === target ? "var(--green)" : "var(--red)", marginLeft:8 }}>
+              = {evaluated} {evaluated === target ? "\u2713" : "\u2717"}
+            </span>
+          )}
         </div>
       )}
 
-      <div style={{ display:"flex", gap:8, justifyContent:"center" }}>
+      <div style={{ display:"flex", gap:8, justifyContent:"center", marginBottom:8 }}>
         <button className="btn btn-ghost btn-sm" onClick={reset} disabled={openSlot === null}>Reset</button>
         <button className="btn btn-primary" onClick={() => onSubmit(evaluated)} disabled={!canSubmit} style={{ fontSize:19 }}>Submit</button>
       </div>
-
-      <p style={{ textAlign:"center", fontSize:17, color:"var(--text3)", marginTop:12 }}>
-        Click a dot to place ( then click another dot to place )
+      <p style={{ textAlign:"center", fontSize:17, color:"var(--text3)" }}>
+        Click a dot to place ( then click another dot to place ) &nbsp;&bull;&nbsp; ^ means "to the power of"
       </p>
     </div>
   );
