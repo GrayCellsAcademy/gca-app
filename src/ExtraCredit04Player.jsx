@@ -142,8 +142,8 @@ function ParenProblem({ problem, onSubmit }) {
           ))}
           {tokens.length === closeSlot && <span style={{ color:"var(--blue)", fontWeight:900 }}>)</span>}
           {closeSlot !== null && evaluated !== null && (
-            <span style={{ color: evaluated === target ? "var(--green)" : "var(--red)", marginLeft:8 }}>
-              = {evaluated} {evaluated === target ? "\u2713" : "\u2717"}
+            <span style={{ color: "var(--text3)", marginLeft:8 }}>
+                            = {evaluated}
             </span>
           )}
         </div>
