@@ -681,7 +681,7 @@ function Gradebook({ students, assignments, categories, onResetStudent }) {
                     return (et?.type === "extra-credit" || et?.title?.includes("Extra Credit")) && et?.title?.includes("Classwork " + cwNum);
                   }).reduce((sum, ec) => {
                     const ep = studentProg[ec.topicId];
-                    const numActs = EC_ACTIVITY_COUNTS[ec.topicId] || 1; const done = (ep.data?.actIdx != null) ? ep.data.actIdx : Math.round((ep.percentComplete || 0) / 100 * numActs); return sum + done * 10;
+                    if (!ep) return sum; const numActs = EC_ACTIVITY_COUNTS[ec.topicId] || 1; const done = (ep.data?.actIdx != null) ? ep.data.actIdx : Math.round((ep.percentComplete || 0) / 100 * numActs); return sum + done * 10;
                   }, 0) : 0;
                   const displayScore = score !== null ? score + ecBonus : null;
 
