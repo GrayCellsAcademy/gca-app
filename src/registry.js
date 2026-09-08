@@ -10,6 +10,7 @@ import Lesson03WarmupPlayer from "./Lesson03WarmupPlayer";
 import ExtraCredit03Player from "./ExtraCredit03Player";
 import Lesson04WarmupPlayer from "./Lesson04WarmupPlayer";
 import ExtraCredit04Player from "./ExtraCredit04Player";
+import Lesson05WarmupPlayer from "./Lesson05WarmupPlayer";
 import ReviewHomework from "./ReviewHomework";
 import Lesson02MasteryPlayer from "./Lesson02MasteryPlayer";
 import SubtractionTablesPlayer from "./SubtractionTablesPlayer";
@@ -122,6 +123,13 @@ export const TOPICS = {
     description: "Insert parentheses to make equations true, and compare nth root expressions.",
     subject: "math", gradeLevel: "6+", icon: "", type: "extra-credit", status: "published", order: 10,
     Player: ExtraCredit04Player,
+  },
+  "lesson05-warmup-v1": {
+    id: "lesson05-warmup-v1",
+    title: "Warmup 5 (019)",
+    description: "Practice division with zero and long division (4-digit divided by 2-5) before Classwork 5.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 11,
+    Player: Lesson05WarmupPlayer,
   },
   "lesson02-mastery-v1": {
     id: "lesson02-mastery-v1",
