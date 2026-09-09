@@ -7,6 +7,31 @@ const STREAK_NEEDED = 2;
 
 function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
 
+function useKaTeX() {
+  useEffect(() => {
+    if (window.katex) return;
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = "https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css";
+    document.head.appendChild(link);
+    const script = document.createElement("script");
+    script.src = "https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js";
+    script.async = true;
+    document.head.appendChild(script);
+  }, []);
+}
+
+function KaTeXExpr({ expr }) {
+  const ref = useRef(null);
+  useEffect(() => {
+    if (ref.current && window.katex) {
+      try { window.katex.render(expr, ref.current, { throwOnError: false, displayMode: true }); }
+      catch {}
+    }
+  });
+  return <div ref={ref} style={{ fontSize: 22, margin: "4px 0" }} />;
+}
+
 //  Activity 1: Zero Division
 // Formats: 0=n/0 display, 1=n\u00f70 display, 2=0/n display, 3=0\u00f7n display
 // Answer: formats 0,1 -> "undefined"; formats 2,3 -> "0"
@@ -26,19 +51,20 @@ function ZeroDivDisplay({ prob, selected, onSelect, showResult }) {
   const { fmt, n, answer } = prob;
   const isCorrect = selected === answer;
 
-  const renderExpr = () => {
-    if (fmt === 0) return <span><span style={{ fontSize:32, fontFamily:"var(--mono)", fontWeight:800 }}>{n}</span><span style={{ fontSize:24, color:"var(--text3)" }}>/</span><span style={{ fontSize:32, fontFamily:"var(--mono)", fontWeight:800 }}>0</span></span>;
-    if (fmt === 1) return <span><span style={{ fontSize:32, fontFamily:"var(--mono)", fontWeight:800 }}>{n}</span><span style={{ fontSize:28, color:"var(--text3)", margin:"0 6px" }}>\u00f7</span><span style={{ fontSize:32, fontFamily:"var(--mono)", fontWeight:800 }}>0</span></span>;
-    if (fmt === 2) return <span><span style={{ fontSize:32, fontFamily:"var(--mono)", fontWeight:800 }}>0</span><span style={{ fontSize:24, color:"var(--text3)" }}>/</span><span style={{ fontSize:32, fontFamily:"var(--mono)", fontWeight:800 }}>{n}</span></span>;
-    return <span><span style={{ fontSize:32, fontFamily:"var(--mono)", fontWeight:800 }}>0</span><span style={{ fontSize:28, color:"var(--text3)", margin:"0 6px" }}>\u00f7</span><span style={{ fontSize:32, fontFamily:"var(--mono)", fontWeight:800 }}>{n}</span></span>;
+  useKaTeX();
+  const katexExpr = () => {
+    if (fmt === 0) return `\\dfrac{${n}}{0}`;
+    if (fmt === 1) return `${n} \\div 0`;
+    if (fmt === 2) return `\\dfrac{0}{${n}}`;
+    return `0 \\div ${n}`;
   };
 
   const borderColor = showResult ? (isCorrect ? "var(--green)" : "var(--red)") : selected ? "var(--blue)" : "var(--border)";
 
   return (
     <div style={{ flex:1, minWidth:160, border:`2px solid ${borderColor}`, borderRadius:"var(--radius)", padding:"16px 12px", background: showResult ? (isCorrect ? "rgba(16,185,129,0.08)" : "rgba(239,68,68,0.08)") : "var(--bg2)", textAlign:"center" }}>
-      <div style={{ marginBottom:16, minHeight:44, display:"flex", alignItems:"center", justifyContent:"center" }}>
-        {renderExpr()}
+      <div style={{ marginBottom:12, minHeight:60, display:"flex", alignItems:"center", justifyContent:"center" }}>
+        <KaTeXExpr expr={katexExpr()} />
       </div>
       <div style={{ display:"flex", gap:8, justifyContent:"center" }}>
         {["0", "undefined"].map(opt => (
