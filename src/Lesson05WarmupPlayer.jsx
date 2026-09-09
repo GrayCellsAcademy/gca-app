@@ -8,8 +8,9 @@ const STREAK_NEEDED = 2;
 function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
 
 function useKaTeX() {
+  const [ready, setReady] = useState(!!window.katex);
   useEffect(() => {
-    if (window.katex) return;
+    if (window.katex) { setReady(true); return; }
     const link = document.createElement("link");
     link.rel = "stylesheet";
     link.href = "https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css";
@@ -17,8 +18,10 @@ function useKaTeX() {
     const script = document.createElement("script");
     script.src = "https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js";
     script.async = true;
+    script.onload = () => setReady(true);
     document.head.appendChild(script);
   }, []);
+  return ready;
 }
 
 function KaTeXExpr({ expr }) {
@@ -51,7 +54,7 @@ function ZeroDivDisplay({ prob, selected, onSelect, showResult }) {
   const { fmt, n, answer } = prob;
   const isCorrect = selected === answer;
 
-  useKaTeX();
+  const katexReady = useKaTeX();
   const katexExpr = () => {
     if (fmt === 0) return `\\dfrac{${n}}{0}`;
     if (fmt === 1) return `${n} \\div 0`;
@@ -64,7 +67,9 @@ function ZeroDivDisplay({ prob, selected, onSelect, showResult }) {
   return (
     <div style={{ flex:1, minWidth:160, border:`2px solid ${borderColor}`, borderRadius:"var(--radius)", padding:"16px 12px", background: showResult ? (isCorrect ? "rgba(16,185,129,0.08)" : "rgba(239,68,68,0.08)") : "var(--bg2)", textAlign:"center" }}>
       <div style={{ marginBottom:12, minHeight:60, display:"flex", alignItems:"center", justifyContent:"center" }}>
-        <KaTeXExpr expr={katexExpr()} />
+        {katexReady
+          ? <KaTeXExpr expr={katexExpr()} />
+          : <span style={{ fontSize:28, fontFamily:"var(--mono)", fontWeight:800 }}>...</span>}
       </div>
       <div style={{ display:"flex", gap:8, justifyContent:"center" }}>
         {["0", "undefined"].map(opt => (
