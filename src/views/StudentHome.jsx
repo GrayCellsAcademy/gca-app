@@ -1,11 +1,11 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { getClass, getProgress, leaveClass, joinClass, normalizeAssignments, calculateGrade, gradeToLetter } from "../core/firebase";
 import { getTopic, getPublishedTopics } from "../registry";
 import TopicRouter from "../TopicRouter";
 
 //  Helpers
 function easternNowStr() {
-  return new Date().toLocaleString("sv", { timeZone: "America/New_York" }).slice(0, 16);
+  return new Date().toLocaleString("sv", { timeZone: "America/New_York" }).slice(0, 16).replace(" ", "T");
 }
 function autoCategory(assignment, topic) {
   if (assignment.categoryId) return assignment.categoryId;

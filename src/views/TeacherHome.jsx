@@ -19,7 +19,7 @@ function weightTotal(categories) {
 //  Eastern Time Helpers
 function easternNowStr() {
   // Returns current datetime as "YYYY-MM-DDTHH:MM" in Eastern time
-  return new Date().toLocaleString("sv", { timeZone: "America/New_York" }).slice(0, 16);
+  return new Date().toLocaleString("sv", { timeZone: "America/New_York" }).slice(0, 16).replace(" ", "T");
 }
 
 function easternTodayStr() {
