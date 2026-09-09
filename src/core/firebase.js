@@ -258,13 +258,13 @@ export async function saveProgress(uid, topicId, data) {
 
 export async function getClassProgress(studentIds, topicIds) {
   const results = {};
-  for (const uid of studentIds) {
+  await Promise.all(studentIds.map(async uid => {
     results[uid] = {};
-    for (const topicId of topicIds) {
+    await Promise.all(topicIds.map(async topicId => {
       const p = await getProgress(uid, topicId);
       results[uid][topicId] = p;
-    }
-  }
+    }));
+  }));
   return results;
 }
 
