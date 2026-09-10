@@ -11,6 +11,7 @@ import ExtraCredit03Player from "./ExtraCredit03Player";
 import Lesson04WarmupPlayer from "./Lesson04WarmupPlayer";
 import ExtraCredit04Player from "./ExtraCredit04Player";
 import Lesson05WarmupPlayer from "./Lesson05WarmupPlayer";
+import ExtraCredit05Player from "./ExtraCredit05Player";
 import ReviewHomework from "./ReviewHomework";
 import Lesson02MasteryPlayer from "./Lesson02MasteryPlayer";
 import SubtractionTablesPlayer from "./SubtractionTablesPlayer";
@@ -130,6 +131,13 @@ export const TOPICS = {
     description: "Practice division with zero and long division (4-digit divided by 2-5) before Classwork 5.",
     subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 11,
     Player: Lesson05WarmupPlayer,
+  },
+  "lesson05-ec-v1": {
+    id: "lesson05-ec-v1",
+    title: "Classwork 5 Extra Credit (019)",
+    description: "Signed number word problems and fill-in-the-blank equations.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "extra-credit", status: "published", order: 12,
+    Player: ExtraCredit05Player,
   },
   "lesson02-mastery-v1": {
     id: "lesson02-mastery-v1",
