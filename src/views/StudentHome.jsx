@@ -161,12 +161,13 @@ function ClassView({ cls, userId, onBack, onPlayTopic }) {
   const assignedTopics = assignments
     .filter(a => isAssignmentOpen(a))
     .sort((a, b) => {
-      const aOpen = a.openDate || "9999";
-      const bOpen = b.openDate || "9999";
+      const nowET = easternNowStr();
+      const isPast = x => x.dueDate && nowET > (x.dueDate.length === 10 ? x.dueDate + "T00:00" : x.dueDate.slice(0, 16));
+      const aPast = isPast(a) ? 1 : 0, bPast = isPast(b) ? 1 : 0;
+      if (aPast !== bPast) return aPast - bPast;
+      const aOpen = a.openDate || "9999", bOpen = b.openDate || "9999";
       if (aOpen !== bOpen) return aOpen.localeCompare(bOpen);
-      const aDue = a.dueDate || "9999";
-      const bDue = b.dueDate || "9999";
-      return aDue.localeCompare(bDue);
+      return (a.dueDate || "9999").localeCompare(b.dueDate || "9999");
     })
     .map(a => ({ assignment: a, topic: getTopic(a.topicId) })).filter(t => t.topic);
 
