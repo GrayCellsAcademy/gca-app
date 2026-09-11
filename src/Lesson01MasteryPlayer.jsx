@@ -183,7 +183,7 @@ export default function Lesson01MasteryPlayer({ user, topic, onHome }) {
       }
       await saveCurrentProgress(
         pendingProgress.current.ti ?? topicIdx,
-        pendingProgress.current.si ?? subtypeIdx,
+        pendingProgress.current.si ?? 0,
         pendingProgress.current.st ?? newStreak
       );
     } else {
