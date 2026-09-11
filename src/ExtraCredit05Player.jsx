@@ -285,7 +285,7 @@ export default function ExtraCredit05Player({ user, topic, onHome }) {
               onChange={e => setInput(e.target.value.replace(/[^0-9\-]/g, ""))}
               onKeyDown={e => e.key === "Enter" && handleSubmit()}
               inputMode="numeric"
-              placeholder={problem.type === "word-problem" ? "Enter a positive number" : "e.g. -5 or 8"}
+              placeholder="?"
               style={{ textAlign: "center", fontSize: 32, fontFamily: "var(--mono)", fontWeight: 700, padding: "12px", marginBottom: 12 }}
             />
             <button className="btn btn-primary" style={{ width: "100%", fontSize: 20, padding: "14px" }}
