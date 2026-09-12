@@ -232,7 +232,7 @@ export default function Lesson06WarmupPlayer({ user, topic, onHome }) {
 
   const handleSubmit = async (val) => {
     const v = val !== undefined ? val : input;
-    if (!problem || phase !== "question" || !v.trim()) return;
+    if (!problem || phase !== "question") return; if (Array.isArray(v) ? v.every(x => !x.trim()) : !v.trim()) return;
     if (gradeAnswer(v)) {
       const newStreak = streak + 1;
       setStreak(newStreak);
