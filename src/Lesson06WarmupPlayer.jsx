@@ -7,28 +7,23 @@ const STREAK_NEEDED = 2;
 
 function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
 
-//  Activity 1: Signed Number Arithmetic
-// Two base numbers a and b; expressions use +a/-a and +b/-b with + or - between them
+//  Activity 1: All 8 signed arithmetic expressions at once
 function genSignedArith() {
   let a, b;
   do { a = randInt(2, 15); b = randInt(2, 15); } while (a === b);
-  let sign1, sign2, op;
-  do {
-    sign1 = Math.random() < 0.5 ? 1 : -1;
-    sign2 = Math.random() < 0.5 ? 1 : -1;
-    op = Math.random() < 0.5 ? "+" : "-";
-  } while (sign1 === 1 && sign2 === 1); // at least one negative
-
-  const v1 = sign1 * a;
-  const v2 = sign2 * b;
-  const answer = op === "+" ? v1 + v2 : v1 - v2;
-
-  // Build display string
-  const s1 = v1 >= 0 ? String(v1) : "(" + v1 + ")";
-  const s2 = v2 >= 0 ? String(v2) : "(" + v2 + ")";
-  const display = s1 + " " + op + " " + s2;
-
-  return { type: "signed-arith", v1, v2, op, answer, display };
+  const problems = [];
+  for (const op of ["+", "-"]) {
+    for (const s1 of [1, -1]) {
+      for (const s2 of [1, -1]) {
+        const v1 = s1 * a, v2 = s2 * b;
+        const answer = op === "+" ? v1 + v2 : v1 - v2;
+        const d1 = v1 >= 0 ? String(v1) : "(" + v1 + ")";
+        const d2 = v2 >= 0 ? String(v2) : "(" + v2 + ")";
+        problems.push({ v1, v2, op, answer, display: d1 + " " + op + " " + d2 });
+      }
+    }
+  }
+  return { type: "signed-arith", a, b, problems };
 }
 
 //  Activity 2: Rewrite as Repeated Multiplication
@@ -45,6 +40,64 @@ function gradeRepeatedMult(input, problem) {
   const parts = cleaned.split(/[*x\u00d7\u00d7]/).map(p => p.trim());
   if (parts.length !== exp) return false;
   return parts.every(p => parseInt(p, 10) === base && p !== "");
+}
+
+//  Signed Arith Grid: all 8 problems at once
+function SignedArithGrid({ problems, onSubmit }) {
+  const [answers, setAnswers] = useState(Array(8).fill(""));
+  const refs = Array.from({ length: 8 }, () => useRef(null));
+
+  useEffect(() => {
+    setAnswers(Array(8).fill(""));
+    setTimeout(() => refs[0].current?.focus(), 80);
+  }, [problems]);
+
+  const setAnswer = (i, val) => {
+    setAnswers(prev => {
+      const next = [...prev];
+      next[i] = val.replace(/[^0-9\-]/g, "");
+      return next;
+    });
+  };
+
+  const handleKey = (e, i) => {
+    if (e.key === "Enter") {
+      if (i < 7) refs[i + 1].current?.focus();
+      else onSubmit(answers);
+    }
+  };
+
+  const allFilled = answers.every(a => a.trim() !== "");
+
+  return (
+    <div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 16 }}>
+        {problems.map((p, i) => (
+          <div key={i} style={{ background: "var(--bg2)", borderRadius: "var(--radius-sm)", padding: "10px 12px" }}>
+            <div style={{ fontSize: 18, fontWeight: 700, fontFamily: "var(--mono)", color: "var(--text)", marginBottom: 6, textAlign: "center" }}>
+              {p.display} =
+            </div>
+            <input
+              ref={refs[i]}
+              value={answers[i]}
+              onChange={e => setAnswer(i, e.target.value)}
+              onKeyDown={e => handleKey(e, i)}
+              inputMode="numeric"
+              placeholder="?"
+              style={{ textAlign: "center", fontSize: 22, fontFamily: "var(--mono)", fontWeight: 700,
+                padding: "6px", width: "100%", borderRadius: "var(--radius-sm)" }}
+            />
+          </div>
+        ))}
+      </div>
+      <button className="btn btn-primary" style={{ width: "100%", fontSize: 20, padding: "14px" }}
+        onMouseDown={e => { e.preventDefault(); onSubmit(answers); }}
+        onTouchEnd={e => { e.preventDefault(); onSubmit(answers); }}
+        disabled={!allFilled}>
+        Submit All
+      </button>
+    </div>
+  );
 }
 
 //  Streak Dots
@@ -71,7 +124,7 @@ function RepeatedMultInput({ problem, onSubmit }) {
   useEffect(() => { setVal(""); setTimeout(() => inputRef.current?.focus(), 80); }, [problem]);
 
   const insertMult = () => {
-    setVal(v => v + "\u00d7");
+    setVal(v => v + "*");
     inputRef.current?.focus();
   };
 
@@ -88,20 +141,20 @@ function RepeatedMultInput({ problem, onSubmit }) {
           value={val}
           onChange={e => setVal(e.target.value)}
           onKeyDown={handleKey}
-          placeholder={"e.g. " + problem.base + "\u00d7" + problem.base + "..."}
+          placeholder={"e.g. " + problem.base + "*" + problem.base + "*..."}
           style={{ textAlign: "center", fontSize: 26, fontFamily: "var(--mono)", fontWeight: 700,
             padding: "10px 12px", flex: 1, maxWidth: 340 }}
         />
         <button onClick={insertMult}
-          style={{ fontSize: 28, fontWeight: 800, padding: "10px 18px",
+          style={{ fontSize: 22, fontWeight: 800, padding: "10px 18px",
             borderRadius: "var(--radius-sm)", border: "2px solid var(--blue)",
             background: "rgba(59,130,246,0.1)", color: "var(--blue)", cursor: "pointer",
             fontFamily: "var(--mono)" }}>
-          \u00d7
+          *
         </button>
       </div>
       <p style={{ textAlign: "center", fontSize: 17, color: "var(--text3)", marginBottom: 12 }}>
-        Type {problem.base}, press \u00d7, type {problem.base}, repeat {problem.exp} times total
+        Type {problem.base}, press *, type {problem.base}, repeat {problem.exp} times total
       </p>
       <button className="btn btn-primary" style={{ width: "100%", fontSize: 20, padding: "14px" }}
         onMouseDown={e => { e.preventDefault(); onSubmit(val); setVal(""); }}
@@ -167,8 +220,12 @@ export default function Lesson06WarmupPlayer({ user, topic, onHome }) {
   const gradeAnswer = (val) => {
     if (!problem) return false;
     if (problem.type === "signed-arith") {
-      const n = parseInt(val.trim(), 10);
-      return !isNaN(n) && n === problem.answer;
+      // val is an array of [answer, ...] for all 8 problems
+      if (!Array.isArray(val)) return false;
+      return val.every((v, i) => {
+        const n = parseInt(String(v).trim(), 10);
+        return !isNaN(n) && n === problem.problems[i].answer;
+      });
     }
     return gradeRepeatedMult(val, problem);
   };
@@ -259,9 +316,14 @@ export default function Lesson06WarmupPlayer({ user, topic, onHome }) {
             <div style={{ fontSize: 19, fontWeight: 700, color: "#fca5a5", marginBottom: 8, textAlign: "center" }}>
               Not quite! Streak reset.
             </div>
-            {isSignedArith && problem && (
-              <div style={{ textAlign: "center", fontSize: 22, marginBottom: 12, fontFamily: "var(--mono)", fontWeight: 700 }}>
-                {problem.display} = <span style={{ color: "var(--green)" }}>{problem.answer}</span>
+            {isSignedArith && problem?.problems && (
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, marginBottom: 12 }}>
+                {problem.problems.map((p, i) => (
+                  <div key={i} style={{ fontSize: 17, fontFamily: "var(--mono)", fontWeight: 700,
+                    background: "var(--bg2)", borderRadius: "var(--radius-sm)", padding: "6px 10px", textAlign: "center" }}>
+                    {p.display} = <span style={{ color: "var(--green)" }}>{p.answer}</span>
+                  </div>
+                ))}
               </div>
             )}
             {isRepeatedMult && problem && (
@@ -278,29 +340,11 @@ export default function Lesson06WarmupPlayer({ user, topic, onHome }) {
           </div>
         ) : problem && (
           <>
-            {isSignedArith && (
-              <>
-                <div style={{ textAlign: "center", fontSize: 36, fontWeight: 800, fontFamily: "var(--mono)",
-                  marginBottom: 20, background: "var(--bg2)", borderRadius: "var(--radius)", padding: "16px" }}>
-                  {problem.display} = ?
-                </div>
-                <input
-                  ref={inputRef}
-                  value={input}
-                  onChange={e => setInput(e.target.value.replace(/[^0-9\-]/g, ""))}
-                  onKeyDown={e => e.key === "Enter" && handleSubmit()}
-                  inputMode="numeric"
-                  placeholder="?"
-                  style={{ textAlign: "center", fontSize: 34, fontFamily: "var(--mono)", fontWeight: 700,
-                    padding: "12px", marginBottom: 12 }}
-                />
-                <button className="btn btn-primary" style={{ width: "100%", fontSize: 20, padding: "14px" }}
-                  onMouseDown={e => { e.preventDefault(); handleSubmit(); }}
-                  onTouchEnd={e => { e.preventDefault(); handleSubmit(); }}
-                  disabled={!input.trim()}>
-                  Submit
-                </button>
-              </>
+            {isSignedArith && problem.problems && (
+              <SignedArithGrid
+                problems={problem.problems}
+                onSubmit={handleSubmit}
+              />
             )}
             {isRepeatedMult && (
               <>
