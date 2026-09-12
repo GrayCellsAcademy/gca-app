@@ -12,6 +12,7 @@ import Lesson04WarmupPlayer from "./Lesson04WarmupPlayer";
 import ExtraCredit04Player from "./ExtraCredit04Player";
 import Lesson05WarmupPlayer from "./Lesson05WarmupPlayer";
 import ExtraCredit05Player from "./ExtraCredit05Player";
+import Lesson06WarmupPlayer from "./Lesson06WarmupPlayer";
 import ReviewHomework from "./ReviewHomework";
 import Lesson02MasteryPlayer from "./Lesson02MasteryPlayer";
 import SubtractionTablesPlayer from "./SubtractionTablesPlayer";
@@ -138,6 +139,13 @@ export const TOPICS = {
     description: "Signed number word problems and fill-in-the-blank equations.",
     subject: "math", gradeLevel: "6+", icon: "", type: "extra-credit", status: "published", order: 12,
     Player: ExtraCredit05Player,
+  },
+  "lesson06-warmup-v1": {
+    id: "lesson06-warmup-v1",
+    title: "Warmup 6 (019)",
+    description: "Signed number arithmetic and rewriting powers as repeated multiplication.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 13,
+    Player: Lesson06WarmupPlayer,
   },
   "lesson02-mastery-v1": {
     id: "lesson02-mastery-v1",
