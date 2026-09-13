@@ -4,7 +4,37 @@ import { saveProgress, getProgress } from "./core/firebase";
 
 export const TOPIC_ID = "lesson06-ec-v1";
 
-function parseLinearExpr(input, v) {
+function parseVarExpr(input) {
+  // Parse expressions like "6x^-3y^4", "-x^2y^-1", "3x^5y^2", "10x-9y-7"
+  const s = input.trim().replace(/\s+/g, "").toLowerCase();
+  if (!s) return null;
+  // Match coefficient
+  const re = /^([+-]?\d*)(x\^?([+-]?\d+)?)(y\^?([+-]?\d+)?)$|^([+-]?\d+)(x\^([+-]?\d+))(y\^([+-]?\d+))$/;
+  // Simpler approach: extract coefficient, x exponent, y exponent separately
+  let A = null, N = null, M = null;
+  // Coefficient: everything before first 'x'
+  const xIdx = s.indexOf('x');
+  if (xIdx === -1) return null;
+  const yIdx = s.indexOf('y', xIdx);
+  if (yIdx === -1) return null;
+  const aStr = s.slice(0, xIdx);
+  if (aStr === '' || aStr === '+') A = 1;
+  else if (aStr === '-') A = -1;
+  else { A = parseInt(aStr, 10); if (isNaN(A)) return null; }
+  // x exponent: between x and y
+  const xExpStr = s.slice(xIdx + 1, yIdx).replace('^', '');
+  if (xExpStr === '' || xExpStr === '+') N = 1;
+  else if (xExpStr === '-') N = -1;
+  else { N = parseInt(xExpStr, 10); if (isNaN(N)) return null; }
+  // y exponent: after y
+  const yExpStr = s.slice(yIdx + 1).replace('^', '');
+  if (yExpStr === '' || yExpStr === '+') M = 1;
+  else if (yExpStr === '-') M = -1;
+  else { M = parseInt(yExpStr, 10); if (isNaN(M)) return null; }
+  return { A, N, M };
+}
+
+function parseLinearExprfunction parseLinearExpr(input, v) {
   const s = input.trim().replace(/\s+/g, "").toLowerCase();
   if (!s) return null;
   const terms = s.match(/[+-]?[^+-]+/g) || [];
@@ -140,10 +170,8 @@ export default function ExtraCredit06Player({ user, topic, onHome }) {
 
   // Activity 1 input
   const [exprInput, setExprInput] = useState("");
-  // Activity 2 inputs
-  const [aInput, setAInput] = useState("");
-  const [nInput, setNInput] = useState("");
-  const [mInput, setMInput] = useState("");
+  // Activity 2 input
+  const [varExprInput, setVarExprInput] = useState("");
 
   const coeffRef = useRef(null);
   const aRef = useRef(null);
@@ -170,8 +198,7 @@ export default function ExtraCredit06Player({ user, topic, onHome }) {
 
   const newProblem = () => {
     setProblem(currentActivity.gen());
-    setExprInput("");
-    setAInput(""); setNInput(""); setMInput("");
+    setExprInput(""); setVarExprInput("");
     setPhase("question"); pendingNext.current = null;
     setTimeout(() => {
       coeffRef.current?.focus();
@@ -188,15 +215,15 @@ export default function ExtraCredit06Player({ user, topic, onHome }) {
       if (!parsed) return false;
       return parsed.coeff === problem.coeff && parsed.constant === problem.constant;
     }
-    const A = parseInput(aInput), N = parseInput(nInput), M = parseInput(mInput);
-    if (isNaN(A) || isNaN(N) || isNaN(M)) return false;
-    return A === problem.A && N === problem.N && M === problem.M;
+    const parsed = parseVarExpr(varExprInput);
+    if (!parsed) return false;
+    return parsed.A === problem.A && parsed.N === problem.N && parsed.M === problem.M;
   };
 
   const canSubmit = () => {
     if (!problem) return false;
     if (problem.type === "nested-dist") return exprInput.trim() !== "";
-    return aInput.trim() !== "" && nInput.trim() !== "" && mInput.trim() !== "";
+    return varExprInput.trim() !== "";
   };
 
   const handleSubmit = async () => {
@@ -338,28 +365,13 @@ export default function ExtraCredit06Player({ user, topic, onHome }) {
                   borderRadius:"var(--radius)", padding:"16px", lineHeight:1.8 }}>
                   {problem.factors.map((f,i) => <Factor key={i} {...f} />)}
                 </div>
-                <div style={{ display:"flex", gap:10, marginBottom:12 }}>
-                  <div style={{ flex:1 }}>
-                    <label style={labelStyle}>Coefficient (A)</label>
-                    <input ref={aRef} value={aInput}
-                      onChange={e => setAInput(e.target.value.replace(/[^0-9\-]/g,""))}
-                      onKeyDown={e => e.key === "Enter" && handleSubmit()}
-                      inputMode="numeric" placeholder="?" style={fieldStyle} />
-                  </div>
-                  <div style={{ flex:1 }}>
-                    <label style={labelStyle}>x exponent (N)</label>
-                    <input value={nInput}
-                      onChange={e => setNInput(e.target.value.replace(/[^0-9\-]/g,""))}
-                      onKeyDown={e => e.key === "Enter" && handleSubmit()}
-                      inputMode="numeric" placeholder="?" style={fieldStyle} />
-                  </div>
-                  <div style={{ flex:1 }}>
-                    <label style={labelStyle}>y exponent (M)</label>
-                    <input value={mInput}
-                      onChange={e => setMInput(e.target.value.replace(/[^0-9\-]/g,""))}
-                      onKeyDown={e => e.key === "Enter" && handleSubmit()}
-                      inputMode="numeric" placeholder="?" style={fieldStyle} />
-                  </div>
+                <div style={{ marginBottom:12 }}>
+                  <label style={labelStyle}>Simplified expression (e.g. 6x^-3y^4)</label>
+                  <input ref={aRef} value={varExprInput}
+                    onChange={e => setVarExprInput(e.target.value)}
+                    onKeyDown={e => e.key === "Enter" && handleSubmit()}
+                    placeholder="e.g. 6x^-3y^4"
+                    style={{ ...fieldStyle, maxWidth:"100%" }} />
                 </div>
               </>
             )}
