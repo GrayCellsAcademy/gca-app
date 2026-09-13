@@ -34,7 +34,7 @@ function parseVarExpr(input) {
   return { A, N, M };
 }
 
-function parseLinearExprfunction parseLinearExpr(input, v) {
+function parseLinearExpr(input, v) {
   const s = input.trim().replace(/\s+/g, "").toLowerCase();
   if (!s) return null;
   const terms = s.match(/[+-]?[^+-]+/g) || [];
