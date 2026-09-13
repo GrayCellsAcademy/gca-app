@@ -34,7 +34,7 @@ function parseVarExpr(input) {
   return { A, N, M };
 }
 
-function parseLinearExpr(input, v) {
+function parseLinearExprfunction parseLinearExpr(input, v) {
   const s = input.trim().replace(/\s+/g, "").toLowerCase();
   if (!s) return null;
   const terms = s.match(/[+-]?[^+-]+/g) || [];
@@ -167,6 +167,7 @@ export default function ExtraCredit06Player({ user, topic, onHome }) {
   const [phase, setPhase] = useState("question");
   const [loading, setLoading] = useState(true);
   const pendingNext = useRef(null);
+  const [wrongAnswer, setWrongAnswer] = useState(null);
 
   // Activity 1 input
   const [exprInput, setExprInput] = useState("");
@@ -198,7 +199,7 @@ export default function ExtraCredit06Player({ user, topic, onHome }) {
 
   const newProblem = () => {
     setProblem(currentActivity.gen());
-    setExprInput(""); setVarExprInput("");
+    setExprInput(""); setVarExprInput(""); setWrongAnswer(null);
     setPhase("question"); pendingNext.current = null;
     setTimeout(() => {
       coeffRef.current?.focus();
@@ -239,11 +240,13 @@ export default function ExtraCredit06Player({ user, topic, onHome }) {
       pendingNext.current = { final, nextAi, done };
       await saveProgress(user.id, topicId, {
         started:true, completed:done,
-        percentComplete: done ? 100 : Math.round((actIdx/ACTIVITIES.length)*100),
+        percentComplete: done ? 100 : Math.round((nextAi/ACTIVITIES.length)*100),
         data: { actIdx:nextAi, streak:final?0:newStreak, completed:done },
       });
     } else {
-      setStreak(0); setPhase("wrong");
+      setStreak(0);
+      setWrongAnswer({ expr: exprInput, varExpr: varExprInput });
+      setPhase("wrong");
       await saveProgress(user.id, topicId, {
         started:true, completed:false,
         percentComplete: Math.round((actIdx/ACTIVITIES.length)*100),
@@ -316,16 +319,30 @@ export default function ExtraCredit06Player({ user, topic, onHome }) {
           <div style={{ animation:"popIn 0.25s ease" }}>
             <div style={{ fontSize:19, fontWeight:700, color:"#fca5a5", marginBottom:12, textAlign:"center" }}>Not quite! Streak reset.</div>
             {problem.type === "nested-dist" && (
-              <div style={{ textAlign:"center", fontSize:20, marginBottom:12, fontFamily:"var(--mono)" }}>
-                {problem.display} = <span style={{ color:"var(--green)", fontWeight:800 }}>
-                  {varTerm(problem.coeff, problem.v, true)}{constTerm(problem.constant, false)}
-                </span>
+              <div style={{ textAlign:"center", marginBottom:12, fontFamily:"var(--mono)" }}>
+                <div style={{ fontSize:20, marginBottom:6 }}>
+                  {problem.display} = <span style={{ color:"var(--green)", fontWeight:800 }}>
+                    {varTerm(problem.coeff, problem.v, true)}{constTerm(problem.constant, false)}
+                  </span>
+                </div>
+                {wrongAnswer?.expr && (
+                  <div style={{ fontSize:18, color:"var(--red)" }}>
+                    Your answer: <span style={{ textDecoration:"line-through" }}>{wrongAnswer.expr}</span>
+                  </div>
+                )}
               </div>
             )}
             {problem.type === "var-mult" && (
-              <div style={{ textAlign:"center", fontSize:20, marginBottom:12 }}>
-                {problem.factors.map((f,i) => <Factor key={i} {...f} />)}
-                {" = "}<AnswerDisplay A={problem.A} N={problem.N} M={problem.M} color="var(--green)" />
+              <div style={{ textAlign:"center", marginBottom:12 }}>
+                <div style={{ fontSize:20, marginBottom:6 }}>
+                  {problem.factors.map((f,i) => <Factor key={i} {...f} />)}
+                  {" = "}<AnswerDisplay A={problem.A} N={problem.N} M={problem.M} color="var(--green)" />
+                </div>
+                {wrongAnswer?.varExpr && (
+                  <div style={{ fontSize:18, color:"var(--red)", fontFamily:"var(--mono)" }}>
+                    Your answer: <span style={{ textDecoration:"line-through" }}>{wrongAnswer.varExpr}</span>
+                  </div>
+                )}
               </div>
             )}
             <button className="btn btn-success" style={{ width:"100%", fontSize:20, padding:"13px" }} onClick={newProblem}>
