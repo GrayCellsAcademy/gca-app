@@ -3,6 +3,27 @@ import useActivityTracking from "./core/useActivityTracking";
 import { saveProgress, getProgress } from "./core/firebase";
 
 export const TOPIC_ID = "lesson06-ec-v1";
+
+function parseLinearExpr(input, v) {
+  const s = input.trim().replace(/\s+/g, "").toLowerCase();
+  if (!s) return null;
+  const terms = s.match(/[+-]?[^+-]+/g) || [];
+  let coeff = 0, constant = 0, foundVar = false, foundConst = false;
+  for (const term of terms) {
+    if (term.includes(v.toLowerCase())) {
+      foundVar = true;
+      const cleaned = term.replace(v.toLowerCase(), "");
+      if (cleaned === "" || cleaned === "+") coeff = 1;
+      else if (cleaned === "-") coeff = -1;
+      else { coeff = parseInt(cleaned, 10); if (isNaN(coeff)) return null; }
+    } else {
+      foundConst = true;
+      constant = parseInt(term, 10);
+      if (isNaN(constant)) return null;
+    }
+  }
+  return { coeff, constant };
+}
 const STREAK_NEEDED = 3;
 
 function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
@@ -117,9 +138,8 @@ export default function ExtraCredit06Player({ user, topic, onHome }) {
   const [loading, setLoading] = useState(true);
   const pendingNext = useRef(null);
 
-  // Activity 1 inputs
-  const [coeffInput, setCoeffInput] = useState("");
-  const [constInput, setConstInput] = useState("");
+  // Activity 1 input
+  const [exprInput, setExprInput] = useState("");
   // Activity 2 inputs
   const [aInput, setAInput] = useState("");
   const [nInput, setNInput] = useState("");
@@ -150,7 +170,7 @@ export default function ExtraCredit06Player({ user, topic, onHome }) {
 
   const newProblem = () => {
     setProblem(currentActivity.gen());
-    setCoeffInput(""); setConstInput("");
+    setExprInput("");
     setAInput(""); setNInput(""); setMInput("");
     setPhase("question"); pendingNext.current = null;
     setTimeout(() => {
@@ -164,10 +184,9 @@ export default function ExtraCredit06Player({ user, topic, onHome }) {
   const gradeAnswer = () => {
     if (!problem) return false;
     if (problem.type === "nested-dist") {
-      const c = parseInput(coeffInput), k = parseInput(constInput);
-      if (isNaN(c)) return false;
-      const kOk = problem.constant === 0 ? (isNaN(k) || k === 0) : k === problem.constant;
-      return c === problem.coeff && kOk;
+      const parsed = parseLinearExpr(exprInput, problem.v);
+      if (!parsed) return false;
+      return parsed.coeff === problem.coeff && parsed.constant === problem.constant;
     }
     const A = parseInput(aInput), N = parseInput(nInput), M = parseInput(mInput);
     if (isNaN(A) || isNaN(N) || isNaN(M)) return false;
@@ -176,7 +195,7 @@ export default function ExtraCredit06Player({ user, topic, onHome }) {
 
   const canSubmit = () => {
     if (!problem) return false;
-    if (problem.type === "nested-dist") return coeffInput.trim() !== "";
+    if (problem.type === "nested-dist") return exprInput.trim() !== "";
     return aInput.trim() !== "" && nInput.trim() !== "" && mInput.trim() !== "";
   };
 
@@ -299,21 +318,13 @@ export default function ExtraCredit06Player({ user, topic, onHome }) {
                   background:"var(--bg2)", borderRadius:"var(--radius)", padding:"16px", marginBottom:20 }}>
                   {problem.display}
                 </div>
-                <div style={{ display:"flex", gap:12, marginBottom:12 }}>
-                  <div style={{ flex:1 }}>
-                    <label style={labelStyle}>Coefficient of {problem.v}</label>
-                    <input ref={coeffRef} value={coeffInput}
-                      onChange={e => setCoeffInput(e.target.value.replace(/[^0-9\-]/g,""))}
-                      onKeyDown={e => e.key === "Enter" && handleSubmit()}
-                      inputMode="numeric" placeholder="?" style={fieldStyle} />
-                  </div>
-                  <div style={{ flex:1 }}>
-                    <label style={labelStyle}>Constant term</label>
-                    <input value={constInput}
-                      onChange={e => setConstInput(e.target.value.replace(/[^0-9\-]/g,""))}
-                      onKeyDown={e => e.key === "Enter" && handleSubmit()}
-                      inputMode="numeric" placeholder={problem.constant === 0 ? "0" : "?"} style={fieldStyle} />
-                  </div>
+                <div style={{ marginBottom:12 }}>
+                  <label style={labelStyle}>Simplified expression (e.g. 3{problem.v}-5)</label>
+                  <input ref={coeffRef} value={exprInput}
+                    onChange={e => setExprInput(e.target.value)}
+                    onKeyDown={e => e.key === "Enter" && handleSubmit()}
+                    placeholder={"e.g. 3" + problem.v + "+12"}
+                    style={{ ...fieldStyle, maxWidth:"100%" }} />
                 </div>
               </>
             )}
