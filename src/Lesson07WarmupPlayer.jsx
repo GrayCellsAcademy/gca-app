@@ -9,6 +9,49 @@ function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) 
 function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 const VARS = ['x','y','a','b','c','m','n','p','r','u','v','w'];
 
+//  KaTeX
+function useKaTeX() {
+  const [ready, setReady] = useState(!!window.katex);
+  useEffect(() => {
+    if (window.katex) { setReady(true); return; }
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = "https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css";
+    document.head.appendChild(link);
+    const script = document.createElement("script");
+    script.src = "https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js";
+    script.async = true;
+    script.onload = () => setReady(true);
+    document.head.appendChild(script);
+  }, []);
+  return ready;
+}
+
+function KaTeXExpr({ expr, displayMode }) {
+  const ref = useRef(null);
+  useEffect(() => {
+    if (ref.current && window.katex) {
+      try { window.katex.render(expr, ref.current, { throwOnError: false, displayMode: !!displayMode }); }
+      catch {}
+    }
+  });
+  return <span ref={ref} />;
+}
+
+function oooToLatex(problem) {
+  const { addOp, mulOp, degree, useRoot, base, factor, addend, form, swapMul } = problem;
+  let expLatex;
+  if (useRoot) {
+    expLatex = degree === 2 ? '\\sqrt{' + base + '}' : '\\sqrt[3]{' + base + '}';
+  } else {
+    expLatex = base + '^{' + degree + '}';
+  }
+  const mulSym = mulOp === '\u00d7' ? '\\times' : '\\div';
+  const mulGroup = swapMul ? expLatex + ' \\times ' + factor : factor + ' ' + mulSym + ' ' + expLatex;
+  const addSym = addOp === '+' ? '+' : '-';
+  return form === 0 ? addend + ' ' + addSym + ' ' + mulGroup : mulGroup + ' + ' + addend;
+}
+
 //  Activity 1: Order of Operations (3 types)
 function genOoO() {
   for (let attempt = 0; attempt < 500; attempt++) {
@@ -37,10 +80,16 @@ function genOoO() {
     const result = addOp === '+' ? addend + mulVal : addend - mulVal;
     if (result <= 0 || !Number.isInteger(result)) continue;
 
-    return { type:'ooo', addOp, mulOp, degree, useRoot, base, expVal, factor, mulVal, addend, result, form: randInt(0, 2) };
+    // form: 0=addend first, 1=mulGroup first (only when +)
+    // swapMul: whether to write E mulOp F instead of F mulOp E (only when x, commutative)
+    const canSwap = mulOp === '\u00d7';
+    const swapMul = canSwap && Math.random() < 0.5;
+    const canFlip = addOp === '+';
+    const form = canFlip ? randInt(0, 1) : 0;
+
+    return { type:'ooo', addOp, mulOp, degree, useRoot, base, expVal, factor, mulVal, addend, result, form, swapMul };
   }
-  // Fallback
-  return { type:'ooo', addOp:'+', mulOp:'\u00d7', degree:2, useRoot:false, base:3, expVal:9, factor:2, mulVal:18, addend:4, result:22, form:0 };
+  return { type:'ooo', addOp:'+', mulOp:'\u00d7', degree:2, useRoot:false, base:3, expVal:9, factor:2, mulVal:18, addend:4, result:22, form:0, swapMul:false };
 }
 
 //  Activity 2: ax^m * bx^n
@@ -52,14 +101,6 @@ function genVarProduct() {
 }
 
 //  Display helpers
-function ExpTerm({ base, degree, useRoot }) {
-  if (useRoot) {
-    const sign = degree === 2 ? '\u221a' : '\u221b';
-    return <span style={{ fontFamily:"var(--mono)", fontWeight:800 }}>{sign}{base}</span>;
-  }
-  return <span style={{ fontFamily:"var(--mono)", fontWeight:800 }}>{base}<sup>{degree}</sup></span>;
-}
-
 function VarFactor({ coef, v, exp }) {
   return (
     <span style={{ fontFamily:"var(--mono)", fontWeight:800 }}>
@@ -69,47 +110,14 @@ function VarFactor({ coef, v, exp }) {
 }
 
 function OoODisplay({ problem }) {
-  const { addOp, mulOp, degree, useRoot, base, expVal, factor, addend, form } = problem;
-  const expNode = <ExpTerm base={base} degree={degree} useRoot={useRoot} />;
-  const mulStr = mulOp;
-  const style = { fontSize:28, fontWeight:700, fontFamily:"var(--mono)", color:"var(--text3)", margin:"0 8px" };
-
-  let parts;
-  if (form === 0) {
-    // addend addOp factor mulOp expTerm
-    parts = [
-      <span key="a" style={{ fontSize:32, fontWeight:800, fontFamily:"var(--mono)" }}>{addend}</span>,
-      <span key="op1" style={style}>{addOp}</span>,
-      <span key="f" style={{ fontSize:32, fontWeight:800, fontFamily:"var(--mono)" }}>{factor}</span>,
-      <span key="op2" style={style}>{mulStr}</span>,
-      expNode,
-    ];
-  } else if (form === 1) {
-    // factor mulOp expTerm addOp addend
-    parts = [
-      <span key="f" style={{ fontSize:32, fontWeight:800, fontFamily:"var(--mono)" }}>{factor}</span>,
-      <span key="op2" style={style}>{mulStr}</span>,
-      expNode,
-      <span key="op1" style={style}>{addOp}</span>,
-      <span key="a" style={{ fontSize:32, fontWeight:800, fontFamily:"var(--mono)" }}>{addend}</span>,
-    ];
-  } else {
-    // expTerm mulOp factor addOp addend
-    parts = [
-      expNode,
-      <span key="op2" style={style}>{mulStr}</span>,
-      <span key="f" style={{ fontSize:32, fontWeight:800, fontFamily:"var(--mono)" }}>{factor}</span>,
-      <span key="op1" style={style}>{addOp}</span>,
-      <span key="a" style={{ fontSize:32, fontWeight:800, fontFamily:"var(--mono)" }}>{addend}</span>,
-    ];
-  }
-
+  const katexReady = useKaTeX();
+  const latex = oooToLatex(problem) + ' = ?';
   return (
-    <div style={{ display:"flex", alignItems:"center", justifyContent:"center", flexWrap:"wrap", gap:4,
-      background:"var(--bg2)", borderRadius:"var(--radius)", padding:"16px 24px" }}>
-      {parts}
-      <span style={{ ...style, color:"var(--text3)" }}>=</span>
-      <span style={{ fontSize:32, fontWeight:800, fontFamily:"var(--mono)", color:"var(--blue)" }}>?</span>
+    <div style={{ background:"var(--bg2)", borderRadius:"var(--radius)", padding:"16px 24px",
+      textAlign:"center", fontSize:28, minHeight:70, display:"flex", alignItems:"center", justifyContent:"center" }}>
+      {katexReady
+        ? <KaTeXExpr expr={latex} displayMode={true} />
+        : <span style={{ fontFamily:"var(--mono)", fontWeight:700, color:"var(--text3)" }}>Loading...</span>}
     </div>
   );
 }
@@ -150,7 +158,7 @@ function StreakDots({ current, needed }) {
 }
 
 const TOPICS = [
-  { id:"ooo", label:"Order of Operations", subLabel:"+/- with \u00d7/\u00f7 and exponent/root", gen: genOoO },
+  { id:"ooo", label:"Order of Operations", subLabel:"+/- with -/- and exponent/root", gen: genOoO },
   { id:"var-product", label:"Simplify Variable Expressions", subLabel:"ax\u1d50 \u00d7 bx\u207f", gen: genVarProduct },
 ];
 
@@ -297,10 +305,10 @@ export default function Lesson07WarmupPlayer({ user, topic, onHome }) {
                   {wrongAns && <span style={{ color:"var(--red)", textDecoration:"line-through", marginRight:12 }}>{wrongAns}</span>}
                   <span style={{ color:"var(--green)" }}>{problem.result}</span>
                 </div>
-                <div style={{ textAlign:"center", fontSize:17, color:"var(--text3)", marginTop:6 }}>
-                  Step 1: {problem.useRoot ? (problem.degree===2?'\u221a':'\u221b')+problem.base+'='+problem.expVal : problem.base+'\u207f='+problem.expVal}
-                  &nbsp;&nbsp;Step 2: {problem.factor}{problem.mulOp}{problem.expVal}={problem.mulVal}
-                  &nbsp;&nbsp;Step 3: {problem.addend}{problem.addOp}{problem.mulVal}={problem.result}
+                <div style={{ textAlign:"center", fontSize:17, color:"var(--text3)", marginTop:6, lineHeight:1.8 }}>
+                  Step 1 ({problem.useRoot ? "root" : "exponent"}): = {problem.expVal}
+                  &nbsp;&middot;&nbsp; Step 2 ({problem.mulOp === '\u00d7' ? "multiply" : "divide"}): = {problem.mulVal}
+                  &nbsp;&middot;&nbsp; Step 3 ({problem.addOp === '+' ? "add" : "subtract"}): = {problem.result}
                 </div>
               </div>
             )}
