@@ -159,7 +159,7 @@ function StreakDots({ current, needed }) {
 
 const TOPICS = [
   { id:"ooo", label:"Order of Operations", subLabel:"+/- with -/- and exponent/root", gen: genOoO },
-  { id:"var-product", label:"Simplify Variable Expressions", subLabel:"ax\u1d50 \u00d7 bx\u207f", gen: genVarProduct },
+  { id:"var-product", label:"Simplify Variable Expressions", subLabel:"ax" + String.fromCharCode(7504) + " " + String.fromCharCode(215) + " bx" + String.fromCharCode(8319), gen: genVarProduct },
 ];
 
 export default function Lesson07WarmupPlayer({ user, topic, onHome }) {
