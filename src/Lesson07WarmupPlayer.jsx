@@ -159,7 +159,7 @@ function StreakDots({ current, needed }) {
 
 const TOPICS = [
   { id:"ooo", label:"Order of Operations", subLabel:"+/- with -/- and exponent/root", gen: genOoO },
-  { id:"var-product", label:"Simplify Variable Expressions", subLabel:"ax" + String.fromCharCode(7504) + " " + String.fromCharCode(215) + " bx" + String.fromCharCode(8319), gen: genVarProduct },
+  { id:"var-product", label:"Simplify Variable Expressions", subLabel:"axm x bxn (same variable, add exponents)", gen: genVarProduct },
 ];
 
 export default function Lesson07WarmupPlayer({ user, topic, onHome }) {
@@ -316,7 +316,7 @@ export default function Lesson07WarmupPlayer({ user, topic, onHome }) {
               <div style={{ textAlign:"center", marginBottom:12 }}>
                 <div style={{ fontSize:24, fontWeight:800, fontFamily:"var(--mono)", marginBottom:8 }}>
                   <VarFactor coef={problem.a} v={problem.v} exp={problem.m} />
-                  <span style={{ color:"var(--text3)", margin:"0 8px" }}>\u00d7</span>
+                  <span style={{ color:"var(--text3)", margin:"0 8px" }}>{'\u00d7'}</span>
                   <VarFactor coef={problem.b} v={problem.v} exp={problem.n} />
                   <span style={{ color:"var(--text3)", margin:"0 8px" }}>=</span>
                   {wrongAns && <span style={{ color:"var(--red)", textDecoration:"line-through", marginRight:10 }}>{wrongAns}</span>}
@@ -347,7 +347,7 @@ export default function Lesson07WarmupPlayer({ user, topic, onHome }) {
                 <div style={{ textAlign:"center", fontSize:30, fontWeight:800, fontFamily:"var(--mono)",
                   background:"var(--bg2)", borderRadius:"var(--radius)", padding:"16px", marginBottom:20 }}>
                   <VarFactor coef={problem.a} v={problem.v} exp={problem.m} />
-                  <span style={{ color:"var(--text3)", margin:"0 10px" }}>\u00d7</span>
+                  <span style={{ color:"var(--text3)", margin:"0 10px" }}>{'\u00d7'}</span>
                   <VarFactor coef={problem.b} v={problem.v} exp={problem.n} />
                 </div>
               </>
