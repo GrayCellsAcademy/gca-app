@@ -15,6 +15,7 @@ import ExtraCredit05Player from "./ExtraCredit05Player";
 import Lesson06WarmupPlayer from "./Lesson06WarmupPlayer";
 import ExtraCredit06Player from "./ExtraCredit06Player";
 import Lesson07WarmupPlayer from "./Lesson07WarmupPlayer";
+import ExtraCredit07Player from "./ExtraCredit07Player";
 import ReviewHomework from "./ReviewHomework";
 import Lesson02MasteryPlayer from "./Lesson02MasteryPlayer";
 import SubtractionTablesPlayer from "./SubtractionTablesPlayer";
@@ -162,6 +163,13 @@ export const TOPICS = {
     description: "Order of operations with exponents/roots and simplifying variable products.",
     subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 15,
     Player: Lesson07WarmupPlayer,
+  },
+  "lesson07-ec-v1": {
+    id: "lesson07-ec-v1",
+    title: "Classwork 7 Extra Credit (019)",
+    description: "Order of operations with zero/undefined division and integer roots of 4-digit numbers.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "extra-credit", status: "published", order: 16,
+    Player: ExtraCredit07Player,
   },
   "lesson02-mastery-v1": {
     id: "lesson02-mastery-v1",
