@@ -16,6 +16,7 @@ import Lesson06WarmupPlayer from "./Lesson06WarmupPlayer";
 import ExtraCredit06Player from "./ExtraCredit06Player";
 import Lesson07WarmupPlayer from "./Lesson07WarmupPlayer";
 import ExtraCredit07Player from "./ExtraCredit07Player";
+import Lesson08WarmupPlayer from "./Lesson08WarmupPlayer";
 import ReviewHomework from "./ReviewHomework";
 import Lesson02MasteryPlayer from "./Lesson02MasteryPlayer";
 import SubtractionTablesPlayer from "./SubtractionTablesPlayer";
@@ -170,6 +171,13 @@ export const TOPICS = {
     description: "Order of operations with zero/undefined division and integer roots of 4-digit numbers.",
     subject: "math", gradeLevel: "6+", icon: "", type: "extra-credit", status: "published", order: 16,
     Player: ExtraCredit07Player,
+  },
+  "lesson08-warmup-v1": {
+    id: "lesson08-warmup-v1",
+    title: "Warmup 8 (019)",
+    description: "Review division with zero and all 8 signed arithmetic forms.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 17,
+    Player: Lesson08WarmupPlayer,
   },
   "lesson02-mastery-v1": {
     id: "lesson02-mastery-v1",
