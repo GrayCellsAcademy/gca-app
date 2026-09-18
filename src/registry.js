@@ -17,6 +17,7 @@ import ExtraCredit06Player from "./ExtraCredit06Player";
 import Lesson07WarmupPlayer from "./Lesson07WarmupPlayer";
 import ExtraCredit07Player from "./ExtraCredit07Player";
 import Lesson08WarmupPlayer from "./Lesson08WarmupPlayer";
+import ExtraCredit08Player from "./ExtraCredit08Player";
 import ReviewHomework from "./ReviewHomework";
 import Lesson02MasteryPlayer from "./Lesson02MasteryPlayer";
 import SubtractionTablesPlayer from "./SubtractionTablesPlayer";
@@ -178,6 +179,13 @@ export const TOPICS = {
     description: "Review division with zero and all 8 signed arithmetic forms.",
     subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 17,
     Player: Lesson08WarmupPlayer,
+  },
+  "lesson08-ec-v1": {
+    id: "lesson08-ec-v1",
+    title: "Classwork 8 Extra Credit (019)",
+    description: "Speed, distance, and time word problems with unit conversions across 12 contexts.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "extra-credit", status: "published", order: 18,
+    Player: ExtraCredit08Player,
   },
   "lesson02-mastery-v1": {
     id: "lesson02-mastery-v1",
