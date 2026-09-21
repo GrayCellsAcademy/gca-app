@@ -18,6 +18,7 @@ import Lesson07WarmupPlayer from "./Lesson07WarmupPlayer";
 import ExtraCredit07Player from "./ExtraCredit07Player";
 import Lesson08WarmupPlayer from "./Lesson08WarmupPlayer";
 import ExtraCredit08Player from "./ExtraCredit08Player";
+import Lesson09WarmupPlayer from "./Lesson09WarmupPlayer";
 import ReviewHomework from "./ReviewHomework";
 import Lesson02MasteryPlayer from "./Lesson02MasteryPlayer";
 import SubtractionTablesPlayer from "./SubtractionTablesPlayer";
@@ -186,6 +187,13 @@ export const TOPICS = {
     description: "Speed, distance, and time word problems with unit conversions across 12 contexts.",
     subject: "math", gradeLevel: "6+", icon: "", type: "extra-credit", status: "published", order: 18,
     Player: ExtraCredit08Player,
+  },
+  "lesson09-warmup-v1": {
+    id: "lesson09-warmup-v1",
+    title: "Warmup 9 (019)",
+    description: "Perimeter of L-shaped figures and solving x squared equals a.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 19,
+    Player: Lesson09WarmupPlayer,
   },
   "lesson02-mastery-v1": {
     id: "lesson02-mastery-v1",
