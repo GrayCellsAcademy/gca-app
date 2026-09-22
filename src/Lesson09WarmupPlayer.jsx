@@ -151,8 +151,11 @@ export default function Lesson09WarmupPlayer({ user, topic, onHome }) {
   const gradeAnswer = () => {
     if (!problem) return false;
     if (problem.type === 'l-shape') {
-      const n = parseInt(input.trim(), 10);
-      return !isNaN(n) && n === problem.perimeter;
+      const parts = input.trim().toLowerCase().split(/\s+/);
+      if (parts.length < 2) return false;
+      const n = parseInt(parts[0], 10);
+      const u = parts.slice(1).join(' ');
+      return !isNaN(n) && n === problem.perimeter && u === problem.unit.toLowerCase();
     }
     if (problem.noSolution) return noSolSelected && selected.length===0;
     const sortedSel = [...selected].sort((a,b)=>a-b);
@@ -267,7 +270,7 @@ export default function Lesson09WarmupPlayer({ user, topic, onHome }) {
             )}
             {isEq&&problem&&(
               <div style={{ textAlign:"center",marginBottom:12,fontSize:20 }}>
-                x\u00b2 = {problem.a} &rarr; {problem.noSolution
+                x<sup>2</sup> = {problem.a} &rarr; {problem.noSolution
                   ? <span style={{ color:"var(--green)" }}>No real solutions (negative number has no real square root)</span>
                   : <span>x = <span style={{ color:"var(--green)",fontFamily:"var(--mono)" }}>{-problem.k}</span> or x = <span style={{ color:"var(--green)",fontFamily:"var(--mono)" }}>{problem.k}</span></span>}
               </div>
@@ -278,17 +281,17 @@ export default function Lesson09WarmupPlayer({ user, topic, onHome }) {
           <>
             {isShape&&(
               <>
-                <p style={{ textAlign:"center",fontSize:19,fontWeight:600,color:"var(--text2)",marginBottom:16 }}>
-                  Find the perimeter. Red sides marked "?" must be determined from the given sides.
+                <p style={{ textAlign:"center",fontSize:19,fontWeight:600,color:"var(--text2)",marginBottom:12 }}>
+                  Find the perimeter. Enter your answer with units (e.g. 28 {problem.unit}).
                 </p>
                 <LShapeSVG W={problem.W} H={problem.H} w={problem.w} h={problem.h} unit={problem.unit} />
                 <div style={{ marginTop:16 }}>
                   <input ref={inputRef} value={input}
                     onChange={e=>setInput(e.target.value.replace(/[^0-9]/g,""))}
                     onKeyDown={e=>e.key==="Enter"&&handleSubmit()}
-                    inputMode="numeric" placeholder="Perimeter = ?"
+                    inputMode="numeric" placeholder={"e.g. 28 " + problem.unit}
                     style={{ textAlign:"center",fontSize:26,fontFamily:"var(--mono)",fontWeight:700,padding:"10px",marginBottom:10 }} />
-                  <div style={{ textAlign:"center",fontSize:17,color:"var(--text3)",marginBottom:10 }}>Enter the perimeter in {problem.unit}</div>
+                  <div style={{ textAlign:"center",fontSize:17,color:"var(--text3)",marginBottom:10 }}>Type number and unit, e.g. <strong>28 {problem.unit}</strong></div>
                 </div>
               </>
             )}
