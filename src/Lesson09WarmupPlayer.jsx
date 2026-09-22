@@ -264,7 +264,7 @@ export default function Lesson09WarmupPlayer({ user, topic, onHome }) {
               <div style={{ textAlign:"center",marginBottom:12 }}>
                 <LShapeSVG W={problem.W} H={problem.H} w={problem.w} h={problem.h} unit={problem.unit} />
                 <div style={{ fontSize:20,fontWeight:700,marginTop:8 }}>
-                  Perimeter = 2\u00d7{problem.W} + 2\u00d7{problem.H} = <span style={{ color:"var(--green)" }}>{problem.perimeter} {problem.unit}</span>
+                  Perimeter = 2{'\u00d7'}{problem.W} + 2{'\u00d7'}{problem.H} = <span style={{ color:"var(--green)" }}>{problem.perimeter} {problem.unit}</span>
                 </div>
               </div>
             )}
@@ -287,7 +287,7 @@ export default function Lesson09WarmupPlayer({ user, topic, onHome }) {
                 <LShapeSVG W={problem.W} H={problem.H} w={problem.w} h={problem.h} unit={problem.unit} />
                 <div style={{ marginTop:16 }}>
                   <input ref={inputRef} value={input}
-                    onChange={e=>setInput(e.target.value.replace(/[^0-9]/g,""))}
+                    onChange={e=>setInput(e.target.value.replace(/[^0-9a-zA-Z ]/g,""))}
                     onKeyDown={e=>e.key==="Enter"&&handleSubmit()}
                     inputMode="numeric" placeholder={"e.g. 28 " + problem.unit}
                     style={{ textAlign:"center",fontSize:26,fontFamily:"var(--mono)",fontWeight:700,padding:"10px",marginBottom:10 }} />
