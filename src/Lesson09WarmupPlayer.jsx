@@ -151,11 +151,10 @@ export default function Lesson09WarmupPlayer({ user, topic, onHome }) {
   const gradeAnswer = () => {
     if (!problem) return false;
     if (problem.type === 'l-shape') {
-      const parts = input.trim().toLowerCase().split(/\s+/);
-      if (parts.length < 2) return false;
-      const n = parseInt(parts[0], 10);
-      const u = parts.slice(1).join(' ');
-      return !isNaN(n) && n === problem.perimeter && u === problem.unit.toLowerCase();
+      const cleaned = input.trim().toLowerCase().replace(/\s+/g, "");
+      const match = cleaned.match(/^(\d+)([a-z]+)$/);
+      if (!match) return false;
+      return parseInt(match[1], 10) === problem.perimeter && match[2] === problem.unit.toLowerCase();
     }
     if (problem.noSolution) return noSolSelected && selected.length===0;
     const sortedSel = [...selected].sort((a,b)=>a-b);
