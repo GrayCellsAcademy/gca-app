@@ -19,6 +19,7 @@ import ExtraCredit07Player from "./ExtraCredit07Player";
 import Lesson08WarmupPlayer from "./Lesson08WarmupPlayer";
 import ExtraCredit08Player from "./ExtraCredit08Player";
 import Lesson09WarmupPlayer from "./Lesson09WarmupPlayer";
+import ExtraCredit09Player from "./ExtraCredit09Player";
 import ReviewHomework from "./ReviewHomework";
 import Lesson02MasteryPlayer from "./Lesson02MasteryPlayer";
 import SubtractionTablesPlayer from "./SubtractionTablesPlayer";
@@ -194,6 +195,13 @@ export const TOPICS = {
     description: "Perimeter of L-shaped figures and solving x squared equals a.",
     subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 19,
     Player: Lesson09WarmupPlayer,
+  },
+  "lesson09-ec-v1": {
+    id: "lesson09-ec-v1",
+    title: "Classwork 9 Extra Credit (019)",
+    description: "Match equations to solution types, and solve rectangle perimeter word problems.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "extra-credit", status: "published", order: 20,
+    Player: ExtraCredit09Player,
   },
   "lesson02-mastery-v1": {
     id: "lesson02-mastery-v1",
