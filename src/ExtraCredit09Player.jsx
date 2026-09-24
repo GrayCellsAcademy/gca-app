@@ -9,6 +9,34 @@ function randInt(min,max){return Math.floor(Math.random()*(max-min+1))+min;}
 function pick(arr){return arr[Math.floor(Math.random()*arr.length)];}
 function shuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 
+function useKaTeX() {
+  const [ready, setReady] = useState(!!window.katex);
+  useEffect(() => {
+    if (window.katex) { setReady(true); return; }
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = "https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css";
+    document.head.appendChild(link);
+    const script = document.createElement("script");
+    script.src = "https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js";
+    script.async = true;
+    script.onload = () => setReady(true);
+    document.head.appendChild(script);
+  }, []);
+  return ready;
+}
+
+function KaTeXExpr({ expr }) {
+  const ref = useRef(null);
+  useEffect(() => {
+    if (ref.current && window.katex) {
+      try { window.katex.render(expr, ref.current, { throwOnError: false, displayMode: false }); }
+      catch {}
+    }
+  });
+  return <span ref={ref} />;
+}
+
 //  Activity 1: Matching
 const DESCRIPTIONS = [
   "No real solutions",
@@ -18,10 +46,10 @@ const DESCRIPTIONS = [
 ];
 // EQ_TYPES: [template fn, correct desc index]
 const EQ_TYPES = [
-  { make:(a)=>`x^2 = ${a}`,   descIdx:3 },  // two solutions
-  { make:(a)=>`x^2 = -${a}`,  descIdx:0 },  // no real solutions
-  { make:(a)=>`x^3 = ${a}`,   descIdx:1 },  // one positive
-  { make:(a)=>`x^3 = -${a}`,  descIdx:2 },  // one negative
+  { make:(a)=>`x^2 = ${a}`,   latex:(a)=>`x^{2} = ${a}`,   descIdx:3 },
+  { make:(a)=>`x^2 = -${a}`,  latex:(a)=>`x^{2} = -${a}`,  descIdx:0 },
+  { make:(a)=>`x^3 = ${a}`,   latex:(a)=>`x^{3} = ${a}`,   descIdx:1 },
+  { make:(a)=>`x^3 = -${a}`,  latex:(a)=>`x^{3} = -${a}`,  descIdx:2 },
 ];
 const PAIR_COLORS = ["var(--blue)","var(--green)","var(--amber)","#a855f7"];
 
@@ -34,7 +62,7 @@ function genMatchProblem() {
   ];
   const eqOrder = shuffle([0,1,2,3]);
   const descOrder = shuffle([0,1,2,3]);
-  const equations = eqOrder.map((ti,pos)=>({ pos, typeIdx:ti, display:EQ_TYPES[ti].make(vals[ti]), correctDescIdx:EQ_TYPES[ti].descIdx }));
+  const equations = eqOrder.map((ti,pos)=>({ pos, typeIdx:ti, display:EQ_TYPES[ti].make(vals[ti]), latex:EQ_TYPES[ti].latex(vals[ti]), correctDescIdx:EQ_TYPES[ti].descIdx }));
   const descriptions = descOrder.map((di,pos)=>({ pos, descIdx:di, text:DESCRIPTIONS[di] }));
   const correctAnswer = {};
   for (const eq of equations) {
@@ -79,6 +107,7 @@ function StreakDots({ current, needed }) {
 
 //  Matching UI
 function MatchingActivity({ problem, onSubmit }) {
+  const katexReady = useKaTeX();
   const [eqToDesc, setEqToDesc] = useState({});
   const [selectedEq, setSelectedEq] = useState(null);
 
@@ -110,7 +139,7 @@ function MatchingActivity({ problem, onSubmit }) {
 
   const clickDesc = (pos) => {
     if (selectedEq===null) {
-      // click already-matched desc : unmatch
+      // click already-matched desc -> unmatch
       const ep = Object.entries(eqToDesc).find(([,dp])=>dp===pos);
       if (ep) setEqToDesc(prev=>{ const n={...prev}; delete n[Number(ep[0])]; return n; });
       return;
@@ -158,7 +187,7 @@ function MatchingActivity({ problem, onSubmit }) {
                 color:color||( isSel?"var(--blue)":"var(--text)"),
                 boxShadow:isSel?"0 0 0 3px rgba(59,130,246,0.3)":"none",
               }}>
-                {eq.display}
+                {katexReady ? <KaTeXExpr expr={eq.latex} /> : eq.display}
               </div>
             );
           })}
@@ -325,10 +354,10 @@ export default function ExtraCredit09Player({ user, topic, onHome }) {
             <div style={{ fontSize:19,fontWeight:700,color:"#fca5a5",marginBottom:12,textAlign:"center" }}>Not quite! Streak reset.</div>
             {isMatch&&(
               <div style={{ fontSize:18,color:"var(--text2)",lineHeight:2,marginBottom:12 }}>
-                <div><strong>x^2 = a</strong> : Two solutions (+-sqrt(a)</div>
-                <div><strong>x^2 = -a</strong> : No real solutions</div>
-                <div><strong>x^3 = a</strong> : One positive solution</div>
-                <div><strong>x^3 = -a</strong> : One negative solution</div>
+                <div><strong>x^2 = a</strong> -> Two solutions (+-sqrt(a)</div>
+                <div><strong>x^2 = -a</strong> -> No real solutions</div>
+                <div><strong>x^3 = a</strong> -> One positive solution</div>
+                <div><strong>x^3 = -a</strong> -> One negative solution</div>
               </div>
             )}
             {isRect&&(
