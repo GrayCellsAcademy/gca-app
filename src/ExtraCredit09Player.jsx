@@ -139,7 +139,7 @@ function MatchingActivity({ problem, onSubmit }) {
 
   const clickDesc = (pos) => {
     if (selectedEq===null) {
-      // click already-matched desc -> unmatch
+      // click already-matched desc : unmatch
       const ep = Object.entries(eqToDesc).find(([,dp])=>dp===pos);
       if (ep) setEqToDesc(prev=>{ const n={...prev}; delete n[Number(ep[0])]; return n; });
       return;
@@ -354,10 +354,10 @@ export default function ExtraCredit09Player({ user, topic, onHome }) {
             <div style={{ fontSize:19,fontWeight:700,color:"#fca5a5",marginBottom:12,textAlign:"center" }}>Not quite! Streak reset.</div>
             {isMatch&&(
               <div style={{ fontSize:18,color:"var(--text2)",lineHeight:2,marginBottom:12 }}>
-                <div><strong>x^2 = a</strong> -> Two solutions (+-sqrt(a)</div>
-                <div><strong>x^2 = -a</strong> -> No real solutions</div>
-                <div><strong>x^3 = a</strong> -> One positive solution</div>
-                <div><strong>x^3 = -a</strong> -> One negative solution</div>
+                <div><strong>x^2 = a</strong> : Two solutions (+-sqrt(a)</div>
+                <div><strong>x^2 = -a</strong> : No real solutions</div>
+                <div><strong>x^3 = a</strong> : One positive solution</div>
+                <div><strong>x^3 = -a</strong> : One negative solution</div>
               </div>
             )}
             {isRect&&(
