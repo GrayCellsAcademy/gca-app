@@ -20,6 +20,7 @@ import Lesson08WarmupPlayer from "./Lesson08WarmupPlayer";
 import ExtraCredit08Player from "./ExtraCredit08Player";
 import Lesson09WarmupPlayer from "./Lesson09WarmupPlayer";
 import ExtraCredit09Player from "./ExtraCredit09Player";
+import Lesson10WarmupPlayer from "./Lesson10WarmupPlayer";
 import ReviewHomework from "./ReviewHomework";
 import Lesson02MasteryPlayer from "./Lesson02MasteryPlayer";
 import SubtractionTablesPlayer from "./SubtractionTablesPlayer";
@@ -202,6 +203,13 @@ export const TOPICS = {
     description: "Match equations to solution types, and solve rectangle perimeter word problems.",
     subject: "math", gradeLevel: "6+", icon: "", type: "extra-credit", status: "published", order: 20,
     Player: ExtraCredit09Player,
+  },
+  "lesson10-warmup-v1": {
+    id: "lesson10-warmup-v1",
+    title: "Warmup 10 (019)",
+    description: "Solve x squared equals a (two at once) and linear equations ax plus b equals c.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 21,
+    Player: Lesson10WarmupPlayer,
   },
   "lesson02-mastery-v1": {
     id: "lesson02-mastery-v1",
