@@ -62,9 +62,9 @@ function buildLatex(q) {
 
 function genComplexEq() {
   for (let attempt=0; attempt<2000; attempt++) {
-    const A=randInt(1,4), B=randInt(1,4), C=randInt(1,5), D=randInt(1,9);
-    const E=randInt(1,4), F=randInt(1,5), G=randInt(1,9);
-    const H=randInt(1,4), I=randInt(1,4), J=randInt(1,5), K=randInt(1,9), L=randInt(1,5);
+    const A=randInt(2,5), B=randInt(2,5), C=randInt(1,5), D=randInt(1,9);
+    const E=randInt(2,5), F=randInt(1,5), G=randInt(1,9);
+    const H=randInt(2,5), I=randInt(2,5), J=randInt(1,5), K=randInt(1,9), L=randInt(2,5);
     const sC=Math.random()<0.3?-1:1, sD=Math.random()<0.5?1:-1, sE=Math.random()<0.5?1:-1;
     const sF=Math.random()<0.3?-1:1, sG=Math.random()<0.5?1:-1;
     const sJ=Math.random()<0.3?-1:1, sK=Math.random()<0.5?1:-1, sL=Math.random()<0.5?1:-1;
