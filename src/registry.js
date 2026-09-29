@@ -21,6 +21,7 @@ import ExtraCredit08Player from "./ExtraCredit08Player";
 import Lesson09WarmupPlayer from "./Lesson09WarmupPlayer";
 import ExtraCredit09Player from "./ExtraCredit09Player";
 import Lesson10WarmupPlayer from "./Lesson10WarmupPlayer";
+import ExtraCredit10Player from "./ExtraCredit10Player";
 import ReviewHomework from "./ReviewHomework";
 import Lesson02MasteryPlayer from "./Lesson02MasteryPlayer";
 import SubtractionTablesPlayer from "./SubtractionTablesPlayer";
@@ -210,6 +211,13 @@ export const TOPICS = {
     description: "Solve x squared equals a (two at once) and linear equations ax plus b equals c.",
     subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 21,
     Player: Lesson10WarmupPlayer,
+  },
+  "lesson10-ec-v1": {
+    id: "lesson10-ec-v1",
+    title: "Classwork 10 Extra Credit (019)",
+    description: "Complex nested equation solving and average word problems across 12 contexts.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "extra-credit", status: "published", order: 22,
+    Player: ExtraCredit10Player,
   },
   "lesson02-mastery-v1": {
     id: "lesson02-mastery-v1",
