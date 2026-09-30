@@ -40,7 +40,12 @@ function KaTeX({ expr, display }) {
 //  Activity 1: Three expressions at once
 function genThreeExprs() {
   const a=randInt(1,10), b=randInt(1,10), c=randInt(1,10);
-  return { type:"three-exprs", a, b, c, ans1:-a, ans2:-(b*b), ans3:c*c*c };
+  const exprs = shuffle([
+    { latex:`-\\left|-${a}\\right|`, answer:-a },
+    { latex:`-(-${b})^{2}`,          answer:-(b*b) },
+    { latex:`-(-${c})^{3}`,          answer:c*c*c },
+  ]);
+  return { type:"three-exprs", exprs };
 }
 
 //  Activity 2: Complex fraction
@@ -167,7 +172,7 @@ export default function Lesson11WarmupPlayer({ user, topic, onHome }) {
 
   const handleThreeSubmit=async()=>{
     setShowResult(true);
-    const ok=parseInt(in1,10)===problem.ans1 && parseInt(in2,10)===problem.ans2 && parseInt(in3,10)===problem.ans3;
+    const ok=parseInt(in1,10)===exprs[0].answer && parseInt(in2,10)===exprs[1].answer && parseInt(in3,10)===exprs[2].answer;
     if(ok) await handleCorrect(); else await handleWrong();
   };
 
@@ -201,9 +206,7 @@ export default function Lesson11WarmupPlayer({ user, topic, onHome }) {
   const canSubmitThree=(in1||in2||in3)&&(in1.trim()!=""&&in2.trim()!=""&&in3.trim()!="");
 
   // Build KaTeX strings
-  const exprLatex1 = problem && isThree ? `-\\left|-${problem.a}\\right|` : "";
-  const exprLatex2 = problem && isThree ? `-(-${problem.b})^{2}` : "";
-  const exprLatex3 = problem && isThree ? `-(-${problem.c})^{3}` : "";
+  const exprs = problem && isThree ? problem.exprs : [{latex:"",answer:0},{latex:"",answer:0},{latex:"",answer:0}];
   const fracLatex = problem && isFrac
     ? `\\dfrac{${problem.a} - ${problem.b}^{2} \\cdot (-${problem.c})}{\\sqrt{${problem.d} + \\dfrac{${problem.e}}{${problem.f}}}}`
     : "";
@@ -264,9 +267,9 @@ export default function Lesson11WarmupPlayer({ user, topic, onHome }) {
               <>
                 <p style={{textAlign:"center",fontSize:19,fontWeight:600,color:"var(--text2)",marginBottom:16}}>Evaluate each expression. Get all three correct.</p>
                 <div style={{display:"flex",gap:10,marginBottom:16}}>
-                  <ExprCard katexExpr={exprLatex1} input={in1} onInput={v=>{setIn1(v);}} answer={problem.ans1} showResult={showResult} katexReady={katexReady} />
-                  <ExprCard katexExpr={exprLatex2} input={in2} onInput={v=>{setIn2(v);}} answer={problem.ans2} showResult={showResult} katexReady={katexReady} />
-                  <ExprCard katexExpr={exprLatex3} input={in3} onInput={v=>{setIn3(v);}} answer={problem.ans3} showResult={showResult} katexReady={katexReady} />
+                  <ExprCard katexExpr={exprs[0].latex} input={in1} onInput={v=>{setIn1(v);}} answer={exprs[0].answer} showResult={showResult} katexReady={katexReady} />
+                  <ExprCard katexExpr={exprs[1].latex} input={in2} onInput={v=>{setIn2(v);}} answer={exprs[1].answer} showResult={showResult} katexReady={katexReady} />
+                  <ExprCard katexExpr={exprs[2].latex} input={in3} onInput={v=>{setIn3(v);}} answer={exprs[2].answer} showResult={showResult} katexReady={katexReady} />
                 </div>
                 {!showResult&&(
                   <button className="btn btn-primary" style={{width:"100%",fontSize:20,padding:"14px"}}
