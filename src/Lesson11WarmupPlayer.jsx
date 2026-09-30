@@ -40,11 +40,12 @@ function KaTeX({ expr, display }) {
 //  Activity 1: Three expressions at once
 function genThreeExprs() {
   const a=randInt(1,10), b=randInt(1,10), c=randInt(1,10);
-  const exprs = shuffle([
-    { latex:`-\\left|-${a}\\right|`, answer:-a },
-    { latex:`-(-${b})^{2}`,              answer:-(b*b) },
-    { latex:`-(-${c})^{3}`,              answer:c*c*c },
-  ]);
+  const all = [
+    { latex: "-\\left|-" + a + "\\right|", answer: -a },
+    { latex: "-(-" + b + ")^{2}",               answer: -(b*b) },
+    { latex: "-(-" + c + ")^{3}",               answer: c*c*c },
+  ];
+  const exprs = shuffle(all);
   return { type:"three-exprs", exprs };
 }
 
@@ -172,7 +173,8 @@ export default function Lesson11WarmupPlayer({ user, topic, onHome }) {
 
   const handleThreeSubmit=async()=>{
     setShowResult(true);
-    const ok=parseInt(in1,10)===exprs[0].answer && parseInt(in2,10)===exprs[1].answer && parseInt(in3,10)===exprs[2].answer;
+    const e = problem?.exprs || [];
+    const ok=e.length===3 && parseInt(in1,10)===e[0].answer && parseInt(in2,10)===e[1].answer && parseInt(in3,10)===e[2].answer;
     if(ok) await handleCorrect(); else await handleWrong();
   };
 
@@ -208,10 +210,10 @@ export default function Lesson11WarmupPlayer({ user, topic, onHome }) {
   // Build KaTeX strings
   const exprs = problem && isThree ? problem.exprs : [{latex:"",answer:0},{latex:"",answer:0},{latex:"",answer:0}];
   const fracLatex = problem && isFrac
-    ? `\\dfrac{${problem.a} - ${problem.b}^{2} \\cdot (-${problem.c})}{\\sqrt{${problem.d} + \\dfrac{${problem.e}}{${problem.f}}}}`
+    ? "\\dfrac{" + problem.a + " - " + problem.b + "^{2} \\cdot (-" + problem.c + ")}{\\sqrt{" + problem.d + " + \\dfrac{" + problem.e + "}{" + problem.f + "}}}"
     : "";
 
-  return (
+    return (
     <div style={{maxWidth:640,margin:"0 auto",animation:"fadeUp 0.3s ease"}}>
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16,flexWrap:"wrap",gap:8}}>
         <div>
