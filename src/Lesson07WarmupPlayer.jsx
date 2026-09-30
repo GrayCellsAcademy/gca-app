@@ -299,16 +299,15 @@ export default function Lesson07WarmupPlayer({ user, topic, onHome }) {
           <div style={{ animation:"popIn 0.25s ease" }}>
             <div style={{ fontSize:19, fontWeight:700, color:"#fca5a5", marginBottom:12, textAlign:"center" }}>Not quite! Streak reset.</div>
             {isOoO && problem && (
-              <div style={{ marginBottom:12 }}>
-                <OoODisplay problem={problem} />
-                <div style={{ textAlign:"center", marginTop:10, fontSize:20, fontFamily:"var(--mono)", fontWeight:700 }}>
+              <div style={{ marginBottom:12, background:"var(--bg2)", borderRadius:"var(--radius)", padding:"14px 18px" }}>
+                <div style={{ textAlign:"center", fontSize:18, color:"var(--text2)", marginBottom:8, lineHeight:1.9 }}>
+                  <div><strong>Step 1</strong> ({problem.useRoot ? "root" : "exponent"}): {problem.useRoot ? (problem.degree===2?"-":"-") : ""}{problem.base}{!problem.useRoot ? ("^"+problem.degree) : ""} = {problem.expVal}</div>
+                  <div><strong>Step 2</strong> ({problem.mulOp === '-' ? "multiply" : "divide"}): {problem.factor} {problem.mulOp === '-' ? "-" : "-"} {problem.expVal} = {problem.mulVal}</div>
+                  <div><strong>Step 3</strong> ({problem.addOp === '+' ? "add" : "subtract"}): {problem.addend} {problem.addOp} {problem.mulVal} = {problem.result}</div>
+                </div>
+                <div style={{ textAlign:"center", fontSize:20, fontFamily:"var(--mono)", fontWeight:700 }}>
                   {wrongAns && <span style={{ color:"var(--red)", textDecoration:"line-through", marginRight:12 }}>{wrongAns}</span>}
                   <span style={{ color:"var(--green)" }}>{problem.result}</span>
-                </div>
-                <div style={{ textAlign:"center", fontSize:17, color:"var(--text3)", marginTop:6, lineHeight:1.8 }}>
-                  Step 1 ({problem.useRoot ? "root" : "exponent"}): = {problem.expVal}
-                  &nbsp;&middot;&nbsp; Step 2 ({problem.mulOp === '\u00d7' ? "multiply" : "divide"}): = {problem.mulVal}
-                  &nbsp;&middot;&nbsp; Step 3 ({problem.addOp === '+' ? "add" : "subtract"}): = {problem.result}
                 </div>
               </div>
             )}
