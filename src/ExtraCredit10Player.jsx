@@ -242,7 +242,7 @@ export default function ExtraCredit10Player({ user, topic, onHome }) {
           <p style={{ fontSize:20,lineHeight:1.8,color:"var(--text)" }}>
             To find the average of a group of numbers, <strong>add all the numbers together</strong> and then <strong>divide by how many numbers there are</strong>.
           </p>
-          {katexReady && <KaTeX expr="\\text{Average} = \\dfrac{\\text{Sum of all values}}{\\text{Number of values}}" display={true} />}
+          <div style={{ textAlign:"center", fontSize:22, fontFamily:"var(--mono)", fontWeight:800, margin:"12px 0", color:"var(--blue)" }}>Average = Sum of values / Count</div>
           <p style={{ fontSize:19,color:"var(--text2)",marginTop:12 }}>
             For example, if you need a certain score to reach an average, set up: <em>sum of all scores = average x number of scores</em>
           </p>
