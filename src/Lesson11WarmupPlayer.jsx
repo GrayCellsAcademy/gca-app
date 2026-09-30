@@ -6,6 +6,7 @@ export const TOPIC_ID = "lesson11-warmup-v1";
 const STREAK_NEEDED = 2;
 
 function randInt(min,max){return Math.floor(Math.random()*(max-min+1))+min;}
+function shuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 function pick(arr){return arr[Math.floor(Math.random()*arr.length)];}
 
 //  KaTeX
