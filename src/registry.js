@@ -22,6 +22,7 @@ import Lesson09WarmupPlayer from "./Lesson09WarmupPlayer";
 import ExtraCredit09Player from "./ExtraCredit09Player";
 import Lesson10WarmupPlayer from "./Lesson10WarmupPlayer";
 import ExtraCredit10Player from "./ExtraCredit10Player";
+import Lesson11WarmupPlayer from "./Lesson11WarmupPlayer";
 import ReviewHomework from "./ReviewHomework";
 import Lesson02MasteryPlayer from "./Lesson02MasteryPlayer";
 import SubtractionTablesPlayer from "./SubtractionTablesPlayer";
@@ -218,6 +219,13 @@ export const TOPICS = {
     description: "Complex nested equation solving and average word problems across 12 contexts.",
     subject: "math", gradeLevel: "6+", icon: "", type: "extra-credit", status: "published", order: 22,
     Player: ExtraCredit10Player,
+  },
+  "lesson11-warmup-v1": {
+    id: "lesson11-warmup-v1",
+    title: "Warmup 11 (019)",
+    description: "Evaluate three signed expressions and simplify a complex fraction.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 23,
+    Player: Lesson11WarmupPlayer,
   },
   "lesson02-mastery-v1": {
     id: "lesson02-mastery-v1",
