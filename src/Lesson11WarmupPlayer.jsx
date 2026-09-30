@@ -42,8 +42,8 @@ function genThreeExprs() {
   const a=randInt(1,10), b=randInt(1,10), c=randInt(1,10);
   const exprs = shuffle([
     { latex:`-\\left|-${a}\\right|`, answer:-a },
-    { latex:`-(-${b})^{2}`,          answer:-(b*b) },
-    { latex:`-(-${c})^{3}`,          answer:c*c*c },
+    { latex:`-(-${b})^{2}`,              answer:-(b*b) },
+    { latex:`-(-${c})^{3}`,              answer:c*c*c },
   ]);
   return { type:"three-exprs", exprs };
 }
@@ -243,9 +243,9 @@ export default function Lesson11WarmupPlayer({ user, topic, onHome }) {
             <div style={{fontSize:19,fontWeight:700,color:"#fca5a5",marginBottom:12,textAlign:"center"}}>Not quite! Streak reset.</div>
             {isThree&&(
               <div style={{display:"flex",gap:10,marginBottom:12}}>
-                <ExprCard katexExpr={exprLatex1} input={in1} onInput={()=>{}} answer={problem.ans1} showResult={true} katexReady={katexReady} />
-                <ExprCard katexExpr={exprLatex2} input={in2} onInput={()=>{}} answer={problem.ans2} showResult={true} katexReady={katexReady} />
-                <ExprCard katexExpr={exprLatex3} input={in3} onInput={()=>{}} answer={problem.ans3} showResult={true} katexReady={katexReady} />
+                <ExprCard katexExpr={exprs[0].latex} input={in1} onInput={()=>{}} answer={exprs[0].answer} showResult={true} katexReady={katexReady} />
+                <ExprCard katexExpr={exprs[1].latex} input={in2} onInput={()=>{}} answer={exprs[1].answer} showResult={true} katexReady={katexReady} />
+                <ExprCard katexExpr={exprs[2].latex} input={in3} onInput={()=>{}} answer={exprs[2].answer} showResult={true} katexReady={katexReady} />
               </div>
             )}
             {isFrac&&(
