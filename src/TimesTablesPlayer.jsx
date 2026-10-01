@@ -288,6 +288,15 @@ function buildStage3Questions(n, masteredTables) {
   return shuffle([...current,...review]);
 }
 
+function pickNext(qs, currentIdx) {
+  const uncleared = qs.map((_,i) => i).filter(i => qs[i].streak < qs[i].streakNeeded);
+  const cleared   = qs.map((_,i) => i).filter(i => qs[i].streak >= qs[i].streakNeeded && i !== currentIdx);
+  if (uncleared.length === 0) return (currentIdx + 1) % qs.length;
+  if (cleared.length === 0 || Math.random() < 0.75) {
+    return uncleared[Math.floor(Math.random() * uncleared.length)];
+  }
+  return cleared[Math.floor(Math.random() * cleared.length)];
+}
 function Stage3({ n, masteredTables, onComplete, timerDisabled=false }) {
   const [intro, setIntro] = useState(true);
   const [done, setDone] = useState(false);
@@ -340,7 +349,7 @@ function Stage3({ n, masteredTables, onComplete, timerDisabled=false }) {
       );
       setQuestions(updated);
       if (allCleared(updated)) { setDone(true); return; }
-      setQIdx(i => i+1);
+      setQIdx(i => pickNext(updated, i % updated.length));
     } else {
       const updated = questions.map((q,i) =>
         i === (qIdx % questions.length) ? { ...q,streak:0,streakNeeded:q.streakNeeded+1 } : q
@@ -352,7 +361,7 @@ function Stage3({ n, masteredTables, onComplete, timerDisabled=false }) {
 
   const handleWrongDismiss = () => {
     setWrongPanel(null);
-    setQIdx(i => i+1);
+    setQIdx(i => pickNext(questions, i % questions.length));
   };
 
   if (intro) return (

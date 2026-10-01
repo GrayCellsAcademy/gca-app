@@ -208,6 +208,15 @@ function buildStage3Questions(n) {
   return shuffle([...current,...review]);
 }
 
+function pickNext(qs, currentIdx) {
+  const uncleared = qs.map((_,i) => i).filter(i => qs[i].streak < qs[i].streakNeeded);
+  const cleared   = qs.map((_,i) => i).filter(i => qs[i].streak >= qs[i].streakNeeded && i !== currentIdx);
+  if (uncleared.length === 0) return (currentIdx + 1) % qs.length;
+  if (cleared.length === 0 || Math.random() < 0.75) {
+    return uncleared[Math.floor(Math.random() * uncleared.length)];
+  }
+  return cleared[Math.floor(Math.random() * cleared.length)];
+}
 function Stage3({ n, onComplete, timerDisabled=false }) {
   const [intro, setIntro] = useState(true);
   const [done, setDone] = useState(false);
@@ -243,7 +252,7 @@ function Stage3({ n, onComplete, timerDisabled=false }) {
       const updated=questions.map((q,i)=>i===(qIdx%questions.length)?{...q,streak:q.streak+1}:q);
       setQuestions(updated);
       if(updated.every(q=>q.streak>=q.streakNeeded)){ setDone(true); return; }
-      setQIdx(i=>i+1);
+      setQIdx(i => pickNext(updated, i % updated.length));
     } else {
       const updated=questions.map((q,i)=>i===(qIdx%questions.length)?{...q,streak:0,streakNeeded:q.streakNeeded+1}:q);
       setQuestions(updated);
@@ -278,7 +287,7 @@ function Stage3({ n, onComplete, timerDisabled=false }) {
 
   return (
     <div style={{ maxWidth:480,margin:"0 auto" }}>
-      {wrongPanel&&<WrongPanel n={wrongPanel.n} b={wrongPanel.b} correct={wrongPanel.correct} onContinue={()=>{ setWrongPanel(null); setQIdx(i=>i+1); }} />}
+      {wrongPanel&&<WrongPanel n={wrongPanel.n} b={wrongPanel.b} correct={wrongPanel.correct} onContinue={()=>{ setWrongPanel(null); setQIdx(i => pickNext(questions, i % questions.length)); }} />}
       <div style={{ marginBottom:16 }}>
         <div style={{ display:"flex",justifyContent:"space-between",fontSize:20,color:"var(--text3)",marginBottom:4 }}>
           <span>Cleared</span><span>{clearedQ}/{questions.length}</span>
