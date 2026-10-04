@@ -111,7 +111,7 @@ function genPolynomial() {
     const others = TERM_DEFS.filter(t=>t.deg<3).sort(()=>Math.random()-0.5).slice(0,3);
     const terms = [pick(deg3), ...others];
     const coeffs = terms.map(()=>randNZ());
-    const result = terms.reduce((s,t,i)=>s+t.eval(coeffs[i],xv,yv),0);
+    const result = terms.reduce((s,t,i)=>s+coeffs[i]*t.eval(xv,yv),0);
     if (!Number.isInteger(result) || Math.abs(result)>500) continue;
     const latex = buildPolyLatex(terms, coeffs);
     return { type:'poly', terms, coeffs, xv, yv, result, latex };
