@@ -23,6 +23,7 @@ import ExtraCredit09Player from "./ExtraCredit09Player";
 import Lesson10WarmupPlayer from "./Lesson10WarmupPlayer";
 import ExtraCredit10Player from "./ExtraCredit10Player";
 import Lesson11WarmupPlayer from "./Lesson11WarmupPlayer";
+import ExtraCredit11Player from "./ExtraCredit11Player";
 import ReviewHomework from "./ReviewHomework";
 import Lesson02MasteryPlayer from "./Lesson02MasteryPlayer";
 import SubtractionTablesPlayer from "./SubtractionTablesPlayer";
@@ -226,6 +227,13 @@ export const TOPICS = {
     description: "Evaluate three signed expressions and simplify a complex fraction.",
     subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 23,
     Player: Lesson11WarmupPlayer,
+  },
+  "lesson11-ec-v1": {
+    id: "lesson11-ec-v1",
+    title: "Classwork 11 Extra Credit (019)",
+    description: "Two objects meeting word problems and third-degree polynomial evaluation.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "extra-credit", status: "published", order: 24,
+    Player: ExtraCredit11Player,
   },
   "lesson02-mastery-v1": {
     id: "lesson02-mastery-v1",
