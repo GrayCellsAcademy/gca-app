@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+﻿import { useState, useEffect, useRef } from "react";
 import { saveProgress as fbSaveProgress, getProgress } from "./core/firebase";
 import {
   genWarmupA, gradeWarmupA,
@@ -315,7 +315,7 @@ function DistributiveMastery({ onCorrect, onWrong }) {
       <div style={{ fontSize: 20, color: "var(--text3)", marginBottom: 6, fontWeight: 600 }}>
         {stage === 0 ? "Stage 1: Expand the left side" : "Stage 2: Solve the equation"}
       </div>
-      <KaTeXBlock expr={stage === 0 ? q.latex.split("=")[0].trim() : q.expandedLatex} />
+      <KaTeXBlock expr={stage === 0 ? q.latex : q.expandedLatex} />
 
       {stage === 0 && !feedback && (
         <div>
