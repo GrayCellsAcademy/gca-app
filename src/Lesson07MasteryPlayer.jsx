@@ -226,6 +226,7 @@ function NegativeRootMastery({ streak, onCorrect, onWrong }) {
     if (gradeNegativeRoot(ans, question)) { onCorrect(); }
     else { setWrong(true); onWrong(); }
   };
+  const handleRetry = () => { setWrong(false); setSubmitted(false); setVal(""); setRemountKey(k=>k+1); };
 
   if (wrong) return (
     <div>
