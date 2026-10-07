@@ -212,9 +212,14 @@ export default function ExtraCredit12Player({user,topic,onHome}){
 
   const handleSubmit=async()=>{
     if(!problem||phase!=="question"||!input.trim())return;
+    const _n=parseInt(input.trim(),10);
+    const _flipOp={'<':'>','<=':'>=','>':'<','>=':'<='};
     const correct=actIdx===0
-      ?parseInt(input.trim(),10)===problem.result
-      :(!!selectedOp&&selectedOp===problem.sol.op&&parseInt(input.trim(),10)===problem.sol.x);
+      ?_n===problem.result
+      :(!!selectedOp&&!isNaN(_n)&&(
+          (selectedOp===problem.sol.op&&_n===problem.sol.x)||
+          (_flipOp[selectedOp]===problem.sol.op&&_n===problem.sol.x)
+        ));
     if(correct){
       const newStreak=streak+1;setStreak(newStreak);setPhase("correct");
       const final=newStreak>=STREAK_NEEDED;
@@ -318,14 +323,9 @@ export default function ExtraCredit12Player({user,topic,onHome}){
 
         {phase==="question"&&problem&&(
           <>
-            {isIneq&&problem.typeId&&(
-              <div style={{fontSize:16,color:"var(--text3)",marginBottom:8,fontStyle:"italic"}}>
-                {problem.typeId==='A'?"Hint: try distributing first":problem.typeId==='B'?"Hint: combine like terms first":"Hint: distribute, then combine like terms"}
-              </div>
-            )}
+
             {katexReady&&<KaTeX expr={problem.latex} display={true}/>}
-                        {katexReady&&<KaTeX expr={problem.latex} display={true}/>}
-            {isIneq&&(
+                        {isIneq&&(
               <>
                 <p style={{textAlign:"center",fontSize:18,color:"var(--text2)",marginBottom:10}}>Select the inequality sign, then enter the number:</p>
                 <div style={{display:"flex",gap:8,justifyContent:"center",marginBottom:12}}>
@@ -335,7 +335,7 @@ export default function ExtraCredit12Player({user,topic,onHome}){
                         border:`2px solid ${selectedOp===op?"var(--blue)":"var(--border)"}`,
                         background:selectedOp===op?"rgba(59,130,246,0.15)":"var(--surface)",
                         color:selectedOp===op?"var(--blue)":"var(--text2)",transition:"all 0.15s"}}>
-                      x {sym} ?
+                      {sym}
                     </button>
                   ))}
                 </div>
