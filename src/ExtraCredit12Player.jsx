@@ -312,7 +312,7 @@ export default function ExtraCredit12Player({user,topic,onHome}){
             <div style={{textAlign:"center",marginBottom:12}}>
               {wrongAns&&<span style={{fontSize:20,fontFamily:"var(--mono)",color:"var(--red)",textDecoration:"line-through",marginRight:16}}>{wrongAns}</span>}
               <span style={{fontSize:22,fontFamily:"var(--mono)",fontWeight:800,color:"var(--green)"}}>
-                {isMulti?problem.result:`x ${problem.sol.op} ${problem.sol.x}`}
+                {isMulti?problem.result:("x "+({"<=":"≤",">=":"≥"}[problem.sol.op]||problem.sol.op)+" "+problem.sol.x)}
               </span>
             </div>
             <button className="btn btn-success" style={{width:"100%",fontSize:20,padding:"13px"}} onClick={()=>newProblem(problemCount)}>Got it - try again</button>
