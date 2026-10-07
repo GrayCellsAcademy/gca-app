@@ -34,20 +34,22 @@ function genMultiStep() {
     const Cval=-(C**n);
     const useS1Cbrt=Math.random()<0.4;
     const s1Val=useS1Cbrt?pick([2,3,4]):randInt(2,9);
-    const s1Latex=useS1Cbrt?`\\\\sqrt[3]{${s1Val**3}}`:`\\\\sqrt{${s1Val**2}}`;
+    const SQ="\\sqrt", CB="\\sqrt[3]";
+    const s1Latex=useS1Cbrt?CB+"{"+s1Val**3+"}":SQ+"{"+s1Val**2+"}";
     const op1=Math.random()<0.5?1:-1;
     const inner1=Cval+op1*s1Val;
     const s2Val=randInt(2,6);
-    const s2Latex=`\\\\sqrt{${s2Val**2}}`;
+    const s2Latex=SQ+"{"+s2Val**2+"}";
     const op2=Math.random()<0.5?1:-1;
     const inner2=B*inner1+op2*s2Val;
     const result=A*inner2;
     if(!Number.isInteger(result)) continue;
     if(Math.abs(result)<20||Math.abs(result)>800) continue;
     const op1Sym=op1===1?'+':'-', op2Sym=op2===1?'+':'-';
-    const inner1Latex=`-${C}^{${n}} ${op1Sym} ${s1Latex}`;
-    const inner2Latex=`(${B}) \\\\times \\\\left(${inner1Latex}\\\\right) ${op2Sym} ${s2Latex}`;
-    const latex=`${A} \\\\times \\\\left(${inner2Latex}\\\\right)`;
+    const T="\\times", L="\\left(", R="\\right)";
+    const inner1Latex="-"+C+"^{"+n+"} "+op1Sym+" "+s1Latex;
+    const inner2Latex="("+B+") "+T+" "+L+inner1Latex+R+" "+op2Sym+" "+s2Latex;
+    const latex=A+" "+T+" "+L+inner2Latex+R;
     return {type:'multi',latex,result,A,B,C,n,Cval,s1Val,s1Latex,op1,op1Sym,inner1,s2Val,s2Latex,op2,op2Sym,inner2};
   }
   return genMultiStep();
