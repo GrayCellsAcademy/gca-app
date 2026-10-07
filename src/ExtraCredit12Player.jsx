@@ -327,7 +327,7 @@ export default function ExtraCredit12Player({user,topic,onHome}){
             {katexReady&&<KaTeX expr={problem.latex} display={true}/>}
                         {isIneq&&(
               <>
-                <p style={{textAlign:"center",fontSize:18,color:"var(--text2)",marginBottom:10}}>Select the inequality sign, then enter the number:</p>
+                <p style={{textAlign:"center",fontSize:18,color:"var(--text2)",marginBottom:10}}>Select the inequality sign, then type the number (x is implied on the left):</p>
                 <div style={{display:"flex",gap:8,justifyContent:"center",marginBottom:12}}>
                   {[['<','<'],['\u2264','<='],['>',">"],['-','>=']].map(([sym,op])=>(
                     <button key={op} onClick={()=>setSelectedOp(op)}
@@ -344,7 +344,7 @@ export default function ExtraCredit12Player({user,topic,onHome}){
             <input ref={inputRef} value={input}
               onChange={e=>setInput(e.target.value.replace(/[^0-9\-]/g,""))}
               onKeyDown={e=>e.key==="Enter"&&handleSubmit()}
-              inputMode="numeric" placeholder="?"
+              inputMode="numeric" placeholder="number"
               style={{textAlign:"center",fontSize:24,fontFamily:"var(--mono)",fontWeight:700,padding:"12px",marginBottom:12}}/>
             <button className="btn btn-primary" style={{width:"100%",fontSize:20,padding:"14px"}}
               onMouseDown={e=>{e.preventDefault();handleSubmit();}}
