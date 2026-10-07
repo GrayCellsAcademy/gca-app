@@ -346,7 +346,7 @@ export default function ExtraCredit12Player({user,topic,onHome}){
               </>
             )}
             <input ref={inputRef} value={input}
-              onChange={e=>setInput(e.target.value.replace(/[^0-9\-]/g,""))}
+              onChange={e=>setInput(e.target.value.replace(/[^0-9x<>= -]/g,""))}
               onKeyDown={e=>e.key==="Enter"&&handleSubmit()}
               inputMode="text" placeholder={isIneq?"e.g. x>3 or 3<x":"?"}
               style={{textAlign:"center",fontSize:24,fontFamily:"var(--mono)",fontWeight:700,padding:"12px",marginBottom:12}}/>
