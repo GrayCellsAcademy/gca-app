@@ -57,7 +57,7 @@ function genMultiStep() {
 
 //  Activity 2: Inequalities with variables on both sides
 const OPS=['<','<=','>','>='];
-function opLatex(op){return op==='<='?'\\\\leq':op==='>='?'\\\\geq':op;}
+function opLatex(op){return op==='<='?'\\leq':op==='>='?'\\geq':op;}
 function opFlip(op){return{'<':'>','<=':'>=','>':'<','>=':'<='}[op];}
 function sgn(n,forceSign=false){return n>=0?(forceSign?'+':'')+n:String(n);}
 function coef(n){return n===1?'':n===-1?'-':String(n);}
