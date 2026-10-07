@@ -72,7 +72,7 @@ function solveLinear(lhsCoef,rhs,op){
 function genTypeA(){
   for(let i=0;i<500;i++){
     const a=randInt(2,5),b=randInt(1,4),c=randInt(-6,6);if(c===0)continue;
-    const d=randInt(1,8),e=randInt(-8,8);
+    const d=randInt(1,8),e=randInt(-8,8); if(e===0) continue;
     const coefX=a*b-d,constant=e-a*c;
     if(coefX===0)continue;
     const op=pick(OPS);
@@ -91,7 +91,7 @@ function genTypeA(){
 function genTypeB(){
   for(let i=0;i<500;i++){
     const a=randInt(1,6),b=randInt(1,4),c=randInt(-8,8);
-    const d=randInt(1,6),e=randInt(1,4),f=randInt(-8,8);
+    const d=randInt(1,6),e=randInt(1,4),f=randInt(-8,8); if(f===0) continue;
     const coefX=(a+b)-(d+e),constant=f-c;
     if(coefX===0)continue;
     const op=pick(OPS);
@@ -109,7 +109,7 @@ function genTypeB(){
 function genTypeC(){
   for(let i=0;i<500;i++){
     const a=randInt(2,4),b=randInt(1,3),c=randInt(-5,5);if(c===0)continue;
-    const d=randInt(1,5),e=randInt(1,5),f=randInt(1,4),g=randInt(-8,8);
+    const d=randInt(1,5),e=randInt(1,5),f=randInt(1,4),g=randInt(-8,8); if(g===0) continue;
     const coefX=(a*b+d)-(e+f),constant=g-a*c;
     if(coefX===0)continue;
     const op=pick(OPS);
