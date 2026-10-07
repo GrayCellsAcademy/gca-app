@@ -72,7 +72,7 @@ function solveLinear(lhsCoef,rhs,op){
 function genTypeA(){
   for(let i=0;i<500;i++){
     const a=randInt(2,5),b=randInt(1,4),c=randInt(-6,6);if(c===0)continue;
-    const d=randInt(1,8),e=randInt(-8,8); if(e===0) continue;
+    const d=randInt(1,8),e=randInt(-8,8);
     const coefX=a*b-d,constant=e-a*c;
     if(coefX===0)continue;
     const op=pick(OPS);
@@ -91,7 +91,7 @@ function genTypeA(){
 function genTypeB(){
   for(let i=0;i<500;i++){
     const a=randInt(1,6),b=randInt(1,4),c=randInt(-8,8);
-    const d=randInt(1,6),e=randInt(1,4),f=randInt(-8,8); if(f===0) continue;
+    const d=randInt(1,6),e=randInt(1,4),f=randInt(-8,8);
     const coefX=(a+b)-(d+e),constant=f-c;
     if(coefX===0)continue;
     const op=pick(OPS);
@@ -109,7 +109,7 @@ function genTypeB(){
 function genTypeC(){
   for(let i=0;i<500;i++){
     const a=randInt(2,4),b=randInt(1,3),c=randInt(-5,5);if(c===0)continue;
-    const d=randInt(1,5),e=randInt(1,5),f=randInt(1,4),g=randInt(-8,8); if(g===0) continue;
+    const d=randInt(1,5),e=randInt(1,5),f=randInt(1,4),g=randInt(-8,8);
     const coefX=(a*b+d)-(e+f),constant=g-a*c;
     if(coefX===0)continue;
     const op=pick(OPS);
@@ -181,6 +181,7 @@ export default function ExtraCredit12Player({user,topic,onHome}){
   const [phase,setPhase]=useState("question");
   const [loading,setLoading]=useState(true);
   const [wrongAns,setWrongAns]=useState(null);
+  const [selectedOp,setSelectedOp]=useState(null);
   const [problemCount,setProblemCount]=useState(0);
   const inputRef=useRef(null);
   const pendingNext=useRef(null);
@@ -205,7 +206,7 @@ export default function ExtraCredit12Player({user,topic,onHome}){
   const newProblem=(pc)=>{
     const p=actIdx===0?genMultiStep():genInequality(pc);
     setProblem(p);setProblemCount(pc+1);
-    setInput("");setPhase("question");setWrongAns(null);pendingNext.current=null;
+    setInput("");setPhase("question");setWrongAns(null);setSelectedOp(null);pendingNext.current=null;
     setTimeout(()=>inputRef.current?.focus(),80);
   };
 
@@ -213,7 +214,7 @@ export default function ExtraCredit12Player({user,topic,onHome}){
     if(!problem||phase!=="question"||!input.trim())return;
     const correct=actIdx===0
       ?parseInt(input.trim(),10)===problem.result
-      :gradeIneq(input,problem.sol);
+      :(!!selectedOp&&selectedOp===problem.sol.op&&parseInt(input.trim(),10)===problem.sol.x);
     if(correct){
       const newStreak=streak+1;setStreak(newStreak);setPhase("correct");
       const final=newStreak>=STREAK_NEEDED;
@@ -323,20 +324,32 @@ export default function ExtraCredit12Player({user,topic,onHome}){
               </div>
             )}
             {katexReady&&<KaTeX expr={problem.latex} display={true}/>}
+                        {katexReady&&<KaTeX expr={problem.latex} display={true}/>}
             {isIneq&&(
-              <p style={{textAlign:"center",fontSize:18,color:"var(--text2)",marginBottom:8}}>
-                Enter your answer as e.g. <code>x &gt; 3</code> or <code>x &lt;= -2</code>
-              </p>
+              <>
+                <p style={{textAlign:"center",fontSize:18,color:"var(--text2)",marginBottom:10}}>Select the inequality sign, then enter the number:</p>
+                <div style={{display:"flex",gap:8,justifyContent:"center",marginBottom:12}}>
+                  {[['<','<'],['\u2264','<='],['>',">"],['-','>=']].map(([sym,op])=>(
+                    <button key={op} onClick={()=>setSelectedOp(op)}
+                      style={{padding:"10px 18px",fontSize:26,fontWeight:800,borderRadius:"var(--radius-sm)",cursor:"pointer",
+                        border:`2px solid ${selectedOp===op?"var(--blue)":"var(--border)"}`,
+                        background:selectedOp===op?"rgba(59,130,246,0.15)":"var(--surface)",
+                        color:selectedOp===op?"var(--blue)":"var(--text2)",transition:"all 0.15s"}}>
+                      x {sym} ?
+                    </button>
+                  ))}
+                </div>
+              </>
             )}
             <input ref={inputRef} value={input}
-              onChange={e=>setInput(isMulti?e.target.value.replace(/[^0-9\-]/g,""):e.target.value)}
+              onChange={e=>setInput(e.target.value.replace(/[^0-9\-]/g,""))}
               onKeyDown={e=>e.key==="Enter"&&handleSubmit()}
-              inputMode={isMulti?"numeric":"text"} placeholder={isMulti?"?":"x > ?"}
+              inputMode="numeric" placeholder="?"
               style={{textAlign:"center",fontSize:24,fontFamily:"var(--mono)",fontWeight:700,padding:"12px",marginBottom:12}}/>
             <button className="btn btn-primary" style={{width:"100%",fontSize:20,padding:"14px"}}
               onMouseDown={e=>{e.preventDefault();handleSubmit();}}
               onTouchEnd={e=>{e.preventDefault();handleSubmit();}}
-              disabled={!input.trim()}>
+              disabled={isIneq?(!selectedOp||!input.trim()):!input.trim()}>
               Submit
             </button>
           </>
