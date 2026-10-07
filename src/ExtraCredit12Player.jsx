@@ -135,16 +135,14 @@ function genInequality(problemCount){
 //  Input grading for inequalities
 function gradeIneq(input,sol){
   const s=input.trim().toLowerCase().replace(/\s+/g,'');
-  // Check longest operators first
+  const flip={'<':'>','<=':'>=','>':'<','>=':'<='};
   for(const sym of ['>=','<=','>','<']){
     const idx=s.indexOf(sym);
     if(idx<0)continue;
     const lhs=s.slice(0,idx),rhs=s.slice(idx+sym.length);
-    if(lhs!=='x')continue;
-    const n=parseInt(rhs,10);
-    if(isNaN(n))continue;
-    const opNorm={'>=':'>=','<=':'<=','>':'>','<':'<'}[sym];
-    return opNorm===sol.op&&n===sol.x;
+    const lNum=parseInt(lhs,10),rNum=parseInt(rhs,10);
+    if(lhs==='x'&&!isNaN(rNum)) return sym===sol.op&&rNum===sol.x;
+    if(!isNaN(lNum)&&rhs==='x') return flip[sym]===sol.op&&lNum===sol.x;
   }
   return false;
 }
@@ -327,14 +325,20 @@ export default function ExtraCredit12Player({user,topic,onHome}){
             {katexReady&&<KaTeX expr={problem.latex} display={true}/>}
                         {isIneq&&(
               <>
-                <p style={{textAlign:"center",fontSize:18,color:"var(--text2)",marginBottom:10}}>Select the inequality sign, then type the number (x is implied on the left):</p>
+                <p style={{textAlign:"center",fontSize:18,color:"var(--text2)",marginBottom:10}}>Select the inequality sign, then enter the number:</p>
                 <div style={{display:"flex",gap:8,justifyContent:"center",marginBottom:12}}>
                   {[['<','<'],['\u2264','<='],['>',">"],['-','>=']].map(([sym,op])=>(
-                    <button key={op} onClick={()=>setSelectedOp(op)}
+                    <button key={op} onClick={()=>{
+                      const el=inputRef.current;if(!el)return;
+                      const start=el.selectionStart||input.length,end=el.selectionEnd||input.length;
+                      const val=input.slice(0,start)+op+input.slice(end);
+                      setInput(val);
+                      setTimeout(()=>{el.focus();el.setSelectionRange(start+op.length,start+op.length);},0);
+                    }}
                       style={{padding:"10px 18px",fontSize:26,fontWeight:800,borderRadius:"var(--radius-sm)",cursor:"pointer",
-                        border:`2px solid ${selectedOp===op?"var(--blue)":"var(--border)"}`,
-                        background:selectedOp===op?"rgba(59,130,246,0.15)":"var(--surface)",
-                        color:selectedOp===op?"var(--blue)":"var(--text2)",transition:"all 0.15s"}}>
+                        border:"2px solid var(--border)",
+                        background:"var(--surface)",
+                        color:"var(--text2)",transition:"all 0.15s"}}>
                       {sym}
                     </button>
                   ))}
@@ -344,12 +348,12 @@ export default function ExtraCredit12Player({user,topic,onHome}){
             <input ref={inputRef} value={input}
               onChange={e=>setInput(e.target.value.replace(/[^0-9\-]/g,""))}
               onKeyDown={e=>e.key==="Enter"&&handleSubmit()}
-              inputMode="numeric" placeholder="number"
+              inputMode="text" placeholder={isIneq?"e.g. x>3 or 3<x":"?"}
               style={{textAlign:"center",fontSize:24,fontFamily:"var(--mono)",fontWeight:700,padding:"12px",marginBottom:12}}/>
             <button className="btn btn-primary" style={{width:"100%",fontSize:20,padding:"14px"}}
               onMouseDown={e=>{e.preventDefault();handleSubmit();}}
               onTouchEnd={e=>{e.preventDefault();handleSubmit();}}
-              disabled={isIneq?(!selectedOp||!input.trim()):!input.trim()}>
+              disabled={!input.trim()}>
               Submit
             </button>
           </>
