@@ -25,6 +25,7 @@ import ExtraCredit10Player from "./ExtraCredit10Player";
 import Lesson11WarmupPlayer from "./Lesson11WarmupPlayer";
 import ExtraCredit11Player from "./ExtraCredit11Player";
 import Lesson12WarmupPlayer from "./Lesson12WarmupPlayer";
+import ExtraCredit12Player from "./ExtraCredit12Player";
 import ReviewHomework from "./ReviewHomework";
 import Lesson02MasteryPlayer from "./Lesson02MasteryPlayer";
 import SubtractionTablesPlayer from "./SubtractionTablesPlayer";
@@ -242,6 +243,13 @@ export const TOPICS = {
     description: "Long division with zero placeholder and all 8 signed arithmetic forms at once.",
     subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 25,
     Player: Lesson12WarmupPlayer,
+  },
+  "lesson12-ec-v1": {
+    id: "lesson12-ec-v1",
+    title: "Classwork 12 Extra Credit (019)",
+    description: "Multi-step signed arithmetic and linear inequalities with variables on both sides.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "extra-credit", status: "published", order: 26,
+    Player: ExtraCredit12Player,
   },
   "lesson02-mastery-v1": {
     id: "lesson02-mastery-v1",
