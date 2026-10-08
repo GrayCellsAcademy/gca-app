@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { saveProgress, getProgress, getUser } from "./core/firebase";
 import useActivityTracking from "./core/useActivityTracking";
 
@@ -247,7 +247,7 @@ export default function DivisionTablesPlayer({ user, topic, onHome }) {
           <div style={{ textAlign: "center", marginBottom: 20 }}>
             {isReview && <div style={{ fontSize: 19, color: "var(--orange)", fontWeight: 700, marginBottom: 8 }}>Review: -{q.divisor}</div>}
             <div style={{ fontSize: 48, fontWeight: 900, fontFamily: "var(--mono)", color: "var(--text)" }}>
-              {q.dividend} - {q.divisor} = ?
+              {q.dividend} {"\u00f7"} {q.divisor} = ?
             </div>
           </div>
 
@@ -265,7 +265,7 @@ export default function DivisionTablesPlayer({ user, topic, onHome }) {
               </div>
               {!feedback.correct && (
                 <div style={{ fontSize: 22, color: "var(--text2)", marginBottom: 16 }}>
-                  {q.dividend} - {q.divisor} = <strong style={{ color: "var(--green)", fontFamily: "var(--mono)", fontSize: 26 }}>{feedback.answer}</strong>
+                  {q.dividend} {"\u00f7"} {q.divisor} = <strong style={{ color: "var(--green)", fontFamily: "var(--mono)", fontSize: 26 }}>{feedback.answer}</strong>
                 </div>
               )}
               <button className="btn btn-primary" style={{ width: "100%", fontSize: 20 }} onClick={nextQuestion}>
