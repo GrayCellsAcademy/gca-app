@@ -26,6 +26,7 @@ import Lesson11WarmupPlayer from "./Lesson11WarmupPlayer";
 import ExtraCredit11Player from "./ExtraCredit11Player";
 import Lesson12WarmupPlayer from "./Lesson12WarmupPlayer";
 import ExtraCredit12Player from "./ExtraCredit12Player";
+import Lesson13WarmupPlayer from "./Lesson13WarmupPlayer";
 import ReviewHomework from "./ReviewHomework";
 import Lesson02MasteryPlayer from "./Lesson02MasteryPlayer";
 import SubtractionTablesPlayer from "./SubtractionTablesPlayer";
@@ -250,6 +251,13 @@ export const TOPICS = {
     description: "Multi-step signed arithmetic and linear inequalities with variables on both sides.",
     subject: "math", gradeLevel: "6+", icon: "", type: "extra-credit", status: "published", order: 26,
     Player: ExtraCredit12Player,
+  },
+  "lesson13-warmup-v1": {
+    id: "lesson13-warmup-v1",
+    title: "Warmup 13 (019)",
+    description: "Prime factorization and mixed divisibility review (all 7 rules).",
+    subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 27,
+    Player: Lesson13WarmupPlayer,
   },
   "lesson02-mastery-v1": {
     id: "lesson02-mastery-v1",
