@@ -65,8 +65,7 @@ function StreakDots({current,needed}){
 function NumCard({n}){
   return(
     <div style={{flex:1,background:"var(--bg2)",borderRadius:"var(--radius-sm)",padding:"14px 8px",textAlign:"center"}}>
-      <div style={{fontSize:34,fontWeight:900,fontFamily:"var(--mono)",color:"var(--text)",marginBottom:4}}>{n}</div>
-      <div style={{fontSize:14,color:"var(--text3)",fontFamily:"var(--mono)"}}>{formatPF(n)}</div>
+      <div style={{fontSize:34,fontWeight:900,fontFamily:"var(--mono)",color:"var(--text)"}}>{n}</div>
     </div>
   );
 }
@@ -197,18 +196,8 @@ export default function ExtraCredit13Player({user,topic,onHome}){
           <div style={{animation:"popIn 0.25s ease"}}>
             <div style={{fontSize:19,fontWeight:700,color:"#fca5a5",marginBottom:12,textAlign:"center"}}>Not quite! Streak reset.</div>
             <div style={{display:"flex",gap:8,marginBottom:12}}>{problem.nums.map((n,i)=><NumCard key={i} n={n}/>)}</div>
-            {isGCF&&(
-              <div style={{fontSize:17,color:"var(--text3)",marginBottom:10,textAlign:"center",lineHeight:1.8}}>
-                Common factors: {[2,3,5,7].filter(p=>problem.nums.every(n=>n%p===0)).join(", ")||"check prime factorizations above"}
-              </div>
-            )}
-            {isLCM&&(
-              <div style={{fontSize:17,color:"var(--text3)",marginBottom:10,textAlign:"center",lineHeight:1.8}}>
-                Pairwise GCFs: ({problem.nums[0]},{problem.nums[1]})={gcd(problem.nums[0],problem.nums[1])} &nbsp;|&nbsp;
-                ({problem.nums[1]},{problem.nums[2]})={gcd(problem.nums[1],problem.nums[2])} &nbsp;|&nbsp;
-                ({problem.nums[0]},{problem.nums[2]})={gcd(problem.nums[0],problem.nums[2])}
-              </div>
-            )}
+
+
             <div style={{textAlign:"center",marginBottom:12}}>
               {wrongAns&&<span style={{fontSize:20,fontFamily:"var(--mono)",color:"var(--red)",textDecoration:"line-through",marginRight:16}}>{wrongAns}</span>}
               <span style={{fontSize:22,fontFamily:"var(--mono)",fontWeight:800,color:"var(--green)"}}>{wrongAnswer}</span>
