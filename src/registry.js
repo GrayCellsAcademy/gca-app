@@ -27,6 +27,7 @@ import ExtraCredit11Player from "./ExtraCredit11Player";
 import Lesson12WarmupPlayer from "./Lesson12WarmupPlayer";
 import ExtraCredit12Player from "./ExtraCredit12Player";
 import Lesson13WarmupPlayer from "./Lesson13WarmupPlayer";
+import ExtraCredit13Player from "./ExtraCredit13Player";
 import ReviewHomework from "./ReviewHomework";
 import Lesson02MasteryPlayer from "./Lesson02MasteryPlayer";
 import SubtractionTablesPlayer from "./SubtractionTablesPlayer";
@@ -258,6 +259,13 @@ export const TOPICS = {
     description: "Prime factorization and mixed divisibility review (all 7 rules).",
     subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 27,
     Player: Lesson13WarmupPlayer,
+  },
+  "lesson13-ec-v1": {
+    id: "lesson13-ec-v1",
+    title: "Classwork 13 Extra Credit (019)",
+    description: "GCF of three 2-digit numbers, then LCM of three 2-digit numbers where each pair shares a factor.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "extra-credit", status: "published", order: 28,
+    Player: ExtraCredit13Player,
   },
   "lesson02-mastery-v1": {
     id: "lesson02-mastery-v1",
