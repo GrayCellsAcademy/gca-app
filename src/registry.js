@@ -29,6 +29,7 @@ import ExtraCredit12Player from "./ExtraCredit12Player";
 import Lesson13WarmupPlayer from "./Lesson13WarmupPlayer";
 import ExtraCredit13Player from "./ExtraCredit13Player";
 import Lesson14WarmupPlayer from "./Lesson14WarmupPlayer";
+import ExtraCredit14Player from "./ExtraCredit14Player";
 import ReviewHomework from "./ReviewHomework";
 import Lesson02MasteryPlayer from "./Lesson02MasteryPlayer";
 import SubtractionTablesPlayer from "./SubtractionTablesPlayer";
@@ -274,6 +275,13 @@ export const TOPICS = {
     description: "Fraction word problems (dividing a whole into parts) and GCF of two numbers.",
     subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 29,
     Player: Lesson14WarmupPlayer,
+  },
+  "lesson14-ec-v1": {
+    id: "lesson14-ec-v1",
+    title: "Classwork 14 Extra Credit (019)",
+    description: "Reduce large 7-smooth fractions and solve proportional equations a/x = x/b.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "extra-credit", status: "published", order: 30,
+    Player: ExtraCredit14Player,
   },
   "lesson02-mastery-v1": {
     id: "lesson02-mastery-v1",
