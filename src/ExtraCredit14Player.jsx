@@ -49,11 +49,13 @@ function genReduce(){
 
 function gradeReduce(input,prob){
   const s=input.trim().replace(/\s+/g,"");
+  // Accept whole number if denominator reduces to 1
+  const whole=s.match(/^(\d+)$/);
+  if(whole){const a=parseInt(whole[1],10);return a*prob.den===prob.num;}
   const m=s.match(/^(\d+)\/(\d+)$/);
   if(!m)return false;
   const a=parseInt(m[1],10),b=parseInt(m[2],10);
   if(b===0)return false;
-  // Must be fully reduced and equivalent
   return gcd(a,b)===1 && a*prob.den===b*prob.num;
 }
 
