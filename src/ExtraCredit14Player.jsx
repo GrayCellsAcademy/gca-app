@@ -170,7 +170,7 @@ export default function ExtraCredit14Player({user,topic,onHome}){
   const isReduce=currentActivity.id==="reduce";
   const isProp=currentActivity.id==="prop";
 
-  consconst DF="\\dfrac",reduceLatex=problem&&isReduce?DF+"{"+problem.num+"}{"+problem.den+"}":"";
+  const DF="\\dfrac",reduceLatex=problem&&isReduce?DF+"{"+problem.num+"}{"+problem.den+"}":"";
   const propLatex=problem&&isProp?DF+"{"+problem.a+"}{x} = "+DF+"{x}{"+problem.b+"}":"";
 
   return(
