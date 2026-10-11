@@ -237,7 +237,7 @@ export default function Lesson14WarmupPlayer({ user, topic, onHome }) {
               onChange={e=>setInput(e.target.value.replace(isWord?/[^0-9/]/g:/[^0-9]/g,""))}
               onKeyDown={e=>e.key==="Enter"&&handleSubmit()}
               inputMode="numeric"
-              placeholder={isWord?"e.g. 3/4":"?"}
+              placeholder=""
               style={{textAlign:"center",fontSize:26,fontFamily:"var(--mono)",fontWeight:700,padding:"12px",marginBottom:12}}/>
             <button className="btn btn-primary" style={{width:"100%",fontSize:20,padding:"14px"}}
               onMouseDown={e=>{e.preventDefault();handleSubmit();}}
