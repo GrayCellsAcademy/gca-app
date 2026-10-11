@@ -39,11 +39,11 @@ const CONTEXTS = [
 
 function genWordProblem() {
   const ctx = pick(CONTEXTS);
-  const n = randInt(2, 8);
-  const w = ctx.fixedW || randInt(1, n-1);
-  const g = gcd(w, n);
-  const num = w/g, den = n/g;
-  return { type:'word', prompt:ctx.prompt(w,n), unit:ctx.unit, w, n, num, den };
+  const n = randInt(2, 9);
+  const q = randInt(1, 10);
+  const w = ctx.fixedW ? ctx.fixedW * n : n * q;
+  const answer = ctx.fixedW ? 1 : q;
+  return { type:'word', prompt:ctx.prompt(w,n), unit:ctx.unit, w, n, answer };
 }
 
 function gradeWordProblem(input, prob) {
@@ -84,7 +84,7 @@ function StreakDots({current,needed}){
 }
 
 const TOPICS = [
-  { id:"word", label:"Fractions as Division", subLabel:"Enter your answer as a fraction (e.g. 3/4)", gen:genWordProblem },
+  { id:"word", label:"Fractions as Division", subLabel:"Enter your answer as a whole number", gen:genWordProblem },
   { id:"gcf",  label:"Greatest Common Factor", subLabel:"Find the GCF of two numbers", gen:genGCF2 },
 ];
 
@@ -141,7 +141,7 @@ export default function Lesson14WarmupPlayer({ user, topic, onHome }) {
   const handleSubmit=async()=>{
     if(!problem||phase!=="question"||!input.trim())return;
     const correct=problem.type==="word"
-      ?gradeWordProblem(input,problem)
+      ?parseInt(input.trim(),10)===problem.answer
       :parseInt(input.trim(),10)===problem.gcf;
     if(correct)await handleCorrect(); else await handleWrong();
   };
@@ -209,7 +209,7 @@ export default function Lesson14WarmupPlayer({ user, topic, onHome }) {
             )}
             <div style={{textAlign:"center",marginBottom:12}}>
               <span style={{fontSize:22,fontFamily:"var(--mono)",fontWeight:800,color:"var(--green)"}}>
-                {isWord?`${problem.num}/${problem.den}`:problem.gcf}
+                {isWord?`${problem.answer}`:problem.gcf}
               </span>
             </div>
             <button className="btn btn-success" style={{width:"100%",fontSize:20,padding:"13px"}} onClick={()=>newProblem(topicIdx)}>Got it - try again</button>
@@ -236,7 +236,7 @@ export default function Lesson14WarmupPlayer({ user, topic, onHome }) {
             <input ref={inputRef} value={input}
               onChange={e=>setInput(e.target.value.replace(isWord?/[^0-9/]/g:/[^0-9]/g,""))}
               onKeyDown={e=>e.key==="Enter"&&handleSubmit()}
-              inputMode={isWord?"text":"numeric"}
+              inputMode="numeric"
               placeholder={isWord?"e.g. 3/4":"?"}
               style={{textAlign:"center",fontSize:26,fontFamily:"var(--mono)",fontWeight:700,padding:"12px",marginBottom:12}}/>
             <button className="btn btn-primary" style={{width:"100%",fontSize:20,padding:"14px"}}
