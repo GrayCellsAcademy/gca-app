@@ -28,6 +28,7 @@ import Lesson12WarmupPlayer from "./Lesson12WarmupPlayer";
 import ExtraCredit12Player from "./ExtraCredit12Player";
 import Lesson13WarmupPlayer from "./Lesson13WarmupPlayer";
 import ExtraCredit13Player from "./ExtraCredit13Player";
+import Lesson14WarmupPlayer from "./Lesson14WarmupPlayer";
 import ReviewHomework from "./ReviewHomework";
 import Lesson02MasteryPlayer from "./Lesson02MasteryPlayer";
 import SubtractionTablesPlayer from "./SubtractionTablesPlayer";
@@ -266,6 +267,13 @@ export const TOPICS = {
     description: "GCF of three 2-digit numbers, then LCM of three 2-digit numbers where each pair shares a factor.",
     subject: "math", gradeLevel: "6+", icon: "", type: "extra-credit", status: "published", order: 28,
     Player: ExtraCredit13Player,
+  },
+  "lesson14-warmup-v1": {
+    id: "lesson14-warmup-v1",
+    title: "Warmup 14 (019)",
+    description: "Fraction word problems (dividing a whole into parts) and GCF of two numbers.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 29,
+    Player: Lesson14WarmupPlayer,
   },
   "lesson02-mastery-v1": {
     id: "lesson02-mastery-v1",
