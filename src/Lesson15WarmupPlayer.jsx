@@ -3,7 +3,7 @@ import useActivityTracking from "./core/useActivityTracking";
 import { saveProgress, getProgress } from "./core/firebase";
 
 export const TOPIC_ID = "lesson15-warmup-v1";
-const STREAK_NEEDED = 2;
+const STREAK_NEEDED = 3;
 
 function randInt(min,max){return Math.floor(Math.random()*(max-min+1))+min;}
 function gcd(a,b){return b===0?a:gcd(b,a%b);}
