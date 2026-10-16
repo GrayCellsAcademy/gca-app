@@ -34,22 +34,20 @@ function genMultiStep() {
     const Cval=-(C**n);
     const useS1Cbrt=Math.random()<0.4;
     const s1Val=useS1Cbrt?pick([2,3,4]):randInt(2,9);
-    const SQ="\\sqrt", CB="\\sqrt[3]";
-    const s1Latex=useS1Cbrt?CB+"{"+s1Val**3+"}":SQ+"{"+s1Val**2+"}";
+    const s1Latex=useS1Cbrt?`\\\\sqrt[3]{${s1Val**3}}`:`\\\\sqrt{${s1Val**2}}`;
     const op1=Math.random()<0.5?1:-1;
     const inner1=Cval+op1*s1Val;
     const s2Val=randInt(2,6);
-    const s2Latex=SQ+"{"+s2Val**2+"}";
+    const s2Latex=`\\\\sqrt{${s2Val**2}}`;
     const op2=Math.random()<0.5?1:-1;
     const inner2=B*inner1+op2*s2Val;
     const result=A*inner2;
     if(!Number.isInteger(result)) continue;
     if(Math.abs(result)<20||Math.abs(result)>800) continue;
     const op1Sym=op1===1?'+':'-', op2Sym=op2===1?'+':'-';
-    const T="\\times", L="\\left(", R="\\right)";
-    const inner1Latex="-"+C+"^{"+n+"} "+op1Sym+" "+s1Latex;
-    const inner2Latex="("+B+") "+T+" "+L+inner1Latex+R+" "+op2Sym+" "+s2Latex;
-    const latex=A+" "+T+" "+L+inner2Latex+R;
+    const inner1Latex=`-${C}^{${n}} ${op1Sym} ${s1Latex}`;
+    const inner2Latex=`(${B}) \\\\times \\\\left(${inner1Latex}\\\\right) ${op2Sym} ${s2Latex}`;
+    const latex=`${A} \\\\times \\\\left(${inner2Latex}\\\\right)`;
     return {type:'multi',latex,result,A,B,C,n,Cval,s1Val,s1Latex,op1,op1Sym,inner1,s2Val,s2Latex,op2,op2Sym,inner2};
   }
   return genMultiStep();
@@ -57,7 +55,7 @@ function genMultiStep() {
 
 //  Activity 2: Inequalities with variables on both sides
 const OPS=['<','<=','>','>='];
-function opLatex(op){return op==='<='?'\\leq':op==='>='?'\\geq':op;}
+function opLatex(op){return op==='<='?'\\\\leq':op==='>='?'\\\\geq':op;}
 function opFlip(op){return{'<':'>','<=':'>=','>':'<','>=':'<='}[op];}
 function sgn(n,forceSign=false){return n>=0?(forceSign?'+':'')+n:String(n);}
 function coef(n){return n===1?'':n===-1?'-':String(n);}
@@ -135,14 +133,16 @@ function genInequality(problemCount){
 //  Input grading for inequalities
 function gradeIneq(input,sol){
   const s=input.trim().toLowerCase().replace(/\s+/g,'');
-  const flip={'<':'>','<=':'>=','>':'<','>=':'<='};
+  // Check longest operators first
   for(const sym of ['>=','<=','>','<']){
     const idx=s.indexOf(sym);
     if(idx<0)continue;
     const lhs=s.slice(0,idx),rhs=s.slice(idx+sym.length);
-    const lNum=parseInt(lhs,10),rNum=parseInt(rhs,10);
-    if(lhs==='x'&&!isNaN(rNum)) return sym===sol.op&&rNum===sol.x;
-    if(!isNaN(lNum)&&rhs==='x') return flip[sym]===sol.op&&lNum===sol.x;
+    if(lhs!=='x')continue;
+    const n=parseInt(rhs,10);
+    if(isNaN(n))continue;
+    const opNorm={'>=':'>=','<=':'<=','>':'>','<':'<'}[sym];
+    return opNorm===sol.op&&n===sol.x;
   }
   return false;
 }
@@ -179,7 +179,6 @@ export default function ExtraCredit12Player({user,topic,onHome}){
   const [phase,setPhase]=useState("question");
   const [loading,setLoading]=useState(true);
   const [wrongAns,setWrongAns]=useState(null);
-  const [selectedOp,setSelectedOp]=useState(null);
   const [problemCount,setProblemCount]=useState(0);
   const inputRef=useRef(null);
   const pendingNext=useRef(null);
@@ -204,20 +203,15 @@ export default function ExtraCredit12Player({user,topic,onHome}){
   const newProblem=(pc)=>{
     const p=actIdx===0?genMultiStep():genInequality(pc);
     setProblem(p);setProblemCount(pc+1);
-    setInput("");setPhase("question");setWrongAns(null);setSelectedOp(null);pendingNext.current=null;
+    setInput("");setPhase("question");setWrongAns(null);pendingNext.current=null;
     setTimeout(()=>inputRef.current?.focus(),80);
   };
 
   const handleSubmit=async()=>{
     if(!problem||phase!=="question"||!input.trim())return;
-    const _n=parseInt(input.trim(),10);
-    const _flipOp={'<':'>','<=':'>=','>':'<','>=':'<='};
     const correct=actIdx===0
-      ?_n===problem.result
-      :(!!selectedOp&&!isNaN(_n)&&(
-          (selectedOp===problem.sol.op&&_n===problem.sol.x)||
-          (_flipOp[selectedOp]===problem.sol.op&&_n===problem.sol.x)
-        ));
+      ?parseInt(input.trim(),10)===problem.result
+      :gradeIneq(input,problem.sol);
     if(correct){
       const newStreak=streak+1;setStreak(newStreak);setPhase("correct");
       const final=newStreak>=STREAK_NEEDED;
@@ -312,7 +306,7 @@ export default function ExtraCredit12Player({user,topic,onHome}){
             <div style={{textAlign:"center",marginBottom:12}}>
               {wrongAns&&<span style={{fontSize:20,fontFamily:"var(--mono)",color:"var(--red)",textDecoration:"line-through",marginRight:16}}>{wrongAns}</span>}
               <span style={{fontSize:22,fontFamily:"var(--mono)",fontWeight:800,color:"var(--green)"}}>
-                {isMulti?problem.result:("x "+({"<=":"≤",">=":"≥"}[problem.sol.op]||problem.sol.op)+" "+problem.sol.x)}
+                {isMulti?problem.result:`x ${problem.sol.op} ${problem.sol.x}`}
               </span>
             </div>
             <button className="btn btn-success" style={{width:"100%",fontSize:20,padding:"13px"}} onClick={()=>newProblem(problemCount)}>Got it - try again</button>
@@ -321,34 +315,21 @@ export default function ExtraCredit12Player({user,topic,onHome}){
 
         {phase==="question"&&problem&&(
           <>
-
+            {isIneq&&problem.typeId&&(
+              <div style={{fontSize:16,color:"var(--text3)",marginBottom:8,fontStyle:"italic"}}>
+                {problem.typeId==='A'?"Hint: try distributing first":problem.typeId==='B'?"Hint: combine like terms first":"Hint: distribute, then combine like terms"}
+              </div>
+            )}
             {katexReady&&<KaTeX expr={problem.latex} display={true}/>}
-                        {isIneq&&(
-              <>
-                <p style={{textAlign:"center",fontSize:18,color:"var(--text2)",marginBottom:10}}>Select the inequality sign, then enter the number:</p>
-                <div style={{display:"flex",gap:8,justifyContent:"center",marginBottom:12}}>
-                  {[['<','<'],['\u2264','<='],['>',">"],['-','>=']].map(([sym,op])=>(
-                    <button key={op} onClick={()=>{
-                      const el=inputRef.current;if(!el)return;
-                      const start=el.selectionStart||input.length,end=el.selectionEnd||input.length;
-                      const val=input.slice(0,start)+op+input.slice(end);
-                      setInput(val);
-                      setTimeout(()=>{el.focus();el.setSelectionRange(start+op.length,start+op.length);},0);
-                    }}
-                      style={{padding:"10px 18px",fontSize:26,fontWeight:800,borderRadius:"var(--radius-sm)",cursor:"pointer",
-                        border:"2px solid var(--border)",
-                        background:"var(--surface)",
-                        color:"var(--text2)",transition:"all 0.15s"}}>
-                      {sym}
-                    </button>
-                  ))}
-                </div>
-              </>
+            {isIneq&&(
+              <p style={{textAlign:"center",fontSize:18,color:"var(--text2)",marginBottom:8}}>
+                Enter your answer as e.g. <code>x &gt; 3</code> or <code>x &lt;= -2</code>
+              </p>
             )}
             <input ref={inputRef} value={input}
-              onChange={e=>setInput(e.target.value.replace(/[^0-9x<>= -]/g,""))}
+              onChange={e=>setInput(isMulti?e.target.value.replace(/[^0-9\-]/g,""):e.target.value)}
               onKeyDown={e=>e.key==="Enter"&&handleSubmit()}
-              inputMode="text" placeholder={isIneq?"e.g. x>3 or 3<x":"?"}
+              inputMode={isMulti?"numeric":"text"} placeholder={isMulti?"?":"x > ?"}
               style={{textAlign:"center",fontSize:24,fontFamily:"var(--mono)",fontWeight:700,padding:"12px",marginBottom:12}}/>
             <button className="btn btn-primary" style={{width:"100%",fontSize:20,padding:"14px"}}
               onMouseDown={e=>{e.preventDefault();handleSubmit();}}
