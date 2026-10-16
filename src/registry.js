@@ -31,6 +31,7 @@ import ExtraCredit13Player from "./ExtraCredit13Player";
 import Lesson14WarmupPlayer from "./Lesson14WarmupPlayer";
 import ExtraCredit14Player from "./ExtraCredit14Player";
 import Lesson15WarmupPlayer from "./Lesson15WarmupPlayer";
+import ExtraCredit15Player from "./ExtraCredit15Player";
 import ReviewHomework from "./ReviewHomework";
 import Lesson02MasteryPlayer from "./Lesson02MasteryPlayer";
 import SubtractionTablesPlayer from "./SubtractionTablesPlayer";
@@ -290,6 +291,13 @@ export const TOPICS = {
     description: "LCM of two numbers and converting a fraction to a specific denominator.",
     subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 31,
     Player: Lesson15WarmupPlayer,
+  },
+  "lesson15-ec-v1": {
+    id: "lesson15-ec-v1",
+    title: "Extra Credit 15 (019)",
+    description: "Subtract mixed numbers with different denominators (negative results).",
+    subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 32,
+    Player: ExtraCredit15Player,
   },
   "lesson02-mastery-v1": {
     id: "lesson02-mastery-v1",
