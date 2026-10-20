@@ -33,6 +33,7 @@ import ExtraCredit14Player from "./ExtraCredit14Player";
 import Lesson15WarmupPlayer from "./Lesson15WarmupPlayer";
 import ExtraCredit15Player from "./ExtraCredit15Player";
 import Lesson16WarmupPlayer from "./Lesson16WarmupPlayer";
+import ExtraCredit16Player from "./ExtraCredit16Player";
 import ReviewHomework from "./ReviewHomework";
 import Lesson02MasteryPlayer from "./Lesson02MasteryPlayer";
 import SubtractionTablesPlayer from "./SubtractionTablesPlayer";
@@ -306,6 +307,13 @@ export const TOPICS = {
     description: "Simplifying fractions and adding/subtracting fractions with shared factors in denominators.",
     subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 33,
     Player: Lesson16WarmupPlayer,
+  },
+  "lesson16-ec-v1": {
+    id: "lesson16-ec-v1",
+    title: "Extra Credit 16 (019)",
+    description: "Perimeter and area of rectangles with fraction and mixed number sides.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 34,
+    Player: ExtraCredit16Player,
   },
   "lesson02-mastery-v1": {
     id: "lesson02-mastery-v1",
