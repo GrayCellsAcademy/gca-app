@@ -7,6 +7,8 @@ const STREAK_NEEDED = 2;
 
 // LOGIC START
 function randInt(min,max){return Math.floor(Math.random()*(max-min+1))+min;}
+function pick(arr){return arr[Math.floor(Math.random()*arr.length)];}
+const UNITS=["in","ft","yd","cm","m"];
 function gcd(a,b){return b===0?a:gcd(b,a%b);}
 function lcm(a,b){return(a*b)/gcd(a,b);}
 function red(n,d){const g=gcd(Math.abs(n),d);return[n/g,d/g];}
@@ -33,7 +35,7 @@ function genRect(){
     if(sd>=prod||pd>=prod||ad>=prod) continue;
     if(pd===1||ad===1) continue;
     if(ad>60) continue;
-    return{n1,d1,w,n2,d2,N2,L,x,y,sn,sd,pn,pd,an,ad};
+    return{n1,d1,w,n2,d2,N2,L,x,y,sn,sd,pn,pd,an,ad,unit:pick(UNITS)};
   }
   return genRect();
 }
@@ -102,15 +104,42 @@ function Val({n,d,sz=22,wsz=30}){
   );
 }
 
+function U({unit,sq,sz=20}){
+  return(
+    <span style={{fontSize:sz,fontWeight:700,fontFamily:"var(--mono)",marginLeft:6}}>
+      {unit}{sq&&<sup style={{fontSize:"0.65em"}}>2</sup>}
+    </span>
+  );
+}
+
+function UnitButtons({unit,value,onChange}){
+  return(
+    <div style={{display:"flex",gap:8,justifyContent:"center",marginTop:6}}>
+      {[["lin",false],["sq",true]].map(([k,sq])=>{
+        const on=value===k;
+        return(
+          <button key={k} type="button" className={"btn "+(on?"btn-primary":"btn-ghost")}
+            style={{minWidth:90,fontSize:19,padding:"8px 14px",
+              border:"2px solid "+(on?"var(--blue)":"var(--border2)")}}
+            onMouseDown={e=>e.preventDefault()}
+            onClick={()=>onChange(k)}>
+            <U unit={unit} sq={sq} sz={19}/>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 function Rect({top,left}){
   const W=200,H=110;
   return(
-    <div style={{position:"relative",display:"inline-block",padding:"70px 16px 16px 92px"}}>
+    <div style={{position:"relative",display:"inline-block",padding:"70px 16px 16px 112px"}}>
       <div style={{width:W,height:H,border:"3px solid var(--blue)",
         background:"rgba(59,130,246,0.08)",borderRadius:4}}/>
-      <div style={{position:"absolute",top:0,left:92,width:W,height:66,
+      <div style={{position:"absolute",top:0,left:112,width:W,height:66,
         display:"flex",alignItems:"center",justifyContent:"center"}}>{top}</div>
-      <div style={{position:"absolute",top:70,left:0,width:86,height:H,
+      <div style={{position:"absolute",top:70,left:0,width:108,height:H,
         display:"flex",alignItems:"center",justifyContent:"center"}}>{left}</div>
     </div>
   );
@@ -149,6 +178,8 @@ export default function ExtraCredit16Player({user,topic,onHome}){
   const [problem,setProblem]=useState(null);
   const [inP,setInP]=useState("");
   const [inA,setInA]=useState("");
+  const [uP,setUP]=useState(null);
+  const [uA,setUA]=useState(null);
   const [phase,setPhase]=useState("question");
   const [loading,setLoading]=useState(true);
   const [wrong,setWrong]=useState(null);
@@ -176,7 +207,7 @@ export default function ExtraCredit16Player({user,topic,onHome}){
 
   const newProblem=(ti)=>{
     setProblem(TOPICS[ti].gen());
-    setInP("");setInA("");setPhase("question");setWrong(null);pending.current=null;
+    setInP("");setInA("");setUP(null);setUA(null);setPhase("question");setWrong(null);pending.current=null;
     setTimeout(()=>(TOPICS[ti].id==="pa"?refP:refA).current?.focus(),80);
   };
 
@@ -188,13 +219,16 @@ export default function ExtraCredit16Player({user,topic,onHome}){
     });
   };
 
-  const canSubmit=isPA?(inP.trim()&&inA.trim()):inA.trim();
+  const canSubmit=isPA?(inP.trim()&&inA.trim()&&uP&&uA):(inA.trim()&&uA);
 
   const handleSubmit=async()=>{
     if(!problem||phase!=="question"||!canSubmit)return;
     const p=problem;
-    const okP=isPA?checkAns(inP,p.pn,p.pd):true;
-    const okA=checkAns(inA,p.an,p.ad);
+    const okPn=isPA?checkAns(inP,p.pn,p.pd):true;
+    const okPu=isPA?uP==="lin":true;
+    const okAn=checkAns(inA,p.an,p.ad);
+    const okAu=uA==="sq";
+    const okP=okPn&&okPu,okA=okAn&&okAu;
     if(okP&&okA){
       const ns=streak+1;setStreak(ns);setPhase("correct");
       if(ns>=STREAK_NEEDED){
@@ -205,7 +239,7 @@ export default function ExtraCredit16Player({user,topic,onHome}){
         pending.current={action:"stay"};await saveProg(topicIdx,ns,false);
       }
     } else {
-      setStreak(0);setWrong({p:inP,a:inA,okP,okA});setPhase("wrong");
+      setStreak(0);setWrong({p:inP,a:inA,up:uP,ua:uA,okPn,okPu,okAn,okAu});setPhase("wrong");
       await saveProg(topicIdx,0,false);
     }
   };
@@ -233,25 +267,25 @@ export default function ExtraCredit16Player({user,topic,onHome}){
   );
 
   const p=problem;
-  const fracLabel=p&&<Frac n={p.n1} d={p.d1} sz={24}/>;
-  const mixedLabel=p&&<Val n={p.N2} d={p.d2} sz={24} wsz={32}/>;
+  const fracLabel=p&&<span style={{display:"inline-flex",alignItems:"center"}}><Frac n={p.n1} d={p.d1} sz={24}/><U unit={p.unit}/></span>;
+  const mixedLabel=p&&<span style={{display:"inline-flex",alignItems:"center"}}><Val n={p.N2} d={p.d2} sz={24} wsz={32}/><U unit={p.unit}/></span>;
   // Mixed side is always the longer one, so it goes on top
   const topLabel=p&&(isPA||p.given==="mixed"?mixedLabel:null);
   const leftLabel=p&&(isPA||p.given==="frac"?fracLabel:null);
 
   const formatNote=(
     <p style={{textAlign:"center",fontSize:16,color:"var(--text3)",marginBottom:10}}>
-      Write each answer as a mixed number (e.g. 3 1/4) or a fraction in simplest form.
+      Write each answer as a mixed number (e.g. 3 1/4) or a fraction in simplest form, and choose the units.
     </p>
   );
 
-  const ansLine=(label,studentVal,ok,n,d)=>(
+  const ansLine=(label,studentVal,studentU,okN,okU,n,d,sq)=>(
     <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:12,marginBottom:8,flexWrap:"wrap"}}>
       <span style={{fontSize:19,fontWeight:700,color:"var(--text2)"}}>{label}:</span>
-      {!ok&&<span style={{fontSize:20,fontFamily:"var(--mono)",color:"var(--red)",
-        textDecoration:"line-through"}}>{studentVal}</span>}
+      {!(okN&&okU)&&<span style={{fontSize:20,fontFamily:"var(--mono)",color:"var(--red)",
+        textDecoration:"line-through"}}>{studentVal}{studentU&&<U unit={p.unit} sq={studentU==="sq"} sz={18}/>}</span>}
       <span style={{fontSize:24,fontFamily:"var(--mono)",fontWeight:800,
-        color:"var(--green)"}}>{fmt(n,d)}</span>
+        color:"var(--green)"}}>{fmt(n,d)}<U unit={p.unit} sq={sq} sz={22}/></span>
     </div>
   );
 
@@ -287,6 +321,7 @@ export default function ExtraCredit16Player({user,topic,onHome}){
                 background:"var(--bg2)",borderRadius:"var(--radius)",padding:"10px 20px"}}>
                 <span style={{fontSize:20,fontWeight:700,color:"var(--text2)"}}>Perimeter =</span>
                 <Val n={p.pn} d={p.pd} sz={22} wsz={30}/>
+                <U unit={p.unit} sz={22}/>
               </div>
             )}
             <div><Rect top={topLabel} left={leftLabel}/></div>
@@ -315,18 +350,18 @@ export default function ExtraCredit16Player({user,topic,onHome}){
               <div style={workStyle}>
                 <div>{fmt(p.N2,p.d2)} = {p.N2}/{p.d2}</div>
                 <div>{p.n1}/{p.d1} + {p.N2}/{p.d2} = {p.x}/{p.L} + {p.y}/{p.L} = {fmt(p.sn,p.sd)}</div>
-                <div>Perimeter = 2 &times; {fmt(p.sn,p.sd)} = {fmt(p.pn,p.pd)}</div>
-                <div>Area = {p.n1}/{p.d1} &times; {p.N2}/{p.d2} = {fmt(p.an,p.ad)}</div>
+                <div>Perimeter = 2 &times; {fmt(p.sn,p.sd)} = {fmt(p.pn,p.pd)} {p.unit}</div>
+                <div>Area = {p.n1}/{p.d1} &times; {p.N2}/{p.d2} = {fmt(p.an,p.ad)} {p.unit}<sup>2</sup></div>
               </div>
             ):(
               <div style={workStyle}>
                 <div>Half the perimeter: {fmt(p.pn,p.pd)} / 2 = {fmt(p.sn,p.sd)}</div>
-                <div>Other side: {fmt(p.sn,p.sd)} - {givenStr} = {otherStr}</div>
-                <div>Area = {p.n1}/{p.d1} &times; {p.N2}/{p.d2} = {fmt(p.an,p.ad)}</div>
+                <div>Other side: {fmt(p.sn,p.sd)} - {givenStr} = {otherStr} {p.unit}</div>
+                <div>Area = {p.n1}/{p.d1} &times; {p.N2}/{p.d2} = {fmt(p.an,p.ad)} {p.unit}<sup>2</sup></div>
               </div>
             )}
-            {isPA&&ansLine("Perimeter",wrong.p,wrong.okP,p.pn,p.pd)}
-            {ansLine("Area",wrong.a,wrong.okA,p.an,p.ad)}
+            {isPA&&ansLine("Perimeter",wrong.p,wrong.up,wrong.okPn,wrong.okPu,p.pn,p.pd,false)}
+            {ansLine("Area",wrong.a,wrong.ua,wrong.okAn,wrong.okAu,p.an,p.ad,true)}
             <button className="btn btn-success" style={{width:"100%",fontSize:20,padding:"13px",marginTop:8}}
               onClick={()=>newProblem(topicIdx)}>
               Got it - try again
@@ -344,6 +379,7 @@ export default function ExtraCredit16Player({user,topic,onHome}){
                   onChange={e=>setInP(e.target.value.replace(/[^0-9/ ]/g,""))}
                   onKeyDown={e=>{if(e.key==="Enter"){e.preventDefault();refA.current?.focus();}}}
                   inputMode="text" style={inputStyle}/>
+                <UnitButtons unit={p.unit} value={uP} onChange={setUP}/>
               </div>
             )}
             <div style={{marginBottom:12}}>
@@ -352,6 +388,7 @@ export default function ExtraCredit16Player({user,topic,onHome}){
                 onChange={e=>setInA(e.target.value.replace(/[^0-9/ ]/g,""))}
                 onKeyDown={e=>e.key==="Enter"&&handleSubmit()}
                 inputMode="text" style={inputStyle}/>
+              <UnitButtons unit={p.unit} value={uA} onChange={setUA}/>
             </div>
             <button className="btn btn-primary" style={{width:"100%",fontSize:20,padding:"14px"}}
               onMouseDown={e=>{e.preventDefault();handleSubmit();}}
