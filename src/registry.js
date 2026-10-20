@@ -32,6 +32,7 @@ import Lesson14WarmupPlayer from "./Lesson14WarmupPlayer";
 import ExtraCredit14Player from "./ExtraCredit14Player";
 import Lesson15WarmupPlayer from "./Lesson15WarmupPlayer";
 import ExtraCredit15Player from "./ExtraCredit15Player";
+import Lesson16WarmupPlayer from "./Lesson16WarmupPlayer";
 import ReviewHomework from "./ReviewHomework";
 import Lesson02MasteryPlayer from "./Lesson02MasteryPlayer";
 import SubtractionTablesPlayer from "./SubtractionTablesPlayer";
@@ -298,6 +299,13 @@ export const TOPICS = {
     description: "Subtract mixed numbers with different denominators (negative results).",
     subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 32,
     Player: ExtraCredit15Player,
+  },
+  "lesson16-warmup-v1": {
+    id: "lesson16-warmup-v1",
+    title: "Warmup 16 (019)",
+    description: "Simplifying fractions and adding/subtracting fractions with shared factors in denominators.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 33,
+    Player: Lesson16WarmupPlayer,
   },
   "lesson02-mastery-v1": {
     id: "lesson02-mastery-v1",
