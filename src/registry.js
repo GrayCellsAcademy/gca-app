@@ -34,6 +34,7 @@ import Lesson15WarmupPlayer from "./Lesson15WarmupPlayer";
 import ExtraCredit15Player from "./ExtraCredit15Player";
 import Lesson16WarmupPlayer from "./Lesson16WarmupPlayer";
 import ExtraCredit16Player from "./ExtraCredit16Player";
+import Lesson17WarmupPlayer from "./Lesson17WarmupPlayer";
 import ReviewHomework from "./ReviewHomework";
 import Lesson02MasteryPlayer from "./Lesson02MasteryPlayer";
 import SubtractionTablesPlayer from "./SubtractionTablesPlayer";
@@ -314,6 +315,13 @@ export const TOPICS = {
     description: "Perimeter and area of rectangles with fraction and mixed number sides.",
     subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 34,
     Player: ExtraCredit16Player,
+  },
+  "lesson17-warmup-v1": {
+    id: "lesson17-warmup-v1",
+    title: "Warmup 17 (019)",
+    description: "LCM of four numbers and the product rule for exponents.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 35,
+    Player: Lesson17WarmupPlayer,
   },
   "lesson02-mastery-v1": {
     id: "lesson02-mastery-v1",
