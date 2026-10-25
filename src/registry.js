@@ -35,6 +35,7 @@ import ExtraCredit15Player from "./ExtraCredit15Player";
 import Lesson16WarmupPlayer from "./Lesson16WarmupPlayer";
 import ExtraCredit16Player from "./ExtraCredit16Player";
 import Lesson17WarmupPlayer from "./Lesson17WarmupPlayer";
+import ExtraCredit17Player from "./ExtraCredit17Player";
 import ReviewHomework from "./ReviewHomework";
 import Lesson02MasteryPlayer from "./Lesson02MasteryPlayer";
 import SubtractionTablesPlayer from "./SubtractionTablesPlayer";
@@ -322,6 +323,13 @@ export const TOPICS = {
     description: "LCM of four numbers and the product rule for exponents.",
     subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 35,
     Player: Lesson17WarmupPlayer,
+  },
+  "lesson17-ec-v1": {
+    id: "lesson17-ec-v1",
+    title: "Extra Credit 17 (019)",
+    description: "Catch-up speed problems with unit conversion and integer computation.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 36,
+    Player: ExtraCredit17Player,
   },
   "lesson02-mastery-v1": {
     id: "lesson02-mastery-v1",
