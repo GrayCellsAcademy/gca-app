@@ -36,6 +36,7 @@ import Lesson16WarmupPlayer from "./Lesson16WarmupPlayer";
 import ExtraCredit16Player from "./ExtraCredit16Player";
 import Lesson17WarmupPlayer from "./Lesson17WarmupPlayer";
 import ExtraCredit17Player from "./ExtraCredit17Player";
+import Lesson18WarmupPlayer from "./Lesson18WarmupPlayer";
 import ReviewHomework from "./ReviewHomework";
 import Lesson02MasteryPlayer from "./Lesson02MasteryPlayer";
 import SubtractionTablesPlayer from "./SubtractionTablesPlayer";
@@ -330,6 +331,13 @@ export const TOPICS = {
     description: "Catch-up speed problems with unit conversion and integer computation.",
     subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 36,
     Player: ExtraCredit17Player,
+  },
+  "lesson18-warmup-v1": {
+    id: "lesson18-warmup-v1",
+    title: "Warmup 18 (019)",
+    description: "Whole number place value and solving equations with fractions.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 37,
+    Player: Lesson18WarmupPlayer,
   },
   "lesson02-mastery-v1": {
     id: "lesson02-mastery-v1",
