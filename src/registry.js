@@ -38,6 +38,7 @@ import Lesson17WarmupPlayer from "./Lesson17WarmupPlayer";
 import ExtraCredit17Player from "./ExtraCredit17Player";
 import Lesson18WarmupPlayer from "./Lesson18WarmupPlayer";
 import ExtraCredit18Player from "./ExtraCredit18Player";
+import Lesson19WarmupPlayer from "./Lesson19WarmupPlayer";
 import ReviewHomework from "./ReviewHomework";
 import Lesson02MasteryPlayer from "./Lesson02MasteryPlayer";
 import SubtractionTablesPlayer from "./SubtractionTablesPlayer";
@@ -346,6 +347,13 @@ export const TOPICS = {
     description: "Adding metric lengths and perimeter and area with mixed metric units.",
     subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 38,
     Player: ExtraCredit18Player,
+  },
+  "lesson19-warmup-v1": {
+    id: "lesson19-warmup-v1",
+    title: "Warmup 19 (019)",
+    description: "Multiplying decimals and long division with remainders as fractions.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 39,
+    Player: Lesson19WarmupPlayer,
   },
   "lesson02-mastery-v1": {
     id: "lesson02-mastery-v1",
