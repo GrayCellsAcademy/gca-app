@@ -49,9 +49,8 @@ function genDiv(){
   // about 1 in 4 problems divides evenly
   const wantEven=Math.random()<0.25;
   for(let t=0;t<5000;t++){
-    const twoDigit=Math.random()<0.45;
-    const d=twoDigit?randInt(11,29):randInt(3,9);
-    const n=randInt(twoDigit?300:100,twoDigit?9999:2999);
+    const d=randInt(2,9);
+    const n=randInt(100,9999);
     const q=Math.floor(n/d),r=n%d;
     if(q<10) continue;
     if(wantEven!==(r===0)) continue;
