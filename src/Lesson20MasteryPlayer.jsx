@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { saveProgress as fbSaveProgress, getProgress } from "./core/firebase";
 
 export const LESSON20_MASTERY_TOPIC_ID = "lesson20-mastery-v1";
@@ -26,10 +26,12 @@ function parseRatio(str) {
   return null;
 }
 
+// The answer must be in simplest form: 12:16 is not accepted for 3:4
 function ratioOk(input, a, b) {
   const r = parseRatio(input); if (!r) return false;
-  const [ra, rb] = reduce(a, b); const [ria, rib] = reduce(r[0], r[1]);
-  return ria === ra && rib === rb;
+  if (r[0] === 0 || r[1] === 0 || gcd(r[0], r[1]) !== 1) return false;
+  const [ra, rb] = reduce(a, b);
+  return r[0] === ra && r[1] === rb;
 }
 
 // -- KaTeX --
