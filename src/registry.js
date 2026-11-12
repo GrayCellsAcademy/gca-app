@@ -39,6 +39,7 @@ import ExtraCredit17Player from "./ExtraCredit17Player";
 import Lesson18WarmupPlayer from "./Lesson18WarmupPlayer";
 import ExtraCredit18Player from "./ExtraCredit18Player";
 import Lesson19WarmupPlayer from "./Lesson19WarmupPlayer";
+import ExtraCredit19Player from "./ExtraCredit19Player";
 import ReviewHomework from "./ReviewHomework";
 import Lesson02MasteryPlayer from "./Lesson02MasteryPlayer";
 import SubtractionTablesPlayer from "./SubtractionTablesPlayer";
@@ -354,6 +355,13 @@ export const TOPICS = {
     description: "Multiplying decimals and long division with remainders as fractions.",
     subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 39,
     Player: Lesson19WarmupPlayer,
+  },
+  "lesson19-ec-v1": {
+    id: "lesson19-ec-v1",
+    title: "Extra Credit 19 (019)",
+    description: "Missing side from area with decimal division, and equations mixing decimals and fractions.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 40,
+    Player: ExtraCredit19Player,
   },
   "lesson02-mastery-v1": {
     id: "lesson02-mastery-v1",
