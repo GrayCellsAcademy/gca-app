@@ -271,6 +271,7 @@ export default function ExtraCredit19Player({user,topic,onHome}){
   // Pressing it again with nothing highlighted removes the bar.
   const applyBar=()=>{
     const el=inputRef.current;if(!el) return;
+    if(/[\/ ]/.test(input)) return;
     const s=el.selectionStart,e=el.selectionEnd;
     if(s!=null&&e!=null&&s<e){
       if(/^\d+$/.test(input.slice(s,e))) setRep({s,e});
@@ -284,10 +285,9 @@ export default function ExtraCredit19Player({user,topic,onHome}){
     if(!problem||phase!=="question"||!input.trim())return;
     const p=problem;
     let correct;
-    if(p.type==="rect"){
-      const str=rep?input.slice(0,rep.s)+"["+input.slice(rep.s,rep.e)+"]"+input.slice(rep.e):input;
-      correct=gradeRect(str,p.p,p.q);
-    } else correct=gradeEq(input,p.xn,p.xd);
+    const barred=rep?input.slice(0,rep.s)+"["+input.slice(rep.s,rep.e)+"]"+input.slice(rep.e):null;
+    if(p.type==="rect") correct=gradeRect(barred||input,p.p,p.q);
+    else correct=barred?gradeRect(barred,p.xn,p.xd):gradeEq(input,p.xn,p.xd);
     if(correct){
       const ns=streak+1;setStreak(ns);setPhase("correct");
       if(ns>=STREAK_NEEDED){
@@ -322,6 +322,21 @@ export default function ExtraCredit19Player({user,topic,onHome}){
         <p style={{color:"var(--text2)",fontSize:19,marginBottom:24}}>Excellent work with decimals!</p>
         <button className="btn btn-primary btn-lg" style={{width:"100%"}} onClick={onHome}> Back to Home</button>
       </div>
+    </div>
+  );
+
+  const barButton=(
+    <button type="button" title="Mark repeating digits"
+      onMouseDown={e=>e.preventDefault()} onClick={applyBar}
+      style={{padding:"10px 14px",fontSize:20,fontFamily:"var(--mono)",fontWeight:900,
+        border:"2px solid "+(rep?"var(--blue)":"var(--border2)"),borderRadius:"var(--radius-sm)",
+        background:rep?"rgba(59,130,246,0.15)":"var(--surface)",color:"var(--text)",cursor:"pointer"}}>
+      <span style={barStyle}>abc</span>
+    </button>
+  );
+  const barPreview=rep&&(
+    <div style={{textAlign:"center",minHeight:34,marginBottom:8,fontSize:24,fontWeight:800,color:"var(--blue)"}}>
+      Your answer: <TypedNum text={input} rep={rep}/>
     </div>
   );
 
@@ -410,7 +425,9 @@ export default function ExtraCredit19Player({user,topic,onHome}){
               <span style={{fontSize:24,fontWeight:800,color:"var(--green)"}}>
                 {p.type==="rect"
                   ?<><RepNum ex={p.ex}/> <span style={{fontFamily:"var(--mono)"}}>{p.unit}</span></>
-                  :<span style={{fontFamily:"var(--mono)"}}>x = {fmt(p.xn,p.xd)}</span>}
+                  :<span style={{fontFamily:"var(--mono)"}}>x = {fmt(p.xn,p.xd)}
+                    {(()=>{const ex=expand(p.xn,p.xd);return ex.non.length+ex.rep.length<=6
+                      ?<> = <RepNum ex={ex}/></>:null;})()}</span>}
               </span>
             </div>
             <button className="btn btn-success" style={{width:"100%",fontSize:20,padding:"13px"}}
@@ -437,18 +454,10 @@ export default function ExtraCredit19Player({user,topic,onHome}){
                 onChange={e=>{setInput(e.target.value.replace(/[^0-9.]/g,""));setRep(null);}}
                 onKeyDown={e=>e.key==="Enter"&&handleSubmit()}
                 inputMode="decimal" style={{...inputStyle,flex:1,minWidth:0}}/>
-              <button type="button" title="Mark repeating digits"
-                onMouseDown={e=>e.preventDefault()} onClick={applyBar}
-                style={{padding:"10px 14px",fontSize:20,fontFamily:"var(--mono)",fontWeight:900,
-                  border:"2px solid "+(rep?"var(--blue)":"var(--border2)"),borderRadius:"var(--radius-sm)",
-                  background:rep?"rgba(59,130,246,0.15)":"var(--surface)",color:"var(--text)",cursor:"pointer"}}>
-                <span style={barStyle}>abc</span>
-              </button>
+              {barButton}
               <span style={{fontSize:22,fontWeight:800,fontFamily:"var(--mono)"}}>{p.unit}</span>
             </div>
-            <div style={{textAlign:"center",minHeight:34,marginBottom:8,fontSize:24,fontWeight:800,color:"var(--blue)"}}>
-              {rep&&<>Your answer: <TypedNum text={input} rep={rep}/></>}
-            </div>
+            {barPreview}
             <button className="btn btn-primary" style={{width:"100%",fontSize:20,padding:"14px"}}
               onMouseDown={e=>{e.preventDefault();handleSubmit();}}
               onTouchEnd={e=>{e.preventDefault();handleSubmit();}}
@@ -467,15 +476,19 @@ export default function ExtraCredit19Player({user,topic,onHome}){
               </span>
             </div>
             <p style={{textAlign:"center",fontSize:16,color:"var(--text3)",marginBottom:8}}>
-              Answer as a fraction or mixed number (e.g. 2 1/3) in simplest form, or as an exact decimal.
+              Answer as a fraction or mixed number (e.g. 2 1/3) in simplest form, or as a decimal.
+              For a repeating decimal, highlight the repeating digit(s) and press the
+              <span style={{fontFamily:"var(--mono)",fontWeight:900,marginLeft:5,display:"inline-block",lineHeight:1.1,...barStyle}}>abc</span> button.
             </p>
             <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}>
               <span style={{fontSize:28,fontFamily:"var(--mono)",fontWeight:800,fontStyle:"italic"}}>x =</span>
               <input ref={inputRef} value={input}
-                onChange={e=>setInput(e.target.value.replace(/[^0-9./ ]/g,""))}
+                onChange={e=>{setInput(e.target.value.replace(/[^0-9./ ]/g,""));setRep(null);}}
                 onKeyDown={e=>e.key==="Enter"&&handleSubmit()}
                 inputMode="text" style={{...inputStyle,flex:1,minWidth:0}}/>
+              {barButton}
             </div>
+            {barPreview}
             <button className="btn btn-primary" style={{width:"100%",fontSize:20,padding:"14px"}}
               onMouseDown={e=>{e.preventDefault();handleSubmit();}}
               onTouchEnd={e=>{e.preventDefault();handleSubmit();}}
