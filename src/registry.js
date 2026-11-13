@@ -41,6 +41,7 @@ import ExtraCredit18Player from "./ExtraCredit18Player";
 import Lesson19WarmupPlayer from "./Lesson19WarmupPlayer";
 import ExtraCredit19Player from "./ExtraCredit19Player";
 import Lesson20WarmupPlayer from "./Lesson20WarmupPlayer";
+import ExtraCredit20Player from "./ExtraCredit20Player";
 import ReviewHomework from "./ReviewHomework";
 import Lesson02MasteryPlayer from "./Lesson02MasteryPlayer";
 import SubtractionTablesPlayer from "./SubtractionTablesPlayer";
@@ -370,6 +371,13 @@ export const TOPICS = {
     description: "Multiplying and dividing mixed numbers, and dividing by a decimal.",
     subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 41,
     Player: Lesson20WarmupPlayer,
+  },
+  "lesson20-ec-v1": {
+    id: "lesson20-ec-v1",
+    title: "Extra Credit 20 (019)",
+    description: "Proportion word problems a:x = x:b and area with sides in different metric units.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 42,
+    Player: ExtraCredit20Player,
   },
   "lesson02-mastery-v1": {
     id: "lesson02-mastery-v1",
