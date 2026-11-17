@@ -251,8 +251,16 @@ export async function getProgress(uid, topicId) {
 
 export async function saveProgress(uid, topicId, data) {
   const id = `${uid}_${topicId}`;
-  await setDoc(doc(db, "progress", id), {
-    uid, topicId, ...data, updatedAt: Date.now(),
+  const ref = doc(db, "progress", id);
+  const now = Date.now();
+  const extra = {};
+  // Stamp the first time an assignment is completed. Later saves never change it.
+  if (data?.completed) {
+    const snap = await getDoc(ref);
+    if (!snap.exists() || !snap.data().completedAt) extra.completedAt = now;
+  }
+  await setDoc(ref, {
+    uid, topicId, ...data, ...extra, updatedAt: now,
   }, { merge: true });
 }
 
