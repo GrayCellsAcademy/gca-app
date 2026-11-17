@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { saveProgress as fbSaveProgress, getProgress } from "./core/firebase";
 
 export const LESSON21_MASTERY_TOPIC_ID = "lesson21-mastery-v1";
@@ -18,15 +18,47 @@ function fmtFrac(n, d) {
   if (Math.abs(rn) > rd) { const w = Math.floor(Math.abs(rn) / rd); const r = Math.abs(rn) % rd; return `${w} ${r}/${rd}`; }
   return `${rn}/${rd}`;
 }
+// Answers must be in simplest form: 27/99 is not accepted for 3/11
 function fracOk(input, rn, rd) {
-  const s = String(input || "").trim();
+  const s = String(input || "").trim().replace(/\s*\/\s*/g, "/").replace(/\s+/g, " ");
   if (!s) return false;
-  const mx = s.match(/^(\d+)\s+(\d+)\/(\d+)$/);
   let num, den;
-  if (mx) { num = parseInt(mx[1]) * parseInt(mx[3]) + parseInt(mx[2]); den = parseInt(mx[3]); }
-  else { const fx = s.match(/^(\d+)\/(\d+)$/); if (fx) { num = parseInt(fx[1]); den = parseInt(fx[2]); } else { const ix = s.match(/^(\d+)$/); if (ix) { num = parseInt(ix[1]); den = 1; } else return false; } }
-  const [in_, id_] = reduce(num, den); const [cn, cd] = reduce(rn, rd);
-  return in_ === cn && id_ === cd;
+  const mx = s.match(/^(\d+) (\d+)\/(\d+)$/);
+  const fx = s.match(/^(\d+)\/(\d+)$/);
+  const ix = s.match(/^(\d+)$/);
+  if (mx) {
+    const w = +mx[1], n = +mx[2], d = +mx[3];
+    if (w === 0 || n === 0 || d < 2 || n >= d || gcd(n, d) !== 1) return false;
+    num = w * d + n; den = d;
+  } else if (fx) {
+    num = +fx[1]; den = +fx[2];
+    if (num === 0 || den < 2 || gcd(num, den) !== 1) return false;
+  } else if (ix) { num = +ix[1]; den = 1; }
+  else return false;
+  const [cn, cd] = reduce(rn, rd);
+  return num === cn && den === cd;
+}
+
+// Repeating decimal typed with a bar: "0.1[6]" (brackets mark the barred digits) -> [num, den]
+function parseRep(str) {
+  const m = String(str || "").trim().match(/^(\d*)(?:\.(\d*))?(?:\[(\d+)\])?$/);
+  if (!m) return null;
+  const ip = m[1] || "", np = m[2] || "", rp = m[3] || "";
+  if (ip === "" && np === "" && rp === "") return null;
+  if (rp && m[2] === undefined) return null;
+  if ((ip + np + rp).length > 10) return null;
+  if (!rp) return [Number((ip + np) || "0"), Math.pow(10, np.length)];
+  return [Number(ip + np + rp) - Number((ip + np) || "0"), Math.pow(10, np.length) * (Math.pow(10, rp.length) - 1)];
+}
+
+const barStyle = { borderTop: "2px solid currentColor", paddingTop: 1 };
+function TypedNum({ text, rep }) {
+  if (!rep) return <span style={{ fontFamily: "var(--mono)" }}>{text}</span>;
+  return (
+    <span style={{ fontFamily: "var(--mono)" }}>
+      {text.slice(0, rep.s)}<span style={barStyle}>{text.slice(rep.s, rep.e)}</span>{text.slice(rep.e)}
+    </span>
+  );
 }
 
 // -- KaTeX --
@@ -61,24 +93,15 @@ function frac(n, d) { return `\\dfrac{${n}}{${d}}`; }
 
 // - Activity 1: Repeating Decimal Memorization Drill -
 const DRILL_CONVS = [
-  {
-    latex: frac(1, 3), dec: 0.3333, display: "0.\\overline{3}",
-    label: "1/3", acceptAlts: ["0.333...", "0.33...", "0.3...", "0.3333...", "0.[3]"],
-  },
-  {
-    latex: frac(1, 6), dec: 0.1667, display: "0.1\\overline{6}",
-    label: "1/6", acceptAlts: ["0.1666...", "0.166...", "0.16...", "0.1[6]"],
-  },
-  {
-    latex: frac(1, 9), dec: 0.1111, display: "0.\\overline{1}",
-    label: "1/9", acceptAlts: ["0.111...", "0.11...", "0.1...", "0.1111...", "0.[1]"],
-  },
+  { latex: frac(1, 3), rn: 1, rd: 3, display: "0.\\overline{3}", label: "1/3" },
+  { latex: frac(1, 6), rn: 1, rd: 6, display: "0.1\\overline{6}", label: "1/6" },
+  { latex: frac(1, 9), rn: 1, rd: 9, display: "0.\\overline{1}", label: "1/9" },
 ];
 
-function gradeRepDrillInput(input, conv) {
-  const s = String(input || "").trim().replace(/\s+/g, "");
-  return conv.acceptAlts.some(a => s === a) ||
-    (s.startsWith("0.") && Math.abs(parseFloat(s) - conv.dec) < 0.001);
+// Exact value only: the repeating digit must be marked with the bar (0.333 is not 1/3)
+function gradeRepDrillInput(barred, conv) {
+  const v = parseRep(barred);
+  return !!v && v[0] * conv.rd === conv.rn * v[1];
 }
 
 function RepDecMemorize({ onDone }) {
@@ -112,6 +135,7 @@ function RepDecDrill({ onComplete }) {
   const [reviewCorrect, setReviewCorrect] = useState({ 0: 0, 1: 0, 2: 0 });
   const [currentIdx, setCurrentIdx] = useState(0);
   const [input, setInput] = useState("");
+  const [rep, setRep] = useState(null);           // {s,e}: digits under the bar
   const [feedback, setFeedback] = useState(null);
   const [timeLeft, setTimeLeft] = useState(TIMER);
   const timerRef = useRef(null);
@@ -142,10 +166,25 @@ function RepDecDrill({ onComplete }) {
     else setReviewNeeded(prev => ({ ...prev, [currentIdx]: (prev[currentIdx] || 1) + 1 }));
   };
 
+  // Bar button: bar the highlighted digits; with nothing highlighted, bar the last digit.
+  // Pressing it again with nothing highlighted removes the bar.
+  const applyBar = () => {
+    const el = inputRef.current; if (!el) return;
+    const s = el.selectionStart, e = el.selectionEnd;
+    if (s != null && e != null && s < e) {
+      if (/^\d+$/.test(input.slice(s, e))) setRep({ s, e });
+      return;
+    }
+    if (rep) { setRep(null); return; }
+    if (/\d$/.test(input)) setRep({ s: input.length - 1, e: input.length });
+  };
+
   const handleSubmit = () => {
+    if (feedback) return;
     clearInterval(timerRef.current);
     const cv = DRILL_CONVS[currentIdx];
-    const ok = gradeRepDrillInput(input, cv);
+    const barred = rep ? input.slice(0, rep.s) + "[" + input.slice(rep.s, rep.e) + "]" + input.slice(rep.e) : input;
+    const ok = gradeRepDrillInput(barred, cv);
     setFeedback({ correct: ok, display: cv.display });
     if (ok) {
       if (phase === "drill") setCorrect(prev => ({ ...prev, [currentIdx]: (prev[currentIdx] || 0) + 1 }));
@@ -157,7 +196,7 @@ function RepDecDrill({ onComplete }) {
   };
 
   const handleNext = () => {
-    setFeedback(null); setInput("");
+    setFeedback(null); setInput(""); setRep(null);
     const cor = phase === "drill" ? correct : reviewCorrect;
     const nee = phase === "drill" ? needed : reviewNeeded;
     const rem = getRemaining(cor, nee);
@@ -189,8 +228,10 @@ function RepDecDrill({ onComplete }) {
         </div>
       </div>
       <KaTeXBlock expr={`${cv.latex} = ?`} />
-      <div style={{ fontSize: 17, color: "var(--text3)", marginBottom: 10 }}>
-        Enter as decimal (e.g. 0.333... or use your overline button)
+      <div style={{ fontSize: 17, color: "var(--text3)", marginBottom: 10, textAlign: "center" }}>
+        Type the digits once, then press the{" "}
+        <span style={{ fontFamily: "var(--mono)", fontWeight: 900, display: "inline-block", lineHeight: 1.1, ...barStyle }}>abc</span>{" "}
+        button to put the bar over the last digit (or highlight the digits to bar first).
       </div>
       {feedback ? (
         <div style={{ textAlign: "center", marginTop: 10 }}>
@@ -199,12 +240,28 @@ function RepDecDrill({ onComplete }) {
           <button className="btn btn-primary" style={{ width: "100%", fontSize: 20 }} onClick={handleNext}>Next</button>
         </div>
       ) : (
-        <div style={{ display: "flex", gap: 8, justifyContent: "center" }}>
-          <input ref={inputRef} value={input} onChange={e => setInput(e.target.value)}
-            onKeyDown={e => e.key === "Enter" && input.trim() && handleSubmit()}
-            placeholder="e.g. 0.333..." autoFocus
-            style={{ textAlign: "center", fontSize: 22, fontFamily: "var(--mono)", fontWeight: 700, padding: "10px", width: 200 }} />
-          <button className="btn btn-primary" style={{ fontSize: 20, padding: "10px 20px" }} onClick={handleSubmit} disabled={!input.trim()}>OK</button>
+        <div>
+          <div style={{ display: "flex", gap: 8, justifyContent: "center", alignItems: "center" }}>
+            <input ref={inputRef} value={input} maxLength={10}
+              onChange={e => { setInput(e.target.value.replace(/[^0-9.]/g, "")); setRep(null); }}
+              onKeyDown={e => e.key === "Enter" && input.trim() && handleSubmit()}
+              inputMode="decimal" autoFocus
+              style={{ textAlign: "center", fontSize: 22, fontFamily: "var(--mono)", fontWeight: 700, padding: "10px", width: 160, minWidth: 0 }} />
+            <button type="button" title="Mark repeating digits"
+              onMouseDown={e => e.preventDefault()} onClick={applyBar}
+              style={{ padding: "10px 14px", fontSize: 20, fontFamily: "var(--mono)", fontWeight: 900,
+                border: "2px solid " + (rep ? "var(--blue)" : "var(--border2)"), borderRadius: "var(--radius-sm)",
+                background: rep ? "rgba(59,130,246,0.15)" : "var(--surface)", color: "var(--text)", cursor: "pointer" }}>
+              <span style={barStyle}>abc</span>
+            </button>
+            <button className="btn btn-primary" style={{ fontSize: 20, padding: "10px 20px" }}
+              onMouseDown={e => { e.preventDefault(); if (input.trim()) handleSubmit(); }} disabled={!input.trim()}>OK</button>
+          </div>
+          {rep && (
+            <div style={{ textAlign: "center", marginTop: 8, fontSize: 24, fontWeight: 800, color: "var(--blue)" }}>
+              Your answer: <TypedNum text={input} rep={rep} />
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -240,8 +297,8 @@ const MIXED_POOL = [
   { overline: "0.41\\overline{6}", rn: 5, rd: 12, work: "Let x = 0.4166...\n100x = 41.666...\n99x = 41.25  =>  x = 41.25/99 = 4125/9900 = 5/12" },
   { overline: "0.08\\overline{3}", rn: 1, rd: 12, work: "Let x = 0.0833...\n100x = 8.333...\n99x = 8.25  =>  x = 8.25/99 = 825/9900 = 1/12" },
   { overline: "0.58\\overline{3}", rn: 7, rd: 12, work: "Let x = 0.5833...\n100x = 58.333...\n99x = 57.75  =>  x = 57.75/99 = 5775/9900 = 7/12" },
-  { overline: "0.\\overline{125}", rn: 125, rd: 999, work: "Let x = 0.125125...\n1000x = 125.125125...\n999x = 125  =>  x = 125/999" },
-  { overline: "0.\\overline{142857}", rn: 1, rd: 7, work: "Let x = 0.142857...\n1000000x = 142857.142857...\n999999x = 142857  =>  x = 142857/999999 = 1/7" },
+  { overline: "0.2\\overline{3}", rn: 7, rd: 30, work: "Let x = 0.2333...\n10x = 2.333...\n9x = 2.1  =>  x = 2.1/9 = 21/90 = 7/30" },
+  { overline: "0.5\\overline{3}", rn: 8, rd: 15, work: "Let x = 0.5333...\n10x = 5.333...\n9x = 4.8  =>  x = 4.8/9 = 48/90 = 8/15" },
   { overline: "0.3\\overline{6}", rn: 11, rd: 30, work: "Let x = 0.3666...\n10x = 3.666...\n9x = 3.3  =>  x = 3.3/9 = 33/90 = 11/30" },
 ];
 
@@ -346,10 +403,10 @@ function AllMixedMastery({ onCorrect, onWrong }) {
 
 // - Steps -
 const STEPS = [
-  { id: "single", label: "Single-Digit Repeating", description: "e.g. 0.\u0305{3} = 1/3. All correct to pass." },
-  { id: "two", label: "Two-Digit Repeating", description: "e.g. 0.\u0305{27} = 3/11. All correct to pass." },
-  { id: "mixed-part", label: "Non-Repeating Part", description: "e.g. 0.8\u0305{3} = 5/6. All correct to pass." },
-  { id: "all-mixed", label: "Mixed Review (10 problems)", description: "All types. All correct to pass." },
+  { id: "single", label: "Single-Digit Repeating", ex: "0.\\overline{3} = \\dfrac{1}{3}", description: "All correct to pass. Answer in simplest form." },
+  { id: "two", label: "Two-Digit Repeating", ex: "0.\\overline{27} = \\dfrac{3}{11}", description: "All correct to pass. Answer in simplest form." },
+  { id: "mixed-part", label: "Non-Repeating Part", ex: "0.8\\overline{3} = \\dfrac{5}{6}", description: "All correct to pass. Answer in simplest form." },
+  { id: "all-mixed", label: "Mixed Review (10 problems)", ex: null, description: "All types. All correct to pass. Answer in simplest form." },
 ];
 
 export default function Lesson21MasteryPlayer({ user, topic, onHome }) {
@@ -415,7 +472,7 @@ export default function Lesson21MasteryPlayer({ user, topic, onHome }) {
         <div className="card">
           <div style={{ marginBottom: 14 }}>
             <div style={{ fontSize: 22, fontWeight: 800 }}>{step.label}</div>
-            <div style={{ fontSize: 20, color: "var(--text2)" }}>{step.description}</div>
+            <div style={{ fontSize: 20, color: "var(--text2)" }}>{step.ex && <>e.g. <KaTeX expr={step.ex} />. </>}{step.description}</div>
           </div>
           {step.id === "single"     && <SingleDigitMastery key={stepIdx} onCorrect={handleCorrect} onWrong={handleWrong} />}
           {step.id === "two"        && <TwoDigitMastery    key={stepIdx} onCorrect={handleCorrect} onWrong={handleWrong} />}
