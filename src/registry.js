@@ -42,6 +42,7 @@ import Lesson19WarmupPlayer from "./Lesson19WarmupPlayer";
 import ExtraCredit19Player from "./ExtraCredit19Player";
 import Lesson20WarmupPlayer from "./Lesson20WarmupPlayer";
 import ExtraCredit20Player from "./ExtraCredit20Player";
+import Lesson21WarmupPlayer from "./Lesson21WarmupPlayer";
 import ReviewHomework from "./ReviewHomework";
 import Lesson02MasteryPlayer from "./Lesson02MasteryPlayer";
 import SubtractionTablesPlayer from "./SubtractionTablesPlayer";
@@ -378,6 +379,13 @@ export const TOPICS = {
     description: "Proportion word problems a:x = x:b and area with sides in different metric units.",
     subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 42,
     Player: ExtraCredit20Player,
+  },
+  "lesson21-warmup-v1": {
+    id: "lesson21-warmup-v1",
+    title: "Warmup 21 (019)",
+    description: "Fractions with denominators 3, 6, 9, 11 as repeating decimals, and multiplying and dividing mixed numbers.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 43,
+    Player: Lesson21WarmupPlayer,
   },
   "lesson02-mastery-v1": {
     id: "lesson02-mastery-v1",
