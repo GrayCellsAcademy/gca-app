@@ -45,6 +45,7 @@ import ExtraCredit20Player from "./ExtraCredit20Player";
 import Lesson21WarmupPlayer from "./Lesson21WarmupPlayer";
 import ExtraCredit21Player from "./ExtraCredit21Player";
 import Lesson22WarmupPlayer from "./Lesson22WarmupPlayer";
+import ExtraCredit22Player from "./ExtraCredit22Player";
 import ReviewHomework from "./ReviewHomework";
 import Lesson02MasteryPlayer from "./Lesson02MasteryPlayer";
 import SubtractionTablesPlayer from "./SubtractionTablesPlayer";
@@ -402,6 +403,13 @@ export const TOPICS = {
     description: "Multiplying and dividing decimals by 10, 100, 1000, and unit conversion factors.",
     subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 45,
     Player: Lesson22WarmupPlayer,
+  },
+  "lesson22-ec-v1": {
+    id: "lesson22-ec-v1",
+    title: "Extra Credit 22 (019)",
+    description: "Equations with fractions and decimals, and order of operations with powers and roots.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 46,
+    Player: ExtraCredit22Player,
   },
   "lesson02-mastery-v1": {
     id: "lesson02-mastery-v1",
