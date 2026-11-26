@@ -47,6 +47,7 @@ import ExtraCredit21Player from "./ExtraCredit21Player";
 import Lesson22WarmupPlayer from "./Lesson22WarmupPlayer";
 import ExtraCredit22Player from "./ExtraCredit22Player";
 import Lesson23WarmupPlayer from "./Lesson23WarmupPlayer";
+import ExtraCredit23Player from "./ExtraCredit23Player";
 import ReviewHomework from "./ReviewHomework";
 import Lesson02MasteryPlayer from "./Lesson02MasteryPlayer";
 import SubtractionTablesPlayer from "./SubtractionTablesPlayer";
@@ -418,6 +419,13 @@ export const TOPICS = {
     description: "Terminating decimals to fractions, and multiplying and dividing decimals by 10, 100, 1000.",
     subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 47,
     Player: Lesson23WarmupPlayer,
+  },
+  "lesson23-ec-v1": {
+    id: "lesson23-ec-v1",
+    title: "Extra Credit 23 (019)",
+    description: "Percent of a percent and fraction of a percent word problems.",
+    subject: "math", gradeLevel: "6+", icon: "", type: "mastery", status: "published", order: 48,
+    Player: ExtraCredit23Player,
   },
   "lesson02-mastery-v1": {
     id: "lesson02-mastery-v1",
