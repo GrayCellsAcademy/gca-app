@@ -284,7 +284,8 @@ export function genQ11() {
   let v2;
   do { v2 = randChoice(vars); } while (v2 === v1);
   const has3 = Math.random() < 0.5;
-  const c1 = randInt(-9, 9) || 1, c2 = randInt(-9, 9) || 1;
+  let c1, c2;
+  do { c1 = randInt(-9, 9) || 1; c2 = randInt(-9, 9) || 1; } while (c1 + c2 === 0);
   const combined = c1 + c2;
   let expr, answer;
   if (has3) {
@@ -499,7 +500,8 @@ export function genQ18() {
 //  Q19: One-Step Equation (Mul/Div) 
 export function genQ19() {
   const isMul = Math.random() < 0.5;
-  const a = randInt(-9, 9) || 2;
+  let a;
+  do { a = randInt(-9, 9); } while (Math.abs(a) < 2);
   let expr, latex, x;
   if (isMul) {
     // ax = b  =>  x = b/a, pick x as integer
@@ -731,27 +733,24 @@ export function genQ29() {
 
 //  Q30: Add/Subtract Fractions (Different Denominators) 
 export function genQ30() {
-  let n1, d1, n2, d2;
+  // Given fractions are in simplest form with different denominators.
+  // Addition: the answer is a mixed number (whole part at least 1).
+  // Subtraction: the first fraction is larger, so the answer is a positive proper fraction.
+  const op = Math.random() < 0.5 ? "+" : "-";
+  let n1, d1, n2, d2, L, rn;
   do {
     d1 = randInt(2, 10); d2 = randInt(2, 10);
     n1 = randInt(1, d1 - 1); n2 = randInt(1, d2 - 1);
-  } while (d1 === d2 || d1 > 10 || d2 > 10 || n1 > 10 || n2 > 10);
-  const op = Math.random() < 0.5 ? "+" : "-";
-  const L = lcm(d1, d2);
-  const rn = op === "+" ? n1 * (L / d1) + n2 * (L / d2) : n1 * (L / d1) - n2 * (L / d2);
-  const [an, ad] = simplifyFrac(Math.abs(rn), L);
-  const sign = rn < 0 ? "-" : "";
-  let answerStr;
-  if (ad === 1) {
-    answerStr = sign + an;
-  } else if (an > ad) {
-    const whole = Math.floor(an / ad);
-    const rem = an % ad;
-    answerStr = sign + (rem === 0 ? String(whole) : whole + " " + rem + "/" + ad);
-  } else {
-    // proper fraction - retry so answer is always a mixed number with whole > 0
-    return genQ30();
-  }
+    L = lcm(d1, d2);
+    rn = op === "+" ? n1 * (L / d1) + n2 * (L / d2) : n1 * (L / d1) - n2 * (L / d2);
+  } while (
+    d1 === d2 || gcd(n1, d1) !== 1 || gcd(n2, d2) !== 1 ||
+    (op === "+" && (rn <= L || rn % L === 0)) ||
+    (op === "-" && rn <= 0)
+  );
+  const [an, ad] = simplifyFrac(rn, L);
+  const whole = Math.floor(an / ad), rem = an % ad;
+  const answerStr = whole > 0 ? whole + " " + rem + "/" + ad : rem + "/" + ad;
   return {
     type: "q30", topic: 30,
     n1, d1, n2, d2, op,
@@ -799,21 +798,24 @@ export function genQ31() {
 
 //  Q32: Add/Subtract Mixed Numbers (Same Denominator) 
 export function genQ32() {
-  const d = randInt(3, 9); // d=2 excluded: with "+" the only possible f1n,f2n=1 always sums to >=d, making the retry loop unsatisfiable (infinite loop)
-  const op = Math.random() < 0.5 ? "+" : "-";
-  let w1, f1n, w2, f2n, rw, rfn;
+  // Same denominator. Given fractions are in simplest form; the answer is simplified
+  // and always has a fraction part (never "5 0/4").
+  let d, op, w1, f1n, w2, f2n, rw, rfn;
   do {
+    d = randInt(3, 9);
+    op = Math.random() < 0.5 ? "+" : "-";
     w1 = randInt(1, 10); f1n = randInt(1, d - 1);
     w2 = randInt(1, 10); f2n = randInt(1, d - 1);
     rw = op === "+" ? w1 + w2 : w1 - w2;
     rfn = op === "+" ? f1n + f2n : f1n - f2n;
   } while (
-    (w1 === w2 && f1n === f2n) ||
+    gcd(f1n, d) !== 1 || gcd(f2n, d) !== 1 ||
     (op === "+" && f1n + f2n >= d) ||
-    (op === "-" && (w1 <= w2 || f1n < f2n)) ||
+    (op === "-" && (w1 <= w2 || f1n <= f2n)) ||
     rw < 2
   );
-  const answer = rw + " " + rfn + "/" + d;
+  const [sn, sd] = simplifyFrac(rfn, d);
+  const answer = rw + " " + sn + "/" + sd;
   return {
     type: "q32", topic: 32,
     w1, f1n, w2, f2n, d, op,
@@ -825,15 +827,18 @@ export function genQ32() {
 
 //  Q33: Mixed Number Subtraction with Borrowing 
 export function genQ33() {
-  const d = randInt(2, 9);
-  let w1, f1n, w2, f2n;
+  // Borrowing is always needed, the whole part of the answer is at least 1,
+  // given fractions are in simplest form and the answer is simplified.
+  let d, w1, f1n, w2, f2n;
   do {
-    w1 = randInt(2, 10); f1n = randInt(0, d - 1);
-    w2 = randInt(1, w1);  f2n = randInt(1, d - 1);
-  } while (f1n >= f2n || w1 - w2 < 1);
+    d = randInt(2, 9);
+    w1 = randInt(3, 10); f1n = randInt(0, d - 1);
+    w2 = randInt(1, w1 - 2); f2n = randInt(1, d - 1);
+  } while (f1n >= f2n || (f1n > 0 && gcd(f1n, d) !== 1) || gcd(f2n, d) !== 1);
   const borrowedF = f1n + d - f2n;
   const rw = w1 - 1 - w2;
-  const answer = rw + " " + borrowedF + "/" + d;
+  const [bn, bd] = simplifyFrac(borrowedF, d);
+  const answer = rw + " " + bn + "/" + bd;
   return {
     type: "q33", topic: 33,
     w1, f1n, w2, f2n, d,
@@ -845,39 +850,35 @@ export function genQ33() {
 
 //  Q34: Equation with Fractions 
 export function genQ34() {
-  const forms = ["var-both", "var-const", "frac-const"];
-  const form = randChoice(forms);
-  let expr, latex, answer;
-  if (form === "var-both") {
-    const a = randInt(2, 9), b = randInt(2, 9), c = randInt(2, 9);
-    if (a === b || b === c || a === c) return genQ34();
-    expr = "x/" + a + " + x/" + b + " = x/" + c;
-    latex = "\\dfrac{x}{" + a + "} + \\dfrac{x}{" + b + "} = \\dfrac{x}{" + c + "}";
-    answer = "0";
+  // Three forms, each solved exactly. Answers are positive and greater than 1.
+  //   var-sum:    x/a + x/b = c       ->  x = abc / (a + b)
+  //   var-const:  x/a +/- c = x/b     ->  x = (+/-)c*ab / (a - b)
+  //   frac-const: x/a + b/c = x/d     ->  x = abd / (c(a - d))
+  const form = randChoice(["var-sum", "var-const", "frac-const"]);
+  let expr, latex, n, d;
+  if (form === "var-sum") {
+    const a = randInt(2, 9), b = randInt(2, 9), c = randInt(1, 12);
+    if (a === b) return genQ34();
+    n = a * b * c; d = a + b;
+    expr = "x/" + a + " + x/" + b + " = " + c;
+    latex = "\\dfrac{x}{" + a + "} + \\dfrac{x}{" + b + "} = " + c;
   } else if (form === "var-const") {
     const a = randInt(2, 9), b = randInt(2, 9), c = randInt(1, 20);
+    if (a === b) return genQ34();
     const op = Math.random() < 0.5 ? "+" : "-";
-    const L = lcm(a, b);
-    const coeffN = op === "+" ? L / a - L / b : -(L / a) + L / b;
-    if (coeffN === 0) return genQ34();
-    const [n, d] = simplifyFrac(op === "+" ? c * L : -c * L, coeffN);
-    answer = fracStr(n, d);
-    expr = "x/" + a + (op === "+" ? " + " : " - ") + c + " = x/" + b;
-    latex = "\\dfrac{x}{" + a + "}" + (op === "+" ? " + " : " - ") + c + " = \\dfrac{x}{" + b + "}";
+    n = (op === "+" ? 1 : -1) * c * a * b; d = a - b;
+    expr = "x/" + a + " " + op + " " + c + " = x/" + b;
+    latex = "\\dfrac{x}{" + a + "} " + op + " " + c + " = \\dfrac{x}{" + b + "}";
   } else {
-    const a = randInt(2, 9), b = randInt(2, 9), c = randInt(2, 9), d = randInt(1, 9);
-    if (a === c) return genQ34();
-    const L = lcm(a, c);
-    const coeffN = L / a - L / c;
-    if (coeffN === 0) return genQ34();
-    const rhs = (b * d) % c === 0 ? b * d / c : b / c;
-    const [n, den] = simplifyFrac(Math.round(rhs * L), coeffN);
-    answer = fracStr(n, den);
-    expr = "x/" + a + " + " + b + "/" + c + " = x/" + d;
-    latex = "\\dfrac{x}{" + a + "} + \\dfrac{" + b + "}{" + c + "} = \\dfrac{x}{" + d + "}";
+    const a = randInt(2, 9), b = randInt(1, 8), c = randInt(2, 9), dd = randInt(2, 9);
+    if (a === dd || b >= c || gcd(b, c) !== 1) return genQ34();
+    n = a * b * dd; d = c * (a - dd);
+    expr = "x/" + a + " + " + b + "/" + c + " = x/" + dd;
+    latex = "\\dfrac{x}{" + a + "} + \\dfrac{" + b + "}{" + c + "} = \\dfrac{x}{" + dd + "}";
   }
-  const ansNum = parseFloat(answer);
-  if (!isNaN(ansNum) && ansNum <= 1) return genQ34();
+  if (d < 0) { n = -n; d = -d; }
+  if (n <= d) return genQ34(); // keep answers positive and greater than 1
+  const answer = fracStr(n, d);
   return { type: "q34", topic: 34, form, expr, latex, answer, prompt: "Solve for x. Give answer as fraction if needed." };
 }
 
@@ -1039,14 +1040,14 @@ export function genQ38() {
 //  Q39: Proportion Word Problems 
 const PROPORTION_CONTEXTS = [
   { template: (a, b, c) => "Karen earns $" + b + " in " + a + " hours. How much will she earn in " + c + " hours?", unit: "dollars" },
-  { template: (a, b, c) => "A car travels " + a + " miles in " + b + " hours. How many miles in " + c + " hours?", unit: "miles" },
+  { template: (a, b, c) => "A car travels " + b + " miles in " + a + " hours. How many miles in " + c + " hours?", unit: "miles" },
   { template: (a, b, c) => a + " kg of apples cost $" + b + ". How much do " + c + " kg cost?", unit: "dollars" },
-  { template: (a, b, c) => "A machine makes " + a + " parts in " + b + " minutes. How many parts in " + c + " minutes?", unit: "parts" },
+  { template: (a, b, c) => "A machine makes " + b + " parts in " + a + " minutes. How many parts in " + c + " minutes?", unit: "parts" },
   { template: (a, b, c) => "A recipe uses " + b + "g of flour for " + a + " cookies. How much flour for " + c + " cookies?", unit: "grams" },
   { template: (a, b, c) => a + " workers build " + b + " houses in a week. How many houses can " + c + " workers build?", unit: "houses" },
-  { template: (a, b, c) => "A printer prints " + a + " pages in " + b + " minutes. How many pages in " + c + " minutes?", unit: "pages" },
+  { template: (a, b, c) => "A printer prints " + b + " pages in " + a + " minutes. How many pages in " + c + " minutes?", unit: "pages" },
   { template: (a, b, c) => a + " liters of gas cost $" + b + ". How much do " + c + " liters cost?", unit: "dollars" },
-  { template: (a, b, c) => "A train travels " + a + " km in " + b + " hours. How many km in " + c + " hours?", unit: "km" },
+  { template: (a, b, c) => "A train travels " + b + " km in " + a + " hours. How many km in " + c + " hours?", unit: "km" },
   { template: (a, b, c) => a + " books cost $" + b + ". How much do " + c + " books cost?", unit: "dollars" },
 ];
 export function genQ39() {
@@ -1186,6 +1187,7 @@ export function genQ44() {
     fromUnit = "lb"; toUnit = "oz";
     val = randInt(2, 10);
   }
+  if ((val * conv[fromUnit]) % conv[toUnit] !== 0) return genQ44(); // keep answers whole numbers
   const inBase = val * conv[fromUnit];
   const result = inBase / conv[toUnit];
   const ctx = randChoice(contexts);
@@ -1261,9 +1263,28 @@ export function generateReviewQuestion(topicId) {
   return q;
 }
 
+// "2.1|6" -> [num, den] as BigInt for 2.1666...; "0.25" -> 1/4. Returns null if not a number.
+function repValue(str) {
+  const s = String(str).replace(/\s+/g, "");
+  const m = s.match(/^(\d*)(?:\.(\d*))?(?:\|(\d+))?$/);
+  if (!m || (!m[1] && !m[2] && !m[3])) return null;
+  const intPart = m[1] || "0", dec = m[2] || "", rep = m[3] || "";
+  const p = 10n ** BigInt(dec.length);
+  let num = BigInt(intPart + dec), den = p;
+  if (rep) {
+    const q = 10n ** BigInt(rep.length) - 1n;
+    num = num * q + BigInt(rep);
+    den = p * q;
+  }
+  return [num, den];
+}
+
 export function gradeReviewAnswer(input, question) {
   if (!input || !question) return false;
   const norm = s => String(s).trim().toLowerCase().replace(/\s+/g, "");
+  // Mixed numbers: "1 5/12" must not turn into "15/12". Collapse spaces to one and
+  // remove spaces around "/" only.
+  const normMixed = s => String(s).trim().toLowerCase().replace(/\s*\/\s*/g, "/").replace(/\s+/g, " ");
 
   switch (question.type) {
     case "q1": case "q2": case "q3":
@@ -1271,17 +1292,18 @@ export function gradeReviewAnswer(input, question) {
     case "q17": case "q18": case "q19": case "q20":
     case "q21": case "q22": case "q24": case "q25":
     case "q26": case "q27": case "q28": case "q29":
-    case "q30": case "q31": case "q32": case "q33":
     case "q34": case "q35": case "q36":
     case "q39": case "q40": case "q41": case "q42":
       return norm(input) === norm(question.answer);
 
+    case "q30": case "q31": case "q32": case "q33":
+      return normMixed(input) === normMixed(question.answer);
+
     case "q37": {
-      // Answer stored as "whole.nonRep|rep" or "whole.nonRep" for terminating
-      // Student input submitted as same format from RepeatingDecimalInput
-      const normInput = norm(input).replace(/\s/g, "");
-      const normAnswer = norm(question.answer).replace(/\s/g, "");
-      return normInput === normAnswer;
+      // Answer stored as "whole.nonRep|rep" or "whole.nonRep" for terminating.
+      // Compare exact values, so "7|3", "7.|3" and "7.3|3" all count as 7.333...
+      const a = repValue(input), b = repValue(question.answer);
+      return !!a && !!b && a[0] * b[1] === b[0] * a[1];
     }
 
     case "q11": {

@@ -884,13 +884,14 @@ function AnswerInput({ question, onSubmit, submitted }) {
   const [nlVal, setNlVal] = useState(null);
   const [nlFilled, setNlFilled] = useState(true);
   const [nlShadeRight, setNlShadeRight] = useState(null);
+  const [ops, setOps] = useState(["", "", ""]); // Q8 comparison buttons (kept up here so hooks always run in the same order)
   const ref = useRef(null);
 
   useEffect(() => {
     setInput(""); setInput2(""); setSelectedUnit(null); setSelectedOp(null);
-    setNlVal(null); setNlFilled(true); setNlShadeRight(null);
+    setNlVal(null); setNlFilled(true); setNlShadeRight(null); setOps(["", "", ""]);
     setTimeout(() => ref.current?.focus(), 100);
-  }, [question?.type, question?.topicId]);
+  }, [question]);
 
   if (!question) return null;
   const q = question;
@@ -1000,7 +1001,6 @@ function AnswerInput({ question, onSubmit, submitted }) {
   }
 
   if (q.type === "q8") {
-    const [ops, setOps] = useState(["", "", ""]);
     const updateOp = (i, v) => { const n = [...ops]; n[i] = v; setOps(n); };
     return (
       <div>

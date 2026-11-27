@@ -1,0 +1,50 @@
+[1mdiff --git a/src/ExtraCredit02Player.jsx b/src/ExtraCredit02Player.jsx[m
+[1mindex ea68db5..401156e 100644[m
+[1m--- a/src/ExtraCredit02Player.jsx[m
+[1m+++ b/src/ExtraCredit02Player.jsx[m
+[36m@@ -138,13 +138,13 @@[m [mfunction StaircaseSVG({ question, activityType }) {[m
+               <line x1={p1.x} y1={p1.y} x2={p2.x} y2={p2.y}[m
+                 stroke="var(--amber)" strokeWidth="3" strokeDasharray="8 4" />[m
+             )}[m
+[31m-            <rect x={lx - boxW / 2} y={ly - 14} width={boxW} height={28} rx={5}[m
+[32m+[m[32m            {!hidden && <rect x={lx - boxW / 2} y={ly - 14} width={boxW} height={28} rx={5}[m
+               fill={hidden ? "rgba(251,191,36,0.15)" : "var(--bg2)"}[m
+[31m-              stroke={hidden ? "var(--amber)" : "var(--border)"} strokeWidth={hidden ? 2 : 1} />[m
+[31m-            <text x={lx} y={ly + 6} textAnchor="middle" fontSize="14" fontWeight="700"[m
+[32m+[m[32m              stroke={hidden ? "var(--amber)" : "var(--border)"} strokeWidth={hidden ? 2 : 1} />}[m
+[32m+[m[32m            {!hidden && <text x={lx} y={ly + 6} textAnchor="middle" fontSize="14" fontWeight="700"[m
+               fill={hidden ? "var(--amber)" : "var(--text)"} fontFamily="var(--mono)">[m
+[31m-              {hidden ? "?" : side.length + " " + unit}[m
+[31m-            </text>[m
+[32m+[m[32m              {side.length + " " + unit}[m
+[32m+[m[32m            </text>}[m
+           </g>[m
+         );[m
+       })}[m
+[36m@@ -157,7 +157,7 @@[m [mconst ACTIVITIES = [[m
+   {[m
+     id: "A",[m
+     label: "Staircase - Sum of Short Sides",[m
+[31m-    prompt: () => "The highlighted sides are missing their labels. What is their total length? Include units.",[m
+[32m+[m[32m    prompt: () => "The highlighted sides have no labels. What is their combined length? Include units.",[m
+     getAnswer: (q) => (q.hideDir === "h" ? q.H : q.V) + q.unit,[m
+     getExplanation: (q) => {[m
+       const val = q.hideDir === "h" ? q.H : q.V;[m
+[36m@@ -168,7 +168,7 @@[m [mconst ACTIVITIES = [[m
+   {[m
+     id: "B",[m
+     label: "Staircase - Perimeter",[m
+[31m-    prompt: () => "Find the perimeter of the shape. The highlighted sides are unlabeled but can be worked out. Include units.",[m
+[32m+[m[32m    prompt: () => "Find the perimeter of the shape. Some sides are highlighted but have no labels. Include units.",[m
+     getAnswer: (q) => q.perimeter + q.unit,[m
+     getExplanation: (q) => {[m
+       const shortSum = q.hideDir === "h" ? q.H : q.V;[m
+[36m@@ -183,7 +183,7 @@[m [mconst ACTIVITIES = [[m
+     prompt: (q) => {[m
+       const dir = q.hideDir === "h" ? "horizontal" : "vertical";[m
+       const oppDir = q.hideDir === "h" ? "vertical" : "horizontal";[m
+[31m-      return `The short ${dir} sides and the long ${oppDir} side are all unlabeled. Work out the missing lengths and find the perimeter. Include units.`;[m
+[32m+[m[32m      return `Find the perimeter. Some sides are highlighted but have no labels. Include units.`;[m
+     },[m
+     getAnswer: (q) => q.perimeter + q.unit,[m
+     getExplanation: (q) => {[m
